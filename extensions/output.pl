@@ -50,20 +50,19 @@ sub private_fmt {
 	$ui->prints(privhdr => ", to ",
 		    dest    => $e->{RECIPS});
     }
-    $ui->style("privhdr");
-    $ui->print(":\n");
+    $ui->prints(privhdr => ":\n");
     
     $ui->indent(" - ");
     $ui->style("privmsg");
-    $ui->print($e->{VALUE}, "\n");
+    $ui->prints(privmsg => $e->{VALUE}."\n");
     $ui->indent("");
   
     $ui->style("default");
-  return;
+    return;
 }
 event_r(type  => 'private',
-		      order => 'before',
-		      call  => sub { $_[0]->{formatter} = \&private_fmt; return });
+	order => 'before',
+	call  => sub { $_[0]->{formatter} = \&private_fmt; return });
 
 sub public_fmt {
     my($ui, $e) = @_;
@@ -87,8 +86,8 @@ sub public_fmt {
     return;
 }
 event_r(type  => 'public',
-		      order => 'before',
-		      call  => sub { $_[0]->{formatter} = \&public_fmt; return });
+	order => 'before',
+	call  => sub { $_[0]->{formatter} = \&public_fmt; return });
 
 sub emote_fmt {
     my($ui, $e) = @_;
@@ -102,9 +101,8 @@ sub emote_fmt {
     return;
 }
 event_r(type  => 'emote',
-		      order => 'before',
-		      call  => sub { $_[0]->{formatter} = \&emote_fmt;
-				     return });
+	order => 'before',
+	call  => sub { $_[0]->{formatter} = \&emote_fmt; return });
 
 
 # %U: source's pseudo and blurb
