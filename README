@@ -223,10 +223,16 @@ To access the repository anonymous read-only, do:
 Which will get you the most recent development version.
 
 To access the repository read-write, once you have an account, do:
-  svn co svn+ssh://svn.tlily.org/data/svn/tlily/trunk tlily
+  svn co svn+ssh://svn.tlily.org/svn/tlily/trunk tlily
 
-If your local login name is not the same as on svn.tlily.org, you will
-need to add a --username to that commandline as appropriate.
+If your local login name is not the same as on svn.tlily.org, you can
+specify your username in the URL like so:
+  svn co svn+ssh://mjr@svn.tlily.org/svn/tlily/trunk tlily
+
+Older versions of svn did not support specifying the username in the URL;
+for those versions you will need to add a --username to that commandline,
+like so:
+  svn co --username mjr svn+ssh://svn.tlily.org/svn/tlily/trunk tlily
 
 Subversion has built-in help, accessible from "svn help".  The commands
 are very similar to basic CVS commands, and in some cases, more intuitive.
