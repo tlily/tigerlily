@@ -277,8 +277,10 @@ sub start_curses {
     $self->{color} = 0;
     if ($self->{want_color} && has_colors()) {
 	my $rc = start_color();
-	eval { use_default_colors(); };
 	$self->{color} = ($rc == OK);
+	if ($self->{color}) {
+	    eval { use_default_colors(); };
+	}
     }
 
     noecho();

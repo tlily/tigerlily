@@ -16,7 +16,7 @@ sub new {
     my $proto = shift;
     my $class = ref($proto) || $proto;
     my %a = @_;
-    my $self  = $class->SUPER::new(bg => 'textwin', @_);
+    my $self  = $class->SUPER::new(bg => 'text_window', @_);
 
     # The contents of the text widget are stored in one big string.
     $self->{text}        = "";

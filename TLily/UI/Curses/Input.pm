@@ -10,7 +10,7 @@ use TLily::UI::Curses::Generic;
 sub new {
 	my $proto = shift;
 	my $class = ref($proto) || $proto;
-	my $self  = $class->SUPER::new(@_);
+	my $self  = $class->SUPER::new(bg => "input_window", @_);
 
 	$self->{text}        = "";
 	$self->{password}    = 0;

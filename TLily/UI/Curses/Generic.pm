@@ -2,6 +2,7 @@ package TLily::UI::Curses::Generic;
 
 use strict;
 use vars qw(%stylemap %cstylemap %cnamemap %snamemap %cpairmap %keycodemap);
+	    
 use Curses;
 
 

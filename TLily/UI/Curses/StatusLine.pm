@@ -11,7 +11,7 @@ use Carp;
 sub new {
 	my $proto = shift;
 	my $class = ref($proto) || $proto;
-	my $self  = $class->SUPER::new(bg => 'status', @_);
+	my $self  = $class->SUPER::new(bg => 'status_window', @_);
 
 	$self->{left}     = [];
 	$self->{right}    = [];

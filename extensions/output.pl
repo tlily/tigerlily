@@ -15,48 +15,26 @@ that the parser module (slcp.pl) send into appopriate output for the user.
 
 =cut
 
-my $sub = sub {
-    my($e, $h) = @_;
-    
-    my $ui = ui_name("main");
-    $ui->print("Event: $e->{type}\n");
-    foreach (sort keys %$e) {
-	next if ($_ eq "type");
-	my $val = $e->{$_};
-	$ui->print("  $_=");
-	if (defined($val)) {
-	    $val =~ s/\r/\\r/gs;
-	    $val =~ s/\n/\\n/gs;
-	    $ui->print("\"$val\"");
-	} else {
-	    $ui->print("undef");
-	}
-    }
-    $ui->print("\n");
-    return;
-};
-#event_r(type => 'all', call => $sub);
 
-
+# Print private sends.
 sub private_fmt {
     my($ui, $e) = @_;
     
     $ui->print("\n");
     
-    $ui->indent(" >> ");
-    $ui->prints(privhdr     => "Private message from ",
-		privsender  => $e->{SOURCE});
+    $ui->indent(private_header => " >> ");
+    $ui->prints(private_header => "Private message from ",
+		private_sender => $e->{SOURCE});
     if ($e->{RECIPS} =~ /,/) {
-	$ui->prints(privhdr  => ", to ",
-		    privdest => $e->{RECIPS});
+	$ui->prints(private_header => ", to ",
+		    private_dest   => $e->{RECIPS});
     }
-    $ui->prints(privhdr => ":\n");
+    $ui->prints(private_header => ":\n");
     
-    $ui->indent(" - ");
-    $ui->style("privmsg");
-    $ui->prints(privmsg => $e->{VALUE}."\n");
-    $ui->indent("");
-  
+    $ui->indent(private_body => " - ");
+    $ui->prints(private_body => $e->{VALUE}."\n");
+
+    $ui->indent();
     $ui->style("default");
     return;
 }
@@ -64,23 +42,23 @@ event_r(type  => 'private',
 	order => 'before',
 	call  => sub { $_[0]->{formatter} = \&private_fmt; return });
 
+# Print public sends.
 sub public_fmt {
     my($ui, $e) = @_;
     
     $ui->print("\n");
     
-    $ui->indent(" -> ");
-    $ui->prints(pubhdr    => "From ",
-		pubsender => $e->{SOURCE},
-		pubhdr    => ", to ",
-		pubdest   => $e->{RECIPS},
-		pubhdr    => ":\n");
+    $ui->indent(public_header => " -> ");
+    $ui->prints(public_header => "From ",
+		public_sender => $e->{SOURCE},
+		public_header => ", to ",
+		public_dest   => $e->{RECIPS},
+		public_header => ":\n");
     
-    $ui->indent(" - ");
-    $ui->style("pubmsg");
-    $ui->print($e->{VALUE}, "\n");
-    $ui->indent("");
-    
+    $ui->indent(public_body   => " - ");
+    $ui->prints(public_body   => $e->{VALUE}, "\n");
+
+    $ui->indent();
     $ui->style("default");
     
     return;
@@ -89,13 +67,18 @@ event_r(type  => 'public',
 	order => 'before',
 	call  => sub { $_[0]->{formatter} = \&public_fmt; return });
 
+# Print emote sends.
 sub emote_fmt {
     my($ui, $e) = @_;
     
-    $ui->style("emote");
-    $ui->indent("> ");
-    $ui->print("(to ", $e->{RECIPS}, ") ", $e->{SOURCE}, $e->{VALUE},"\n");
-    $ui->indent("");
+    $ui->indent(emote_body   => "> ");
+    $ui->prints(emote_body   => "(to ",
+		emote_dest   => $e->{RECIPS},
+		emote_body   => ") ",
+		emote_sender => $e->{SOURCE},
+		emote_body   => $e->{VALUE}."\n");
+
+    $ui->indent();
     $ui->style("default");
     
     return;
@@ -167,7 +150,7 @@ my @infomsg = ('connect'  => 'A *** %U has entered lily ***',
 	       # need to handle review, sysalert, pa, game, and consult.
 	      );
 
-$sub = sub {
+my $sub = sub {
     my ($e, $h) = @_;
     my $serv = $e->{server};
     return unless ($serv);

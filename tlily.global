@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/Attic/tlily.global,v 1.11 1999/02/28 05:23:24 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/Attic/tlily.global,v 1.12 1999/02/28 22:53:17 neild Exp $
 # Global defaults for tlily
 # PLEASE DO NOT EDIT EXCEPT FOR DEVELOPMENT!
 # EDIT YOUR SITE CONFIG FILE INSTEAD!
@@ -11,24 +11,50 @@
 
 @slash = (undef);
 @prefer = (undef);
-%color_attrs = ('pubsender'   => ['cyan',    'black', 'bold'],
-		'pubdest'     => ['cyan',    'black', 'bold'],
-		'privsender'  => ['green',   'black', 'bold'],
-		'privdest'    => ['green',   'black', 'bold'],
-		'status'      => ['yellow',  'blue',  'bold'],
-		'input_line'  => ['white',   'black', 'normal'],
-		'text_window' => ['white',   'black', 'normal'],
-		'privhdr'     => ['green',   'black', 'normal'],
-		'privmsg'     => ['green',   'black', 'normal'],
-		'pubhdr'      => ['cyan',    'black', 'normal'],
-		'pubmsg'      => ['white',   'black', 'normal'],
-		'emote'       => ['cyan',    'black', 'normal'],
-		'review'      => ['magenta', 'black', 'normal'],
-		'yellow'      => ['yellow',  'black', 'bold'],
-		'green'       => ['green',   'black', 'bold'],
-		'bwhite'      => ['white',   'black', 'bold'],
-		'slcp'        => ['yellow',  'black', 'normal']
-		);
+%traditional_color_attrs =
+  (
+   'default'         => [qw(white   black   normal)],
+   'status_window'   => [qw(yellow  blue    bold  )],
+   'input_window'    => [qw(white   black   normal)],
+   'text_window'     => [qw(white   black   normal)],
+   'public_header'   => [qw(cyan    black   normal)],
+   'public_sender'   => [qw(cyan    black   bold  )],
+   'public_dest'     => [qw(cyan    black   bold  )],
+   'public_body'     => [qw(white   black   normal)],
+   'private_header'  => [qw(green   black   normal)],
+   'private_sender'  => [qw(green   black   bold  )],
+   'private_dest'    => [qw(green   black   bold  )],
+   'private_body'    => [qw(white   black   normal)],
+   'emote_body'      => [qw(cyan    black   normal)],
+   'emote_dest'      => [qw(cyan    black   normal)],
+   'emote_sender'    => [qw(cyan    black   normal)],
+   'review'          => [qw(magenta black   normal)],
+   'slcp'            => [qw(yellow  black   normal)],
+  );
+
+%mask_color_attrs =
+  (
+   'default'         => [qw(-       -       normal)],
+   'status_window'   => [qw(yellow  blue    bold  )],
+   'input_window'    => [qw(-       -       normal)],
+   'text_window'     => [qw(-       -       normal)],
+   'public_header'   => [qw(cyan    -       normal)],
+   'public_sender'   => [qw(cyan    -       bold  )],
+   'public_dest'     => [qw(cyan    -       bold  )],
+   'public_body'     => [qw(-       -       normal)],
+   'private_header'  => [qw(green   -       normal)],
+   'private_sender'  => [qw(green   -       bold  )],
+   'private_dest'    => [qw(green   -       bold  )],
+   'private_body'    => [qw(-       -       normal)],
+   'emote_body'      => [qw(cyan    -       normal)],
+   'emote_dest'      => [qw(cyan    -       normal)],
+   'emote_sender'    => [qw(cyan    -       normal)],
+   'review'          => [qw(magenta -       normal)],
+   'slcp'            => [qw(yellow  -       normal)],
+  );
+
+%color_attrs = %traditional_color_attrs;
+#%color_attrs = %mask_color_attrs;
 
 %mono_attrs = ('sender'      => ['bold'],
 	       'dest'        => ['bold'],
