@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/info.pl,v 1.2 1999/02/28 05:24:50 steve Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/info.pl,v 1.3 1999/02/28 21:54:24 steve Exp $
 
 sub info_set {
     my ($ui,%args)=@_;
@@ -51,7 +51,7 @@ sub info_set {
 	my $server = server_name();
 	my $ui = ui_name();
 
-	if ($event->{text} eq 'OKAY') {
+	if ($event->{response} eq 'OKAY') {
 	    my $l;
 	    foreach $l (@data) {
 		$server->send($l);
@@ -88,7 +88,7 @@ sub info_edit {
     my @data = ();
     cmd_process("/info $itarget", sub {
 		    my($event) = @_;
-		    $event->{touser} = 0;
+		    $event->{NOTIFY} = 0;
 		    if ($event->{text} =~ /^\* (.*)/) {
 			return if ((@data == 0) &&
 				   ($event->{text} =~ /^\* Last Update: /));

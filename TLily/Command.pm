@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Command.pm,v 1.2 1999/02/27 00:52:37 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Command.pm,v 1.3 1999/02/28 21:54:23 steve Exp $
 package TLily::Command;
 
 use strict;
@@ -34,6 +34,7 @@ sub init () {
 		my($e) = @_;
 		my $id = $e->{cmdid};
 
+		return 0 if ($e->{type} eq 'endcmd');
 		return 0 unless ($id);
 		my $f = $active_commands{$id};
 		&$f($e) if (defined $f);
