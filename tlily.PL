@@ -7,7 +7,7 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/tlily.PL,v 1.40 1999/08/10 16:03:35 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/tlily.PL,v 1.41 1999/09/17 07:20:18 josh Exp $
 
 use strict;
 use Config;
@@ -113,6 +113,7 @@ use TLily::User;
 use TLily::Extend;
 use TLily::Version;
 use TLily::Command;
+use TLily::Bot;
 
 if ( -f 'tlily.PL' ) {
     my @tstat = stat('tlily.PL');
@@ -137,6 +138,7 @@ if ($@) {
 TLily::Config::init();
 TLily::Event::init();
 TLily::Command::init();
+TLily::Bot::init();
 my $ui = load_ui();
 
 show_banner();
