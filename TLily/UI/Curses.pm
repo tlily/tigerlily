@@ -356,7 +356,7 @@ sub run {
 	}
 
 	my $key = $self->{input}->read_char();
-	return unless $key;
+	return unless defined($key);
 	#print STDERR "key='$key'\n";
 
 	my $cmd = $self->{bindings}->{$key};
