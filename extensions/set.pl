@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/set.pl,v 1.5 1999/06/23 14:28:17 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/set.pl,v 1.6 2000/01/13 23:26:46 albert Exp $
 
 use strict;
 
@@ -8,7 +8,8 @@ sub dumpit {
     $l = 0 if ! $l;
 
     my($k,$v);
-    while(($k,$v) = each %H) {
+    foreach $k (sort keys %H) {
+	$v = $H{$k};
 	if(ref($v) eq '' || ref($v) eq 'SCALAR') {
 	    $ui->print("\t"x$l."$k = $v\n");
 	}
