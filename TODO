@@ -8,7 +8,6 @@ Before 2.0 release:
   The following need to be ported/written.  Most should be pretty easy to do
   based on the ones we've already finished.
   
-  zone.pl       (pretty easy)
   autoreply.pl  (easy)
   run_command.pl(easy)  
   mirror.pl     (easy)
