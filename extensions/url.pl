@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/url.pl,v 1.17 2000/02/16 02:39:44 kazrak Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/url.pl,v 1.18 2000/12/01 00:36:21 kazrak Exp $
 
 #
 # URL handling
@@ -71,8 +71,17 @@ sub url_cmd {
             if ($num > 0) { $url=$urls[$num-1]; }
             elsif ($num == 0) { $url=$urls[$#urls]; }
             elsif ($num < 0) { $url=$urls[$#urls+$num+1]; }
-        } else {
+        } elsif ($num=~m'^[a-z]*://') {
 	    $url = $num;
+	} else {
+	    foreach my $testurl (reverse @urls) {
+		if ($testurl=~/$num/) {
+		    $url = $testurl;
+		    last;
+		}
+	    }
+	    $ui->print("(no url found matching '$num')\n");
+	    return;
 	}
 
 	$url =~ s/([,\"\'])/sprintf "%%%02x", ord($1)/eg;
@@ -167,7 +176,7 @@ help_r('url', "
 Usage: %url
        %url list [all | <count>]
        %url clear
-       %url show <num> | <url>
+       %url show <num> | <regex> | <url>
        %url show  (will show last url)
        %url <num>
 ");

@@ -1,4 +1,6 @@
 Version 2.1.1-post
+  * [extensions/url.pl] Add regex support to %url show; '%url show <regex>
+    will now show the last URL matching the regex.
   * [extensions/blurb.pl] New extension, auto-blurb-compression [WJC]
   * [extensions/http_parse.pl] Merged changes from http2_parse back in [WJC]
   * [extensions/http2_parse.pl] Deleted, merged back into http_parse [WJC]
