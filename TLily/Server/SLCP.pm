@@ -6,7 +6,7 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Server/Attic/SLCP.pm,v 1.20 1999/04/26 17:46:32 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Server/Attic/SLCP.pm,v 1.21 1999/04/27 18:13:12 neild Exp $
 
 package TLily::Server::SLCP;
 
@@ -18,6 +18,7 @@ use Carp;
 use TLily::Server;
 use TLily::Extend;
 use TLily::Config qw(%config);
+use TLily::UI;
 
 @ISA = qw(TLily::Server);
 
@@ -31,34 +32,51 @@ sub new {
 
     my $self = $class->SUPER::new(%args);
 
-    $self->{HANDLE} = {};
-    $self->{NAME}   = {};
-    $self->{DATA}   = {};
+    $self->{HANDLE}   = {};
+    $self->{NAME}     = {};
+    $self->{DATA}     = {};
+
+    $self->{user}     = $args{user};
+    $self->{password} = $args{password};
 
     # set the client name once we're %connected.
+    my $sub = sub {
+	my ($e,$h) = @_;
+
+	return 0 unless ($e->{server} == $self);
+
+	$self->set_client_name();
+	TLily::Event::event_u($h->{id});
+
+	return 0;
+    };
     TLily::Event::event_r(type => "connected",
-			  call => sub {
-			      my ($e,$h) = @_;
-
-			      return 0 unless ($e->{server} == $self);
-
-			      $self->set_client_name();
-			      TLily::Event::event_u($h->{id});
-
-			      return 0;
-			  });
+			  call => $sub);
 	
     # set the client options at the first prompt.
+    $sub = sub {
+	my ($e,$h) = @_;
+	return 0 unless ($e->{server} == $self);
+	my $ui = TLily::UI::name($self->{ui_name});
+
+	TLily::Event::event_u($h->{id});
+
+	$self->set_client_options();
+
+	if (defined $self->{user}) {
+	    $ui->print("(using autologin information)\n") if ($ui);
+	    $self->send($self->{user});
+	    $self->send(" ".$self->{password}) if defined ($self->{password});
+	    $self->sendln();
+	    delete $self->{user};
+	    delete $self->{password};
+	    return 1;
+	}
+
+	return 0;
+    };
     TLily::Event::event_r(type => "prompt",
-			  call => sub {
-			      my ($e,$h) = @_;
-			      return 0 unless ($e->{server} == $self);
-				  
-			      $self->set_client_options();
-			      TLily::Event::event_u($h->{id});
-				
-			      return 0;
-			  });
+			  call => $sub);
 
     bless $self, $class;
 }

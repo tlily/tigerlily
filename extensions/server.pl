@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/server.pl,v 1.17 1999/04/20 17:03:17 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/server.pl,v 1.18 1999/04/27 18:13:09 neild Exp $
 
 use strict;
 
@@ -13,13 +13,46 @@ sub connect_command {
     my(@argv) = split /\s+/, $arg;
     TLily::Event::keepalive();
 
-    my($host, $port) = @argv;
-    $host = $config{server} unless defined($host);
-    $port = $config{port}   unless defined($port);
-    
+    my($host, $port, $user, $pass) = @argv;
+
+    if (!defined $host) {
+	if (!defined($config{server})) {
+	    $ui->print("(no default server specified)\n");
+	    return;
+	}
+
+	$host = $config{server};
+	$port = $config{port};
+    }
+
+    # Expand host aliases.
+    if (!defined($port) && $config{server_info}) {
+	foreach my $i (@{$config{server_info}}) {
+	    if ($host eq $i->{alias}) {
+		($host, $port) = ($i->{host}, $i->{port});
+		last;
+	    }
+	}
+    }
+
+    # Pick out autologin information.
+    if ($config{server_info}) {
+	foreach my $i (@{$config{server_info}}) {
+	    if ($host eq $i->{host}) {
+		$port = $i->{port} if (!defined $port);
+		if ($port == $i->{port}) {
+		    ($user, $pass) = ($i->{user}, $i->{pass});
+		    last;
+		}
+	    }
+	}
+    }
+
     my $server;
     $server = TLily::Server::SLCP->new(host      => $host,
 				       port      => $port,
+				       user      => $user,
+				       password  => $pass,
 				       'ui_name' => $ui->name);
     return unless $server;
 
