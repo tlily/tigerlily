@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/on.pl,v 1.17 2003/03/23 21:52:49 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/on.pl,v 1.18 2003/10/05 07:59:51 steve Exp $
 
 use strict;
 use Text::ParseWords qw(quotewords);
@@ -394,7 +394,8 @@ sub on_disconnect {
     my($e, $h) = @_;
 
     my $ui = ui_name();
-    for my $on (@on_handlers) {
+    my @on_temp = @on_handlers;
+    for my $on (@on_temp) {
 	if ($on->[1]->{SERVER} == $e->{server}) {
 	    on_cmd($ui, "clear $on->[0]");
 	}
