@@ -1,4 +1,4 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/ui.pl,v 1.10 1999/03/22 06:32:21 neild Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/ui.pl,v 1.11 1999/04/07 20:41:03 neild Exp $ 
 use strict;
 
 
@@ -138,6 +138,34 @@ sub page_command {
 command_r(page => \&page_command);
 shelp_r(page => "Turn output paging on and off.");
 help_r(page => $page_help);
+
+#
+# Input contexts.
+#
+
+sub next_input_context {
+    my($ui, $command, $key) = @_;
+    my($pos, $line) = $ui->get_input;
+    $ui->{input}->{_context} ||= [];
+    my $context = $ui->{input}->{_context};
+
+    my $cidx = $ui->{input}->{_context_idx} || 0;
+
+    if (length $line) {
+	$context->[$cidx] = [$pos, $line];
+	$cidx++;
+	$context->[$cidx] ||= [0, ""];
+    }
+    else {
+	splice(@$context, $cidx, 1);
+	$cidx = 0 if ($cidx >= @$context);
+    }
+
+    $ui->set_input(@{$context->[$cidx]});
+    $ui->{input}->{_context_idx} = $cidx;
+}
+command_r("next-input-context" => \&next_input_context);
+bind("C-x" => "next-input-context");
 
 #
 # Styles.
