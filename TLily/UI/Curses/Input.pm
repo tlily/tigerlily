@@ -88,7 +88,7 @@ sub rationalize {
 	my($self) = @_;
 
 	my $text_len  = length($self->{prefix});
-	my $text_len += length($self->{text}) unless ($self->{password});
+	$text_len += length($self->{text}) unless ($self->{password});
 
 	my $text_lines = int($text_len / $self->{cols}) + 1;
 	if ($text_lines != $self->{text_lines}) {
