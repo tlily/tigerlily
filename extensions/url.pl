@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/url.pl,v 1.4 1999/03/23 08:34:06 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/url.pl,v 1.5 1999/03/23 23:58:19 neild Exp $
 
 #
 # URL handling
@@ -35,7 +35,7 @@ sub url_cmd {
        return;
     }
 
-    if ($arg eq "show" || $arg=~ /^-?\d+$/) {  
+    elsif ($arg eq "show" || $arg=~ /^-?\d+$/) {  
 	if ($arg eq "show" && ! $num) {
 	    $num=$#urls+1;
 	}
@@ -78,15 +78,30 @@ sub url_cmd {
  	}
  	return
     }
- 
-    if (@urls == 0) {
-	$ui->print("(no URLs captured this session)\n");
- 	return;
+
+    elsif ($arg eq "list" || $arg eq "") {
+        my $count = $num || 3;
+	$count = @urls if ($count !~ /^\d+$/);
+	$count = 3 if ($count <= 0);
+	$count = @urls if ($count > @urls);
+
+        if (@urls == 0) {
+	    $ui->print("(no URLs captured this session)\n");
+ 	    return;
+        }
+
+        $ui->print("| URLs captured this session:\n");
+        foreach (($#urls-$count+1)..$#urls) {
+ 	    $ui->print(sprintf("| %2d) $urls[$_]\n",$_+1));
+        }    
+	return;
     }
-    $ui->print("| URLs captured this session:\n");
-    foreach (0..$#urls) {
- 	$ui->print(sprintf("| %2d) $urls[$_]\n",$_+1));
-    }    
+
+    else {
+	$ui->print("(%url [view | list | clear]; type %help for help)\n");
+    }
+
+    return;
 } 
 
 event_r(type  => 'public',
@@ -106,6 +121,7 @@ command_r('url' => \&url_cmd);
 shelp_r('url', "View list of captured urls");
 help_r('url', "
 Usage: %url
+       %url list [all | <count>]
        %url clear
        %url show <num> | <url>
        %url show  (will show last url)
