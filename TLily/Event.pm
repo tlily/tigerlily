@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Event.pm,v 1.21 1999/04/09 22:48:17 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Event.pm,v 1.22 1999/05/05 18:38:03 steve Exp $
 
 package TLily::Event::Core;
 
@@ -474,6 +474,10 @@ sub loop_once {
 	    invoke($h, $h);
 	    if ($h->{interval}) {
 		$h->{'time'} += $h->{interval};
+		while ($h->{'time'} <= $time) {
+		    invoke($h, $h);
+		    $h->{'time'} += $h->{interval};
+		}
 		$sort = 1;
 	    } else {
 		$h->{registrar}->remove("event", $h->{id})
