@@ -12,7 +12,8 @@ Before 2.0 release:
   pipes.pl      (medium)
   program.pl    (medium)
   ctc.pl/httpd.pl/Httpd.pm  (steve is working on this)
-  
+  Makefile.PL   (albert is working on this)  
+
   Bugs:
     log.pl - doesn't do indenting/wrapping right.  damien will move the 
              wrapping/indenting code out of Curses.pm and into the UI.
