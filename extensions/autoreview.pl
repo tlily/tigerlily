@@ -1,19 +1,59 @@
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/autoreview.pl,v 1.8 1999/10/03 18:25:43 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/autoreview.pl,v 1.9 2000/09/09 06:07:26 mjr Exp $
 
 use strict;
+
+=head1 NAME
+
+autoreview.pl - '/review detach' designated discussions
+
+=head1 DESCRIPTION
+
+This extension provides the %autoreview command, which will perform a
+'/review detach' on the discusions listed in the @autoreview configuration
+variable.  If the extension is autoloaded (see ...), it will perform
+an %autoreview at connect-time.
+
+=head1 COMMANDS
+
+=over 10
+
+=item %autoreview
+
+Reviews the discussions listed in the @autoreview configuration
+variable.  See "%help autoreview" for more details.
+
+=back
+
+=head1 CONFIGURATION
+
+=over 10
+
+=item autoreview
+
+A list of discussions to be reviewed by the %autoreview command, or
+when connecting to the server, if the autoreview.pl extension is
+autoloaded.
+
+=back
+
+=cut
 
 event_r(type  => 'connected',
 	order => 'after',
 	call  => \&connected_handler);
 
 command_r('autoreview', \&review_cmd);
+
+shelp_r('autoreview' => 'A list of discussions to autoreview', 'variables');
+help_r('variables autoreview' => 'A list of discussions to autoreview.');
+
 shelp_r('autoreview', '/review detach on multiple discs');
 help_r('autoreview', <<END );
 %autoreview reviews the discussions listed in the \@autoreview configuration
 variable.  It removes all lines beginning with *** from the review.  It
 does not print timestamp lines unless the review contains actual sends to
-the discussion.
+the discussions.
 
 When the autoreview extension is autoloaded, an autoreview will be performed
 at connect-time.

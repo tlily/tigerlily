@@ -1,11 +1,28 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/countdown.pl,v 1.3 1999/03/23 08:33:45 josh Exp $
-
-#
-# Put a countdown timer on your status line.
-#
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/countdown.pl,v 1.4 2000/09/09 06:07:26 mjr Exp $
 
 use strict;
+
+=head1 NAME
+
+countdown.pl - Put a countdown timer on your statusline.
+
+=head1 DESCRIPTION
+
+Allows you to set up a countdown timer (using the %countdown command) that
+will be displayed in your statusline.
+
+=head1 COMMANDS
+
+=item %countdown
+
+Starts or stops a countdown timer.  See "%help %countdown".
+
+=over 10
+
+=back
+
+=cut
 
 my $end_t;
 my $interval;
@@ -21,16 +38,16 @@ sub set_timer {
     $u ||= 1;
 
     if($r <= $interval) {
-	if($interval == 60*60*24) {
-	    $interval_c = 'h';
-	    $interval = 60*60;
-	    $u = int($r / $interval);
-	}
-	elsif($interval == 60*60) {
-	    $interval_c = 'm';
-	    $interval = 60;
-	    $u = int($r / $interval);
-	}
+        if($interval == 60*60*24) {
+            $interval_c = 'h';
+            $interval = 60*60;
+            $u = int($r / $interval);
+        }
+        elsif($interval == 60*60) {
+            $interval_c = 'm';
+            $interval = 60;
+            $u = int($r / $interval);
+        }
     }
 
     my $l = $r % $interval;
@@ -47,41 +64,41 @@ sub set_timer {
     }
 
     if($config{countdown_fmt}) {
-	my($days,$hrs,$mins,$secs,$rem);
-	$rem = $r;
-	$days = int($rem / (60*60*24));
-	$rem = int($rem % (60*60*24));
-	$hrs = int($rem / (60*60));
-	$rem = int($rem % (60*60));
-	$mins = int($rem / (60));
-	$rem = int($rem % (60));
-	$secs = int($rem);
-	my $str = $config{countdown_fmt};
+        my($days,$hrs,$mins,$secs,$rem);
+        $rem = $r;
+        $days = int($rem / (60*60*24));
+        $rem = int($rem % (60*60*24));
+        $hrs = int($rem / (60*60));
+        $rem = int($rem % (60*60));
+        $mins = int($rem / (60));
+        $rem = int($rem % (60));
+        $secs = int($rem);
+        my $str = $config{countdown_fmt};
 
-	if($days > 0) { $str =~ s/\%\{(\d*)d(.*?)\}/sprintf("%$1d",$days).$2/e; }
-	else { $str =~ s/\%\{(\d*)d.*?\}//; }
+        if($days > 0) { $str =~ s/\%\{(\d*)d(.*?)\}/sprintf("%$1d",$days).$2/e; }
+        else { $str =~ s/\%\{(\d*)d.*?\}//; }
 
-	if($hrs > 0) { $str =~ s/\%\{(\d*)h(.*?)\}/sprintf("%$1d",$hrs).$2/e; }
-	else { $str =~ s/\%\{(\d*)h.*?\}//; }
+        if($hrs > 0) { $str =~ s/\%\{(\d*)h(.*?)\}/sprintf("%$1d",$hrs).$2/e; }
+        else { $str =~ s/\%\{(\d*)h.*?\}//; }
 
-	if($mins > 0) { $str =~ s/\%\{(\d*)m(.*?)\}/sprintf("%$1d",$mins).$2/e; }
-	else { $str =~ s/\%\{(\d*)m.*?\}//; }
+        if($mins > 0) { $str =~ s/\%\{(\d*)m(.*?)\}/sprintf("%$1d",$mins).$2/e; }
+        else { $str =~ s/\%\{(\d*)m.*?\}//; }
 
-	if($interval_c eq 's' && $secs > 0) {
-	    $str =~ s/\%\{(\d*)s(.*?)\}/sprintf("%$1d",$secs).$2/e;
-	} else {
-	    $str =~ s/\%\{(\d*)s.*?\}//;
-	}
+        if($interval_c eq 's' && $secs > 0) {
+            $str =~ s/\%\{(\d*)s(.*?)\}/sprintf("%$1d",$secs).$2/e;
+        } else {
+            $str =~ s/\%\{(\d*)s.*?\}//;
+        }
 
-	$timer = $str;
+        $timer = $str;
     }
     else {
-	$timer = $u . $interval_c;
+        $timer = $u . $interval_c;
     }
     $ui->set(countdown => $timer);
 
     $event_id = TLily::Event::time_r(after => $l || $interval,
-				     call  => sub { set_timer($ui) });
+                                     call  => sub { set_timer($ui) });
 
     return 0;
 }
@@ -90,32 +107,32 @@ sub countdown_cmd {
     my($ui,$args) = @_;
 
     if ($args eq 'off') {
-	TLily::Event::time_u($event_id) if ($event_id);
-	$timer = '';
-	$ui->set(countdown => $timer);
-	undef $event_id;
-	return 0;
+        TLily::Event::time_u($event_id) if ($event_id);
+        $timer = '';
+        $ui->set(countdown => $timer);
+        undef $event_id;
+        return 0;
     }
 
     if ($args !~ /^(\d+)([dhms]?)$/) {
-	$ui->print("Usage: %countdown [<time> | off]\n");
-	return 0;
+        $ui->print("Usage: %countdown [<time> | off]\n");
+        return 0;
     }
 
     $ui->define(countdown => 'right');
 
     if ($2 eq 'd') {
-	$interval = 60 * 60 * 24;
-	$interval_c = 'd';
+        $interval = 60 * 60 * 24;
+        $interval_c = 'd';
     } elsif ($2 eq 'h') {
-	$interval = 60 * 60;
-	$interval_c = 'h';
+        $interval = 60 * 60;
+        $interval_c = 'h';
     } elsif ($2 eq 'm') {
-	$interval = 60;
-	$interval_c = 'm';
+        $interval = 60;
+        $interval_c = 'm';
     } else {
-	$interval = 1;
-	$interval_c = 's';
+        $interval = 1;
+        $interval_c = 's';
     }
 
     $end_t = time + ($1 * $interval);
@@ -125,8 +142,7 @@ sub countdown_cmd {
 }
 
 command_r('countdown', \&countdown_cmd);
-shelp_r('countdown',
-		    'Display a countdown timer on the status line');
+shelp_r('countdown', 'Display a countdown timer on the status line');
 help_r('countdown', <<END
 Usage: %countdown <time>
        %countdown off
@@ -140,4 +156,4 @@ Displays a countdown timer on the status line.  The time may be specified in sev
 
 You may use "%countdown off" to cancel an existing countdown.
 END
-		   );
+);

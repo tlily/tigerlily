@@ -1,7 +1,22 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/alias.pl,v 1.9 2000/02/11 23:54:27 tale Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/alias.pl,v 1.10 2000/09/09 06:07:26 mjr Exp $
 
 use strict;
+
+=head1 NAME
+
+alias.pl - Command-line aliasing
+
+=head1 DESCRIPTION
+
+This extension adds the %alias command, which allows you to set up aliases
+for commands, much like in many shells.
+
+=head1 COMMANDS
+
+=over 10
+
+=cut
 
 my %alias;
 
@@ -31,6 +46,12 @@ Examples:
 %alias inbeener /who beener \$*
 });
 }
+
+=item %alias
+
+Establishes an alias for a command line.  See "%help %alias" for details.
+
+=cut
 
 sub alias_cmd {
     my ($ui,$args) = @_;

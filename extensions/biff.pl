@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/biff.pl,v 1.4 1999/03/23 08:33:43 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/biff.pl,v 1.5 2000/09/09 06:07:26 mjr Exp $
 
 #
 # A Biff module
@@ -13,6 +13,21 @@ use IO::Socket;
 use IO::Select;
 use strict;
 no strict "refs";
+
+=head1 NAME
+
+biff.pl - Watch mail drops for incoming mail
+
+=head1 DESCRIPTION
+
+This extension watches mail drops for incoming mail, and alerts the user
+when new mail is detected, both audibly, and in the status bar.
+
+=head1 COMMANDS
+
+=over 10
+
+=cut
 
 # Set the check interval (in seconds);
 my $check_interval = $config{biff_interval} || 60;
@@ -169,6 +184,12 @@ sub update_biff {
     }    
 }
 
+=item %biff
+
+Turn mail drop checks on or off, or list drops.
+
+=cut
+
 sub biff_cmd {
     my($ui,$args) = @_;
     
@@ -283,23 +304,31 @@ $ui->define(biff => 'right');
 $ui->set(biff => $biff);
 
 command_r('biff' => \&biff_cmd);
-shelp_r('biff', 'Monitor mail spool for new mail');
-help_r('biff', "
-		 Usage: %biff [on|off|list]
 
-Monitors mailspool(s), and displays an indicator on the status line when
-new mail arrives.  Will automatically look for MAILDIR, then MAIL
-environment variables to determine a single default mail drop, if
-none are set in the config variable.  The 'on' and 'off' arguments
-turn notification on and off, the 'list' argument lists the maildrops
-currently being monitored, and if no argument is given, %biff will list
-those maildrops with unread mail.
+=back
 
-Mail drops can be set via the \$config{biff_drops} variable, by assigning
-an arrayref of hashrefs to it, such as:
+=cut
+
+=head1 CONFIGURATION
+
+=over 10
+
+=item biff_drops
+
+A list of mail drops to check for incoming mail.
+
+=cut
+
+shelp_r('biff_drops' => 'A list of mail drops.', 'variables');
+help_r('variables biff_drops', q{
+You can set the list of mail drops to be checked by biff.pl via the
+biff_drops configuration variable, by assigning an arrayref of hashrefs to
+it, such as:
 \$config{biff_drops} = [{type => 'mbox', path => '/home/mjr/Mailbox'}];
+Unfortunately, this variable can not yet be set using %set.  You set it
+in your tlilyStartup file (see "%help startup.pl"), or by using %eval.
 
-Valid types and their requiremed elements are:
+Valid mail drop types and their required elements are:
 mbox - Standard Unix mbox file
   path => Absolute path to file
 maildir - Maildir (as used in Qmail)
@@ -308,13 +337,42 @@ rpimchk - RPI lightweight POP mail check protocol
   host => mailcheck host
   port => mailcheck port (usually 1110)
   user => account username
+});
 
-The \$config{biff_interval} can be set to the interval between maildrop polls,
-in seconds.  If one of your maildrops is not an mbox or maildir, please
-be considerate, and keep the interval above 5 minutes.  (That's 300 seconds
-for those non-math types.)
-");
+=item biff_interval
+
+The interval between mail drop checks.
+
+=back
+
+=cut
+
+shelp_r('biff_interval' =>
+  'The interval between mail drop checks', 'variables');
+help_r('variables biff_interval', q{
+The biff_interval configuration variable controls the interval between
+mail drop polls, in seconds.  If one of your mail drops is not an mbox or
+maildir, please be considerate, and keep the interval above 5 minutes.
+(That's 300 seconds for you non-math types.)
+});
+
+
+shelp_r('biff', 'Monitor mail spool for new mail');
+help_r('biff', q{
+Usage: %biff [on|off|list]
+
+Monitors mail drop(s), and displays an indicator on the status line when
+new mail arrives.  Will automatically look for MAILDIR, then MAIL
+environment variables to determine a single default mail drop, if
+none are set in the config variable.  The 'on' and 'off' arguments
+turn notification on and off, the 'list' argument lists the maildrops
+currently being monitored, and if no argument is given, %biff will list
+those maildrops with unread mail.
+
+See "%help variables biff_drop" for how to configure your mail drop list.
+});
 
 # Start biff by default when loaded.
-biff_cmd($ui,"on");
+biff_cmd($ui, "on");
 
+1;

@@ -1,7 +1,32 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/paste.pl,v 1.4 2000/03/14 05:29:19 kazrak Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/paste.pl,v 1.5 2000/09/09 06:07:26 mjr Exp $
 
 use strict;
+
+=head1 NAME
+
+paste.pl - Prevent accidental sends when pasting
+
+=head1 DESCRIPTION
+
+Provides paste mode, a mode which traps carriage returns, and turns them
+into spaces.  This prevents the input buffer from being sent, which is
+useful when pasting multiple lines into the input buffer.
+
+=over 10
+
+=head1 UI COMMANDS
+
+=item toggle-paste-mode
+
+Toggles paste mode.  Bound to M-p by default.
+
+=item paste-mode
+
+Used internally to intercept each keystroke when paste mode is enabled,
+and perform the appropriate magic.
+
+=cut
 
 sub paste_mode {
     my($ui, $command, $key) = @_;

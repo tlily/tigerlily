@@ -1,8 +1,27 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/autoreply.pl,v 1.2 1999/03/23 08:33:40 josh Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/autoreply.pl,v 1.3 2000/09/09 06:07:26 mjr Exp $ 
 
 use strict;
 
+=head1 NAME
+
+autoreply.pl - Auto-reply to private messages
+
+=head1 DESCRIPTION
+
+This extension contains the %autoreply command, which allows you to set up
+an automatic response to all private messages sent to you.
+
+=head1 COMMANDS
+
+=over 10
+
+=item %autoreply [<message> | <piped command> | off]
+ 
+  Sets the autoreplay message, piped command (e.g., fortune), or turns
+off autoreply.  See "%help %autoreply" for more details.
+
+=cut
 
 my $autoreply_help = "
 Usage: %autoreply I'm not here right now, call me at my office, x7777.

@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_parse.pl,v 1.24 2000/04/01 02:12:47 steve Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_parse.pl,v 1.25 2000/09/09 06:07:26 mjr Exp $
 
 use strict;
 use vars qw(%config);
@@ -453,7 +453,8 @@ sub SLCP_parse {
     return %ret;
 }
 
-shelp_r('parser_debug' => 'Debug the SLCP parser', 'variables');
+shelp_r('parser_debug' => '(boolean) Debug the SLCP parser', 'variables');
+
 help_r('parser_debug' => '
 Setting this to true causes the SLCP parser to output the raw protocol
 from the lily server.  Setting to 0 turns this off.

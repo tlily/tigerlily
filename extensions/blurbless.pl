@@ -1,6 +1,35 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/blurbless.pl,v 1.1 2000/02/15 00:06:58 tale Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/blurbless.pl,v 1.2 2000/09/09 06:07:26 mjr Exp $
 
 use strict;
+
+=head1 NAME
+
+blurbless.pl - Be a blurbless git
+
+=head1 DESCRIPTION
+
+Put this extension in your extension autoload list (See "%help variables
+load") if you want to enter lily without a blurb, and you're too lazy to
+press return at the blurb prompt.  Be sure to set enter_blurbless to true.
+
+=head1 CONFIGURATION
+
+=over 10
+
+=item enter_blurbless
+
+If true, and the extension is in your autoload list, when connecting to
+a lily server, tlily will skip the blurb prompt, entering you without a
+blurb.
+
+=cut
+
+shelp_r('enter_blurbless' => 'Whether or not to enter blurbless', 'variables');
+help_r('variables enter_blurbless' => q{
+If set to true, and blurbless.pl is in your extension autoload list (See
+"%help variables load"), when connecting to a lily server, tlily will
+skip the blurb prompt, entering you without a blurb.
+});
 
 my $saw_blurb_prompt_text;
 

@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/autologin.pl,v 1.9 1999/05/08 04:38:01 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/autologin.pl,v 1.10 2000/09/09 06:07:26 mjr Exp $
 
 #
 # Handle autologins.
@@ -7,13 +7,27 @@
 
 use strict;
 
+=head1 NAME
+
+autologin.pl - Automated login
+
+=head1 DESCRIPTION
+
+Allows you to record a username and password that will be used by tlily to
+automatically log in when connecting to the specified server.  See
+"%help autologin" for more information.
+
+=cut
+
 # List of places to look for an autologin file.
 my @files = ("$ENV{HOME}/.lily/tlily/autologin",
 	     "$ENV{HOME}/.lily/lclient/autologin");
 unshift @files, $config{'autologin_file'} if ($config{'autologin_file'});
 
-shelp_r("autologin", "Module for automating the login process.", "concepts");
-help_r("autologin", 
+shelp_r('autologin_file' => "Prepended to list of files to check for autologin information.", "variables");
+
+shelp_r('autologin', "Module for automating the login process.", "concepts");
+help_r('autologin', 
 "Reads files containing lines of the format:
     alias host port login passwd
 in order to automate your login process to the specified server.  Unlike lclient, all fields must be present or the line will be ignored. (FIXME!)

@@ -1,11 +1,25 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/expand.pl,v 1.17 1999/10/03 18:25:47 josh Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/expand.pl,v 1.18 2000/09/09 06:07:26 mjr Exp $ 
 
 use strict;
-
 use TLily::UI;
 use TLily::Server::SLCP;
 
+=head1 NAME
+
+expand.pl - Provides send expansion and other utilities
+
+=head1 DESCRIPTION
+
+This extension provides expansion of sendgroups, users, and discussions.
+
+=head1 COMMANDS
+
+=item %oops
+
+=item %also
+
+=cut
 
 my %expansions = ('sendgroup' => '',
 		  'sender'    => '',

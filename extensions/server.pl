@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/server.pl,v 1.25 2000/03/10 07:31:09 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/server.pl,v 1.26 2000/09/09 06:07:26 mjr Exp $
 
 use strict;
 
@@ -20,6 +20,19 @@ This extension contains commands for interfacing with servers.
 =over 10
 
 =item %connect
+
+Connect to a server.  See "%help %connect".
+
+=item %close
+
+Close a connection to the current active server.  See "%help %close".
+
+=head1 UI COMMANDS
+
+=item next-server
+
+Change the current active server to the next server in the list of servers.
+Bound to C-q by default.
 
 =cut
 
@@ -95,10 +108,6 @@ Create a new connection to a server.
 ");
 
 
-=item %close
-
-=cut
-
 sub close_command {
     my($ui, $arg) = @_;
     my(@argv) = split /\s+/, $arg;
@@ -122,10 +131,6 @@ Usage: %close
 Close the connection to the current server.
 ");
 
-
-=item next-server
-
-=cut
 
 sub next_server {
     my($ui, $command, $key) = @_;
@@ -184,3 +189,5 @@ sub to_server {
 event_r(type  => "user_input",
 	order => "after",
 	call  => \&to_server);
+
+1;

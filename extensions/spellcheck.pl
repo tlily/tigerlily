@@ -1,8 +1,33 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/spellcheck.pl,v 1.19 1999/10/03 00:33:10 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/spellcheck.pl,v 1.20 2000/09/09 06:07:26 mjr Exp $
 
 use strict;
 use IPC::Open2;
+
+=head1 NAME
+
+spellcheck.pl - Spellchecking extension
+
+=head1 DESCRIPTION
+
+Provides a spellcheck command, and a spellcheck mode in which misspelled
+words in the input buffer are highlighted.
+
+=head1 COMMANDS
+
+=over 10
+
+=item %spellcheck
+
+Turns spellcheck mode on or off.  See "%help %spellcheck".
+
+=head1 UI COMMANDS
+
+=item look 
+
+Spellchecks the word underneath the cursor.  Bound to ^G by default.
+
+=cut
 
 my $dict;
 my $ispell;

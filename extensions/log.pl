@@ -1,7 +1,26 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/log.pl,v 1.2 1999/03/23 08:33:50 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/log.pl,v 1.3 2000/09/09 06:07:26 mjr Exp $
 
 use strict;
+
+=head1 NAME
+
+log.pl - Log session to a file
+
+=head1 DESCRIPTION
+
+Allows you to log the current session to a file.
+
+=over 10
+
+=head1 COMMANDS
+
+=item %log
+
+Turns logging on or off, or prints the current logging status.  See
+"%help %log" for details.
+
+=cut
 
 my $log_help = '
 Usage: %log [off | <filename>]
@@ -38,6 +57,7 @@ sub log_command {
 
     return;
 }
+
 command_r('log' => \&log_command);
 shelp_r('log' => "Log output to a file.");
 help_r('log' => $log_help);
