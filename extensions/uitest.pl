@@ -1,3 +1,6 @@
+# -*- Perl -*-
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/uitest.pl,v 1.2 1999/03/23 08:34:04 josh Exp $
+
 use strict;
 
 sub uitest_command {

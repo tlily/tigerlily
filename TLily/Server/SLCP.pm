@@ -7,6 +7,8 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Server/Attic/SLCP.pm,v 1.13 1999/03/23 08:33:25 josh Exp $
+
 package TLily::Server::SLCP;
 
 use strict;

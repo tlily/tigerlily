@@ -7,7 +7,8 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Daemon.pm,v 1.3 1999/03/23 08:05:02 albert Exp $
+
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Daemon.pm,v 1.4 1999/03/23 08:33:14 josh Exp $
 
 package TLily::Daemon;
 

@@ -1,4 +1,5 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/mirror.pl,v 1.1 1999/03/17 00:42:34 josh Exp $
+# -*- Perl -*-
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/mirror.pl,v 1.2 1999/03/23 08:33:51 josh Exp $
 
 use strict;
 

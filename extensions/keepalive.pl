@@ -1,4 +1,5 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/keepalive.pl,v 1.2 1999/03/15 23:53:04 josh Exp $
+# -*- Perl -*-
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/keepalive.pl,v 1.3 1999/03/23 08:33:49 josh Exp $
 #
 # keepalive -- periodically ping the server, just to verify our connection
 #              is still there.

@@ -1,3 +1,6 @@
+# -*- Perl -*-
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/server.pl,v 1.15 1999/03/23 08:33:54 josh Exp $
+
 use strict;
 
 use TLily::UI;

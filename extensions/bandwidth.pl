@@ -1,3 +1,6 @@
+# -*- Perl -*-
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/bandwidth.pl,v 1.2 1999/03/23 08:33:42 josh Exp $
+
 sub load {
     my $ui = ui_name("main");
     my $server = server_name();

@@ -7,6 +7,8 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Server.pm,v 1.12 1999/03/23 08:33:20 josh Exp $
+
 package TLily::Server;
 
 use strict;

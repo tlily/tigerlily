@@ -1,3 +1,6 @@
+# -*- Perl -*-
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/alias.pl,v 1.4 1999/03/23 08:33:38 josh Exp $
+
 use strict;
 
 my %alias;

@@ -1,4 +1,6 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/biff.pl,v 1.3 1999/03/15 23:53:00 josh Exp $
+# -*- Perl -*-
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/biff.pl,v 1.4 1999/03/23 08:33:43 josh Exp $
+
 #
 # A Biff module
 #

@@ -1,5 +1,7 @@
-use strict;
+# -*- Perl -*-
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/paste.pl,v 1.2 1999/03/23 08:33:53 josh Exp $
 
+use strict;
 
 sub paste_mode {
     my($ui, $command, $key) = @_;

@@ -1,4 +1,6 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/countdown.pl,v 1.2 1999/03/17 01:15:17 josh Exp $
+# -*- Perl -*-
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/countdown.pl,v 1.3 1999/03/23 08:33:45 josh Exp $
+
 #
 # Put a countdown timer on your status line.
 #

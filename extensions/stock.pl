@@ -1,3 +1,6 @@
+# -*- Perl -*-
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/stock.pl,v 1.2 1999/03/23 08:34:03 josh Exp $
+
 use strict;
 
 my @timer_ids;

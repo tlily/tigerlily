@@ -7,6 +7,8 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Registrar.pm,v 1.6 1999/03/23 08:33:19 josh Exp $
+
 package TLily::Registrar;
 
 use strict;

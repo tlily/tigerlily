@@ -1,4 +1,5 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/misc.pl,v 1.14 1999/03/23 06:19:21 josh Exp $ 
+# -*- Perl -*-
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/misc.pl,v 1.15 1999/03/23 08:33:52 josh Exp $ 
 
 use strict;
 use TLily::Version;

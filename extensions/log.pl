@@ -1,3 +1,6 @@
+# -*- Perl -*-
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/log.pl,v 1.2 1999/03/23 08:33:50 josh Exp $
+
 use strict;
 
 my $log_help = '

@@ -1,5 +1,6 @@
 # -*- Perl -*-
-# $header$
+
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/http_parse.pl,v 1.3 1999/03/23 08:33:47 josh Exp $
 
 use strict;
 

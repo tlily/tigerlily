@@ -1,3 +1,6 @@
+
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/autoreview.pl,v 1.3 1999/03/23 08:33:41 josh Exp $
+
 use strict;
 
 event_r(type  => 'connected',

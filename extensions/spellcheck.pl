@@ -1,3 +1,6 @@
+# -*- Perl -*-
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/spellcheck.pl,v 1.16 1999/03/23 08:33:59 josh Exp $
+
 use strict;
 use IPC::Open2;
 

@@ -7,7 +7,9 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Config.pm,v 1.5 1999/03/23 08:05:00 albert Exp $
+
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Config.pm,v 1.6 1999/03/23 08:33:13 josh Exp $
+
 package TLily::Config;
 
 use Safe;

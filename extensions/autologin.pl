@@ -1,4 +1,6 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/autologin.pl,v 1.4 1999/03/15 23:52:58 josh Exp $
+# -*- Perl -*-
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/autologin.pl,v 1.5 1999/03/23 08:33:39 josh Exp $
+
 #
 # Handle autologins.
 #

@@ -7,6 +7,8 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/Curses.pm,v 1.27 1999/03/23 08:33:27 josh Exp $
+
 package TLily::UI::Curses::Proxy;
 
 use strict;

@@ -7,6 +7,8 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/UI.pm,v 1.16 1999/03/23 08:33:21 josh Exp $
+
 package TLily::UI;
 
 use strict;

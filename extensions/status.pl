@@ -1,3 +1,6 @@
+# -*- Perl -*-
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/status.pl,v 1.9 1999/03/23 08:34:02 josh Exp $
+
 use strict;
 
 sub set_clock {

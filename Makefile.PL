@@ -7,6 +7,8 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/Makefile.PL,v 1.3 1999/03/23 08:33:06 josh Exp $
+
 use ExtUtils::MakeMaker;
 
 # Configurable Section

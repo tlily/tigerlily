@@ -8,6 +8,8 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/tlily.PL,v 1.33 1999/03/23 08:33:09 josh Exp $
+
 use strict;
 no strict qw(refs);
 use Config;

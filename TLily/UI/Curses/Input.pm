@@ -7,6 +7,8 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Curses/Attic/Input.pm,v 1.12 1999/03/23 08:33:32 josh Exp $
+
 package TLily::UI::Curses::Input;
 
 use strict;
