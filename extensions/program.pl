@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/program.pl,v 1.8 1999/09/24 07:50:06 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/program.pl,v 1.9 1999/09/25 06:37:17 mjr Exp $
 
 $perms = undef;
 
@@ -86,9 +86,12 @@ sub verb_set(%) {
   my $id = event_r(type => 'text', order => 'after',
           call => sub {
               my($event,$handler) = @_;
+              my $escaped_verbspec = $verb_spec;
+              $escaped_verbspec =~ s|/|,|g;
+              my $deadfile = $ENV{HOME}."/.lily/tlily/dead.verb.$escaped_verbspec";
               if ($event->{text} =~ /^Verb (not )?programmed\./) {
                 event_u($handler);
-                my $deadfile = $ENV{HOME}."/.lily/tlily/dead.verb.$verb_spec";
+
                 unlink($deadfile);
                 if ($1) {
                   local *DF;
@@ -384,7 +387,9 @@ sub verb_cmd {
   } elsif ($cmd eq 'list') {
     verb_showlist($cmd, $ui, $obj, $verb);
   } elsif ($cmd eq 'reedit') {
-    my $deadfile = $ENV{HOME}."/.lily/tlily/dead.verb.$verb_spec";
+    my $escaped_verbspec = $verb_spec;
+    $escaped_verbspec =~ s|/|,|g;
+    my $deadfile = $ENV{HOME}."/.lily/tlily/dead.verb.$escaped_verbspec";
     local *DF;
     my $rc = open(DF, "$deadfile");
     if (!$rc) {
