@@ -7,7 +7,7 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/tools/build_tlily,v 1.2 2003/10/28 21:29:29 albert Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/tools/build_tlily,v 1.3 2003/11/04 01:20:49 albert Exp $
 
 use strict;
 use Config;
@@ -63,6 +63,7 @@ if ($file_to_build eq "tlily") {
     my $outfile = "tlily";
     open(TLILY, ">$outfile") or die "Can't write $outfile: $!\n";
     print TLILY get_script_header();
+    print TLILY "use lib '$TL_LIBDIR';\n";
     open (F, "<tlily.PL") || die "Can't read tlily.PL: $!\n";
     while (<F>) { print TLILY; }
     close (F);
@@ -205,6 +206,8 @@ sub embedperl {
                 $script .= "BEGIN { import $1$2 }\n";
             } elsif (/^\@(?:ISA|EXPORT|EXPORT_OK|EXPORT_TAGS)\s*=/) {
                 $script .= "BEGIN {\n    $_}\n";
+            } elsif (/eval "require \$UI_CLASS;";/) {
+                $script .= '    eval "import $UI_CLASS;";';
             } else {
                 $script .= $_;
             }
