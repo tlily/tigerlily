@@ -7,7 +7,7 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/Makefile.PL,v 1.10 2000/12/16 01:32:59 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/Makefile.PL,v 1.11 2000/12/17 20:05:17 neild Exp $
 
 use strict;
 use Config;
@@ -43,48 +43,17 @@ $opts{ETCDIR} =~ s/\%PREFIX/$opts{PREFIX}/g;
 # EAGAIN is nigh-impossible to determine on many systems.  Give it a try.
 #
 
-my $have_eagain;
-my $fallback_EAGAIN;
-
-eval { require "Errno"; EAGAIN(); };
-if ($@) {
-    print STDERR "You don't seem to have a working Errno.ph.\n";
-} else {
-    $have_eagain = 1;
-}
-
-unless ($have_eagain) {
-    eval { require "errno.ph"; EAGAIN(); };
-    if ($@) {
-	print STDERR "It looks as if your errno.ph is broken.\n";
-    } else {
-	$have_eagain = 1;
-    }
-}
-
-unless ($have_eagain) {
-    print STDERR "Trying to compile a program to tell us what EAGAIN is...\n";
-    my $fh = gensym;
-    open(F, ">/tmp/en.c") or die "/tmp/en.c: $!\n";
-    print F <<END
-#include <stdio.h>
-#include <sys/errno.h>
-
-int main() {
-    printf("EAGAIN=\%d\\n", EAGAIN);
-    return 0;
-}
-END
-  ;
-    close F;
-    system($Config{cc}, "/tmp/en.c", "-o", "/tmp/en");
-    if (`/tmp/en` =~ /EAGAIN=(\d+)/) {
-	$fallback_EAGAIN = $1;
-	print STDERR "Using $fallback_EAGAIN.\n";
-    } else {
-	print STDERR "That didn't work.  I fear you may be out of luck.\n";
-    }
-}
+my $fallback_EAGAIN = `$^X tools/find_eagain`;
+if ($fallback_EAGAIN =~ /^OK/) {
+    print STDERR "Skipping hardcoded EAGAIN...\n";
+    undef $fallback_EAGAIN;
+} elsif ($fallback_EAGAIN =~ /^FAILED/) {
+    print STDERR "Warning: Cannot determine value for EAGAIN.\n";
+    undef $fallback_EAGAIN;
+} elsif ($fallback_EAGAIN =~ /^(\d+)/) {
+    print STDERR "Warning: Hardcoding EAGAIN as $1.\n";
+    $fallback_EAGAIN = $1;
+};
 
 
 #

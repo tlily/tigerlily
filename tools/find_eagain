@@ -1,0 +1,49 @@
+#!/usr/bin/perl
+use strict;
+use Config;
+use Symbol;
+
+my $have_eagain;
+
+eval { require "Errno.pm"; Errno::EAGAIN(); };
+if ($@) {
+    print STDERR "You don't seem to have a working Errno.ph.\n";
+} else {
+    $have_eagain = 1;
+}
+
+unless ($have_eagain) {
+    eval { require "errno.ph"; EAGAIN(); };
+    if ($@) {
+	print STDERR "It looks as if your errno.ph is broken.\n";
+    } else {
+	$have_eagain = 1;
+    }
+}
+
+unless ($have_eagain) {
+    print STDERR "Trying to compile a program to tell us what EAGAIN is...\n";
+    my $fh = gensym;
+    open(F, ">/tmp/en.c") or die "/tmp/en.c: $!\n";
+    print F <<END
+#include <stdio.h>
+#include <sys/errno.h>
+
+int main() {
+    printf("EAGAIN=\%d\\n", EAGAIN);
+    return 0;
+}
+END
+  ;
+    close F;
+    system($Config{cc}, "/tmp/en.c", "-o", "/tmp/en");
+    if (`/tmp/en` =~ /EAGAIN=(\d+)/) {
+	print $1, "\n";
+	exit;
+    } else {
+	print STDERR "That didn't work.  I fear you may be out of luck.\n";
+	print "FAILED\n";
+    }
+}
+
+print "OK\n";

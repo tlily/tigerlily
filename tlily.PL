@@ -7,7 +7,7 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/tlily.PL,v 1.50 2000/12/16 01:41:33 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/tlily.PL,v 1.51 2000/12/17 20:05:17 neild Exp $
 
 require 5.00307;
 use strict;
@@ -43,13 +43,37 @@ if ($^O =~ /cygwin/) {
 if ($^O =~ /cygwin/) {
     $EAGAIN = $::fallback_EAGAIN;
 } else {
-    $EAGAIN = eval { require "errno.ph"; EAGAIN(); };
+    $EAGAIN = eval { require "Errno.pm"; Errno::EAGAIN(); };
+    $EAGAIN = eval { require "errno.ph"; EAGAIN(); } if $@;
     if ($@) { 
-       print "WARNING: Unable to load errno.ph successfully.\n";
-       $EAGAIN = $::fallback_EAGAIN;
-       die "No fallback value for EAGAIN defined!  Unable to continue.\n" 
-          unless $EAGAIN;       
-       print "         Using EAGAIN=$EAGAIN\n";
+	if (defined $::fallback_EAGAIN) {
+	    print STDERR "WARNING: Using fallback EAGAIN.\n";
+	    $EAGAIN = $::fallback_EAGAIN;
+	} elsif ($::TL_LIBMODDIR !~ m|^//INTERNAL|) {
+	    if (! -f ".tlily-eagain") {
+		$EAGAIN = `tools/find_eagain`;
+		if ($EAGAIN =~ /^(\d+)/) {
+		    print STDERR "Saving EAGAIN to .tlily-eagain.\n";
+		    $EAGAIN = $1;
+		    local *FH;
+		    open(FH, "> .tlily-eagain") or die ".tlily-eagain: $!\n";
+		    print FH $EAGAIN, "\n";
+		} else {
+		    die "Cannot determine value for EAGAIN.\n";
+		}
+	    } else {
+		local *FH;
+		open(FH, ".tlily-eagain") or die ".tlily-eagain: $!\n";
+		$EAGAIN = <FH>;
+		if ($EAGAIN =~ /^(\d+)/) {
+		    $EAGAIN = $1;
+		} else {
+		    die ".tlily-eagain seems to be corrupt; delete it and try again.\n";
+		}
+	    }
+	} else {
+	    die "Cannot determine value for EAGAIN.\n";
+	}
     };
 }
 TLily::Config::init();
