@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_output.pl,v 1.11 1999/10/13 02:38:38 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_output.pl,v 1.11.2.1 1999/12/07 06:54:21 mjr Exp $
 
 use strict;
 
@@ -119,11 +119,13 @@ event_r(type  => 'emote',
 # %V: VALUE
 # %D: title of discussion whose name is in VALUE.
 # %R: RECIPS
+# %P: TARGETS
 # %O: name of thingy whose OID is in VALUE.
 # %T: timestamp, if STAMP is defined, empty otherwise.
 # %S: '(servername)', if connected to more than one, empty otherwise.
 # %s: '@servername', if connected to more than one, empty otherwise.
 # %B: if SOURCE has a blurb " with the blurb [blurb]", else "".
+# %E: SUBEVT
 #
 # leading characters (up to first space) define behavior as follows:
 #### Catch all: mutually exclusive with all other flags
@@ -138,62 +140,90 @@ event_r(type  => 'emote',
 ####
 # S: SOURCE is "me"
 ####
+# M: TARGETS contains "me"
+# T: TARGETS defined
+# t: TARGETS undefined
+####
+# C="val"; : use this message if SUBEVT is defined and equals val.
+# C: use this message if SUBEVT is defined.
+# c: use this message if SUBEVT is undefined.
+####
 
 # the first matching message is always used.
 
-my @infomsg = ('connect'    => 'A *** %S%T%U has entered lily ***',
-	       'attach'     => 'A *** %S%T%U has reattached ***',
-	       'disconnect' => 'V *** %S%T%U has left lily (%V) ***',
-	       'disconnect' => 'U *** %S%T%U has left lily ***',
-	       'detach'     => 'U *** %S%T%U has detached ***',
-	       'detach'     => 'V *** %S%T%U has been detached %V ***',
-	       'here'       => 'SU (you are now here%B)',
-	       'here'       => 'U *** %S%T%U is now "here" ***',
-	       'away'       => 'SU (you are now away%B)',
-	       'away'       => 'U *** %S%T%U is now "away" ***',
-	       'away'       => 'V *** %S%T%U has idled "away" ***', # V=idled really.
-	       'rename'     => 'SV (you are now named %V)',
-	       'rename'     => 'V *** %S%T%u is now named %V ***',
-	       'blurb'      => 'SE (your blurb has been turned off)',
-	       'blurb'      => 'SV (your blurb has been set to [%V])',
-	       'blurb'      => 'V *** %S%T%u has changed their blurb to [%V] ***',
-	       'blurb'      => 'E *** %S%T%u has turned their blurb off ***',
-	       'info'       => 'SED (you have cleared the info for %R)',
-	       'info'       => 'SD (you have changed the info for %R)',
-	       'info'       => 'SE (your info has been cleared)',
-	       'info'       => 'SU (your info has been changed)',
+my @infomsg = (
+    'connect'    => 'A'    => '*** %S%T%U has entered lily ***',
+    'attach'     => 'A'    => '*** %S%T%U has reattached ***',
+    'disconnect' => 'V'    => '*** %S%T%U has left lily (%V) ***',
+    'disconnect' => 'U'    => '*** %S%T%U has left lily ***',
+    'detach'     => 'U'    => '*** %S%T%U has detached ***',
+    'detach'     => 'V'    => '*** %S%T%U has been detached %V ***',
+    'here'       => 'SU'   => '(you are now here%B)',
+    'here'       => 'U'    => '*** %S%T%U is now "here" ***',
+    'away'       => 'SU'   => '(you are now away%B)',
+    'away'       => 'U'    => '*** %S%T%U is now "away" ***',
+    'away'       => 'V'    => '*** %S%T%U has idled "away" ***', # V=idled really.
+    'rename'     => 'SV'   => '(you are now named %V)',
+    'rename'     => 'V'    => '*** %S%T%u is now named %V ***',
+    'blurb'      => 'SE'   => '(your blurb has been turned off)',
+    'blurb'      => 'SV'   => '(your blurb has been set to [%V])',
+    'blurb'      => 'V'    => '*** %S%T%u has changed their blurb to [%V] ***',
+    'blurb'      => 'E'    => '*** %S%T%u has turned their blurb off ***',
+    'info'       => 'SED'  => '(you have cleared the info for %R)',
+    'info'       => 'SD'   => '(you have changed the info for %R)',
+    'info'       => 'SE'   => '(your info has been cleared)',
+    'info'       => 'SU'   => '(your info has been changed)',
 # For compatibility with older cores:
-	       'info'       => 'SV (your info has been changed)',
-	       'info'       => 'ED *** %S%T%u has cleared the info for discussion %R ***',
-	       'info'       => 'D *** %S%T%u has changed the info for discussion %R ***',
-	       'info'       => 'E *** %S%T%u has cleared their info ***',
-	       'info'       => 'U *** %S%T%u has changed their info ***',
+    'info'       => 'SV'   => '(your info has been changed)',
+    'info'       => 'ED'   => '*** %S%T%u has cleared the info for discussion %R ***',
+    'info'       => 'D'    => '*** %S%T%u has changed the info for discussion %R ***',
+    'info'       => 'E'    => '*** %S%T%u has cleared their info ***',
+    'info'       => 'U'    => '*** %S%T%u has changed their info ***',
 # For compatibility with older cores:
-	       'info'       => 'V *** %S%T%u has changed their info ***',
-	       'ignore'     => 'A *** %S%T%u is now ignoring you %V ***',
-	       'unignore'   => 'A *** %S%T%u is no longer ignoring you ***',
-	       'unidle'     => 'A *** %S%T%u is now unidle ***',
-	       'create'     => 'SU (you have created discussion %R "%D")',
-	       'create'     => 'U *** %S%T%u has created discussion %R "%D" ***',
-	       'destroy'    => 'SU (you have destroyed discussion %R)',
-	       'destroy'    => 'U *** %S%T%u has destroyed discussion %R ***',
-	       # bugs in slcp- permit/depermit don't specify people right.
-#	       permit     => 'e (someone is now permitted to discussion %R)',
-#	       permit     => 'E (You are now permitted to some discussion)',
-#	       depermit   => 'e (Someone is now depermitted from %R)',
-	       # note that slcp doesn't do join and quit quite right
-	       'permit'     => 'V *** %S%T%O is now permitted to discussion %R ***',
-	       'depermit'   => 'V *** %S%T%O is now depermitted from %R ***',
-	       'join'       => 'SU (you have joined %R)',
-	       'join'       => 'U *** %S%T%u is now a member of %R ***',
-	       'quit'       => 'SU (you have quit %R)',
-	       'quit'       => 'U *** %S%T%u is no longer a member of %R ***',
-	       'retitle'    => 'SV (you have changed the title of %R to "%V")',
-	       'retitle'    => 'V *** %S%T%u has changed the title of %R to "%V" ***',
-	       'sysmsg'     => 'V %S%V',
-	       'pa'         => 'V ** %S%TPublic address message from %U: %V **'
-	       # need to handle review, sysalert, pa, game, and consult.
-	      );
+    'info'       => 'V'    => '*** %S%T%u has changed their info ***',
+    'ignore'     => 'tcE'  => '*** %S%T%u is no longer ignoring you ***',
+    'ignore'     => 'A'    => '*** %S%T%u is now ignoring you %V ***',
+    'unignore'   => 'A'    => '*** %S%T%u is no longer ignoring you ***',
+    'unidle'     => 'A'    => '*** %S%T%u is now unidle ***',
+    'create'     => 'SU'   => '(you have created discussion %R "%D")',
+    'create'     => 'U'    => '*** %S%T%u has created discussion %R "%D" ***',
+    'destroy'    => 'SU'   => '(you have destroyed discussion %R)',
+    'destroy'    => 'U'    => '*** %S%T%u has destroyed discussion %R ***',
+    'permit'     => 'SMC="owner";' => '(You have accepted ownership of discussion %R)',
+    'permit'     => 'STC="owner";' => '(You have offered %P ownership of discussion %R)',
+    'permit'     => 'STC'  => '(You have given %P %E privileges to discussion %R)',
+    'permit'     => 'MC="owner";'  => '*** %S%T%u has offered you ownership of discussion %R ***',
+    'permit'     => 'MC'   => '*** %S%T%u has given you %E privileges to discussion %R ***',
+    'permit'     => 'TC="owner";'  => '*** %S%T%u has taken ownership of discussion %R ***',
+    'permit'     => 'TC'   => '*** %S%T%u has given %P %E privileges to discussion %R ***',
+    'permit'     => 'Mc'   => '*** %S%T%u has permitted you to discussion %R ***',
+    'permit'     => 'Tc'   => '*** %S%T%u has permitted %P to discussion %R ***',
+    'permit'     => 'Stc'  => '(%R is now public)',
+    'permit'     => 'tc'   => '*** %S%T%u has made discussion %R public ***',
+    'permit'     => 'StC'  => '(%R is no longer moderated)',
+    'permit'     => 'tC'   => '*** %S%T%u has unmoderated discussion %R ***',
+    'depermit'   => 'STC="owner";'  => '(You have rescinded your offer to %P for ownership of discussion %R)',
+    'depermit'   => 'STC'  => '(You have removed %P\'s %E privileges on discussion %R)',
+    'depermit'   => 'MC="owner";' => '*** %S%T%u has rescinded their ownership offer of discussion %R ***',
+    'depermit'   => 'MC'   => '*** %S%T%u has removed your %E privileges on discussion %R ***',
+    'depermit'   => 'TC'   => '*** %S%T%u has removed %P\'s %E privileges on discussion %R ***',
+    'depermit'   => 'Mc'   => '*** %S%T%u has depermitted you from discussion %R ***',
+    'depermit'   => 'Tc'   => '*** %S%T%u has depermitted %P from discussion %R ***',
+    'depermit'   => 'Stc'  => '(%R is now private)',
+    'depermit'   => 'tc'   => '*** %S%T%u has made discussion %R private ***',
+    'depermit'   => 'StC'  => '(%R is now moderated)',
+    'depermit'   => 'tC'   => '*** %S%T%u has moderated discussion %R ***',
+    'depermit'   => 'V'    => '*** %S%T%O is now depermitted from %R ***',
+    'join'       => 'SU'   => '(you have joined %R)',
+    'join'       => 'U'    => '*** %S%T%u is now a member of %R ***',
+    'quit'       => 'SU'   => '(you have quit %R)',
+    'quit'       => 'U'    => '*** %S%T%u is no longer a member of %R ***',
+    'retitle'    => 'SV'   => '(you have changed the title of %R to "%V")',
+    'retitle'    => 'V'    => '*** %S%T%u has changed the title of %R to "%V" ***',
+    'sysmsg'     => 'V'    => '%S%V',
+    'pa'         => 'V'    => '** %S%TPublic address message from %U: %V **'
+    # need to handle review, sysalert, pa, game, and consult.
+);
 
 my $sub = sub {
     my ($e, $h) = @_;
@@ -208,30 +238,52 @@ my $sub = sub {
     my $i = 0;
     my $found;
     while ($i < $#infomsg) {
-	my $type = $infomsg[$i];
-	my $msg  = $infomsg[$i + 1];
-	my $flags;
-	$i += 2;
+	my $type  = $infomsg[$i++];
+	my $flags = $infomsg[$i++];
+	my $msg   = $infomsg[$i++];
+        my %flags = ();
 	
 	next unless ($type eq $e->{type});
-	($flags,$msg) = ($msg =~ /(\S+) (.*)/);
-	if ($flags =~ /A/) {
+
+        while ($flags =~ /\G([CTtASMeEVU])(?:="([^"]+)";)?/g) {
+            $flags{$1} = $2;
+        }
+
+	if (exists $flags{A}) {
 	    $found = $msg; last;
 	}
 
-	if ($flags =~ /S/) {
+	if (exists $flags{S}) {
             next if ($e->{'SOURCE'} ne $Me);
 	}
 
-        if ($flags =~ /V/i) {
+	if (exists $flags{M}) {
+            my $targMe = 0;
+            # FOO: Huh?
+            for ($e->{'TARGETS'}) { $targMe = 1 if ($e->{'TARGETS'} eq $Me) };
+            next unless $targMe;
+	} elsif (exists $flags{T}) {
+            next unless (defined($e->{TARGETS}));
+	} elsif (exists $flags{t}) {
+            next unless (!defined($e->{TARGETS}));
+        }
+
+        if (exists $flags{C}) {
+            next if (!defined($e->{'SUBEVT'}) ||
+                    (defined($flags{C}) && ($flags{C} ne $e->{'SUBEVT'})));
+        } elsif (exists $flags{c}) {
+            next unless (!defined($e->{SUBEVT}));
+        }
+
+        if (exists $flags{V}) {
             next unless (defined ($e->{VALUE}));
-        } elsif ($flags =~ /E/i) {
+        } elsif (exists $flags{E}) {
             next unless (defined($e->{EMPTY}));
-        } elsif ($flags =~ /U/i) {
+        } elsif (exists $flags{U}) {
             next if (defined($e->{VALUE}));
         }
 
-        if ($flags =~ /D/i) {
+        if (exists $flags{D}) {
             next unless (defined($e->{RECIPS}));
         }
 	$found = $msg;
@@ -250,6 +302,8 @@ my $sub = sub {
 	$found =~ s/\%s/\@$servname/g;
 	$found =~ s/\%V/$e->{VALUE}/g;
 	$found =~ s/\%R/$e->{RECIPS}/g;
+	$found =~ s/\%E/$e->{SUBEVT}/g;
+	$found =~ s/\%P/$e->{TARGETS}/g;
 	my $ts = ($e->{STAMP}) ? timestamp($e->{TIME}) : '';
 	$found =~ s/\%T/$ts/g;
 	if ($found =~ m/\%O/) {
