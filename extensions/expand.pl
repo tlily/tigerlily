@@ -1,4 +1,4 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/expand.pl,v 1.9 1999/02/26 22:45:36 josh Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/expand.pl,v 1.10 1999/03/02 19:09:05 steve Exp $ 
 
 use strict;
 
@@ -12,6 +12,7 @@ my %expansions = ('sendgroup' => '',
 
 my @past_sends = ();
 
+my $last_send = '';
 
 sub exp_expand {
     my($ui, $command, $key) = @_;
@@ -132,6 +133,7 @@ sub user_send_handler {
     my $dlist = join(",", @{$event->{RECIPS}});
     
     $expansions{recips} = $dlist;
+	$last_send = $event->{VALUE};
     
     @past_sends = grep { $_ ne $dlist } @past_sends;
     unshift @past_sends, $dlist;
@@ -141,3 +143,39 @@ sub user_send_handler {
 }
 event_r(type => 'user_send',
 		      call => \&user_send_handler);
+
+sub oops_cmd {
+	my ($ui, $args) = @_;
+	my $serv = TLily::Server::name();
+
+	my (@dests) = split (/,/, $args);
+	foreach (@dests) {
+		my $full = TLily::Server::SLCP::expand_name($_);
+		next unless $full;
+		$full =~ s/ /_/;
+		$_ = $full;
+	}
+	$expansions{recips} = join(",", @dests);
+	
+	# $config{emote_oops} stuff here.
+
+	$serv->sendln ("/oops " . $args);
+	return;
+}
+
+sub also_cmd {
+	my ($ui, $args) = @_;
+	my $serv = TLily::Server::name();
+
+	my (@dests) = split (/,/, $args);
+	foreach (@dests) {
+		my $full = TLily::Server::SLCP::expand_name($_);
+		$full =~ s/ /_/;
+		$_ = $full;
+	}
+	$expansions{recips} = join (",", $expansions{recips}, @dests);
+	$serv->sendln("/also " . $args);
+}
+
+command_r('oops' => \&oops_cmd);
+command_r('also' => \&also_cmd);
