@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/UI.pm,v 1.24 2000/02/09 05:00:05 tale Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/UI.pm,v 1.25 2000/02/10 17:34:22 mjr Exp $
 
 package TLily::UI;
 
@@ -92,8 +92,9 @@ sub inherit_global_bindings {
 	$self->command_r($command, $func);
     }
 
+    my $user_bindings = $config{bindings} || {};
     # The pile of punctuation here just joins to the two hashes into one.
-    my %bindings = %{{(%{$config{bindings}}, %gbind)}};
+    my %bindings = %{{(%{$user_bindings}, %gbind)}};
 
     while (my($key, $command) = each %bindings) {
 	$self->bind($key, $command);
