@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/blurb.pl,v 1.11 2001/07/17 16:44:20 coke Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/blurb.pl,v 1.12 2002/08/09 17:02:36 coke Exp $
 
 use strict;
 
@@ -115,7 +115,7 @@ sub blurb_cmd {
 	my @words;
 	my $failed=1;
 
-	if ($blurb eq "off") {
+	if (lc($blurb) eq "off") {
 		my @servers=();
 		if ($config{server_all}) {
 			@servers = TLily::Server::find();
