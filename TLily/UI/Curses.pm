@@ -206,16 +206,16 @@ sub new {
 
     $self->{text}->{main}->{status} = TLily::UI::Curses::StatusLine->new
       (layout  => $self,
-       color   => 0);
+       color   => $self->{color});
 
     $self->{text}->{main}->{text} = TLily::UI::Curses::Text->new
       (layout  => $self,
-       color   => $self->{want_color},
+       color   => $self->{color},
        status  => $self->{text}->{main}->{status});
 
     $self->{input} = TLily::UI::Curses::Input->new
       (layout  => $self,
-       color   => $self->{want_color});
+       color   => $self->{color});
 
     $self->{command}   = { %commandmap };
     $self->{bindings}  = { %bindmap };
