@@ -1,4 +1,6 @@
 Version 2.3-post
+  * [TLily/UI/Curses/Input.pm] Bugfix: spurious ^s should no longer appear
+    in the input area. [DPN]
 
 Version 2.3
   * [extensions/url.pl] Multiline URIs in /review, /memo and /info should be
