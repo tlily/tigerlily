@@ -1,4 +1,8 @@
 Version 2.4-post
+  * [extensions/deblurb.pl] Add extension to remove blurbs from a given user's
+    public, private, and SLCP events. 
+  * [extensions/slcp_output.pl] Add $stampseconds geekknob to allow the user
+    to display timestamps with seconds. [RBJ]
   * [aqua/] Moved all OSX build items into aqua from root. [WJC]
 
 Version 2.4
