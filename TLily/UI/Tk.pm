@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/Tk.pm,v 1.12 2002/05/21 13:06:14 coke Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/Tk.pm,v 1.13 2002/08/27 01:28:48 coke Exp $
 
 package TLily::UI::Tk;
 
@@ -821,6 +821,7 @@ sub insert_self {
 sub prompt {
     my($self, $prompt) = @_;
     if(defined $prompt) {
+	$prompt =~ s/\s+$//;
 	$self->{prompt} = $prompt;
 	$self->{prompt_w} = $self->{entry}->Label(-font => $font{normal},
 						  -text => $prompt);
