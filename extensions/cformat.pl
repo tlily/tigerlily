@@ -187,7 +187,6 @@ sub generic_fmt {
     $vars{body} = $e->{VALUE};
 
     if (!$fmt_cache{$fmt}) {
-	    $ui->print("compiling format\n");
 	    $fmt_cache{$fmt} = eval compile_fmt($fmt);
     }
     $fmt_cache{$fmt}->($ui, \%vars, \%fmts);
