@@ -1,4 +1,5 @@
 Version 2.1.1-post
+  * [extensions/server.pl] Fixed PR#812 (error msg on invalid core) [WJC]
   * [Makefile.PL, tlily.PL, TLily/Config.pm, TLily/ExoSafe.pm, TLily/Extend.pm,
     TLily/User.pm] Changed build system; the new one has less features,
     but builds tlily as a single, movable file. [DPN]
