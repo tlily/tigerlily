@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/UI.pm,v 1.20 1999/04/21 01:13:28 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/UI.pm,v 1.21 1999/12/13 04:58:24 albert Exp $
 
 package TLily::UI;
 
@@ -339,10 +339,10 @@ __END__
 
 Defines the given style to have the given attributes on a monochrome display.
 Valid attributes are currently "normal", "standout", "underline", "reverse",
-"blink", "dim", "bold", and "altcharset".  Not all UIs will support all
-styles.
+"blink", "dim", "bold", "italic", and "altcharset".  Not all UIs will support
+all styles.
 
-=item defstyle($style, $fg, $bg, @attrs)
+=item defcstyle($style, $fg, $bg, @attrs)
 
 Defines the given style to have the given color and attributes on a
 color display.  Valid colors are "black", "red", "yellow", "blue",

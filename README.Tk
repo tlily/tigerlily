@@ -1,0 +1,24 @@
+README for Tigerlily's Tk UI
+----------------------------
+
+To Use:
+    tlily -UI=Tk [other options]
+
+What Works:
+    logging in
+    sending messages
+    receiving messages
+    text styles
+    prompts
+    most keybindings
+    statusline
+
+What Doesn't Work:
+    kill buffer + assoc. keybindings
+    indents
+    intercepts
+    resizing
+    quitting
+	After a /detach or /bye, tlily will "Alarm Clock" after a delay.
+	A double-control-c will cause a core dump.
+	File.. Quit will exit with an error msg.

@@ -7,13 +7,15 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Event.pm,v 1.27 1999/10/23 06:15:56 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Event.pm,v 1.28 1999/12/13 04:58:24 albert Exp $
 
 package TLily::Event::Core;
 
 use strict;
+use TLily::Config qw(%config);
 
 sub new {
+    print STDERR ": TLily::Event::Core::new\n" if $config{ui_debug};
     my $proto = shift;
     my $class = ref($proto) || $proto;
     my $self  = {};
@@ -28,7 +30,8 @@ sub new {
 
 
 sub io_r {
-    my($self, $fileno, $mode) = @_;
+    print STDERR ": TLily::Event::Core::io_r\n" if $config{ui_debug};
+    my($self, $fileno, $handle, $mode) = @_;
     vec($self->{rbits}, $fileno, 1) = 1 if ($mode =~ /r/);
     vec($self->{wbits}, $fileno, 1) = 1 if ($mode =~ /w/);
     vec($self->{ebits}, $fileno, 1) = 1 if ($mode =~ /e/);
@@ -36,7 +39,8 @@ sub io_r {
 
 
 sub io_u {
-    my($self, $fileno, $mode) = @_;
+    print STDERR ": TLily::Event::Core::io_u\n" if $config{ui_debug};
+    my($self, $fileno, $handle, $mode) = @_;
     vec($self->{rbits}, $fileno, 1) = 0 if ($mode =~ /r/);
     vec($self->{wbits}, $fileno, 1) = 0 if ($mode =~ /w/);
     vec($self->{ebits}, $fileno, 1) = 0 if ($mode =~ /e/);
@@ -44,6 +48,7 @@ sub io_u {
 
 
 sub run {
+    print STDERR ": TLily::Event::Core::run\n" if $config{ui_debug};
     my($self, $timeout) = @_;
 
     my($rout, $wout, $eout) =
@@ -60,6 +65,7 @@ package TLily::Event;
 use strict;
 use Carp;
 use TLily::Registrar;
+use TLily::Config qw(%config);
 use Exporter;
 use vars qw(@ISA @EXPORT_OK);
 
@@ -146,6 +152,7 @@ calls.
 =cut
 
 sub init {
+    print STDERR ": TLily::Event::Core::init\n" if $config{ui_debug};
     $core = TLily::Event::Core->new;
 
     TLily::Registrar::class_r(name_event => \&event_u);
@@ -154,6 +161,19 @@ sub init {
     TLily::Registrar::class_r(idle_event => \&idle_u);
 }
 
+
+=item replace_core()
+
+Replace the Event Core.  Takes an object ref to use as the new core.
+The new core must implement the same interface as TLiLy::Event::Core.
+
+=cut
+
+# replace the event core.  It binds the galaxy together, like the Force.
+sub replace_core {
+    print STDERR ": TLily::Event::replace_core\n" if $config{ui_debug};
+    $core = $_[0];
+}
 
 =item send()
 
@@ -270,6 +290,7 @@ handler as its arguments.
 
 =cut
 sub io_r {
+    print STDERR ": TLily::Event::io_r\n" if $config{ui_debug};
     my $h = (@_ == 1) ? shift : {@_};
     
     # Sanity check.
@@ -292,7 +313,8 @@ sub io_r {
     $h->{id} = $next_id++;
     push @e_io, $h;
     
-    $core->io_r($n, $h->{mode});
+    print STDERR "handle: ", $h->{handle}, "\n" if $config{ui_debug};
+    $core->io_r($n, $h->{handle}, $h->{mode});
     
     $h->{registrar} = TLily::Registrar::default();
     TLily::Registrar::add("io_event", $h->{id});
@@ -306,14 +328,14 @@ Unregister an IO event handler.
 
 =cut
 sub io_u {
+    print STDERR ": TLily::Event::io_u\n" if $config{ui_debug};
     my($id) = @_;
     $id = $id->{id} if (ref $id);
     
     my($io, @io);
     foreach $io (@e_io) {
 	if ($io->{id} == $id) {
-	    $core->io_u($io->{'fileno'},
-			$io->{mode});
+	    $core->io_u($io->{'fileno'},$io->{handle},$io->{mode});
 	} else {
 	    push @io, $io;
 	}
@@ -462,6 +484,7 @@ sub invoke {
 =cut
 #use Data::Dumper;
 sub loop_once {
+    print STDERR ": TLily::Event::loop_once\n" if $config{ui_debug};
     # Named events.
   EVENT:
     while (my $e = shift @queue) {

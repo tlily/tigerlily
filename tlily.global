@@ -8,7 +8,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/Attic/tlily.global,v 1.34 1999/12/11 03:20:59 albert Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/Attic/tlily.global,v 1.35 1999/12/13 04:58:24 albert Exp $
 
 # Global defaults for tlily
 # PLEASE DO NOT EDIT EXCEPT FOR DEVELOPMENT!
@@ -48,6 +48,7 @@ if ($^O =~ /cygwin/) {
    'yellow'          => [qw(yellow  black   bold  )],
    'green'           => [qw(green   black   bold  )],
    'bwhite'          => [qw(white   black   bold  )],
+   'user_input'      => [qw(red     black   normal)],
   );
 
 %mask_color_attrs =
@@ -73,6 +74,7 @@ if ($^O =~ /cygwin/) {
    'yellow'          => [qw(yellow  -       bold  )],
    'green'           => [qw(green   -       bold  )],
    'bwhite'          => [qw(-       -       bold  )],   
+   'user_input'      => [qw(red     -       normal)],
   );
 
 %color_attrs = %traditional_color_attrs;
@@ -98,6 +100,7 @@ if ($^O =~ /cygwin/) {
    'emote_sender'    => [qw(normal)],
    'review'          => [qw(normal)],
    'slcp'            => [qw(normal)],
+   'user_input'      => [qw(normal)],
   );
 $server='lily.acm.rpi.edu';
 $port=7777;

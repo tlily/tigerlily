@@ -5,6 +5,7 @@ MANIFEST
 MANIFEST.SKIP
 Makefile.PL
 README
+README.Tk
 TLily/Bot.pm
 TLily/Config.pm
 TLily/Daemon.pm
@@ -25,6 +26,9 @@ TLily/UI/Curses/StatusLine.pm
 TLily/UI/Curses/Text.pm
 TLily/UI/ReadLine.pm
 TLily/UI/Text.pm
+TLily/UI/Tk.pm
+TLily/UI/Tk/Event.pm
+TLily/UI/Tk/tiger.gif
 TLily/UI/Util.pm
 TLily/User.pm
 TLily/Utils.pm
@@ -49,6 +53,7 @@ extensions/log.pl
 extensions/mechajosh.pl
 extensions/mirror.pl
 extensions/misc.pl
+extensions/on.pl
 extensions/paste.pl
 extensions/pipes.pl
 extensions/program.pl
@@ -72,6 +77,6 @@ extensions/vinfo.pl
 tlily.PL
 tlily.global
 tools/announcement
+tools/make_win32_release
 tools/postrelease
 tools/prerelease
-tools/make_win32_release
