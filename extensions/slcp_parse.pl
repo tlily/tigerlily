@@ -1,11 +1,10 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_parse.pl,v 1.26 2001/01/26 03:02:21 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_parse.pl,v 1.27 2001/01/26 04:31:23 mjr Exp $
 
 use strict;
 use vars qw(%config);
 
 use TLily::Config qw(%config);
-use Data::Dumper;
 
 =head1 NAME
 
