@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_output.pl,v 1.11.2.1 1999/12/07 06:54:21 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_output.pl,v 1.11.2.2 1999/12/08 07:28:44 mjr Exp $
 
 use strict;
 
@@ -123,7 +123,6 @@ event_r(type  => 'emote',
 # %O: name of thingy whose OID is in VALUE.
 # %T: timestamp, if STAMP is defined, empty otherwise.
 # %S: '(servername)', if connected to more than one, empty otherwise.
-# %s: '@servername', if connected to more than one, empty otherwise.
 # %B: if SOURCE has a blurb " with the blurb [blurb]", else "".
 # %E: SUBEVT
 #
@@ -169,8 +168,8 @@ my @infomsg = (
     'blurb'      => 'SV'   => '(your blurb has been set to [%V])',
     'blurb'      => 'V'    => '*** %S%T%u has changed their blurb to [%V] ***',
     'blurb'      => 'E'    => '*** %S%T%u has turned their blurb off ***',
-    'info'       => 'SED'  => '(you have cleared the info for %R)',
-    'info'       => 'SD'   => '(you have changed the info for %R)',
+    'info'       => 'DSE'  => '(you have cleared the info for %R)',
+    'info'       => 'DS'   => '(you have changed the info for %R)',
     'info'       => 'SE'   => '(your info has been cleared)',
     'info'       => 'SU'   => '(your info has been changed)',
 # For compatibility with older cores:
@@ -185,41 +184,41 @@ my @infomsg = (
     'ignore'     => 'A'    => '*** %S%T%u is now ignoring you %V ***',
     'unignore'   => 'A'    => '*** %S%T%u is no longer ignoring you ***',
     'unidle'     => 'A'    => '*** %S%T%u is now unidle ***',
-    'create'     => 'SU'   => '(you have created discussion %R "%D")',
+    'create'     => 'DSU'   => '(you have created discussion %R "%D")',
     'create'     => 'U'    => '*** %S%T%u has created discussion %R "%D" ***',
-    'destroy'    => 'SU'   => '(you have destroyed discussion %R)',
-    'destroy'    => 'U'    => '*** %S%T%u has destroyed discussion %R ***',
-    'permit'     => 'SMC="owner";' => '(You have accepted ownership of discussion %R)',
-    'permit'     => 'STC="owner";' => '(You have offered %P ownership of discussion %R)',
-    'permit'     => 'STC'  => '(You have given %P %E privileges to discussion %R)',
-    'permit'     => 'MC="owner";'  => '*** %S%T%u has offered you ownership of discussion %R ***',
-    'permit'     => 'MC'   => '*** %S%T%u has given you %E privileges to discussion %R ***',
-    'permit'     => 'TC="owner";'  => '*** %S%T%u has taken ownership of discussion %R ***',
-    'permit'     => 'TC'   => '*** %S%T%u has given %P %E privileges to discussion %R ***',
-    'permit'     => 'Mc'   => '*** %S%T%u has permitted you to discussion %R ***',
-    'permit'     => 'Tc'   => '*** %S%T%u has permitted %P to discussion %R ***',
-    'permit'     => 'Stc'  => '(%R is now public)',
-    'permit'     => 'tc'   => '*** %S%T%u has made discussion %R public ***',
-    'permit'     => 'StC'  => '(%R is no longer moderated)',
-    'permit'     => 'tC'   => '*** %S%T%u has unmoderated discussion %R ***',
-    'depermit'   => 'STC="owner";'  => '(You have rescinded your offer to %P for ownership of discussion %R)',
-    'depermit'   => 'STC'  => '(You have removed %P\'s %E privileges on discussion %R)',
-    'depermit'   => 'MC="owner";' => '*** %S%T%u has rescinded their ownership offer of discussion %R ***',
-    'depermit'   => 'MC'   => '*** %S%T%u has removed your %E privileges on discussion %R ***',
-    'depermit'   => 'TC'   => '*** %S%T%u has removed %P\'s %E privileges on discussion %R ***',
-    'depermit'   => 'Mc'   => '*** %S%T%u has depermitted you from discussion %R ***',
-    'depermit'   => 'Tc'   => '*** %S%T%u has depermitted %P from discussion %R ***',
-    'depermit'   => 'Stc'  => '(%R is now private)',
-    'depermit'   => 'tc'   => '*** %S%T%u has made discussion %R private ***',
-    'depermit'   => 'StC'  => '(%R is now moderated)',
-    'depermit'   => 'tC'   => '*** %S%T%u has moderated discussion %R ***',
-    'depermit'   => 'V'    => '*** %S%T%O is now depermitted from %R ***',
-    'join'       => 'SU'   => '(you have joined %R)',
-    'join'       => 'U'    => '*** %S%T%u is now a member of %R ***',
-    'quit'       => 'SU'   => '(you have quit %R)',
-    'quit'       => 'U'    => '*** %S%T%u is no longer a member of %R ***',
-    'retitle'    => 'SV'   => '(you have changed the title of %R to "%V")',
-    'retitle'    => 'V'    => '*** %S%T%u has changed the title of %R to "%V" ***',
+    'destroy'    => 'DSU'   => '(you have destroyed discussion %R)',
+    'destroy'    => 'DU'    => '*** %S%T%u has destroyed discussion %R ***',
+    'permit'     => 'DSMC="owner";' => '(You have accepted ownership of discussion %R)',
+    'permit'     => 'DSTC="owner";' => '(You have offered %P ownership of discussion %R)',
+    'permit'     => 'DSTC'  => '(You have given %P %E privileges to discussion %R)',
+    'permit'     => 'DMC="owner";'  => '*** %S%T%u has offered you ownership of discussion %R ***',
+    'permit'     => 'DMC'   => '*** %S%T%u has given you %E privileges to discussion %R ***',
+    'permit'     => 'DTC="owner";'  => '*** %S%T%u has taken ownership of discussion %R ***',
+    'permit'     => 'DTC'   => '*** %S%T%u has given %P %E privileges to discussion %R ***',
+    'permit'     => 'DMc'   => '*** %S%T%u has permitted you to discussion %R ***',
+    'permit'     => 'DTc'   => '*** %S%T%u has permitted %P to discussion %R ***',
+    'permit'     => 'DSUtc'  => '(%R is now public)',
+    'permit'     => 'DUtc'   => '*** %S%T%u has made discussion %R public ***',
+    'permit'     => 'SDtC'  => '(%R is no longer moderated)',
+    'permit'     => 'DtC'   => '*** %S%T%u has unmoderated discussion %R ***',
+    'depermit'   => 'DSTC="owner";'  => '(You have rescinded your offer to %P for ownership of discussion %R)',
+    'depermit'   => 'DSTC'  => '(You have removed %P\'s %E privileges on discussion %R)',
+    'depermit'   => 'DMC="owner";' => '*** %S%T%u has rescinded their ownership offer of discussion %R ***',
+    'depermit'   => 'DMC'   => '*** %S%T%u has removed your %E privileges on discussion %R ***',
+    'depermit'   => 'DTC'   => '*** %S%T%u has removed %P\'s %E privileges on discussion %R ***',
+    'depermit'   => 'DMc'   => '*** %S%T%u has depermitted you from discussion %R ***',
+    'depermit'   => 'DTc'   => '*** %S%T%u has depermitted %P from discussion %R ***',
+    'depermit'   => 'DSUtc'  => '(%R is now private)',
+    'depermit'   => 'DUtc'   => '*** %S%T%u has made discussion %R private ***',
+    'depermit'   => 'DStC'  => '(%R is now moderated)',
+    'depermit'   => 'DtC'   => '*** %S%T%u has moderated discussion %R ***',
+    'depermit'   => 'DV'    => '*** %S%T%O is now depermitted from %R ***',
+    'join'       => 'DSU'   => '(you have joined %R)',
+    'join'       => 'DU'    => '*** %S%T%u is now a member of %R ***',
+    'quit'       => 'DSU'   => '(you have quit %R)',
+    'quit'       => 'DU'    => '*** %S%T%u is no longer a member of %R ***',
+    'retitle'    => 'DSV'   => '(you have changed the title of %R to "%V")',
+    'retitle'    => 'DV'    => '*** %S%T%u has changed the title of %R to "%V" ***',
     'sysmsg'     => 'V'    => '%S%V',
     'pa'         => 'V'    => '** %S%TPublic address message from %U: %V **'
     # need to handle review, sysalert, pa, game, and consult.
@@ -245,7 +244,7 @@ my $sub = sub {
 	
 	next unless ($type eq $e->{type});
 
-        while ($flags =~ /\G([CTtASMeEVU])(?:="([^"]+)";)?/g) {
+        while ($flags =~ /\G([AEVUDSMTtCc])(?:="([^"]+)";)?/g) {
             $flags{$1} = $2;
         }
 
@@ -299,7 +298,6 @@ my $sub = sub {
 	$found =~ s/\%U/$source/g;
         my $ss = (scalar(TLily::Server::find()) > 1) ? "($servname) ": '';
 	$found =~ s/\%S/$ss/g;
-	$found =~ s/\%s/\@$servname/g;
 	$found =~ s/\%V/$e->{VALUE}/g;
 	$found =~ s/\%R/$e->{RECIPS}/g;
 	$found =~ s/\%E/$e->{SUBEVT}/g;
