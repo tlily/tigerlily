@@ -7,7 +7,7 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/Makefile.PL,v 1.8 2000/12/06 23:46:56 kazrak Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/Makefile.PL,v 1.9 2000/12/08 23:49:20 kazrak Exp $
 
 use strict;
 use Config;
@@ -161,8 +161,6 @@ WriteMakefile(
 			 'Curses'         => 0,
 			 'Term::ReadLine' => 0,
 			 'Net::Domain'    => 0 },
-
-    PREFIX          => $TL_PREFIX,
 
     INSTALLDIRS     => 'site',
     INSTALLSITELIB  => $TL_LIBDIR,

@@ -1,5 +1,4 @@
 Version 2.1.1-post
-  * [Makefile.PL] Add PREFIX to variables passed to WriteMakefile. [RBJ]
   * [extensions/url.pl] Add regex support to %url show; '%url show <regex>
     will now show the last URL matching the regex. [RBJ]
   * [extensions/blurb.pl] New extension, auto-blurb-compression [WJC]
