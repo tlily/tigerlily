@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/submit.pl,v 1.7 1999/12/07 20:36:55 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/submit.pl,v 1.8 2000/12/21 21:32:22 coke Exp $
 
 use TLily::Version;
 use strict;
@@ -27,8 +27,8 @@ my $version;
 sub submit_cmd($) {
     my $ui = shift @_;
     my($submit_to,$recover)=split /\s+/, "@_";
-    
-    if (defined($recover) && $recover ne "-r") {
+ 
+    if (defined($recover) && $recover ne "-r" && $recover ne "") {
 	$ui->print("Usage: %submit {server|client} [-r]\n");
 	return;
     }
