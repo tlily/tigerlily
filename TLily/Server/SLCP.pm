@@ -6,7 +6,7 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Server/Attic/SLCP.pm,v 1.46 2003/05/01 17:18:22 steve Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Server/Attic/SLCP.pm,v 1.47 2003/05/01 17:37:43 steve Exp $
 
 package TLily::Server::SLCP;
 
@@ -319,7 +319,7 @@ sub expand_name {
     if ($self->{NAME}->{$name}) {
 	if ($self->{NAME}->{$name}->{LOGIN} && !$disc) {
 	    return $self->{NAME}->{$name}->{NAME};
-	} elsif ($self->{NAME}->{$name}->{CREATION}) {
+	} elsif ($self->{NAME}->{$name}->{CREATION} && !$user) {
 	    return '-' . $self->{NAME}->{$name}->{NAME};
 	}
     }
