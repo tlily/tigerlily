@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/program.pl,v 1.18 2001/01/09 04:52:19 albert Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/program.pl,v 1.19 2001/11/13 02:01:58 josh Exp $
 
 use TLily::Utils 'get_deadfile';
 
@@ -475,13 +475,17 @@ shelp_r("prop", "MOO property manipulation functions");
 shelp_r("obj", "MOO object manipulation functions");
 
 help_r("verb", "
+  
+Note that <obj> can optionally be of the form server::object.
+  
 %verb show <obj>           - Lists the verbs defined on an object.
 %verb show <obj>:<verb>    - Shows a verb's properties.
 %verb list <obj>           - Lists the verbs defined on a object.
 %verb list <obj>:<verb>    - Lists the code of a verb.
 %verb edit <obj>:<verb>    - Edit a verb.
 %verb reedit <obj>:<verb>  - Recalls a \"dead\" verb from a failed edit.
-
+%verb copy <obj>:verb <obj>:verb - Copy a verb (even across servers)
+%verb diff <obj>:verb <obj>:verb - Diff a verb (even across servers)
 ");
 
 help_r("prop", "
