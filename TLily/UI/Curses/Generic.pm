@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Curses/Attic/Generic.pm,v 1.16 1999/05/05 06:03:20 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Curses/Attic/Generic.pm,v 1.17 1999/05/08 04:39:33 danaf Exp $
 
 package TLily::UI::Curses::Generic;
 
@@ -56,7 +56,7 @@ my $active;
 
 # The cpairmap hash maps color pairs in the format "fg bg" to color pair
 # IDs.  (fg and bg are Curses color IDs.)
-%cpairmap   = ((COLOR_WHITE . " " . COLOR_BLACK) => 0);
+%cpairmap   = ("dontusethis" => 0);
 
 # The keycodemap hash maps Curses keycodes to English names.
 %keycodemap =
