@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/set.pl,v 1.8 2001/01/29 04:53:12 jordan Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/set.pl,v 1.9 2001/02/20 19:29:30 coke Exp $
 
 use strict;
 
@@ -194,6 +194,7 @@ sub setter {
   $ui->print("(Syntax error: see \%help $mode for usage)\n");
   return 0;
 }
+shelp_r("set_echo" => "Boolean keeping %set quiet or not", "variables");
 
 command_r('show', \&show_handler);
 shelp_r('show', "Show the value of a configuration variable");
