@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/Curses.pm,v 1.58 2002/06/07 17:58:15 bwelling Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/Curses.pm,v 1.59 2002/10/26 00:12:09 neild Exp $
 
 package TLily::UI::Curses::Proxy;
 
@@ -167,6 +167,9 @@ sub mark_output {
 
 sub switch_window {
     my ($ui, $dir) = @_;
+
+    my $tcount = scalar(keys %{$ui->{win}});
+    return if ($tcount == 1);
 
     my (@keys, $pos, $active);
     @keys = sort(keys %{$ui->{win}});
