@@ -18,6 +18,7 @@ What Doesn't Work:
     indents
     intercepts
     resizing
+    paging
     quitting
 	After a /detach or /bye, tlily will "Alarm Clock" after a delay.
 	A double-control-c will cause a core dump.

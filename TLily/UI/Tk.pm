@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/Tk.pm,v 1.1 1999/12/13 04:58:24 albert Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/Tk.pm,v 1.2 1999/12/13 05:37:47 albert Exp $
 
 package TLily::UI::Tk;
 
@@ -328,6 +328,13 @@ sub new {
     return $self;
 }
 
+sub about {
+    $mainwin->Dialog(-title => "About Tigerlily",
+                  -text  => qq{Tigerlily 2.1\n(C) 1998-2000, The Tigerlily Team\n},
+                  -image => $logo,
+                  -default_button => "Ok",
+                  -buttons => ["Ok"])->Show();
+}
 
 sub ui_bindings {
     my $self = shift;
@@ -785,13 +792,15 @@ sub intercept_u {
 
 sub command {
     my($self, $command, $key) = @_;
+    print STDERR "command:@_\n" if $config{ui_debug};
     my $rc = eval { $commandmap{$command}->($self, $command, $key); };
     warn "Command \"$command\" caused error: $@" if ($@);
     return $rc;
 }
 
 sub insert_self {
-    my($self, $command, $key) = @_;
+    my($self, $key) = @_;
+    print STDERR "insert-self:@_\n" if $config{ui_debug};
     $self->{input}->insert("insert", $key);
 }
 

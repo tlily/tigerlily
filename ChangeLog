@@ -1,4 +1,5 @@
 Version 2.0-post
+  * [TLily/UI/Tk.pm] Tk UI. [CWS]
   * [various] Fixed bug in columnize_list, converted program.pl and
     spellcheck.pl to use it.
   * [various] Changed calls to old cmd_process to the new per-server one.
