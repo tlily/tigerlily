@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_state.pl,v 1.5 2003/05/01 19:07:16 steve Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_state.pl,v 1.6 2003/06/27 01:06:17 neild Exp $
 
 # This hash keeps track of what fields from %USER and %DISC are stored in 
 # the state database.  We need to ensure that every one of these state 
@@ -17,40 +17,38 @@
 
 use strict;
 
-my %keep;
-%{$keep{USER}} = (HANDLE => 1,
-		  NAME => 'rename',
-		  BLURB => 'blurb',
-		  STATE => 1);
-%{$keep{DISC}} = (HANDLE => 1, 
-		  NAME => 1,
-		  TITLE => 'retitle');
+for my $spec ([rename => "NAME"], [blurb => "BLURB"]) {
+    my $field = $spec->[1];
 
-# build the default handlers defined above:
-foreach (keys %keep) {
-    my $s;
-    foreach $s (keys %{$keep{$_}}) {
-	next if ($keep{$_}{$s} eq "1");
-	
-	my $sub = sub {
-	    my($e) = @_;
-	    my $serv = $e->{server};
-	    
-	    if ($s eq "NAME") {
-		$serv->state(HANDLE => $e->{SHANDLE},
-			     NAME => $e->{VALUE},
-			     UPDATED => 1);
-	    } else {
-		$serv->state(HANDLE => $e->{SHANDLE},
-			     $s, $e->{VALUE});
-	    }
-	    return;
-	};
-	
-	event_r(type  => $keep{$_}{$s},
-                order => 'during',
-	        call  => $sub);
-    }
+    my $sub = sub {
+        my($e) = @_;
+        $e->{server}->state
+            (HANDLE  => $e->{SHANDLE},
+             $field  => $e->{VALUE},
+             UPDATED => 1);
+        return;
+    };
+
+    event_r(type  => $spec->[0],
+            order => 'during',
+            call  => $sub);
+}
+
+for my $spec ([drename => "NAME"], [retitle => "TITLE"]) {
+    my $field = $spec->[1];
+
+    my $sub = sub {
+        my($e) = @_;
+        $e->{server}->state
+            (HANDLE  => $e->{RHANDLE}->[0],
+             $field  => $e->{VALUE},
+             UPDATED => 1);
+        return;
+    };
+
+    event_r(type  => $spec->[0],
+            order => 'during',
+            call  => $sub);
 }
 
 

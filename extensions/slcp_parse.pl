@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_parse.pl,v 1.28 2003/03/17 01:59:52 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_parse.pl,v 1.29 2003/06/27 01:06:17 neild Exp $
 
 use strict;
 use vars qw(%config);
@@ -41,12 +41,13 @@ my %events =
   (
    'connect'     => undef,
    disconnect    => undef,
+   drename       => undef,
    attach        => undef,
    detach        => undef,
    here          => undef,
    away          => undef,
-   'rename'      => 'NAME',
-   blurb         => 'BLURB',
+   'rename'      => undef,
+   blurb         => undef,
    info          => undef,
    ignore        => undef,
    unignore      => undef,
@@ -61,7 +62,7 @@ my %events =
    unappoint     => undef,   
    'join'        => undef,
    quit          => undef,
-   retitle       => 'TITLE',
+   retitle       => undef,
    review        => undef,
    sysmsg        => undef,
    sysalert      => undef,
@@ -262,15 +263,6 @@ sub parse_line {
 	
 	# Um.  Undef?  Don't set it at all?
 	$event{VALUE} = undef if $event{EMPTY};
-	
-	# Update the state database, if necessary.
-        # We may have to update this to be able to differentiate
-        # between set, undef, and EMPTY.
-	my $param = $events{$event{EVENT}};
-	if ($param) {
-	    $serv->state(HANDLE => $event{SHANDLE},
-			 $param => $event{VALUE});
-	}
 	
 	if (exists($events{$event{EVENT}})) {
 	    $event{type} = $event{EVENT};

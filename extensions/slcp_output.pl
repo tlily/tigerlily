@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_output.pl,v 1.26 2003/03/16 08:22:39 steve Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_output.pl,v 1.27 2003/06/27 01:06:17 neild Exp $
 
 use strict;
 
@@ -223,6 +223,7 @@ my @infomsg = (
     'destroy'    => 'DSU'  => '(you have destroyed discussion %R)',
     'destroy'    => 'DU'   => '*** %S%T%u has destroyed discussion %R ***',
     'destroy'    => 'U'    => '*** %S%T%u has destroyed a discussion (server didn\'t say which) ***',
+    'drename'    => 'V'    => '*** %S%TDiscussion -%R is now named -%V ***',
     'permit'     => 'DSMC="owner";' => '(You have accepted ownership of discussion %R)',
     'permit'     => 'DSTC="owner";' => '(You have offered %P ownership of discussion %R)',
     'permit'     => 'DSTC'  => '(You have given %P %E privileges to discussion %R)',
