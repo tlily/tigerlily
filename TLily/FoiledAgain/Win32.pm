@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/FoiledAgain/Attic/Win32.pm,v 1.9 2003/02/14 03:47:57 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/FoiledAgain/Attic/Win32.pm,v 1.10 2003/02/26 03:22:38 josh Exp $
 
 package TLily::FoiledAgain::Win32;
 
@@ -93,7 +93,8 @@ my %keycodemap = (
     46 => 'del',
     36 => 'home',
     35 => 'end',
-    13 => 'nl'
+    13 => 'nl',
+    27 => 'esc'    
 );
 
 # The stylemap and cstylemap hashes map style names to Curses attributes.
@@ -148,7 +149,7 @@ sub stop {
 sub sanity_poll { }
 sub suspend {  }
 sub resume  {  }
-sub bell { 
+sub bell {
     Win32::Sound::Play('SystemDefault', SND_ASYNC);
 }
 
@@ -178,6 +179,8 @@ sub new {
     my $class = ref($proto) || $proto;
 
     my $self = {};
+
+    $self->{input_queue} = [];
 
     $self->{buffer} = new Win32::Console;
 
@@ -210,8 +213,26 @@ sub position_cursor {
     $self->{buffer}->Cursor($col,$line, 0, 0);
 }
 
-
 sub read_char {
+    my($self) = @_;
+#   DEBUG(@_);
+
+    $self->read_char_to_queue();
+
+    return undef unless @{$self->{input_queue}};
+    
+    if ($self->{input_queue}[0] eq 'esc') {
+        return undef unless (@{$self->{input_queue}} > 1);
+	
+        shift @{$self->{input_queue}};
+	my $key = shift @{$self->{input_queue}};
+        return "M-$key";
+    } else {
+        return shift @{$self->{input_queue}};
+    }
+}
+
+sub read_char_to_queue {
     my($self) = @_;
 #   DEBUG(@_);
 
@@ -219,7 +240,7 @@ sub read_char {
     unless ($INPUT->GetEvents()) {
         return undef;
     }
-
+    
     my @event = $INPUT->Input();
 
     my ($event_type, $key_down, $repeat_count,
@@ -256,6 +277,10 @@ sub read_char {
         }
     }
 
+    # a single event can carry more than one keypress, which is why this 
+    # input_queue stuff is used.
+    push @{$self->{input_queue}}, $key for (1..$repeat_count);
+    
     return $key;
 }
 
