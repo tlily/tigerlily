@@ -97,6 +97,7 @@ sub spellcheck_cmd {
 	$ui->print("(spellcheck disabled)\n");
 	$state="disabled";	
     } else {
+	$state ||= "disabled";	
     	$ui->print("(spellcheck is $state)\n");
     }
 }
