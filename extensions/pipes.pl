@@ -1,7 +1,10 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/pipes.pl,v 1.6 1999/10/23 06:16:01 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/pipes.pl,v 1.7 2000/12/22 01:19:03 neild Exp $
 #
 # Piped command processing.
 #
+
+use strict;
+use Fcntl;
 
 my $counter = 0;
 sub pipe_handler {
@@ -12,12 +15,12 @@ sub pipe_handler {
     my $mode = 0;
     while ($cmd) {
 	if ($cmd =~ /^\|\s*(.*)/) {
-	    break if ($mode != 2);
+	    last if ($mode != 2);
 	    $cmd = $1;
 	    $run .= "| ";
 	    $mode = 1;
 	} elsif ($cmd =~ /^>\s*(\S+)\s*(.*)/) {
-	    break if ($mode != 2);
+	    last if ($mode != 2);
 	    $cmd = $2;
 	    $run .= "> $1 ";
 	    $mode = 3;
@@ -31,10 +34,10 @@ sub pipe_handler {
 		$run .= "$1 ";
 		$mode = 2;
 	    } else {
-		break;
+		last;
 	    }
 	} else {
-	    break;
+	    last;
 	}
     }
 
