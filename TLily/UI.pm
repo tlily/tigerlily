@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/UI.pm,v 1.22 2000/02/05 21:07:23 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/UI.pm,v 1.23 2000/02/07 06:02:52 tale Exp $
 
 package TLily::UI;
 
@@ -285,7 +285,7 @@ sub bind {
     shift if (@_ > 2);      # Lose the package, if called as a class method.
     my($key, $command) = @_;
 
-    $gbind{$key} = $command;
+    $gbind{$key} = $command if defined($key) && defined($command);
 
     my $ui;
     foreach $ui (values %ui) {

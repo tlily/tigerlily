@@ -1,4 +1,4 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/ui.pl,v 1.20 1999/12/21 03:10:06 albert Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/ui.pl,v 1.21 2000/02/07 06:02:54 tale Exp $ 
 use strict;
 
 =head1 NAME
@@ -55,15 +55,12 @@ sub bind_command {
 	$local = 1;
     }
 
-    if (@args == 1) {
-	push @args, "insert-self";
-    }
-    elsif (@args != 2) {
+    if (@args > 2) {
 	$ui->print("(%bind [locally] key command; type %help for help)\n");
 	return;
     }
 
-    $ui->print("(binding \"$args[0]\" to \"$args[1]\")\n");
+    $ui->print("(binding \"$args[0]\" to \"$args[1]\")\n") if @args > 1;
     if ($local) {
 	$ui->bind(@args);
     } else {

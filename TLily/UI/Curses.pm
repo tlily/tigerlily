@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/Curses.pm,v 1.38 2000/02/07 01:05:24 tale Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/Curses.pm,v 1.39 2000/02/07 06:02:53 tale Exp $
 
 package TLily::UI::Curses::Proxy;
 
@@ -578,7 +578,23 @@ sub command_u {
 
 sub bind {
     my($self, $key, $command) = @_;
-    $self->{bindings}->{$key} = $command;
+  
+    if (defined($key) && defined($command)) {
+        $self->{bindings}->{$key} = $command;
+    } elsif (! defined($key)) {
+        # XXXDCL could use specialized sorting algorithm.
+        foreach my $key (sort keys %{$self->{bindings}}) {
+            $self->print(sprintf("%-16s%s\n", $key,
+                                 $self->{bindings}->{$key}));
+        }  
+    } elsif ($self->{bindings}->{$key}) {
+        $self->print("$key is bound to $self->{bindings}->{$key}\n");
+    } elsif (length($key) == 1) {
+        $self->print("$key is bound to insert-self\n");
+    } else {
+        $self->print("$key is not bound\n");
+    }
+
     return 1;
 }
 
