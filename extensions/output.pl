@@ -2,91 +2,104 @@ use strict;
 
 use TLily::UI;
 
+=head1 NAME
+
+output.pl - The lily output formatter
+
+=head1 DESCRIPTION
+
+The job of output.pl is to register event handlers to convert the events
+that the parser module (slcp.pl) send into appopriate output for the user.
+
+=back
+
+=cut
+
 my $sub = sub {
-  my($e, $h) = @_;
-  
-  my $ui = TLily::UI::name("main");
-  $ui->print("Event: $e->{type}\n");
-  foreach (sort keys %$e) {
-    next if ($_ eq "type");
-    my $val = $e->{$_};
-    $ui->print("  $_=");
-    if (defined($val)) {
-      $val =~ s/\r/\\r/gs;
-      $val =~ s/\n/\\n/gs;
-      $ui->print("\"$val\"");
-    } else {
-      $ui->print("undef");
+    my($e, $h) = @_;
+    
+    my $ui = TLily::UI::name("main");
+    $ui->print("Event: $e->{type}\n");
+    foreach (sort keys %$e) {
+	next if ($_ eq "type");
+	my $val = $e->{$_};
+	$ui->print("  $_=");
+	if (defined($val)) {
+	    $val =~ s/\r/\\r/gs;
+	    $val =~ s/\n/\\n/gs;
+	    $ui->print("\"$val\"");
+	} else {
+	    $ui->print("undef");
+	}
     }
-  }
-  $ui->print("\n");
-  return;
+    $ui->print("\n");
+    return;
 };
 #TLily::Event::event_r(type => 'all', call => $sub);
 
 
 sub private_fmt {
-  my($ui, $e) = @_;
+    my($ui, $e) = @_;
+    
+    $ui->print("\n");
+    
+    $ui->indent(" >> ");
+    $ui->prints(privhdr => "Private message from ",
+		sender  => $e->{SOURCE});
+    if ($e->{RECIPS} =~ /,/) {
+	$ui->prints(privhdr => ", to ",
+		    dest    => $e->{RECIPS});
+    }
+    $ui->style("private_header");
+    $ui->print(":\n");
+    
+    $ui->indent(" - ");
+    $ui->style("private_body");
+    $ui->print($e->{VALUE}, "\n");
+    $ui->indent("");
   
-  $ui->print("\n");
-  
-  $ui->indent(" >> ");
-  $ui->prints(privhdr => "Private message from ",
-	      sender  => $e->{SOURCE});
-  if ($e->{RECIPS} =~ /,/) {
-    $ui->prints(privhdr => ", to ",
-		dest    => $e->{RECIPS});
-  }
-  $ui->style("private_header");
-  $ui->print(":\n");
-
-  $ui->indent(" - ");
-  $ui->style("private_body");
-  $ui->print($e->{VALUE}, "\n");
-  $ui->indent("");
-  
-  $ui->style("default");
+    $ui->style("default");
   return;
 }
 TLily::Event::event_r(type  => 'private',
-		order => 'before',
-		call  => sub { $_[0]->{formatter} = \&private_fmt; return });
+		      order => 'before',
+		      call  => sub { $_[0]->{formatter} = \&private_fmt; return });
 
 sub public_fmt {
-  my($ui, $e) = @_;
-  
-  $ui->print("\n");
-  
-  $ui->indent(" -> ");
-  $ui->prints(pubhdr => "From ",
-	      sender => $e->{SOURCE},
-	      pubhdr => ", to ",
-	      dest   => $e->{RECIPS},
-	      pubhdr => ":\n");
-  
-  $ui->indent(" - ");
-  $ui->style("public_body");
-  $ui->print($e->{VALUE}, "\n");
-  $ui->indent("");
-  
-  $ui->style("default");
-  
-  return;
+    my($ui, $e) = @_;
+    
+    $ui->print("\n");
+    
+    $ui->indent(" -> ");
+    $ui->prints(pubhdr => "From ",
+		sender => $e->{SOURCE},
+		pubhdr => ", to ",
+		dest   => $e->{RECIPS},
+		pubhdr => ":\n");
+    
+    $ui->indent(" - ");
+    $ui->style("public_body");
+    $ui->print($e->{VALUE}, "\n");
+    $ui->indent("");
+    
+    $ui->style("default");
+    
+    return;
 }
 TLily::Event::event_r(type  => 'public',
-		order => 'before',
-		call  => sub { $_[0]->{formatter} = \&public_fmt; return });
+		      order => 'before',
+		      call  => sub { $_[0]->{formatter} = \&public_fmt; return });
 
 sub emote_fmt {
-  my($ui, $e) = @_;
-  
-  $ui->style("emote");
-  $ui->indent("> ");
-  $ui->print("(to ", $e->{RECIPS}, ") ", $e->{SOURCE}, $e->{VALUE},"\n");
-  $ui->indent("");
-  $ui->style("default");
-
-  return;
+    my($ui, $e) = @_;
+    
+    $ui->style("emote");
+    $ui->indent("> ");
+    $ui->print("(to ", $e->{RECIPS}, ") ", $e->{SOURCE}, $e->{VALUE},"\n");
+    $ui->indent("");
+    $ui->style("default");
+    
+    return;
 }
 TLily::Event::event_r(type  => 'emote',
 		      order => 'before',
@@ -138,11 +151,11 @@ my @infomsg = ('connect'  => 'A *** %U has entered lily ***',
 	       create     => 'E *** %u has created discussion %R "%T" ***',
 	       destroy    => 'e (you have destroyed discussion %R)',
 	       destroy    => 'E *** %u has destroyed discussion %R ***',
-# bugs in slcp- permit/depermit don't specify people right.
-#	       permit     => 'e (someone is now permitted to discussion %R)',
-#	       permit     => 'E (You are now permitted to some discussion)',
-#	       depermit   => 'e (Someone is now depermitted from %R)',
-# note that slcp doesn't do join and quit quite right
+	       # bugs in slcp- permit/depermit don't specify people right.
+	       #	       permit     => 'e (someone is now permitted to discussion %R)',
+	       #	       permit     => 'E (You are now permitted to some discussion)',
+	       #	       depermit   => 'e (Someone is now depermitted from %R)',
+	       # note that slcp doesn't do join and quit quite right
 	       permit     => 'V *** %O is now permitted to discussion %R ***',
 	       depermit   => 'V *** %O is now depermitted from %R ***',
 	       'join'     => 'e (you have joined %R)',
@@ -153,69 +166,69 @@ my @infomsg = ('connect'  => 'A *** %U has entered lily ***',
 	       retitle    => 'V *** %u has changed the title of %R to "%V" ***',
 	       sysmsg     => 'V %V',
 	       pa         => 'V ** Public address message from %U: %V **'
-# need to handle review, sysalert, pa, game, and consult.
-);
+	       # need to handle review, sysalert, pa, game, and consult.
+	      );
 
 $sub = sub {
-  my ($e, $h) = @_;
-  my $serv = $e->{server};
-  return unless ($serv);
-  
-  # optimization?
-  #return unless ($e->{NOTIFY});
-  
-  my $Me =  $serv->user_name;
-  
-  my $i = 0;
-  my $found;
-  while ($i < $#infomsg) {
-    my $type = $infomsg[$i];
-    my $msg  = $infomsg[$i + 1];
-    my $flags;
-    $i += 2;
+    my ($e, $h) = @_;
+    my $serv = $e->{server};
+    return unless ($serv);
     
-    next unless ($type eq $e->{type});
-    ($flags,$msg) = ($msg =~ /(\S+) (.*)/);
-    if ($flags =~ /A/) {
-      $found = $msg; last;
-    }
-    if ($flags =~ /V/ && ($e->{VALUE} =~ /\S/)) { 
-      $found = $msg; last; 
-    }
-    if ($flags =~ /E/ && ($e->{VALUE} !~ /\S/)) {
-      $found = $msg; last;
-    }
-    if ($flags =~ /v/ && ($e->{SOURCE} eq $Me)
-	&& (defined($e->{VALUE}) && length($e->{VALUE}))) {
-      $found = $msg; last;
-    }
-    if ($flags =~ /e/ && ($e->{SOURCE} eq $Me)
-	&& (!defined($e->{VALUE}) || !length($e->{VALUE}))) {
-      $found = $msg; last;
-    }
-  }
-  
-  if ($found) {
-    my $source = $e->{SOURCE};
-    $found =~ s/\%u/$source/g;
-    my $blurb = $serv->get_blurb(HANDLE => $e->{SHANDLE});
-    $source .= " [$blurb]" if $blurb;
-    $found =~ s/\%U/$source/g;
-    $found =~ s/\%V/$e->{VALUE}/g;
-    $found =~ s/\%R/$e->{RECIPS}/g;
-    if ($found =~ m/\%O/) {
-      my $target = $serv->get_name(HANDLE => $e->{VALUE});
-      $found =~ s/\%O/$target/g;
-    }
-    if ($found =~ m/\%T/) {
-      my $title = $serv->get_title(NAME => $e->{RECIPS});
-      $found =~ s/\%T/$title/g;
+    # optimization?
+    #return unless ($e->{NOTIFY});
+    
+    my $Me =  $serv->user_name;
+    
+    my $i = 0;
+    my $found;
+    while ($i < $#infomsg) {
+	my $type = $infomsg[$i];
+	my $msg  = $infomsg[$i + 1];
+	my $flags;
+	$i += 2;
+	
+	next unless ($type eq $e->{type});
+	($flags,$msg) = ($msg =~ /(\S+) (.*)/);
+	if ($flags =~ /A/) {
+	    $found = $msg; last;
+	}
+	if ($flags =~ /V/ && ($e->{VALUE} =~ /\S/)) { 
+	    $found = $msg; last; 
+	}
+	if ($flags =~ /E/ && ($e->{VALUE} !~ /\S/)) {
+	    $found = $msg; last;
+	}
+	if ($flags =~ /v/ && ($e->{SOURCE} eq $Me)
+	    && (defined($e->{VALUE}) && length($e->{VALUE}))) {
+	    $found = $msg; last;
+	}
+	if ($flags =~ /e/ && ($e->{SOURCE} eq $Me)
+	    && (!defined($e->{VALUE}) || !length($e->{VALUE}))) {
+	    $found = $msg; last;
+	}
     }
     
-    $e->{text} = "SLCP: $found";
-  }
-  
-  return;
+    if ($found) {
+	my $source = $e->{SOURCE};
+	$found =~ s/\%u/$source/g;
+	my $blurb = $serv->get_blurb(HANDLE => $e->{SHANDLE});
+	$source .= " [$blurb]" if $blurb;
+	$found =~ s/\%U/$source/g;
+	$found =~ s/\%V/$e->{VALUE}/g;
+	$found =~ s/\%R/$e->{RECIPS}/g;
+	if ($found =~ m/\%O/) {
+	    my $target = $serv->get_name(HANDLE => $e->{VALUE});
+	    $found =~ s/\%O/$target/g;
+	}
+	if ($found =~ m/\%T/) {
+	    my $title = $serv->get_title(NAME => $e->{RECIPS});
+	    $found =~ s/\%T/$title/g;
+	}
+	
+	$e->{text} = "SLCP: $found";
+    }
+    
+    return;
 };
 
 TLily::Event::event_r(type  => 'all',

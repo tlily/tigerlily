@@ -1,0 +1,73 @@
+Tigerlily Coding Standards  (Such as they are)
+--------------------------
+
+After yet another debate over indent width, we decided to write up
+some basic coding standards for tlily.  Feel free to add to this as
+you see fit.   Not all of our code will fully adhere, but it probably
+should eventually.  Feel free to help out with cleaning things up..
+
+-------------------------------------------------------------------------------
+1) Memory Usage
+
+Tigerlily is a memory hog.  It always will be.  However, we do have a
+few things to say on how to avoid making it trully horrendous:
+
+   - When possible, import just the symbols you need from a module.
+     For example, let's say you wanted the POSIX "tolower" function.
+     A "use POSIX" adds 1224k to perl on solaris sparc.  If you do a
+     "use POSIX qw(tolower);" will save you 300k.
+
+   - Which brings us to.. POSIX.pm is a hog, even if you do
+     selectively import symbols.  Try to avoid it if you can.  In the
+     above example, perl's lc() would be a much better choice :)
+
+   - Avoid @EXPORT in your modules.  Try to just use EXPORT_OK.
+
+-------------------------------------------------------------------------------
+2) Bracing
+
+This is the bracing style we want to use:
+
+    if ($foo == 1) {
+        do_some_stuff
+        . . . 
+    } else {
+        do_some_other_stuff
+        . . . 
+    }
+
+Variations on this theme are fine... examples:
+
+    if ($foo == 1) { call_a_function(); }
+
+    call_a_function() if ($foo == 1);
+
+
+What I don't want to see is:
+
+    if ($foo == 1)
+    {
+       . . .
+    }
+
+This style wastes space.  I will mercilessly reformat code that I see
+that uses this.
+
+-------------------------------------------------------------------------------
+3) Indenting
+
+We have decided to use 4 space indents.  This means 4 spaces. 
+Don't change your tab stops no matter what.  A tab is 8 spaces.
+
+Emacs will indent the code correctly if you use cperl-mode (perl-mode
+is probably more or less ok as well, but we recommend cperl-mode)
+
+To make emacs use a 4 space indent in cperl mode, put the following in 
+your ~/.emacs file:
+
+(setq cperl-indent-level 4) 
+
+-------------------------------------------------------------------------------
+4) Other
+
+There's plenty of room for more stuff in here.. Go for it :)
