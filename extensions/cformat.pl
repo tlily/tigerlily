@@ -7,6 +7,10 @@ my $help = <<END
 #writing code.  The 'public_fmt', 'private_fmt', and 'emote_fmt' configuration
 #variables contain strings defining how to format messages.
 #
+#It is also possible to specify the format via the "format" attribute of
+#an event.  For example:
+#  %on public to tigerlily %attr format "TL| %From>%| %Body\\\\n"
+#
 #The current implementation of %set does not allow you to assign values
 #with spaces to a variable, so you will need to use %eval to modify these
 #variables.  For example:
@@ -79,7 +83,9 @@ sub generic_fmt {
     my %fmts;
     my $fmt;
 
-    if ($e->{type} eq 'public') {
+    if (defined $e->{format}) {
+	    $fmt = $e->{format};
+    } elsif ($e->{type} eq 'public') {
 	    $fmt = $config{public_fmt} || 
 	      '\n%[ -> ]%(Server )%(Time )From %From%{ FromBlurb}, to %To:%|'.
 		'%[ - ]\n%Body\n';
