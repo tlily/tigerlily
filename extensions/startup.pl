@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/startup.pl,v 1.12 2000/02/08 01:45:21 tale Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/startup.pl,v 1.13 2000/12/14 00:46:28 neild Exp $
 
 use strict;
 
@@ -16,16 +16,16 @@ sub startup_handler ($$) {
 	open(SUP, "<$ENV{HOME}/.lily/tlily/Startup");
 	if($!) {
 	    $ui->print("Error opening Startup: $!\n");
-	    event_u($handler);
 	    return 0;
 	}
         $ui->print("(Running ~/.lily/tlily/Startup)\n\n");
 	while(<SUP>) {
             next if /^#/;
 	    chomp;
-	    TLily::Event::send({type => 'user_input',
-				ui   => $ui,
-				text => "$_\n"});
+	    TLily::Event::send({type    => 'user_input',
+				ui      => $ui,
+				startup => 1,
+				text    => "$_\n"});
 	}
 	close(SUP);
     } else {
@@ -37,10 +37,9 @@ sub startup_handler ($$) {
     my $server = active_server();
     my $sub = sub {
 	my(%args) = @_;
-        
+
 	if(!$args{text}) {
 	    $args{ui}->print("Error opening *tlilyStartup: $!\n");
-	    event_u($handler);
 	    TLily::Event::send(%$event,
                                type => 'connected',
 			       ui   => $args{ui});
@@ -53,7 +52,6 @@ sub startup_handler ($$) {
 		$args{ui}->print("(No startup memo found.)\n",
 		    "(If you want to install one, ",
 		    "call it tlilyStartup or *tlilyStartup)\n");
-		event_u($handler);
 		TLily::Event::send(%$event,
 				   type => 'connected',
 				   ui   => $args{ui});
@@ -64,11 +62,11 @@ sub startup_handler ($$) {
 	foreach (@{$args{text}}) {
             next if /^#/;
 	    chomp;
-	    TLily::Event::send({type => 'user_input',
-				ui   => $args{ui},
-				text => "$_\n"});
+	    TLily::Event::send({type    => 'user_input',
+				ui      => $args{ui},
+				startup => 1,
+				text    => "$_\n"});
 	}
-	event_u($handler);
 	TLily::Event::send(%$event,
 			   type => 'connected',
 			   ui   => $args{ui});
@@ -82,14 +80,12 @@ sub startup_handler ($$) {
 		       target => "me",
 		       call   => $sub);
     } else {
-        event_u($handler);
 	TLily::Event::send(%$event,
 			   type => 'connected',
 			   ui   => $ui);
         return 0;
     }
 
-    event_u($handler);
     return 1;
 }
 
