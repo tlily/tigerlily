@@ -32,13 +32,13 @@ Creates a new Registrar object.
 =cut
 
 sub new {
-	my($proto, $name) = @_;
-	return $registrars{$name} if ($registrars{$name});
-
-	my $class = ref($proto) || $proto;
-	my $self  = {};
-	$registrars{$name} = $self;
-	bless $self, $class;
+    my($proto, $name) = @_;
+    return $registrars{$name} if ($registrars{$name});
+    
+    my $class = ref($proto) || $proto;
+    my $self  = {};
+    $registrars{$name} = $self;
+    bless $self, $class;
 }
 
 
@@ -51,9 +51,9 @@ pushed registrar.
 =cut
 
 sub push_default {
-	my($self) = @_;
-	push @default, $self;
-	return $self;
+    my($self) = @_;
+    push @default, $self;
+    return $self;
 }
 
 
@@ -65,9 +65,9 @@ throws an error if the top entry is not $reg.  (Useful for debugging.)
 =cut
 
 sub pop_default {
-	croak "The registrar stack is out of joint."
-	  if (ref($_[0]) && ($_[0] ne $default[-1]));
-	pop @default;
+    croak "The registrar stack is out of joint."
+      if (ref($_[0]) && ($_[0] ne $default[-1]));
+    pop @default;
 }
 
 
@@ -78,58 +78,58 @@ Returns the current default registrar, or undef if there is none.
 =cut
 
 sub default {
-	return @default ? $default[-1] : undef;
+    return @default ? $default[-1] : undef;
 }
 
 
 sub class_r {
-	shift if (@_ > 2);
-	my($name, $dereg_fn) = @_;
-	$classes{$name} = $dereg_fn;
+    shift if (@_ > 2);
+    my($name, $dereg_fn) = @_;
+    $classes{$name} = $dereg_fn;
 }
 
 
 sub class_u {
-	shift if (@_ > 2);
-	my($name) = @_;
-	delete $classes{$name};
+    shift if (@_ > 2);
+    my($name) = @_;
+    delete $classes{$name};
 }
 
 
 sub add {
-	my $self;
-	$self = shift if (@_ > 2);
-	$self = ref($self) ? $self : $default[-1];
-	return unless $self;
-
-	my($class, $data) = @_;
-	push @{$self->{$class}}, $data;
+    my $self;
+    $self = shift if (@_ > 2);
+    $self = ref($self) ? $self : $default[-1];
+    return unless $self;
+    
+    my($class, $data) = @_;
+    push @{$self->{$class}}, $data;
 }
 
 
 sub remove {
-	my $self;
-	$self = shift if (@_ > 2);
-	$self = ref($self) ? $self : $default[-1];
-	return unless $self;
-
-	my($class, $data) = @_;
-	@{$self->{$class}} = grep { $_ ne $data } @{$self->{$class}};
+    my $self;
+    $self = shift if (@_ > 2);
+    $self = ref($self) ? $self : $default[-1];
+    return unless $self;
+    
+    my($class, $data) = @_;
+    @{$self->{$class}} = grep { $_ ne $data } @{$self->{$class}};
 }
 
 
 sub unwind {
-	my $self = shift;
-	$self = ref($self) ? $self : $default[-1];
-	return unless $self;
-
-	my $class;
-	foreach $class (keys %$self) {
-		my $data;
-		foreach $data (@{$self->{$class}}) {
-			$classes{$class}->($data);
-		}
+    my $self = shift;
+    $self = ref($self) ? $self : $default[-1];
+    return unless $self;
+    
+    my $class;
+    foreach $class (keys %$self) {
+	my $data;
+	foreach $data (@{$self->{$class}}) {
+	    $classes{$class}->($data);
 	}
+    }
 }
 
 1;
