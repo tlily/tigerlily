@@ -40,10 +40,10 @@ my $help = <<END
 #
 #The default formats are:
 #  public:
-#    \\n%[ -> ]%(Server )%(Time )From %From%{ FromBlurb}, to %To:%|
+#    \\n%[ -> ]%(Server )%(Time )From %From%{ Blurb}, to %To:%|
 #    %[ - ]\\n%Body\\n
 #  private:
-#    \\n%[ -> ]%(Server )%(Time )Private message from %From%{ FromBlurb}:%|
+#    \\n%[ -> ]%(Server )%(Time )Private message from %From%{ Blurb}:%|
 #    %[ - ]\\n%Body\\n
 #  emote:
 #    %[> ]%(Server )(to %To) %From%|%Body\\n
