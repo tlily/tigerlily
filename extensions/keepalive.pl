@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/keepalive.pl,v 1.12 2003/03/17 01:59:52 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/keepalive.pl,v 1.13 2003/04/27 23:13:53 steve Exp $
 #
 # keepalive -- periodically ping the server, just to verify our connection
 #              is still there.
@@ -81,3 +81,12 @@ event_r(type => 'pong',
             $pinging{$name} = 0;
             return;
         });
+
+# Clean up state.
+event_r(type => 'server_disconnected',
+        call => sub {
+            my($event) = @_;
+
+	    $pinging{$event->{server}->name} = 0;
+	    return;
+	});
