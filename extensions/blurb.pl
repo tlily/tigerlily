@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/blurb.pl,v 1.2 2000/11/22 14:53:30 coke Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/blurb.pl,v 1.3 2000/11/22 15:05:31 coke Exp $
 
 use strict;
 
@@ -61,12 +61,23 @@ sub blurb_cmd {
 
         goto DONE if (check_blurb($blurb));
 
-	#Remove ALL spaces...
+	#Remove any spaces..
 
-	1 while ($blurb =~ s/ (.)/uc $1/e);
+	while ($blurb =~ s/ (.)/uc $1/e) {
+        	goto DONE if (check_blurb($blurb));
+	}
 
-        goto DONE if (check_blurb($blurb));
+	#Remove some punctuation?
 
+	while ($blurb =~ s/\W//) {
+        	goto DONE if (check_blurb($blurb));
+	}
+
+	#Remove some vowels? (lowercase only to avoid confusion)
+
+	while ($blurb =~ s/([^AEIOUaeiou])[aeiou]([^AEIOUaeiou])/$1$2/) {
+        	goto DONE if (check_blurb($blurb));
+	}
 	FAIL:
 
 	$blurb = substr($blurb,0,($max-length($psuedo)));
