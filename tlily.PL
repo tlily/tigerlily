@@ -44,6 +44,8 @@ $ui->defstyle('privhdr' => 'normal');
 $ui->defstyle('privmsg' => 'normal');
 $ui->defstyle('emote'   => 'normal');
 $ui->defcstyle('status' => 'yellow', 'blue', 'bold');
+$ui->defcstyle('pubhdr' => 'green', 'white', 'normal');
+$ui->defcstyle('pubmsg' => 'green', 'white', 'normal');
 
 show_banner();
     
@@ -86,6 +88,10 @@ sub output_handler {
 	if ($event->{ui_name}) {
 		my $ui = TLily::UI::name($event->{ui_name});
 
+		if ($event->{BELL}) {
+			$ui->bell();
+		}
+
 		if ($event->{NOTIFY} && $event->{formatter}) {
 			$event->{formatter}->($ui, $event);
 		} elsif ($event->{NOTIFY} && $event->{indent}) {
@@ -94,10 +100,6 @@ sub output_handler {
 			$ui->indent();
 		} elsif ($event->{NOTIFY}) {
 			$ui->print($event->{text}, "\n");
-		}
-
-		if ($event->{BEEP}) {
-			$ui->bell();
 		}
 	}
 
