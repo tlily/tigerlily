@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/mask.pl,v 1.2 2003/07/18 04:23:56 coke Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/mask.pl,v 1.3 2003/07/18 04:33:53 coke Exp $
 
 use strict;
 
@@ -9,7 +9,6 @@ use strict;
 # mask certain users as groups.
 #
 
-command_r('mask', \&mask_cmd);
 shelp_r('mask', "Mask user a as group b");
 shelp_r('mask_full', "If true, fully %mask users.", "variables");
 help_r('mask', "Takes advantage of groups with a single user in them, e.g.:
