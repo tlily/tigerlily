@@ -38,8 +38,6 @@ show_banner();
 TLily::User::init;
 TLily::Extend::cmd_init;
 
-TLily::User::command_r(quit => sub { exit; });
-
 $SIG{__WARN__} = \&sig_warn;
 sub sig_warn {
     $SIG{__WARN__} = \&sig_warn;

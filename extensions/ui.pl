@@ -1,4 +1,4 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/ui.pl,v 1.8 1999/03/16 19:44:02 neild Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/ui.pl,v 1.9 1999/03/19 08:17:04 josh Exp $ 
 use strict;
 
 
@@ -99,7 +99,7 @@ sub ui_command {
     my $newui = TLily::UI::Curses->new(name => 'sub');
     $newui->print("foo\n");
 }
-command_r(ui => \&ui_command);
+#command_r(ui => \&ui_command);
 
 
 #
