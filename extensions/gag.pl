@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/gag.pl,v 1.1 1999/03/03 18:34:15 neild Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/gag.pl,v 1.2 1999/08/12 20:45:25 josh Exp $ 
 
 use strict;
 
@@ -9,6 +9,36 @@ use strict;
 
 my %gagged;
 
+# Original by Nathan Torkington, massaged by Jeffrey Friedl
+# Taken from perl FAQ by Brad Jones (brad@kazrak.com)
+#
+sub preserve_case($$) {
+    my ($old, $new) = @_;
+    my ($state) = 0; # 0 = no change; 1 = lc; 2 = uc
+    my ($i, $oldlen, $newlen, $c) = (0, length($old), length($new));
+    my ($len) = $oldlen < $newlen ? $oldlen : $newlen;
+
+    for ($i = 0; $i < $len; $i++) {
+        if ($c = substr($old, $i, 1), $c =~ /[\W\d_]/) {
+            $state = 0;
+        } elsif (lc $c eq $c) {
+            substr($new, $i, 1) = lc(substr($new, $i, 1));
+            $state = 1;
+        } else {
+            substr($new, $i, 1) = uc(substr($new, $i, 1));
+            $state = 2;
+        }
+    }
+    # finish up with any remaining new (for when new is longer than old)
+    if ($newlen > $oldlen) {
+        if ($state == 1) {
+            substr($new, $oldlen) = lc(substr($new, $oldlen));
+        } elsif ($state == 2) {
+            substr($new, $oldlen) = uc(substr($new, $oldlen));
+        }
+    }
+    return $new;
+}
 
 sub gag_command_handler {
     my($ui, $args) = @_;
@@ -58,10 +88,11 @@ sub gag_command_handler {
 sub gagger {
     my($event, $handler) = @_;
     return unless (defined $gagged{$event->{SHANDLE}});
-    $event->{VALUE} =~ s/\b\w\b/m/g;
-    $event->{VALUE} =~ s/\b\w\w\b/mm/g;
-    $event->{VALUE} =~ s/\b\w\w\w\b/mrm/g;
-    $event->{VALUE} =~ s/\b(\w+)\w\w\w\b/'m'.('r'x length($1)).'fl'/ge;
+    $event->{VALUE} =~ s/\b(\w)\b/preserve_case($1, "m")/ge;
+    $event->{VALUE} =~ s/\b(\w\w)\b/preserve_case($1, "mm")/ge;
+    $event->{VALUE} =~ s/\b(\w\w\w)\b/preserve_case($1, "mrm")/ge;
+    $event->{VALUE} =~
+        s/\b((\w+)\w\w\w)\b/preserve_case($1, 'm'.('r'x length($2)).'fl')/ge;
     return;
 }
 
@@ -86,3 +117,4 @@ ungag someone -- this is no longer supported.
 
 
 1;
+
