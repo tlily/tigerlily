@@ -57,11 +57,16 @@ the discussions.
 
 When the autoreview extension is autoloaded, an autoreview will be performed
 at connect-time.
+
+By default, autoreview will perform a "/review detach".  You may pass
+alternate criteria to the autoreview command--for example, "%autoreview
+last 1h".
 END
 
 my @to_review;
 my $rev_interesting = 0;
 my $rev_start;
+my $rev_args;
 
 sub connected_handler {
     my($event, $handler) = @_;
@@ -71,12 +76,13 @@ sub connected_handler {
 }
 
 sub review_cmd {
-    my ($ui) = @_;
+    my ($ui, $args) = @_;
     if (@to_review) {
 	$ui->print("(You are currently autoreviewing)\n");
 	return 0;
     }
     my $server = active_server();
+    $rev_args = $args || "detach";
     review_start($server);
     return 0;
 }
@@ -96,7 +102,7 @@ sub review {
     my $target = shift @to_review;
     $rev_interesting = 0;
     $rev_start = undef;
-    $server->cmd_process("/review " . $target . " detach", \&review_handler);
+    $server->cmd_process("/review $target $rev_args", \&review_handler);
 }
 
 sub review_handler {
@@ -104,14 +110,16 @@ sub review_handler {
     if ($event->{type} eq 'begincmd') {
     } elsif ($event->{type} eq 'endcmd') {
 	review($event->{server});
-    } elsif ($event->{text} =~ /^\(Beginning review of.*\)/) {
+    } elsif ($event->{text} =~ /^\(Beginning review.*\)/) {
 	$rev_start = $event->{text};
 	$event->{NOTIFY} = 0;
-    } elsif ($event->{text} =~ /^\(End of review of.*\)/) {
+    } elsif ($event->{text} =~ /^\(End of review.*\)/) {
 	$event->{NOTIFY} = 0 unless ($rev_interesting);
     } elsif ($event->{text} eq "") {
 	$event->{NOTIFY} = 0 unless ($rev_interesting);
     } elsif ($event->{text} =~ /^\(No events to review for .*\)/) {
+	$event->{NOTIFY} = 0;
+    } elsif ($event->{text} =~ /^\(There are no events that match.*\)/) {
 	$event->{NOTIFY} = 0;
     } elsif ($event->{text} =~ /^\# \*\*\*/) {
 	$event->{NOTIFY} = 0;
