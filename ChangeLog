@@ -1,3 +1,6 @@
+Version 2.4-post
+  * [aqua/] Moved all OSX build items into aqua from root. [WJC]
+
 Version 2.4
   * [Makefile.PL] Revamped build system.
   * [extensions/infobot.pl] Tlily-based infobot [JDW]

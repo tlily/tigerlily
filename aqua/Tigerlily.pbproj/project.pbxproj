@@ -151,22 +151,12 @@
 		};
 		29B97315FDCFA39411CA2CEA = {
 			children = (
+				E936598D05A1EC9E00FFBBD9,
 				29B97316FDCFA39411CA2CEA,
 				F5D5A3B4026B2DF601A80164,
-				E9A8900104D89FAA00667EBA,
-				E9A8900204D89FAA00667EBA,
-				E9A8900304D89FDB00667EBA,
-				E9A8900404D89FDB00667EBA,
-				E9A8900504D89FDB00667EBA,
-				E9A8900604D89FDB00667EBA,
-				E9A8900D04D8A00000667EBA,
-				E9A8900F04D8A00000667EBA,
-				E9A8901004D8A00100667EBA,
-				E9A8901204D8A00100667EBA,
-				E99A913D04D8B793004CC310,
-				E99A914104D8B8DB004CC310,
-				E99A918504D8B8DB004CC310,
-				E99A91BE04D8B8DB004CC310,
+				E936528805A1E98F00FFBBD9,
+				E9B6B33C05A2350500D0C4D2,
+				E9CC456205A23B120089078B,
 			);
 			isa = PBXGroup;
 			name = "Other Sources";
@@ -293,21 +283,11 @@
 				F5D5A3B5026B2DF601A80164,
 				F5D5A3B7026B2EB001A80164,
 				F55030FB026B86CD01A80164,
-				E9A8900704D89FDB00667EBA,
-				E9A8900804D89FDB00667EBA,
-				E9A8900904D89FDB00667EBA,
-				E9A8900A04D89FDB00667EBA,
-				E9A8900B04D89FDE00667EBA,
-				E9A8900C04D89FDE00667EBA,
-				E9A8901304D8A00100667EBA,
-				E9A8901504D8A00100667EBA,
-				E9A8901604D8A00100667EBA,
-				E99A914004D8B793004CC310,
-				E99A91C504D8B8DB004CC310,
-				E99A91C604D8B8DB004CC310,
-				E99A91C704D8B8DB004CC310,
 				E93C6AD104D8F20200E20B96,
-				E9EAFBA704DB6699000E19B9,
+				E936541005A1E98F00FFBBD9,
+				E9365B3F05A1EC9E00FFBBD9,
+				E9B6B33D05A2350500D0C4D2,
+				E9CC456305A23B120089078B,
 			);
 			isa = PBXResourcesBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -376,6 +356,32 @@
 //E92
 //E93
 //E94
+		E936528805A1E98F00FFBBD9 = {
+			includeInIndex = 1;
+			isa = PBXFolderReference;
+			name = extensions;
+			path = ../extensions;
+			refType = 0;
+		};
+		E936541005A1E98F00FFBBD9 = {
+			fileRef = E936528805A1E98F00FFBBD9;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		E936598D05A1EC9E00FFBBD9 = {
+			includeInIndex = 1;
+			isa = PBXFolderReference;
+			name = TLily;
+			path = "..//lib/TLily";
+			refType = 0;
+		};
+		E9365B3F05A1EC9E00FFBBD9 = {
+			fileRef = E936598D05A1EC9E00FFBBD9;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
 		E93C6AD004D8F20200E20B96 = {
 			isa = PBXFileReference;
 			path = Tigerlily.icns;
@@ -387,168 +393,28 @@
 			settings = {
 			};
 		};
-		E99A913D04D8B793004CC310 = {
-			includeInIndex = 1;
-			isa = PBXFolderReference;
-			path = contrib;
-			refType = 4;
-		};
-		E99A914004D8B793004CC310 = {
-			fileRef = E99A913D04D8B793004CC310;
-			isa = PBXBuildFile;
-			settings = {
-			};
-		};
-		E99A914104D8B8DB004CC310 = {
-			includeInIndex = 1;
-			isa = PBXFolderReference;
-			path = extensions;
-			refType = 4;
-		};
-		E99A918504D8B8DB004CC310 = {
-			includeInIndex = 1;
-			isa = PBXFolderReference;
-			path = TLily;
-			refType = 4;
-		};
-		E99A91BE04D8B8DB004CC310 = {
-			includeInIndex = 1;
-			isa = PBXFolderReference;
-			path = tools;
-			refType = 4;
-		};
-		E99A91C504D8B8DB004CC310 = {
-			fileRef = E99A914104D8B8DB004CC310;
-			isa = PBXBuildFile;
-			settings = {
-			};
-		};
-		E99A91C604D8B8DB004CC310 = {
-			fileRef = E99A918504D8B8DB004CC310;
-			isa = PBXBuildFile;
-			settings = {
-			};
-		};
-		E99A91C704D8B8DB004CC310 = {
-			fileRef = E99A91BE04D8B8DB004CC310;
-			isa = PBXBuildFile;
-			settings = {
-			};
-		};
-		E9A8900104D89FAA00667EBA = {
-			isa = PBXFileReference;
-			path = ChangeLog;
-			refType = 4;
-		};
-		E9A8900204D89FAA00667EBA = {
-			isa = PBXFileReference;
-			path = CODING;
-			refType = 4;
-		};
-		E9A8900304D89FDB00667EBA = {
+		E9B6B33C05A2350500D0C4D2 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			path = Makefile.PL;
-			refType = 4;
+			name = tlily.global;
+			path = ../lib/tlily.global;
+			refType = 0;
 		};
-		E9A8900404D89FDB00667EBA = {
-			fileEncoding = 30;
-			isa = PBXFileReference;
-			path = MANIFEST;
-			refType = 4;
-		};
-		E9A8900504D89FDB00667EBA = {
-			fileEncoding = 30;
-			isa = PBXFileReference;
-			path = MANIFEST.SKIP;
-			refType = 4;
-		};
-		E9A8900604D89FDB00667EBA = {
-			fileEncoding = 30;
-			isa = PBXFileReference;
-			path = README;
-			refType = 4;
-		};
-		E9A8900704D89FDB00667EBA = {
-			fileRef = E9A8900304D89FDB00667EBA;
+		E9B6B33D05A2350500D0C4D2 = {
+			fileRef = E9B6B33C05A2350500D0C4D2;
 			isa = PBXBuildFile;
 			settings = {
 			};
 		};
-		E9A8900804D89FDB00667EBA = {
-			fileRef = E9A8900404D89FDB00667EBA;
-			isa = PBXBuildFile;
-			settings = {
-			};
-		};
-		E9A8900904D89FDB00667EBA = {
-			fileRef = E9A8900504D89FDB00667EBA;
-			isa = PBXBuildFile;
-			settings = {
-			};
-		};
-		E9A8900A04D89FDB00667EBA = {
-			fileRef = E9A8900604D89FDB00667EBA;
-			isa = PBXBuildFile;
-			settings = {
-			};
-		};
-		E9A8900B04D89FDE00667EBA = {
-			fileRef = E9A8900104D89FAA00667EBA;
-			isa = PBXBuildFile;
-			settings = {
-			};
-		};
-		E9A8900C04D89FDE00667EBA = {
-			fileRef = E9A8900204D89FAA00667EBA;
-			isa = PBXBuildFile;
-			settings = {
-			};
-		};
-		E9A8900D04D8A00000667EBA = {
-			fileEncoding = 30;
-			isa = PBXFileReference;
-			path = README.Tk;
-			refType = 4;
-		};
-		E9A8900F04D8A00000667EBA = {
-			fileEncoding = 30;
-			isa = PBXFileReference;
-			path = tlily.global;
-			refType = 4;
-		};
-		E9A8901004D8A00100667EBA = {
+		E9CC456205A23B120089078B = {
 			fileEncoding = 30;
 			isa = PBXExecutableFileReference;
-			path = tlily.PL;
-			refType = 4;
+			name = tlily.PL;
+			path = ../tlily.PL;
+			refType = 0;
 		};
-		E9A8901204D8A00100667EBA = {
-			fileEncoding = 30;
-			isa = PBXFileReference;
-			path = TODO;
-			refType = 4;
-		};
-		E9A8901304D8A00100667EBA = {
-			fileRef = E9A8900D04D8A00000667EBA;
-			isa = PBXBuildFile;
-			settings = {
-			};
-		};
-		E9A8901504D8A00100667EBA = {
-			fileRef = E9A8900F04D8A00000667EBA;
-			isa = PBXBuildFile;
-			settings = {
-			};
-		};
-		E9A8901604D8A00100667EBA = {
-			fileRef = E9A8901004D8A00100667EBA;
-			isa = PBXBuildFile;
-			settings = {
-			};
-		};
-		E9EAFBA704DB6699000E19B9 = {
-			fileRef = E9A8901204D8A00100667EBA;
+		E9CC456305A23B120089078B = {
+			fileRef = E9CC456205A23B120089078B;
 			isa = PBXBuildFile;
 			settings = {
 			};

@@ -3,8 +3,8 @@ directions on the RPI server in
 
 /memo osx tlilyonjaguar
 
-To build the aqua version, you'll need the developer tools installed. Open the
-Tigerlily.pbproj, then build. You'll get a Tigerlily.App that you can just
+To build the aqua version, you'll need the developer tools installed. Open
+aqua/Tigerlily.pbproj, then build. You'll get a Tigerlily.App that you can just
 copy onto your hard drive. (Though there's presumably a better way to do that. =-)
 
 You'll also need the camelbones framework (v2) available from sourceforge.
