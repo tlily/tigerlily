@@ -1,5 +1,9 @@
 Version 2.1.1-post
-  * [TLily/UI/Curses.pm] $config{scroll_to_bottom_on_input}, like xterm.
+  * [TLiLy/UI/Curses/Input.pm] previous_history and next_history could
+    cause the history to become permanently edited.  New function
+    save_history_excursion retains copy of the original history entry,
+    which is restored by accept_line.
+  * [TLily/UI/Curses.pm] $config{scroll_to_bottom_on_input}, like xterm. [DCL]
   * [extensions/ui.pl, TLiLy/UI/Curses/Input.pm] Mucho hacking on the
     search mechanism.  toggle-input-search-mode is now isearch-backward,
     and isearch-forward was added.  Typing a key bound to backward-delete-char

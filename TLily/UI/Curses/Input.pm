@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Curses/Attic/Input.pm,v 1.21 2000/02/13 20:16:04 tale Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Curses/Attic/Input.pm,v 1.22 2000/02/14 00:51:55 tale Exp $
 
 package TLily::UI::Curses::Input;
 
@@ -319,6 +319,10 @@ sub accept_line {
     $self->rationalize();
     $self->redraw();
 
+    foreach my $hist_idx (keys %{$self->{saved_history}}) {
+        $self->{history}->[$hist_idx] = $self->{saved_history}->{$hist_idx};
+    }
+
     if ($text ne "" && $text ne $self->{history}->[-1] &&
         !$self->{'password'}) {
 	$self->{history}->[-1] = $text;
@@ -328,6 +332,18 @@ sub accept_line {
     $self->{history_pos} = $#{$self->{history}};
 
     return $text;
+}
+
+# Save the current history entry and replace it with the current text.
+# It will be restored after accept_line runs.
+sub save_history_excursion {
+    my ($self) = @_;
+
+    if ($self->{history}->[$self->{history_pos}] ne $self->{text}) {
+        $self->{saved_history}->{$self->{history_pos}} =
+            $self->{history}->[$self->{history_pos}];
+        $self->{history}->[$self->{history_pos}] = $self->{text};
+    }
 }
 
 =item search_history()
@@ -459,7 +475,7 @@ sub search_history {
 sub previous_history {
     my($self) = @_;
     return if ($self->{history_pos} <= 0);
-    $self->{history}->[$self->{history_pos}] = $self->{text};
+    $self->save_history_excursion;
     $self->{history_pos}--;
     $self->{text} = $self->{history}->[$self->{history_pos}];
     $self->{point} = length $self->{text};
@@ -473,7 +489,7 @@ sub previous_history {
 sub next_history {
     my($self) = @_;
     return if ($self->{history_pos} >= $#{$self->{history}});
-    $self->{history}->[$self->{history_pos}] = $self->{text};
+    $self->save_history_excursion;
     $self->{history_pos}++;
     $self->{text} = $self->{history}->[$self->{history_pos}];
     $self->{point} = length $self->{text};
