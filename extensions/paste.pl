@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/paste.pl,v 1.5 2000/09/09 06:07:26 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/paste.pl,v 1.6 2001/08/17 00:57:00 kazrak Exp $
 
 use strict;
 
@@ -30,20 +30,30 @@ and perform the appropriate magic.
 
 sub paste_mode {
     my($ui, $command, $key) = @_;
-    return 1 if ($ui->{_paste_nl_flag} &&
+    return 1 if ($ui->{_eat_space_flag} &&
                  ($key eq "nl" || $key eq " " || $key eq ">"));
     if ($key eq "nl") {
-	$ui->{_paste_nl_flag} = 1;
+	$ui->{_eat_space_flag} = 1;
 	$ui->command("insert-self", " ");
 	return 1;
+    } elsif ($key eq " ") {
+        if ($ui->{_eat_space_buffer}) {
+            $ui->{_eat_space_flag} = 1;
+            return 1;
+        } else {
+            $ui->{_eat_space_buffer} = $key;
+            return;
+        }
     }
-    $ui->{_paste_nl_flag} = 0;
+    $ui->{_eat_space_flag} = 0;
+    $ui->{_eat_space_buffer} = '';
     return;
 }
 
 sub toggle_paste_mode {
     my($ui, $command) = @_;
-    $ui->{_paste_nl_flag} = 0;
+    $ui->{_eat_space_flag} = 0;
+    $ui->{_eat_space_buffer} = '';
     if ($ui->intercept_u("paste-mode")) {
 	$ui->prompt("");
     }
