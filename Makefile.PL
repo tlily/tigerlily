@@ -7,7 +7,7 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/Makefile.PL,v 1.22 2003/11/04 02:57:07 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/Makefile.PL,v 1.23 2003/11/04 03:28:55 albert Exp $
 
 use strict;
 use Config;
@@ -166,6 +166,19 @@ if ($^O eq 'MSWin32') {
     };    
 }
 
+# support 5.6(MM5) and 5.8(MM6)
+my @incompat_options;
+if($ExtUtils::MakeMaker::VERSION >= 6) {
+    @incompat_options = (
+	INSTALLSITEBIN      => $TL_BINDIR,
+	INSTALLSITEMAN1DIR  => $TL_MANDIR."/man1",
+	INSTALLSITEMAN3DIR  => $TL_MANDIR."/man3",);
+} else {
+    @incompat_options = (
+	INSTALLBIN      => $TL_BINDIR,
+	INSTALLMAN1DIR  => $TL_MANDIR."/man1",
+	INSTALLMAN3DIR  => $TL_MANDIR."/man3",);
+}
 
 WriteMakefile(
     NAME	    => 'TLily',
@@ -185,10 +198,8 @@ WriteMakefile(
     INSTALLSITEARCH => $TL_LIBDIR,
 
     INSTALLSCRIPT   => $TL_BINDIR,
-    INSTALLBIN  => $TL_BINDIR,
 
-    INSTALLMAN1DIR  => $TL_MANDIR."/man1",
-    INSTALLMAN3DIR  => $TL_MANDIR."/man3",
+    @incompat_options,
 
     dist            => { COMPRESS => 'gzip -9 -f', SUFFIX => 'gz' },
     realclean       => { FILES => 'MANIFEST.bak Makefile.old' },
