@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/info.pl,v 1.1 1999/02/27 00:22:59 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/info.pl,v 1.2 1999/02/28 05:24:50 steve Exp $
 
 sub info_set {
     my ($ui,%args)=@_;
@@ -51,7 +51,7 @@ sub info_set {
 	my $server = server_name();
 	my $ui = ui_name();
 
-	if ($event->{Response} eq 'OKAY') {
+	if ($event->{text} eq 'OKAY') {
 	    my $l;
 	    foreach $l (@data) {
 		$server->send($l);
