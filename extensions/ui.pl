@@ -1,5 +1,97 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/ui.pl,v 1.3 1999/02/27 22:02:17 josh Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/ui.pl,v 1.4 1999/03/02 00:47:39 neild Exp $ 
 use strict;
+
+
+#
+# Keybindings.
+#
+
+my $bind_help = "
+Usage: %bind [locally] key [command]
+
+%bind binds a key to a command.  The actual set of commands you can bind \
+a key to is unfortunately poorly specified at this time.  If the \"locally\" \
+argument is specified (or a substring thereof), the binding will apply only \
+to the current UI; otherwise, it will be a global binding.
+
+If the command argument is not specified, the key will be bound to print
+itself.
+
+(see also %keyname)
+";
+
+my $keyname_help = "
+Usage: %keyname
+
+Prints the name (suitable for use in %bind) of the next key pressed.
+
+(see also %bind)
+";
+
+sub bind_command {
+    my($ui, $args) = @_;
+    my @args = split /\s+/, $args;
+    my $local;
+
+    if ($args[0] && index("locally", $args[0]) == 0) {
+	shift @args;
+	$local = 1;
+    }
+
+    if (@args == 1) {
+	push @args, "insert-self";
+    }
+    elsif (@args != 2) {
+	$ui->print("(%bind [locally] key command; type %help for help)\n");
+	return;
+    }
+
+    $ui->print("(binding \"$args[0]\" to \"$args[1]\")\n");
+    if ($local) {
+	$ui->bind(@args);
+    } else {
+	TLily::UI::bind(@args);
+    }
+
+    return;
+}
+command_r('bind' => \&bind_command);
+shelp_r('bind' => "Bind a key to a command.");
+help_r('bind' => $bind_help);
+
+
+sub name_self {
+    my($ui, $command, $key) = @_;
+    $ui->intercept_u($command);
+    $ui->print("(you pressed \"$key\")\n");
+    return 1;
+}
+TLily::UI::command_r("name-self" => \&name_self);
+
+
+sub keyname_command {
+    my($ui, $args) = @_;
+
+    if ($args) {
+	$ui->print("(%keyname; type %help for help)\n");
+	return;
+    }
+
+    if (!$ui->intercept_r("name-self")) {
+	$ui->print("(sorry; a keyboard intercept is already in place)\n");
+	return;
+    }
+
+    $ui->print("Press any key.\n");
+    return;
+}
+command_r(keyname => \&keyname_command);
+shelp_r(keyname => "Print the name of the next key pressed.");
+help_r(keyname => $keyname_help);
+
+#
+# Styles.
+#
 
 my $style_help = "
 Usage: %style style attr ...
