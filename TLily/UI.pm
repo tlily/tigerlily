@@ -88,6 +88,30 @@ sub prints {
     }
 }
 
+sub print {
+    my $self = shift;
+    print {$self->{log_fh}} @_ if ($self->{log_fh});
+    return;
+};
+
+sub log {
+    my $self = shift;
+    return $self->{log_file} if (@_ == 0);
+
+    my($file) = @_;
+    $self->{log_file} = undef;
+    $self->{log_fh}   = undef;
+
+    if (defined $file) {
+	local *FH;
+	open(FH, ">$file") or die "$file: $!\n";
+	$self->{log_file} = $file;
+	$self->{log_fh}   = *FH;
+    }
+
+    return;
+}
+
 sub command_r {
     return if (ref($_[0])); # Don't do anything as an object method.
     shift if (@_ > 2);      # Lose the package, if called as a class method.

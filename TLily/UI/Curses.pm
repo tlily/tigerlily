@@ -27,6 +27,7 @@ sub indent {
 
 sub print {
     my $self = shift;
+    $self->SUPER::print(@_);
     $self->[0]->{text}->{$self->[1]}->{text}->print(join('', @_));
     $self->[0]->{input}->position_cursor();
     doupdate();
@@ -433,6 +434,7 @@ sub indent {
 
 sub print {
     my $self = shift;
+    $self->SUPER::print(@_);
     $self->{text}->{main}->{text}->print(join('', @_));
     $self->{input}->position_cursor();
     doupdate();
