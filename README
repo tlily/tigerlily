@@ -6,7 +6,7 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/README,v 1.8 1999/04/11 22:16:34 albert Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/README,v 1.9 1999/12/18 20:33:06 mjr Exp $
 
      ("`-/")_.-'"``-._ 
       . . `; -._    )-;-,_`)          TigerLily 2.x
@@ -21,13 +21,14 @@ Installing
 TigerLily requires Perl 5.003 or greater.  You will also need
 Curses.pm or Term::Readline::Gnu. (from CPAN)
 
-To create a usable tlily executable, run the command:
+To create a usable tlily executable without haing to install, run the command:
     perl Makefile.PL -current ; make
 
 To run it:
     ./tlily [options]
 
-To install tlily:
+
+To install tlily on your system (default is /usr/local):
     perl Makefile.PL ; make ; make install
 
 To make a release:(developers only!)
@@ -54,12 +55,15 @@ green on black, add the following to your config file:
 /-command Overrides
 -------------------
 
-Tigerlily includes 3 client-side fixes/enhancements for existing lily
+Tigerlily includes several client-side fixes/enhancements for existing lily
 commmands, implemented by intercepting the command before it is sent
 to the server:
 
 /info		Enhanced so that /info set and /info edit bring up your
 		editor for you to change your info.
+
+/memo		Enhanced so that /memo set and /memo edit bring up your
+		editor for you to change your memos.
 
 /oops		Fixed so as to reset your sendlist correctly for ;-expansion
 
@@ -110,7 +114,7 @@ TigerLily now has 4 levels of customization:
              Many(not all) configuration options can be overridden at the
              command line.
 
-Here is a summary of the common configuration file(CF) options:
+Here is a summary of the common configuration file (CF) options:
 
 @load
 	Setting this variable in a CF will change the list of
@@ -172,23 +176,26 @@ CVS access
 ----------
 The TigerLily sources are stored in a CVS repository.  Anyone working on
 TigerLily development can get access by contacting Damien (neild@acm.rpi.edu)
-or Albert (albert@acm.rpi.edu).
+or Albert (albert@acm.rpi.edu).  We also allow anonymous read-only access.
 
-The repository is currently located on einstein.org.
+The repository is currently located on tlily.centauri.org.
 
-To access the repository remotely, you will need to set two environment
-variables:
-  export CVSROOT=:ext:neild@einstein.org:/usr/src/cvs
+To access the repository anonymous read-only, do:
+  cvs -d :pserver:anon@tlily.centauri.org:/data/cvs login
+  (When prompted for a password, just press enter.)
+  cvs -d :pserver:anon@tlily.centauri.org:/data/cvs co tlily2
+
+To access the repository read-write, once you have an account, you will
+need to set two environment variables:
+  export CVSROOT=:ext:neild@tlily.centauri.org:/data/cvs
   export CVS_RSH=ssh
 
-Obviously, replace the `neild' with your own userid on einstein.org.  CVS_RSH
-need not necessarily be ssh, but this is likely to be the simplest and most
-secure method to use.
+Obviously, replace the `neild' with your own userid on tlily.centauri.org.
 
 The important CVS commands are:
-  - cvs checkout tlily
+  - cvs checkout tlily2
     This will grab a copy of the current source tree, and place it in a
-    new directory named `tlily'.  No locking is implied by this operation;
+    new directory named `tlily2'.  No locking is implied by this operation;
     you may delete the checked out tree without ill effect.
 
 All other CVS commands accept a list of files as an argument; in the absence
@@ -210,4 +217,4 @@ of this list, they operate on the current directory.
   - cvs commit
     Checks in all changes in the current tree.
 
-Read the CVS manpages for more detailed information.
+Read the CVS documentation for more detailed information.

@@ -1,10 +1,27 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/ui.pl,v 1.17 1999/12/16 22:41:26 mjr Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/ui.pl,v 1.18 1999/12/18 20:33:06 mjr Exp $ 
 use strict;
 
+=head1 NAME
 
+ui.pl - User Interface functions
+
+=head1 DESCRIPTION
+
+This extension contains %commands for dealing with the user interface.
+
+=head1 COMMANDS
+
+=over 10
+=cut
 #
 # Keybindings.
 #
+
+=item %bind
+
+Binds a key to a command.  See L<"%help bind"|%help bind> for details.
+
+=cut
 
 my $bind_help = "
 Usage: %bind [locally] key [command]
@@ -60,6 +77,12 @@ shelp_r('bind' => "Bind a key to a command.");
 help_r('bind' => $bind_help);
 
 
+=item %key
+
+Echos the key symbol of the next key pressed.  See L<"%help key"|%help key> for details.
+
+=cut
+
 sub name_self {
     my($ui, $command, $key) = @_;
     $ui->intercept_u($command);
@@ -104,6 +127,12 @@ sub ui_command {
 #command_r(ui => \&ui_command);
 
 
+=item %page
+
+Enables and disables output paging.  See L<"%help page"|%help page> for details.
+
+=cut
+
 #
 # Paging.
 #
@@ -138,6 +167,12 @@ sub page_command {
 command_r(page => \&page_command);
 shelp_r(page => "Turn output paging on and off.");
 help_r(page => $page_help);
+
+=item Input Contexts
+
+Input cut buffers.  See L<"%help icontext"|%help icontext> for details.
+
+=cut
 
 #
 # Input contexts.
@@ -192,6 +227,22 @@ help_r("icontext" => $icontext_help);
 # Input history searching
 #
 
+=item Input History Searching
+
+Allows you to search your input buffer for a string, as in bash.
+See L<"%help isearch"|%help isearch> for details.
+
+=cut
+
+my $isearch_help = qq{
+You can search your input buffer history (but not input contexts) for \
+a string.  After switching into search mode (default key is C-r), each \
+additional key will build a search string, and search backwards in your \
+input buffer for that string.  If a character is typed that would cause \
+the string not to be found, it is ignored, and tlily will beep.  Any \
+control characters will terminate search mode.
+};
+
 sub input_search_mode {
     my($ui, $command, $key) = @_;
     if (length($key) == 1) {
@@ -223,10 +274,21 @@ sub toggle_input_search_mode {
 TLily::UI::command_r("toggle-input-search-mode" => \&toggle_input_search_mode);
 TLily::UI::command_r("input-search-mode" => \&input_search_mode);
 TLily::UI::bind("C-r" => "toggle-input-search-mode");
+shelp_r("isearch" => "Search your input buffer for a string.",
+        "concepts");
+help_r("isearch" => $isearch_help);
 
 #
 # Styles.
 #
+
+=item %style
+
+Allows you to redefine the attributes used to render text in monochrome
+mode.
+See L<"%help style"|%help style> for details.
+
+=cut
 
 my $style_help = "
 Usage: %style style attr ...
@@ -265,6 +327,14 @@ sub style_command {
 command_r(style => \&style_command);
 shelp_r(style => "Set the attributes of a text style.");
 help_r(style => $style_help);
+
+=item %cstyle
+
+Allows you to redefine the colors and attributes used to render text
+in color mode.
+See L<"%help cstyle"|%help cstyle> for details.
+
+=cut
 
 
 sub cstyle_command {

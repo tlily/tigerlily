@@ -7,7 +7,7 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Utils.pm,v 1.4 1999/10/23 06:15:59 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Utils.pm,v 1.5 1999/12/18 20:33:06 mjr Exp $
 package TLily::Utils;
 
 use strict;
@@ -17,7 +17,11 @@ use TLily::Config;
 use vars qw(@ISA @EXPORT_OK);
 @ISA = qw(Exporter);
 
-@EXPORT_OK = qw(&edit_text &diff_text &columnize_list);
+@EXPORT_OK = qw(&max &min &edit_text &diff_text &columnize_list);
+
+# These are handy in a couple of places.
+sub max($$) { ($_[0] > $_[1]) ? $_[0] : $_[1] }
+sub min($$) { ($_[0] < $_[1]) ? $_[0] : $_[1] }
 
 sub columnize_list {
     my ($ui, $list, $limit) = @_;
@@ -28,7 +32,7 @@ sub columnize_list {
 
     # Need to implement some feedback here to adjust the column width
     # more appropriately.
-    foreach (@{$list}) { $clen = length $_ if (length $_ > $clen); }
+    foreach (@{$list}) { $clen = max($clen, length $_); }
     $clen += 2;
 
     my $cols = int($ui_cols / $clen);

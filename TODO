@@ -1,13 +1,15 @@
 To Do
 -----
 
-  when the last open server connection is closed, provide a exit/reconnect
+ -  when the last open server connection is closed, provide a exit/reconnect
       option. (integrate with smartexit feature)
-  multiserver, multiui
-  irc mode/ TLily::Server::SubClient
-  thread extension?
+ -  multiserver, multiui
+ -  irc mode/ TLily::Server::SubClient
+ -  thread extension?
      after [;:], if you press some key, have it insert [xxx], where xxx
      is a scrollable list of threads seen in the discussion?
-  lilyBot support
-  I need to add passive mode to the %ctc support.    
-  fix all occurances of outdated refs to einstein.org.
+ -  lilyBot support
+ -  Need to add passive mode to the %ctc support.    
+ -  Fix all occurances of outdated refs to einstein.org.
+ -  Perhaps a method of procuring help for an extension file, regardless
+    if it's load?

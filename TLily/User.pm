@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/User.pm,v 1.25 1999/12/16 22:41:26 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/User.pm,v 1.26 1999/12/18 20:33:06 mjr Exp $
 
 package TLily::User;
 
@@ -19,6 +19,7 @@ use Text::Abbrev;
 use Exporter;
 
 use TLily::Config qw(%config);
+use TLily::Utils qw(&max);
 
 @ISA = qw(Exporter);
 @EXPORT_OK = qw(&help_r &shelp_r &command_r);
@@ -35,8 +36,11 @@ use TLily::User;
 TLily::User::init();
 
 TLily::User::command_r(foo => \&foo);
+
 TLily::User::shelp_r(foo => "A Foo Command");
+
 TLily::User::help_r(foo => "Foo does stuff .. long description");
+
 (...)
 
 =head1 DESCRIPTION
@@ -89,6 +93,7 @@ sub init {
     help_r(variables => sub { help_index("variables", @_); } );
     help_r(concepts  => sub { help_index("concepts", @_); } );
     help_r(internals => sub { help_index("internals", @_); } );
+    help_r(extensions => sub { help_index("extensions", @_); } );
     help_r(help => '
 Welcome to Tigerlily!
 
@@ -100,31 +105,79 @@ For a list of configuration variables, try "%help variables".
 If you\'re interested in tlily\'s guts, try "%help internals".
 ');
     
-    opendir(DIR, "$::TL_LIBDIR/TLily") ||
-        warn "Can't opendir $::TL_LIBDIR/TLily: $!\n";
-    my @pmfiles = grep(/\.pm$/, readdir(DIR));
-    closedir(DIR);
+    rebuild_file_help_idx("$::TL_LIBDIR/TLily",
+                          index => "internals",
+                          prefix => "TLily::");
 
-    my $module;   
-    foreach $module (@pmfiles) {
-	local(*F);
-	open(F,"<$::TL_LIBDIR/TLily/$module") ||
-	   warn "Can't open $::TL_LIBDIR/TLily/$module: $!\n";
-	   
-	my $namehead=0;
-	while(<F>) {
-	    if (/=head1 NAME/) { $namehead = 1; next }
-	    if (/=head1/) { $namehead = 0; last; }
-	    next unless $namehead;
-	    next if (/^\s*$/);
-	    my ($desc) = /-\s*(.*)\s*$/;
-	    shelp_r($module => $desc, "internals");
-	    help_r($module => "POD:$module");
-	    last;
-	}
-    }
+    rebuild_file_help_idx("$::TL_EXTDIR",
+                          index => "extensions");
 }
 
+=item rebuild_file_help_idx($directory [, index => "indexname"] [, prefix => "prefix")
+
+Rebuilds the file-based on-line help directories.  This portion of the online
+help is used for viewing the POD documentation in the files that make up 
+tigerlily and it's extensions.
+
+The first arguement is the pathname of the directory to search for POD docs.
+The index named argument is the name of the index to insert the short help
+into for anything found in the directory.
+The prefix named argument makes the command recurse into subdirectories, and
+is intended for use on Perl module hierarchies.  It is the string to
+start the name of anything found in the directory to be searched.  The
+function will automatically build up a name for each module found that is
+qualified relative to the prefix you first passed in.
+
+The function will only catalog files that contain useable POD documentation,
+and will ignore any directory trees that do not contain any such files.
+
+This is primarily used internally, and is not currently exported.
+
+=cut
+
+sub rebuild_file_help_idx {
+    my $dir = shift;
+    my %args = @_;
+
+    opendir(DIR, "$dir") ||
+        warn "Can't opendir $dir: $!\n";
+    my @files = readdir(DIR);
+    closedir(DIR);
+
+    my $prefix = $args{'prefix'};
+    my $module;   
+    my $count = 0;
+    foreach $module (@files) {
+        local(*F);
+        next if ($module =~ /^\./);
+        my $file = "$dir/$module";
+        if ( -f "$file" ) {
+            open(F,"<$file") ||
+              warn "Can't open $file: $!\n";
+	   
+            my $namehead=0;
+            while(<F>) {
+                if (/=head1 NAME/) { $namehead = 1; next }
+                if (/=head1/) { $namehead = 0; last; }
+                next unless $namehead;
+                next if (/^\s*$/);
+                my ($desc) = /-\s*(.*)\s*$/;
+                shelp_r("${prefix}$module" => $desc, "$args{'index'}");
+                help_r($args{'index'} => sub { help_index("$args{'index'}", @_); } );
+                help_r("${prefix}$module" => "POD:$file");
+                $count++;
+                last;
+            }
+        } elsif ( -d "$file" && defined($args{'prefix'}) ) {
+            my $found = rebuild_file_help_idx($file,
+              index => $args{'prefix'} .  $module,
+              prefix => $args{'prefix'} . $module . '::');
+            shelp_r("$args{'prefix'}$module"  => "(index)", "$args{'index'}")
+              if ($found);
+        }
+    }
+    return $count;
+}
 
 =item command_r($name, $sub)
 
@@ -285,9 +338,15 @@ sub help_index {
     $ui->indent("? ");
     $ui->print("Tigerlily client $index:\n");
 
+    my $length = 0;
+    foreach (sort keys %{$shelp{$index}}) {
+        $length = max($length, length($_));
+    }
+    $length += 3;
+
     my $c;
     foreach $c (sort keys %{$shelp{$index}}) {
-	$ui->printf("  %-15s", $c);
+	$ui->printf("  %-${length}s", $c);
 	$ui->print($shelp{$index}{$c}) if ($shelp{$index}{$c});
 	$ui->print("\n");
     }
@@ -304,7 +363,6 @@ This is registered automatically by init().
 
 sub help_command {
     my($ui, $arg) = @_;
-#    $arg = lc($arg);
     $arg = "help" if ($arg eq "");
     $arg =~ s/^%//;
 
@@ -318,7 +376,7 @@ sub help_command {
     
     elsif ($help{$arg} =~ /^POD:(\S+)/) {
 	$ui->indent("? ");
-	$ui->print(`pod2text $1`);
+	$ui->print(`perldoc -t $1`);
 	$ui->indent("");	
     }
 
