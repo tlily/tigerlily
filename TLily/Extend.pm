@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Extend.pm,v 1.19 2001/01/26 03:01:48 neild Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Extend.pm,v 1.20 2001/01/26 03:10:29 neild Exp $ 
 
 package TLily::Extend;
 use strict;
@@ -83,7 +83,7 @@ sub load {
     my ($name, $ui, $verbose)=@_;
     my $filename;
     
-    if ($name =~ m|/| && -f $name) {
+    if ($name =~ m|/| && ($name =~ m|^//INTERNAL| || -f $name)) {
 	$filename = $name;
 	# $name = basename($name);
 	$name =~ s|.*[/\\]||;
