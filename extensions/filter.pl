@@ -25,8 +25,8 @@ sub filter {
 	my ($event, $handler) = @_;
 
    	foreach my $word (keys %{$config{filter}}) {
-          $event->{VALUE} =~ s/$word/$config{filter}->{$word}/g;
-          $event->{text} =~ s/$word/$config{filter}->{$word}/g;
+          $event->{VALUE} =~ s/$word/$config{filter}->{$word}/gi;
+          $event->{text} =~ s/$word/$config{filter}->{$word}/gi;
         }
 	return;
 }
