@@ -47,9 +47,9 @@ sub new {
 
 sub size {
 	my $self = shift;
-	my $newl = $_[3];
+	my $newc = $_[2];
 
-	if ($newl && ($newl != $self->{lines})) {
+	if ($newc && ($newc != $self->{cols})) {
 		$self->{indexes}  = [ 0 ];
 		pos($self->{text}) = 0;
 		while ($self->next_line()) {
