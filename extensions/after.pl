@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/after.pl,v 1.12 2000/09/12 04:13:41 coke Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/after.pl,v 1.13 2001/03/02 16:11:40 coke Exp $
 
 use strict;
 
@@ -102,12 +102,16 @@ sub cron_command {
 
     # Print all current tasks.
     if(@args == 0) {
-        $ui->printf("(%2s  %-17s  %-6s %s)\n", "Id", "When", "Repeat", "Command");
-	my $k;
-	foreach $k (sort keys %cron) {
-       	    my($sec,$min,$hour,$mday,$mon,$year) = localtime($cron_when{$k});
-	    $ui->printf("(%2d  %02d:%02d:%02d %02d/%02d/%02d  %6s %s)\n",
-			$k, $hour, $min, $sec, $mon+1, $mday, $year%100, $cron_interval{$k}, $cron{$k});
+	if (scalar(keys %cron)) {
+        	$ui->printf("(%2s  %-17s  %-6s %s)\n", "Id", "When", "Repeat", "Command");
+		my $k;
+		foreach $k (sort keys %cron) {
+       	    	my($sec,$min,$hour,$mday,$mon,$year) = localtime($cron_when{$k});
+	    	$ui->printf("(%2d  %02d:%02d:%02d %02d/%02d/%02d  %6s %s)\n",
+				$k, $hour, $min, $sec, $mon+1, $mday, $year%100, $cron_interval{$k}, $cron{$k});
+		}
+	} else {
+		$ui->print("(There are no scheduled events)\n");	
 	}
 	return;
     }
