@@ -33,6 +33,40 @@ sub set_clock {
 }
 
 
+sub init_bandwidth {
+	my $ui = TLily::UI::name("main");
+	my $server = TLily::Server::name();
+	my $last_in  = $server->{bytes_in};
+
+	$ui->define(bandwidth => 'right');
+	my $update = 10; # seconds
+
+	my $sub = sub {
+		my $ui = TLily::UI::name("main");
+		my $server = TLily::Server::name();
+		return unless ($server);
+
+		my $in       = $server->{bytes_in} - $last_in;
+		my $last_in  = $server->{bytes_in};
+
+		$in  = int($in/$update);
+		if ($in > 1024) {
+			$in = sprintf "%.1f k", ($in / 1024);
+		} else {
+			$in .= " b";
+		}
+		$in  .= "/s";
+
+		$ui->set(bandwidth => $in);
+	};
+	TLily::Event::time_r(after    => $update,
+			     interval => $update,
+			     call     => $sub);
+
+	return;
+}
+
+
 sub set_serverstatus {
 	my $ui     = TLily::UI::name("main");
 	my $server = TLily::Server::name();
@@ -73,8 +107,11 @@ sub load {
 
 	if ($server) {
 		set_serverstatus();
+		init_bandwidth();
 	} else {
 		TLily::Event::event_r(type => 'connected',
 				      call => \&set_serverstatus);
+		TLily::Event::event_r(type => 'connected',
+				      call => \&init_bandwidth);
 	}
 }

@@ -59,11 +59,13 @@ sub new {
 	$server{$args{name}} = $self;
 	$active_server = $self unless ($active_server);
 
-	$self->{name}    = $args{name};
-	$self->{host}    = $args{host};
-	$self->{port}    = $args{port};
-	$self->{ui_name} = $args{ui_name};
-	$self->{proto}   = defined($args{protocol}) ? $args{protocol}:"server";
+	$self->{name}      = $args{name};
+	$self->{host}      = $args{host};
+	$self->{port}      = $args{port};
+	$self->{ui_name}   = $args{ui_name};
+	$self->{proto}    = defined($args{protocol}) ? $args{protocol}:"server";
+	$self->{bytes_in}  = 0;
+	$self->{bytes_out} = 0;
 
 	$ui->print("Connecting to $self->{host}, port $self->{port}...");
 
@@ -179,6 +181,8 @@ sub send {
 	my $self = shift;
 	my $s = join('', @_);
 
+	$self->{bytes_out} += length($s);
+
 	my $written = 0;
 	while ($written < length($s)) {
 		my $bytes = syswrite($self->{sock}, $s, length($s), $written);
@@ -234,6 +238,7 @@ sub reader {
 
 	# Data as usual.
 	else {
+		$self->{bytes_in} += length($buf);
 		TLily::Event::send(type   => "$self->{proto}_data",
 				     server => $self,
 				     data   => $buf);
