@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/FoiledAgain/Attic/Win32.pm,v 1.6 2003/02/14 02:11:43 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/FoiledAgain/Attic/Win32.pm,v 1.7 2003/02/14 02:15:06 josh Exp $
 
 package TLily::FoiledAgain::Win32;
 
@@ -155,7 +155,7 @@ sub update_screen {
     my ($col, $line) =  $windows[-1]->{buffer}->Cursor();
     $col  += $windows[-1]->{begin_x};
     $line += $windows[-1]->{begin_y};
-    $SCREEN->Cursor($col, $line, 0, 0);
+    $SCREEN->Cursor($col, $line, 100, 1);
 }
 
 
@@ -193,7 +193,7 @@ sub position_cursor {
     my ($self, $line, $col) = @_;
     DEBUG(@_);
 
-    $self->{buffer}->Cursor($col,$line, 100, 1);
+    $self->{buffer}->Cursor($col,$line, 0, 0);
 }
 
 
