@@ -198,7 +198,7 @@ sub next_history {
 
 sub get {
 	my($self) = @_;
-	return($self->{point}, $self->{text});
+	return wantarray ? ($self->{point}, $self->{text}) : $self->{point};
 }
 
 
