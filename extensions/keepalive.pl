@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/keepalive.pl,v 1.10 2001/11/14 02:49:49 tale Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/keepalive.pl,v 1.11 2002/01/22 15:20:30 coke Exp $
 #
 # keepalive -- periodically ping the server, just to verify our connection
 #              is still there.
@@ -8,6 +8,8 @@
 use strict;
 
 shelp_r("keepalive_interval" => "Frequency in seconds of server pings. ",
+        "variables");
+shelp_r("keepalive_debug" => "If true, notify user when keepalive occurs. ",
         "variables");
 shelp_r("keepalive" => "Send periodic pings to the server.");
 help_r("keepalive",
