@@ -129,7 +129,7 @@ calls.
 
 sub init {
     $core = TLily::Event::Core->new;
-    
+
     TLily::Registrar::class_r(name_event => \&event_u);
     TLily::Registrar::class_r(io_event   => \&io_u);
     TLily::Registrar::class_r(time_event => \&time_u);
@@ -337,7 +337,12 @@ sub invoke {
     $h->{registrar}->push_default if ($h->{registrar});
     unshift @_, $h->{obj} if ($h->{obj});
     my $rc;
-    eval { $rc = $h->{call}->(@_); };
+    eval {
+	local $SIG{ALRM} = sub { die "event timeout\n"; };
+	alarm(5);
+	$rc = $h->{call}->(@_);
+	alarm(0);
+    };
     warn "$h->{type} handler caused error: $@" if ($@);
     $h->{registrar}->pop_default  if ($h->{registrar});
     return $rc;
