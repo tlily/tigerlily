@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Registrar.pm,v 1.6 1999/03/23 08:33:19 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Registrar.pm,v 1.7 1999/04/03 04:02:00 josh Exp $
 
 package TLily::Registrar;
 
@@ -17,11 +17,16 @@ use Carp;
 
 =head1 NAME
 
-Registrar - State tracker.
+Registrar - State tracker
+
+=head1 SYNOPSIS
+
+use TLily::Registrar;
 
 =head1 DESCRIPTION
 
-=head2 FUNCTIONS
+=head1 FUNCTIONS
+
 =over 10
 
 =cut
