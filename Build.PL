@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/Attic/Build.PL,v 1.3 1999/03/04 00:42:10 albert Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/Attic/Build.PL,v 1.4 1999/03/04 00:45:24 albert Exp $
 
 use Config;
 use Carp;
@@ -333,7 +333,7 @@ elsif($target eq 'announce') {
 elsif($target eq 'clean') {
     rmtree('buildtmp', 0, 0);
     unlink("tlily");
-    unlink("lilybot");
+#    unlink("lilybot");
     unlink("tlily-$VERSION.tar");
     unlink("tlily-$VERSION.tar.gz");
     unlink("build.cache");
@@ -461,7 +461,8 @@ Library directory:  $LIBDIR
 	return;
     }
     
-    foreach $f (qw(tlily lilybot)) {
+#    foreach $f (qw(tlily lilybot)) {
+    foreach $f (qw(tlily)) {
 	print "Writing $f\n";
 	if(-f $f) { unlink $f; }
 	
