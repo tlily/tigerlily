@@ -1,4 +1,4 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/ui.pl,v 1.4 1999/03/02 00:47:39 neild Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/ui.pl,v 1.5 1999/03/15 21:49:50 neild Exp $ 
 use strict;
 
 
@@ -172,17 +172,16 @@ TLily::Config::callback_r(Variable => '-ALL-',
 			      }
 		          });
 
-# Set colors from what the config files read
-if($config{mono}) {
+
+sub load {
+    # Set colors from what the config files read
     my($k,$v);
     my $ui = ui_name();
     while (($k,$v) = each %{$config{'mono_attrs'}}) {
+	print STDERR "$k => @$v\n";
 	$ui->defstyle($k, @{$v});
     }
-    $ui->redraw;
-} else {
-    my($k,$v);
-    my $ui = ui_name();
+
     while (($k,$v) = each %{$config{'color_attrs'}}) {
 	$ui->defcstyle($k, @{$v});
     }
