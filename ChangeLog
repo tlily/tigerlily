@@ -1,4 +1,14 @@
 Version 2.3
+  * [TLily/Event.pm] Show named event registration/reception/deregistration
+    based on the setting of event_debug, which is interpreted as a regular
+    expression matched against a string that is the event type followed by
+    the file name the handler was established in.  For example, starting
+    tlily with "-send_debug=blurbless" will cause blurbless.pl's registration
+    (and subsequent call) of a 'server_connected' handler to be matched
+    against the string "server_connected:during extensions/blurbless.pl". [DCL]
+  * [TLily/Event.pm] Registering a named event handler from within a handler 
+    could cause erroneously repeated handler execution (and perhaps not run
+    some, but I haven't really thought about that possibility much).
   * [TLily/Server.pm] Show all data sent to server if send_debug is set. [DCL]
   * [extensions/startup.pl] Startup file/memo processing would send extraneous
     (harmless) empty lines to the server.  [DCL]

@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Event.pm,v 1.33 2001/02/24 23:04:29 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Event.pm,v 1.34 2001/11/10 07:27:01 tale Exp $
 
 package TLily::Event::Core;
 
@@ -232,22 +232,41 @@ handler as its arguments.
 sub event_r {
     my $h = (@_ == 1) ? shift : {@_};
     my %order = (before => 1, during => 2, after => 3);
-    
+
     # The default order is 'during'.
     $h->{order} ||= 'during';
-    
+
     # Sanity check.
     croak "Handler registered without \"call\"." unless ($h->{call});
     croak "Handler registered without \"type\"." unless ($h->{type});
     croak "Handler registered with odd order \"$h->{order}\"."
       unless ($order{$h->{order}});
-    
+
     $h->{id} = $next_id++;
     @e_name = sort {$order{$a->{order}} <=> $order{$b->{order}}}
       (@e_name, $h);
-    
+
     $h->{registrar} = TLily::Registrar::default();
     TLily::Registrar::add("name_event", $h->{id});
+
+    my ($package, $file, $line);
+    my $i = 0;
+
+    ($package, $file, $line) = (caller($i++))[0..2];
+
+    if ($package =~ /^ExoSafe::Root/) {
+      $file = eval "\${${package}::__FILE__}";
+    } else {
+      $file = $file;
+    }
+
+    $h->{origin}->{file} = $file;
+    $h->{origin}->{line} = $line;
+
+    TLily::UI::name()->print("Event register $h->{type}:$h->{order} ",
+                             "from $file:$line\n")
+        if $config{event_debug} && "$h->{type} $file" =~ $config{event_debug};
+
     return $h->{id};
 }
 
@@ -259,10 +278,26 @@ Unregister a named event handler.
 =cut
 use Carp qw(confess);
 sub event_u {
-    my($id) = @_;   
-    $id = $id->{id} if (ref $id);
+    my $id = shift;
+    my $h;
+
+    if (ref $id) {
+        $h = $id;
+        $id = $h->{id};
+    }
+
+    if ($config{event_debug}) {
+        grep { $h = $_ if $_->{id} } @e_name if ! defined $h;
+        TLily::UI::name()->print("Event deregister $h->{type}, ",
+                                 "registered from ",
+                                 "$h->{origin}->{file}:",
+                                 "$h->{origin}->{line}\n")
+            if ("$h->{type} $h->{origin}->{file}" =~ $config{event_debug});
+    }
+
     $e_name_remove{$id} = 1;
     TLily::Registrar::remove("name_event", $id);
+
     return;
 }
 
@@ -292,30 +327,30 @@ handler as its arguments.
 sub io_r {
     print STDERR ": TLily::Event::io_r\n" if $config{ui_debug};
     my $h = (@_ == 1) ? shift : {@_};
-    
+
     # Sanity check.
     croak "Handler registered without \"call\"."   unless ($h->{call});
     croak "Handler registered without \"mode\"."   unless ($h->{mode});
     croak "Handler registered with odd mode."
       unless ($h->{mode} =~ /[rwx]/);
     croak "Handler registered without \"handle\"." unless ($h->{handle});
-    
+
     my $n = fileno($h->{handle});
     croak "Handler registered with bad handle."    unless(defined $n);
-    
+
     # Hang on to the fileno.  We can't trust the handle to still be
     # valid when the caller unregisters the handler: once the handle
     # has been closed, the fileno goes away.
     $h->{'fileno'} = $n;
-    
+
     $h->{'type'} = "IO";
 
     $h->{id} = $next_id++;
     push @e_io, $h;
-    
+
     print STDERR "handle: ", $h->{handle}, "\n" if $config{ui_debug};
     $core->io_r($n, $h->{handle}, $h->{mode});
-    
+
     $h->{registrar} = TLily::Registrar::default();
     TLily::Registrar::add("io_event", $h->{id});
     return $h->{id};
@@ -331,7 +366,7 @@ sub io_u {
     print STDERR ": TLily::Event::io_u\n" if $config{ui_debug};
     my($id) = @_;
     $id = $id->{id} if (ref $id);
-    
+
     my($io, @io);
     foreach $io (@e_io) {
 	if ($io->{id} == $id) {
@@ -341,7 +376,7 @@ sub io_u {
 	}
     }
     @e_io = @io;
-    
+
     TLily::Registrar::remove("io_event", $id);
     return;
 }
@@ -371,30 +406,30 @@ After <interval> seconds, the event handler will fire (once)
 =cut
 sub time_r {
     my $h = (@_ == 1) ? shift : {@_};
-    
+
     # Sanity check.
     croak "Handler registered without \"call\"." unless ($h->{call});
     croak "Handler registered with insane interval."
       if ($h->{interval} && $h->{interval} <= 0);
-    
+
     $h->{'after'} = 0 if (!defined($h->{'time'}) &&
 			  !defined($h->{after}) &&
 			  defined($h->{interval}));
-    
+
     # Run after N seconds.
     if (defined($h->{after})) {
 	$h->{'time'} = time + $h->{after};
     }
     # Oops.
     elsif (!defined($h->{'time'})) {
-	croak "Handler registered without \"after\", \"time\", or \"interval\".";
+	croak qq(Handler registered without "after", "time", or "interval".);
     }
 
     $h->{'type'} = "TIMED";
-    
+
     $h->{id} = $next_id++;
     @e_time = sort { $a->{'time'} <=> $b->{'time'} } (@e_time, $h);
-    
+
     $h->{registrar} = TLily::Registrar::default();
     TLily::Registrar::add("time_event", $h->{id});
     return $h->{id};
@@ -431,7 +466,7 @@ handler as its arguments.
 =cut
 sub idle_r {
     my $h = (@_ == 1) ? shift : {@_};
-    
+
     # Sanity check.
     croak "Handler registered without \"call\"." unless ($h->{call});
 
@@ -490,7 +525,7 @@ sub invoke {
 #use Data::Dumper;
 sub loop_once {
     print STDERR ": TLily::Event::loop_once\n" if $config{ui_debug};
-    
+
     # Timed events.
     # This is a tad ugly -- rewrite if you're feeling bored. -DN
     my $time = time;
@@ -521,22 +556,32 @@ sub loop_once {
 	}
     }
     @e_time = grep { $_->{'time'} > $time } @e_time;
-    
+
     if ($sort) {
 	@e_time = sort { $a->{'time'} <=> $b->{'time'} } @e_time;
     }
-    
+
     # Named events.
   EVENT:
     while (my $e = shift @queue) {
-	foreach my $h (@e_name) {
+	foreach my $h (@{[@e_name]}) {
 	    next if $e_name_remove{$h->{id}};
 	    if ($e->{type} eq $h->{type} or $h->{type} eq 'all') {
+                my $debug = $config{event_debug} &&
+                  "$e->{type} $h->{origin}->{file}" =~ $config{event_debug};
+
+                TLily::UI::name()->print("Send $e->{type}:$h->{order} ",
+                                         "($h->{id}) via ",
+                                         "$h->{origin}->{file}:",
+                                         "$h->{origin}->{line}\n")
+                    if $debug;
 		my $rc = invoke($h, $e, $h);
 		if (defined($rc) && ($rc != 0) && ($rc != 1)) {
 		    warn "Event handler returned $rc.";
 #                    warn Dumper($h);
 		}
+                TLily::UI::name()->print("\thandler returned $rc\n")
+                    if $debug;
 		next EVENT if ($rc);
 	    }
 	}
@@ -553,7 +598,7 @@ sub loop_once {
 	$timeout = $e_time[0]->{'time'} - $time;
 	$timeout = 0 if ($timeout < 0);
     }
-    
+
     # IO events.
     my($r, $w, $e, $n) = $core->run($timeout);
     foreach my $h (@e_io) {
