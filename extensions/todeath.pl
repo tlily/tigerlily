@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/todeath.pl,v 1.2 2001/11/26 19:51:38 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/todeath.pl,v 1.3 2001/11/26 22:41:46 josh Exp $
 
 use strict;
 
@@ -18,8 +18,8 @@ config variable is set to).
 sub handler {
     my($event, $handler) = @_;
 
-    $event->{VALUE} =~ s/off the server/$config{todeath_message}/g;
-    $event->{text}  =~ s/off the server/$config{todeath_message}/g;
+    $event->{VALUE} =~ s/idled off the server/$config{todeath_message}/g;
+    $event->{text}  =~ s/idled off the server/$config{todeath_message}/g;
 
     return 0;
 }
