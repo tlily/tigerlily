@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/FoiledAgain/Attic/Win32.pm,v 1.2 2003/02/13 23:31:47 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/FoiledAgain/Attic/Win32.pm,v 1.3 2003/02/13 23:49:56 josh Exp $
 
 package TLily::FoiledAgain::Win32;
 
@@ -271,9 +271,12 @@ sub insch {
     my ($self, $y, $x, $character) = @_;
     DEBUG(@_);
 
-    my $attr = $self->get_attr_for_style($self->{background_style});    
-    $self->{buffer}->Scroll($x,$y,$self->{cols},$y,$x+1,$y,' ',$attr);
-    $self->{buffer}->WriteChar($character, $x, $y);
+    # figure out where we are and what's left of the line..
+    my $charsleft = $self->{cols} - $x;
+
+    # slide the line forward and add the character.
+    my $str = $self->{buffer}->ReadChar($charsleft-1, $x, $y);
+    $self->{buffer}->WriteChar($character . $str, $x, $y);
 }
 
 
@@ -286,7 +289,7 @@ sub delch_at_point {
     my $charsleft = $self->{cols} - $x;
 
     # slide the line back.
-    my $str = $self->{buffer}->ReadChar($charsleft-1, $x+1, $y);
+    my $str = $self->{buffer}->ReadChar($charsleft, $x+1, $y);
     $self->{buffer}->WriteChar($str . ' ', $x, $y);
 }
 
