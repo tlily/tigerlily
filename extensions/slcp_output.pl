@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_output.pl,v 1.8 1999/05/05 17:14:15 steve Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_output.pl,v 1.9 1999/05/27 01:11:30 steve Exp $
 
 use strict;
 
@@ -221,7 +221,7 @@ my $sub = sub {
 	my $source = $e->{SOURCE};
 	$found =~ s/\%u/$source/g;
 	my $blurb = $serv->get_blurb(HANDLE => $e->{SHANDLE});
-	$source .= " [$blurb]" if $blurb;
+	$source .= " [$blurb]" if (defined ($blurb) && ($blurb ne ""));
 	$found =~ s/\%U/$source/g;
 	$found =~ s/\%V/$e->{VALUE}/g;
 	$found =~ s/\%R/$e->{RECIPS}/g;
@@ -236,7 +236,7 @@ my $sub = sub {
 	    $found =~ s/\%T/$title/g;
 	}
 	if ($found =~ m/\%B/) {
-	    if (defined ($blurb)) {
+	    if (defined ($blurb) && ($blurb ne "")) {
 		$found =~ s/\%B/ with the blurb [$blurb]/g;
 	    } else {
 		$found =~ s/\%B//g;
