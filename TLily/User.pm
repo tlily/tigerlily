@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/User.pm,v 1.19 1999/04/12 22:57:16 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/User.pm,v 1.20 1999/04/21 18:46:02 neild Exp $
 
 package TLily::User;
 
@@ -248,7 +248,7 @@ sub input_handler {
     my($e, $h) = @_;
 
     return unless ($e->{text} =~ /^\s*([%\/])(\w+)\s*(.*?)\s*$/);
-    my $command = $abbrevs{$2};
+    my $command = $abbrevs{lc($2)};
 
     return if ($1 ne "%" && !grep($_ eq $command, @{$config{slash}}));
 
@@ -295,6 +295,7 @@ This is registered automatically by init().
 
 sub help_command {
     my($ui, $arg) = @_;
+    $arg = lc($arg);
     $arg = "help" if ($arg eq "");
     $arg =~ s/^%//;
 
