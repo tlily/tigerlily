@@ -21,8 +21,9 @@ my $gstyle_fn;
 sub new {
     my($proto, %a) = @_;
     my $class = ref($proto) || $proto;
-
+    
     croak "Required UI parameter \"name\" missing."  unless ($a{"name"});
+    croak "UI \"name\" already exists." if ($ui{$a{"name"}});
 
     my $self        = {};
     $self->{"name"} = $a{"name"};

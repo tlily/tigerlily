@@ -4,33 +4,85 @@ use TLily::UI;
 use TLily::Server::SLCP;
 use TLily::Event;
 
-sub server_command {
+
+sub connect_command {
     my($ui, $arg) = @_;
     my(@argv) = split /\s+/, $arg;
     TLily::Event::keepalive();
 
-    $ui ||= ui_name();
-
     my($host, $port) = @argv;
-    $host ||= $config{server};
-    $port ||= $config{port};
-    
-    $host = "lily.acm.rpi.edu" unless defined($host);
-    $port = 8888               unless defined($port);
+    $host = $config{server} unless defined($host);
+    $port = $config{port}   unless defined($port);
     
     my $server;
     $server = TLily::Server::SLCP->new(host    => $host,
 				       port    => $port,
 				       ui_name => $ui->name);
+    return unless $server;
+
+    $server->activate();
 }
-command_r(connect => \&server_command);
+command_r('connect' => \&connect_command);
+shelp_r('connect' => "Connect to a server.");
+help_r('connect' => "
+Usage: %connect [host] [port]
+
+Create a new connection to a server.
+");
+
+
+sub close_command {
+    my($ui, $arg) = @_;
+    my(@argv) = split /\s+/, $arg;
+    TLily::Event::keepalive();
+
+    my $server = TLily::Server::name();
+    if (!$server) {
+	$ui->print("(you are not currently connected to a server)\n");
+	return;
+    }
+
+    $ui->print("(closing connection to \"", scalar($server->name()), "\")\n");
+    $server->terminate();
+    return;
+}
+command_r('close' => \&close_command);
+shelp_r('close' => "Close the connection to the current server.");
+help_r('close' => "
+Usage: %close
+
+Close the connection to the current server.
+");
+
+
+sub next_server {
+    my($ui, $command, $key) = @_;
+
+    my @server = TLily::Server::name();
+    my $server = TLily::Server::name() || $server[-1];
+
+    my $idx = 0;
+    foreach (@server) {
+	last if ($_ == $server);
+	$idx++;
+    }
+
+    $idx = ($idx + 1) % @server;
+    $server = $server[$idx];
+    $server->activate();
+    $ui->print("(switching to server \"", scalar($server->name()), "\")\n");
+    return;
+}
+TLily::UI::command_r("next-server" => \&next_server);
+TLily::UI::bind("C-q" => "next-server");
+
 
 sub send_handler {
     my($e, $h) = @_;
     $e->{server}->sendln(join(",",@{$e->{RECIPS}}),$e->{dtype},$e->{text});
 }
 event_r(type => 'user_send',
-		      call => \&send_handler);
+	call => \&send_handler);
 
 sub to_server {
     my($e, $h) = @_;
@@ -54,5 +106,5 @@ sub to_server {
     return 1;
 }
 event_r(type  => "user_input",
-		      order => "after",
-		      call  => \&to_server);
+	order => "after",
+	call  => \&to_server);

@@ -1,4 +1,4 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/ui.pl,v 1.6 1999/03/15 22:16:53 neild Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/ui.pl,v 1.7 1999/03/16 07:24:44 neild Exp $ 
 use strict;
 
 
@@ -88,6 +88,19 @@ sub keyname_command {
 command_r(keyname => \&keyname_command);
 shelp_r(keyname => "Print the name of the next key pressed.");
 help_r(keyname => $keyname_help);
+
+
+#
+# Windows.
+#
+
+sub ui_command {
+    my($ui, $args) = @_;
+    my $newui = TLily::UI::Curses->new(name => 'sub');
+    $newui->print("foo\n");
+}
+command_r(ui => \&ui_command);
+
 
 #
 # Styles.

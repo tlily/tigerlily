@@ -29,6 +29,7 @@ exceptions if this matters to you!
 
 my $active_server;
 my %server;
+my @server; # For ordering.
 
 
 =item new(%args)
@@ -44,79 +45,62 @@ events generated for server data -- the event type will be "protocol_data".
 =cut
 
 sub new {
-	my($proto, %args) = @_;
-	my $class = ref($proto) || $proto;
-	my $self  = {};
+    my($proto, %args) = @_;
+    my $class = ref($proto) || $proto;
+    my $self  = {};
+    
+    my $ui = TLily::UI::name($args{ui_name}) if ($args{ui_name});
 
-	my $ui = TLily::UI::name($args{ui_name}) if ($args{ui_name});
+    croak "required parameter \"host\" missing"
+      unless (defined $args{host});
+    croak "required parameter \"port\" missing"
+      unless (defined $args{port});
 
-	croak "required parameter \"host\" missing"
-	  unless (defined $args{host});
-	croak "required parameter \"port\" missing"
-	  unless (defined $args{port});
+    # Generate a unique name for this server object.
+    my $name = $args{name};
+    $name = "$args{host}:$args{port}" if (!defined($name));
+    if ($server{$name}) {
+	my $i = 2;
+	while ($server{$name."#$i"}) { $i++; }
+	$name .= "#$i";
+    }
 
-	$args{name} = "$args{host}:$args{port}" if (!defined($args{name}));
-	$server{$args{name}} = $self;
-	$active_server = $self unless ($active_server);
+    $self->{name}      = $name;
+    $self->{host}      = $args{host};
+    $self->{port}      = $args{port};
+    $self->{ui_name}   = $args{ui_name};
+    $self->{proto}    = defined($args{protocol}) ? $args{protocol}:"server";
+    $self->{bytes_in}  = 0;
+    $self->{bytes_out} = 0;
 
-	$self->{name}      = $args{name};
-	$self->{host}      = $args{host};
-	$self->{port}      = $args{port};
-	$self->{ui_name}   = $args{ui_name};
-	$self->{proto}    = defined($args{protocol}) ? $args{protocol}:"server";
-	$self->{bytes_in}  = 0;
-	$self->{bytes_out} = 0;
+    $ui->print("Connecting to $self->{host}, port $self->{port}...");
 
-	$ui->print("Connecting to $self->{host}, port $self->{port}...");
+    $self->{sock} = IO::Socket::INET->new(PeerAddr => $self->{host},
+					  PeerPort => $self->{port},
+					  Proto    => 'tcp');
+    if (!defined $self->{sock}) {
+	$ui->print("failed: $!\n");
+	return;
+    }
 
-	$self->{sock} = IO::Socket::INET->new(PeerAddr => $self->{host},
-					      PeerPort => $self->{port},
-					      Proto    => 'tcp');
-	if (!defined $self->{sock}) {
-		$ui->print("failed: $!\n");
-		return;
-	}
+    $ui->print("connected.\n");
 
-	$ui->print("connected.\n");
+    $server{$name} = $self;
+    push @server, $self;
 
-	fcntl($self->{sock}, F_SETFL, O_NONBLOCK) or die "fcntl: $!\n";
+    fcntl($self->{sock}, F_SETFL, O_NONBLOCK) or die "fcntl: $!\n";
 
-	TLily::Event::io_r(handle => $self->{sock},
-		     	   mode   => 'r',
-			   obj    => $self,
-			   call   => \&reader);
+    $self->{io_id} = TLily::Event::io_r(handle => $self->{sock},
+					mode   => 'r',
+					obj    => $self,
+					call   => \&reader);
 
-	bless $self, $class;
+    bless $self, $class;
 
-	TLily::Event::send(type   => 'server_connected',
-			   server => $self);
+    TLily::Event::send(type   => 'server_connected',
+		       server => $self);
 	
-	# set the client name once we're %connected.
-	TLily::Event::event_r(type => "connected",
-			      call => sub {
-				  my ($e,$h) = @_;
-				  
-				  return 0 unless ($e->{server} == $self);
-				  
-				  $self->set_client_name();
-				  TLily::Event::event_u($h->{Id});
-
-				  return 0;
-				});
-	
-	# set the client options at the first prompt.
-	TLily::Event::event_r(type => "prompt",
-				call => sub {
-				  my ($e,$h) = @_;
-				  return 0 unless ($e->{server} == $self);
-				  
-				  $self->set_client_options();
-				  TLily::Event::event_u($h->{Id});
-				
-				  return 0;
-				});
-
-	return $self;
+    return $self;
 }
 
 
@@ -127,12 +111,21 @@ Shuts down a server instance.
 =cut
 
 sub terminate {
-	my($self) = @_;
+    my($self) = @_;
 
-	close($self->{sock}) if ($self->{sock});
-	$self->{sock} = undef;
-	delete $server{$self->{name}};
-	return;
+    close($self->{sock}) if ($self->{sock});
+    $self->{sock} = undef;
+
+    $server{$self->{name}} = undef;
+    @server = grep { $_ ne $self } @server;
+    $active_server = $server[0] if ($active_server == $self);
+
+    TLily::Event::io_u($self->{io_id});
+    
+    TLily::Event::send(type   => 'server_disconnected',
+		       server => $self);
+
+    return;
 }
 
 
@@ -143,28 +136,44 @@ Returns the name of the UI object associated with the server.
 =cut
 
 sub ui_name {
-	my($self) = @_;
-	return $self->{ui_name};
+    my($self) = @_;
+    return $self->{ui_name};
 }
 
 
 =item name()
 
-Returns the server with the given name, or the currently active server
-if no argument is given.
+In a list context, returns all existing servers.
+
+In a scalar context, returns the server with the given name, or the
+currently active server if no argument is given.
 
 =cut
 
 sub name {
-	shift if (@_ > 1);
-	my($a) = @_;
-	if (!defined $a) {
-		return $active_server;
-	} elsif (ref($a)) {
-		return $a->{"name"};
-	} else {
-		return $server{$a};
-	}
+    return @server if (wantarray);
+    shift if (@_ > 1);
+    my($a) = @_;
+    if (!defined $a) {
+	return $active_server;
+    } elsif (ref($a)) {
+	return $a->{"name"};
+    } else {
+	return $server{$a};
+    }
+}
+
+
+=item activate()
+
+Makes this server object the active one.
+
+=cut
+
+sub activate {
+    shift if (@_ > 1);
+    $active_server = shift;
+    $active_server = undef unless ref($active_server);
 }
 
 
@@ -178,23 +187,23 @@ the entire block of data has been written.
 =cut
 
 sub send {
-	my $self = shift;
-	my $s = join('', @_);
+    my $self = shift;
+    my $s = join('', @_);
 
-	$self->{bytes_out} += length($s);
+    $self->{bytes_out} += length($s);
 
-	my $written = 0;
-	while ($written < length($s)) {
-		my $bytes = syswrite($self->{sock}, $s, length($s), $written);
-		if (!defined $bytes) {
-			# The following is broken, and must be fixed.
-			#next if ($errno == EAGAIN);
-			die "syswrite: $!\n";
+    my $written = 0;
+    while ($written < length($s)) {
+	my $bytes = syswrite($self->{sock}, $s, length($s), $written);
+	if (!defined $bytes) {
+	    # The following is broken, and must be fixed.
+	    #next if ($errno == EAGAIN);
+	    die "syswrite: $!\n";
 		}
-		$written += $bytes;
-	}
+	$written += $bytes;
+    }
 
-	return;
+    return;
 }
 
 
@@ -204,48 +213,48 @@ Behaves exactly like send(), but sends a crlf pair at the end of the line.
 
 =cut
 
+my $crlf = chr(13).chr(10);
 sub sendln {
-	my $self = shift;
-	# \r\n is non-portable.  Fix, please.
-	$self->send(@_, "\r\n");
+    my $self = shift;
+    # \r\n is non-portable.  Fix, please.
+    #$self->send(@_, "\r\n");
+    $self->send(@_, $crlf);
 }
 
 
 sub reader {
-	my($self, $mode, $handler) = @_;
+    my($self, $mode, $handler) = @_;
 
-	my $buf;
-	my $rc = sysread($self->{sock}, $buf, 1024);
+    my $buf;
+    my $rc = sysread($self->{sock}, $buf, 1024);
 
-	# Error of some kind.
-	if ($rc < 0) {
-		# The following is broken, and must be fixed.
-		#if ($errno != EAGAIN) {
-		#	die "sysread: $!\n";
-		#}
-		# A signal interrupted us -- just fall out, we'll be back.
-	}
+    # Error of some kind.
+    if ($rc < 0) {
+	# The following is broken, and must be fixed.
+	#if ($errno != EAGAIN) {
+	#	die "sysread: $!\n";
+	#}
+	# A signal interrupted us -- just fall out, we'll be back.
+    }
 
-	# End of line.
-	elsif ($rc == 0) {
-		$self->{sock}->close();
-		undef $self->{sock};
+    # End of line.
+    elsif ($rc == 0) {
+	my $ui = TLily::UI::name($self->{ui_name}) if ($self->{ui_name});
+	$ui->print("*** Lost connection to \"$self->{name}\" ***\n");
+	$self->terminate();
+    }
 
-		TLily::Event::send(type   => 'server_disconnected',
-				     server => $self);
-		TLily::Event::io_u($handler);
-	}
+    # Data as usual.
+    else {
+	$self->{bytes_in} += length($buf);
+	TLily::Event::send(type   => "$self->{proto}_data",
+			   server => $self,
+			   data   => $buf);
+    }
 
-	# Data as usual.
-	else {
-		$self->{bytes_in} += length($buf);
-		TLily::Event::send(type   => "$self->{proto}_data",
-				     server => $self,
-				     data   => $buf);
-	}
-
-	return;
+    return;
 }
+
 
 DESTROY { warn "Server object going down!\n"; }
 
