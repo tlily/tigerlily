@@ -106,6 +106,23 @@ sub load {
 		the to with ok foo bar baz perl)) {
 	$stop_list{$_}=1;
     }
+    
+    shelp_r("spellcheck" => "Enable or disable the spell checker");
+    help_r("spellcheck" => "
+Usage: %spellcheck [on|off]
+
+Enables or disables highlighting of potentially misspelled words on the \
+input line.
+
+Once the spellchecker is enabled, words will be highlighted in red if they
+might be misspelled.
+
+NOTE: This extension requires that the \"look\" program be installed and
+      functional on your system.
+
+");
+
+
 }
 
 
