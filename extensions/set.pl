@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/set.pl,v 1.4 1999/06/23 14:27:12 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/set.pl,v 1.5 1999/06/23 14:28:17 neild Exp $
 
 use strict;
 
@@ -81,7 +81,7 @@ sub set_handler($) {
 		$config{$var} = [ @L ];
 	    	dumpit($ui, 0, $var => $config{$var});
 	    } elsif(!defined($config{$var}) || ref($config{$var}) eq 'ARRAY') {
-		$config{$var} = [ @{$config{$var}}, @L ];
+		$config{$var} = [ @L ];
 	    	dumpit($ui, 0, $var => $config{$var});
 	    } else { $ui->print("(Invalid type for variable)\n"); }
 	}
