@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/info.pl,v 1.10 1999/05/05 03:08:51 steve Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/info.pl,v 1.11 1999/05/13 21:45:47 albert Exp $
 
 use strict;
 
@@ -10,7 +10,7 @@ sub export_handler {
     return unless $ex;
 
     my $ui;
-    $ui = ui_name($ex->{uiname}) if (defined $ex->{uiname});
+    $ui = ui_name($ex->{ui_name}) if (defined $ex->{ui_name});
 
     if ($event->{response} eq 'OKAY') {
 	foreach my $l (@{$ex->{text}}) {

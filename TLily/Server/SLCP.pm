@@ -6,7 +6,7 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Server/Attic/SLCP.pm,v 1.21 1999/04/27 18:13:12 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Server/Attic/SLCP.pm,v 1.22 1999/05/13 21:45:50 albert Exp $
 
 package TLily::Server::SLCP;
 
@@ -479,7 +479,8 @@ sub store {
         my $size = 0;
         foreach (@$text) { $size += length($_); }
         my $t = $target;  $t = "" if ($target eq "me");
-        $server->sendln("\#\$\# export_file memo $size $name $t");
+        my $lines = @$text;
+        $server->sendln("\#\$\# export_file memo $size $lines $name $t");
     }
     elsif ($type eq "config") {
     }
