@@ -146,7 +146,7 @@ sub generic_fmt {
     } elsif ($e->{type} eq 'private') {
 	    $fmt = $config{private_fmt} || 
 	      '\n%[ -> ]%(Server )%(Time )'.
-		'Private message from %From%{ Blurb}:%|'.
+		'Private message from %From%{ Blurb}, to %To:%|'.
 		'%[ - ]\n%Body\n';
     } elsif ($e->{type} eq 'emote') {
 	    $fmt = $config{emote_fmt} ||
