@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/startup.pl,v 1.14 2000/12/14 01:24:16 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/startup.pl,v 1.15 2001/11/10 07:05:20 tale Exp $
 
 use strict;
 
@@ -21,17 +21,18 @@ sub startup_handler ($$) {
 	}
         $ui->print("(Running ~/.lily/tlily/Startup)\n\n");
 	while(<SUP>) {
-            next if /^#/;
+            next if /^(#|\s+$)/;
 	    chomp;
 	    TLily::Event::send({type    => 'user_input',
 				ui      => $ui,
 				startup => 1,
-				text    => "$_\n"});
+				text    => $_});
 	}
 	close(SUP);
     } else {
         $ui->print("(No startup file found.)\n");
-        $ui->print("(If you want to install one, call it ~/.lily/tlily/Startup)\n");
+        $ui->print("(If you want to install one, " .
+                   "call it ~/.lily/tlily/Startup)\n");
     }
 
     # Run server-side startup memo
@@ -68,7 +69,7 @@ sub startup_handler ($$) {
 	    TLily::Event::send({type    => 'user_input',
 				ui      => $args{ui},
 				startup => 1,
-				text    => "$_\n"});
+				text    => $_});
 	}
 	TLily::Event::send(%$event,
 			   type              => 'connected',
