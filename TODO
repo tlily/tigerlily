@@ -10,8 +10,5 @@ To Do
      after [;:], if you press some key, have it insert [xxx], where xxx
      is a scrollable list of threads seen in the discussion?
   lilyBot support
-  TLily::Command has been merged into TLily::Server::SLCP.  Still need to
-    convert all remaining items using the old cmd_process to the new one.
-    And eventually remove TLily/Command.pm
   I need to add passive mode to the %ctc support.    
 
