@@ -1,4 +1,4 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/expand.pl,v 1.10 1999/03/02 19:09:05 steve Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/expand.pl,v 1.11 1999/03/02 21:28:43 steve Exp $ 
 
 use strict;
 
@@ -12,7 +12,7 @@ my %expansions = ('sendgroup' => '',
 
 my @past_sends = ();
 
-my $last_send = '';
+my $last_send;
 
 sub exp_expand {
     my($ui, $command, $key) = @_;
@@ -133,7 +133,7 @@ sub user_send_handler {
     my $dlist = join(",", @{$event->{RECIPS}});
     
     $expansions{recips} = $dlist;
-	$last_send = $event->{VALUE};
+	$last_send = $event->{text};
     
     @past_sends = grep { $_ ne $dlist } @past_sends;
     unshift @past_sends, $dlist;
@@ -155,9 +155,28 @@ sub oops_cmd {
 		$full =~ s/ /_/;
 		$_ = $full;
 	}
-	$expansions{recips} = join(",", @dests);
 	
-	# $config{emote_oops} stuff here.
+	$expansions{recips} = join(",", @dests);
+
+	if ($config{emote_oops}) {
+		if (!defined $last_send) {
+			$ui->print ("(but you haven't said anything)");
+			return;
+		}
+
+		foreach my $d (split /,/, $past_sends[0]) {
+			$d = TLily::Server::SLCP::expand_name($d);
+			next unless ($d =~ s/^-//);
+			my %st;
+			%st = $serv->state(NAME => $d) or next;
+			if ($st{ATTRIB} =~ /emote/) {
+				$serv->sendln($past_sends[0] . ";" . $config{emote_oops});
+				$serv->sendln($args . ";" . $last_send);
+				return;
+			}
+			last;
+		}
+	}
 
 	$serv->sendln ("/oops " . $args);
 	return;
@@ -179,3 +198,40 @@ sub also_cmd {
 
 command_r('oops' => \&oops_cmd);
 command_r('also' => \&also_cmd);
+
+shelp_r('oops' => "/oops with fixed sendlist");
+help_r ('oops' => "
+Usage: %oops user
+       /oops user
+
+/oops does not fix your sendlist correctly.  This command will \
+send your /oops, as well as update your sendlist so ';' \
+will expand to the new user.
+
+In addition, if the \$emote_oops config variable is set, \
+then %oops will use that string as your oops message, if \
+it would be sent to an emote discussion.
+
+If 'oops' is in your \@slash config variable, then /oops will have \
+the same effect.
+
+(see also /oops, %also)
+");
+
+shelp_r('also' => "/also with fixed sendlist");
+help_r ('also' => "
+Usage: %also user
+       /also user
+
+/also does not fix your sendlist correctly.  This command will \
+send your /also, as well as add user to your sendlist so ';' \
+will expand to both users.
+
+If 'also' is in your \@slash config variable, then /also will have \
+the same effect.
+
+(see also /also, %oops)
+");
+
+
+

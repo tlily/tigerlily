@@ -1,4 +1,4 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/Attic/slcp.pl,v 1.12 1999/02/27 00:52:40 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/Attic/slcp.pl,v 1.13 1999/03/02 21:28:45 steve Exp $
 
 use strict;
 use vars qw(%config);
@@ -34,7 +34,8 @@ $keep{USER} = {HANDLE   => 1,
 $keep{DISC} = {HANDLE   => 1, 
                CREATION => 1,
 	       NAME     => 1,
-	       TITLE    => 1};
+	       TITLE    => 1,
+			  ATTRIB => 1};
 
 my %events =
   (
