@@ -1,13 +1,15 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/submit.pl,v 1.6 1999/12/07 20:30:55 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/submit.pl,v 1.7 1999/12/07 20:36:55 mjr Exp $
 
 use TLily::Version;
 use strict;
 
+my $TLILY_BUGS = "tigerlily-bugs\@tlily.centauri.org";
+
 # Issue report template
 my $template = 
 "From:
-To: tigerlily-bugs\@tlily.centauri.org
+To: $TLILY_BUGS
 Subject:
 Date:
 
@@ -127,7 +129,7 @@ sub edit_report(%) {
     }
     
     
-    open(FH, "|/usr/lib/sendmail -oi tigerlily-bugs\@einstein.org");
+    open(FH, "|/usr/lib/sendmail -oi $TLILY_BUGS");
     print FH $form;
     close FH;
     
