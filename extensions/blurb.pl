@@ -1,9 +1,14 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/blurb.pl,v 1.3 2000/11/22 15:05:31 coke Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/blurb.pl,v 1.4 2000/11/22 16:08:10 coke Exp $
 
 use strict;
 
-# Author: Will "Coke" Coleda
+# Author: Will "Coke" Coleda (will@coleda.com)
+
+#
+# It's possible that multiple compressions will render readability undef.
+# Ping me if you think this is happening.
+#
 
 command_r('blurb', \&blurb_cmd);
 shelp_r('blurb', "Format your blurb so it fits.");
@@ -16,14 +21,28 @@ clients.
 The extension will use a variety of techniques to try to cut your blurb
 down to size, and failing those, will lop off the end of your blurb.");
 
+#
+# Abbrs: a hash of regexen and their abbreviations.
+#
+
+my %abbr = (
+	qr/fou?r/ => "4",
+	qr/ate|eight/ => "8",
+	qr/\b(too?|two)/ => "2",
+);
+
+
 sub unload {
-## Nothing to do here right now.
+	## Nothing to do here right now.
 }
 
 
 my $max = 35;
 my $psuedo;
 
+#
+# Is this blurb ok?
+#
 sub check_blurb {
         if (length($psuedo) + length($_[0]) <=$max) {
 		return 1;
@@ -31,10 +50,18 @@ sub check_blurb {
 	return 0;
 }
 
+
+#
+# Apply a set of rules to reduce your blurb into something that will 
+# fit into a smaller space. Apply this rules in order of readability.
+#
+
 sub blurb_cmd {
 	my ($ui,$blurb) = @_;
 	$psuedo = active_server()->user_name(); #psuedo can change..
 	my $modified = 0;
+	my @words;
+	my $failed=1;
 
 	## strip off exterior braces/quotes.
 
@@ -61,37 +88,61 @@ sub blurb_cmd {
 
         goto DONE if (check_blurb($blurb));
 
-	#Remove any spaces..
+	#Handle any abbreviations;
 
-	while ($blurb =~ s/ (.)/uc $1/e) {
-        	goto DONE if (check_blurb($blurb));
+	foreach my $re (keys %abbr) {
+		while ($blurb =~s /$re/$abbr{$re}/) {
+        		goto DONE if (check_blurb($blurb));
+		}
 	}
 
-	#Remove some punctuation?
+	#Remove all spaces.. convert to a list in the process,
+        #since we need to keep track of words from this point out.
 
-	while ($blurb =~ s/\W//) {
-        	goto DONE if (check_blurb($blurb));
+	@words = map {ucfirst $_} (split(' ',$blurb));
+	$blurb = join('',@words);
+        goto DONE if (check_blurb($blurb));
+
+	#Remove punctuation
+
+	while (grep /\W/, @words) { #if -any- puncutation
+		foreach my $word (@words) { # remove from each word in turn.
+			if ($word =~ s/\W//) {
+				$blurb=join('',@words);
+				#$ui->print("TEST:" .$blurb. "\n");
+        			goto DONE if (check_blurb($blurb));
+			}
+		}
 	}
 
-	#Remove some vowels? (lowercase only to avoid confusion)
+	#Remove some vowels?
 
-	while ($blurb =~ s/([^AEIOUaeiou])[aeiou]([^AEIOUaeiou])/$1$2/) {
-        	goto DONE if (check_blurb($blurb));
+	my $vowelRE = qr/([^AEIOUaeiou])[aeiou]([^AEIOUaeiou])/;
+
+	while (grep /$vowelRE/, @words) { #if -any- cases,
+		foreach my $word (@words) { # remove from each word in turn.
+			if ($word =~ s/$vowelRE/$1$2/) {
+				$blurb=join('',@words);
+				#$ui->print("TEST:" .$blurb. "\n");
+        			goto DONE if (check_blurb($blurb));
+			}
+		}
 	}
+
 	FAIL:
-
-	$blurb = substr($blurb,0,($max-length($psuedo)));
-
+	#$ui->print("FAIL\n");
+	$failed=1;
+	$blurb = substr(join('',@words),0,($max-length($psuedo)));
 	#$ui->print("(your compressed blurb is is " . abs($max - length($psuedo) - length($blurb)) . " chars too long)\n");
 	#return;
 	
    	DONE:
+	#$ui->print("K'PLA!\n");
 	TLily::Server->active()->cmd_process("/blurb [" . $blurb . "]", sub {
 		# I don't see how to get the output of the cmd back...
 	});
+	#$ui->print("BLURB: " . $blurb . "\n");
 }
-
-
 
 #TRUE! They return TRUE!
 1;
