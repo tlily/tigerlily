@@ -1,4 +1,14 @@
 Version 2.3-post
+  * [Makefile.PL] Revamped build system.
+  * [extensions/infobot.pl] Tlily-based infobot [JDW]
+  * [extensions/group.pl] Reformat group info [WJC]
+  * [extensions/dontcare.pl] New extension to chop a given user's sends
+    if they exceed a certain length.
+  * [extensions/mask.pl] Mask a user to a group name; useful for people
+    who change pseodos frequently. [WJC]
+  * [extensions/osxspeak.pl] OS/X analog of win32speak.pl [WJC]
+  * [TLily/UI/Curses] Added "intelligent" input history browsing, allowing
+    to move line-by-line within a multi-line send. [DPN]
   * [TLily/Server/SLCP.pm] Fixed expansion problems when a user /renames
     from a name similar to a discussion name. [SMC]
   * [TLily/Server/SLCP.pm,extension/slcp_state.pl] Tigerlily now notices
@@ -6,6 +16,8 @@ Version 2.3-post
   * [TLily/Server/SLCP.pm] Added support for '~' to match only users. [SMC]
   * [extensions/keepalive.pl] When re-connecting to a lost connection, fixed
     bug that prevented keepalive pings. [SMC]
+  * [extensions/keepalive.pl] keepalive now uses the proper OOB ping, instead
+    of /why [JDW]
   * [extensions/gag.pl] Add '%gag topic <foo>', which will gag based on the
     content of sends instead of the sender.
   * [TLily/UI/Curses.pm,TLily/UI/Curses/StatusLine.pm,TLily/UI/Curses/Text.pm,
