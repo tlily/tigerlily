@@ -1,4 +1,6 @@
 Version 2.3
+  * [TLily/Server/SLCP.pm] When a user renamed, the entry for their old
+    name was not correctly deleted.  Fixed. [DPN]
   * [TLily/UI/Curses/Text.pm] Added scrollback expiration.  There may still
     be some bugs in it; use with caution.  It is controlled by the
     'max_scrollback' variable. [RBJ]
