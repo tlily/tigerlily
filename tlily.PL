@@ -7,7 +7,7 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/tlily.PL,v 1.46 1999/10/23 06:15:52 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/tlily.PL,v 1.47 1999/12/11 03:20:59 albert Exp $
 
 use strict;
 use Config;
@@ -104,7 +104,6 @@ if ($^O =~ /cygwin/) {
     $TL_TMPDIR = $ENV{TEMP} || 'C:\WINDOWS\TEMP';
     $TL_TMPDIR =~ s/^.://g;
     $TL_TMPDIR =~ s/\\/\//g;
-    $ENV{EDITOR} ||= "NOTEPAD.EXE";
 }
 
 $fallback_EAGAIN = @@EAGAIN@@;
