@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/mirror.pl,v 1.2 1999/03/23 08:33:51 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/mirror.pl,v 1.3 1999/04/30 20:37:47 josh Exp $
 
 use strict;
 
@@ -10,7 +10,7 @@ shelp_r('unmirror', "undo a %mirror");
 help_r('mirror', 
        " usage: %mirror [fromdisc] [todisc]");
 
-help_r('mirror', 
+help_r('unmirror', 
        " usage: %unmirror [disc]");
 
 my(%mirrored);
