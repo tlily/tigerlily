@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/after.pl,v 1.11 2000/04/05 02:54:15 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/after.pl,v 1.12 2000/09/12 04:13:41 coke Exp $
 
 use strict;
 
@@ -157,10 +157,12 @@ sub cron_command {
 	my($handler) = @_;
 	my $ui = TLily::UI::name($ui_name);
 	$ui->print("($itext has passed, running \"$cmd\".)\n");
-	TLily::Event::send(type => 'user_input',
-			   ui   => $ui,
-			   server => $serv,
-			   text => $cmd);
+	foreach my $task (split(/\\n/, $cmd)) {
+		TLily::Event::send(type => 'user_input',
+			   	ui   => $ui,
+			   	server => $serv,
+			   	text => $task);
+	}
 	unless (defined $handler->{interval}) {
 	    delete $cron{$hid};
 	    delete $cron_id{$hid};
