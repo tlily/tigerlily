@@ -1,4 +1,4 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/Attic/slcp.pl,v 1.13 1999/03/02 21:28:45 steve Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/Attic/slcp.pl,v 1.14 1999/03/04 00:26:16 josh Exp $
 
 use strict;
 use vars qw(%config);
@@ -224,6 +224,11 @@ sub parse_line {
 	    $event{NOTIFY} = 1;
 	}
 	
+	if ($event{EVENT} =~ /unidle/ && 
+	    $event{SOURCE} eq $serv->user_name) {
+	    $event{NOTIFY} = 0;
+	}
+	
 	$event{SHANDLE} = $event{SOURCE};
 	$event{SOURCE}  = $serv->get_name(HANDLE => $event{SOURCE});
 	
@@ -260,7 +265,6 @@ sub parse_line {
 	
 	if ($event{SOURCE} eq $serv->user_name) { 
 	    $event{isuser} = 1;
-	    $event{NOTIFY} = 1; # SLCP bug.
 	}
 	
 	goto found;
