@@ -21,7 +21,7 @@ sub pinhead_command_handler {
 	}
 	return;
     }
-
+    
     if (@args != 1) {
 	$ui->print("(%pinhead name; type %help for help)\n");
 	return;
@@ -73,6 +73,7 @@ sub zippify {
     return unless (defined $pinheads{$event->{SHANDLE}});
 
     my @candidates=zip_find_candidates($event->{VALUE});
+    return unless @candidates;
     my $max_victims=round(@candidates/2+0.5);
     $max_victims>0 or $max_victims=1;
     my $min_victims=round(@candidates/7);
