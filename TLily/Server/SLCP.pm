@@ -6,7 +6,7 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Server/Attic/SLCP.pm,v 1.44 2002/08/15 17:48:11 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Server/Attic/SLCP.pm,v 1.45 2003/03/07 02:16:01 neild Exp $
 
 package TLily::Server::SLCP;
 
@@ -328,6 +328,9 @@ sub expand_name {
     if (ref($config{prefer}) eq "ARRAY") {
 	my $m;
 	foreach $m (@{$config{prefer}}) {
+            next unless $m =~ /^-?(.*)/;
+            next unless $self->{NAME}->{$1};
+
 	    $m = lc($m);
 	    $m =~ tr/_/ /;
 	    return $m if (index($m, $name) == 0);
