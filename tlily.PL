@@ -7,7 +7,7 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/tlily.PL,v 1.61 2003/08/12 03:41:21 coke Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/tlily.PL,v 1.62 2003/08/13 22:14:03 coke Exp $
 
 require 5.00307;
 use strict;
@@ -105,7 +105,7 @@ if(defined $config{bot}) {
     eval "use TLily::Bot; TLily::Bot::init();";
 }
 
-our $nsApp;
+my $nsApp;
 if ($TLily::Version::VERSION =~ /-aqua$/) {
 
     # Get a reference to the shared NSApplication object
