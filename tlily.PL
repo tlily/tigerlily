@@ -44,8 +44,6 @@ $ui->defstyle('privhdr' => 'normal');
 $ui->defstyle('privmsg' => 'normal');
 $ui->defstyle('emote'   => 'normal');
 $ui->defcstyle('status' => 'yellow', 'blue', 'bold');
-$ui->defcstyle('pubhdr' => 'green', 'white', 'normal');
-$ui->defcstyle('pubmsg' => 'green', 'white', 'normal');
 
 show_banner();
     
