@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/expand.pl,v 1.20 2000/12/13 19:18:59 neild Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/expand.pl,v 1.21 2000/12/14 00:33:30 neild Exp $ 
 
 use strict;
 use TLily::UI;
@@ -67,6 +67,10 @@ sub exp_expand {
 	} else {
 	    goto end;
 	}
+
+	my $serv = active_server();
+	my $serv_name = $serv->name();
+	$exp =~ s/\@\Q$serv_name\E(?=$|,)//g;
 	
 	$exp =~ tr/ /_/;
 	$ui->set_input(length($exp) + 1, $exp . $key . $line);
@@ -147,7 +151,8 @@ TLily::UI::bind('C-i' => "complete-send");
 
 sub private_handler {
     my($event,$handler) = @_;
-    $expansions{sender} = $event->{SOURCE};
+    my $serv_name = $event->{server}->name();
+    $expansions{sender} = $event->{SOURCE} . "@" . $serv_name;
     
     my $me = $event->{server}->user_name();
     return unless (defined $me);
@@ -156,7 +161,7 @@ sub private_handler {
     if (@group > 1) {
 	push @group, $event->{SOURCE};
 	@group = grep { $_ ne $me } @group;
-	$expansions{sendgroup} = join(",", @group);
+	$expansions{sendgroup} = join(",", map($_."@".$serv_name, @group));
     }
     
     return;
@@ -166,7 +171,8 @@ event_r(type => 'private',
 
 sub user_send_handler {
     my($event, $handler) = @_;
-    my $dlist = join(",", @{$event->{RECIPS}});
+    my $serv_name = $event->{server}->name();
+    my $dlist = join(",", map($_."@".$serv_name, @{$event->{RECIPS}}));
     
     $expansions{recips} = $dlist;
     $last_send = $event->{text};
@@ -226,6 +232,7 @@ sub server_change_handler {
 
     $nline .= substr($line, pos($line));
     $ui->set_input($pos, $nline);
+    $ui->print("");
 }
 event_r(type => 'server_change',
 	call => \&server_change_handler);
@@ -233,13 +240,14 @@ event_r(type => 'server_change',
 sub oops_cmd {
 	my ($ui, $args) = @_;
 	my $serv = active_server();
+	my $serv_name = $serv->name();
 
 	my (@dests) = split (/,/, $args);
 	foreach (@dests) {
 		my $full = TLily::Server::SLCP::expand_name($_);
 		next unless $full;
 		$full =~ tr/ /_/;
-		$_ = $full;
+		$_ = $full . "@" . $serv_name;
 	}
 	
 	$expansions{recips} = join(",", @dests);
@@ -271,12 +279,13 @@ sub oops_cmd {
 sub also_cmd {
 	my ($ui, $args) = @_;
 	my $serv = active_server();
+	my $serv_name = $serv->name();
 
 	my (@dests) = split (/,/, $args);
 	foreach (@dests) {
 		my $full = TLily::Server::SLCP::expand_name($_);
 		$full =~ tr/ /_/;
-		$_ = $full;
+		$_ = $full . "@" . $serv_name;
 	}
 	$expansions{recips} = join (",", $expansions{recips}, @dests);
 	$serv->sendln("/also " . $args);
