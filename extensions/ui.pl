@@ -1,4 +1,4 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/ui.pl,v 1.11 1999/04/07 20:41:03 neild Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/ui.pl,v 1.12 1999/04/09 22:48:35 josh Exp $ 
 use strict;
 
 
@@ -165,7 +165,7 @@ sub next_input_context {
     $ui->{input}->{_context_idx} = $cidx;
 }
 command_r("next-input-context" => \&next_input_context);
-bind("C-x" => "next-input-context");
+TLily::UI::bind("C-x" => "next-input-context");
 
 #
 # Styles.

@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Server/Attic/SLCP.pm,v 1.14 1999/04/09 21:34:26 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Server/Attic/SLCP.pm,v 1.15 1999/04/09 22:48:21 josh Exp $
 
 package TLily::Server::SLCP;
 
@@ -44,7 +44,7 @@ sub new {
 			      return 0 unless ($e->{server} == $self);
 
 			      $self->set_client_name();
-			      TLily::Event::event_u($h->{Id});
+			      TLily::Event::event_u($h->{id});
 
 			      return 0;
 			  });
@@ -56,7 +56,7 @@ sub new {
 			      return 0 unless ($e->{server} == $self);
 				  
 			      $self->set_client_options();
-			      TLily::Event::event_u($h->{Id});
+			      TLily::Event::event_u($h->{id});
 				
 			      return 0;
 			  });

@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Event.pm,v 1.20 1999/04/03 07:06:58 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Event.pm,v 1.21 1999/04/09 22:48:17 josh Exp $
 
 package TLily::Event::Core;
 
@@ -235,8 +235,9 @@ sub event_r {
 Unregister a named event handler.
 
 =cut
+use Carp qw(confess);
 sub event_u {
-    my($id) = @_;
+    my($id) = @_;   
     $id = $id->{id} if (ref $id);
     @e_name = grep { $_->{id} != $id } @e_name;
     TLily::Registrar::remove("name_event", $id);

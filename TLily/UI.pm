@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/UI.pm,v 1.18 1999/04/03 05:06:03 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/UI.pm,v 1.19 1999/04/09 22:48:19 josh Exp $
 
 package TLily::UI;
 
@@ -114,6 +114,7 @@ it returns the UI object with that name, or the UI object with the name
 sub name {
     shift if (@_ > 1);
     my($a) = @_;
+    $a ||= "";
     if (ref($a)) {
 	return $a->{"name"};
     } else {

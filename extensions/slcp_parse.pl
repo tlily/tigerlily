@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_parse.pl,v 1.5 1999/04/09 21:34:28 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_parse.pl,v 1.6 1999/04/09 22:48:30 josh Exp $
 
 use strict;
 use vars qw(%config);
@@ -124,7 +124,7 @@ sub parse_line {
     chomp $line;
     
     my $ui;
-    $ui = ui_name($serv->{ui_name}) if ($serv->{ui_name});
+    $ui = ui_name($serv->{'ui_name'}) if ($serv->{'ui_name'});
     
     #print STDERR "=", $line, "\n";
     $ui->print("=", $line, "\n") if ($TLily::Config::config{parser_debug});
@@ -353,10 +353,10 @@ sub parse_line {
     
     # An event has been parsed.
   found:
-    $event{cmdid}   = $cmdid if ($cmdid);
-    $event{BELL}    = 1 if ($serv->{BELL});
-    $event{server}  = $serv;
-    $event{ui_name} = $serv->{ui_name};
+    $event{cmdid}     = $cmdid if ($cmdid);
+    $event{BELL}      = 1 if ($serv->{BELL});
+    $event{server}    = $serv;
+    $event{'ui_name'} = $serv->{'ui_name'};
     
     $serv->{BELL} = undef;
 

@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/server.pl,v 1.15 1999/03/23 08:33:54 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/server.pl,v 1.16 1999/04/09 22:48:28 josh Exp $
 
 use strict;
 
@@ -18,9 +18,9 @@ sub connect_command {
     $port = $config{port}   unless defined($port);
     
     my $server;
-    $server = TLily::Server::SLCP->new(host    => $host,
-				       port    => $port,
-				       ui_name => $ui->name);
+    $server = TLily::Server::SLCP->new(host      => $host,
+				       port      => $port,
+				       'ui_name' => $ui->name);
     return unless $server;
 
     $server->activate();

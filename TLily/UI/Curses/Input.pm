@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Curses/Attic/Input.pm,v 1.13 1999/03/23 23:36:22 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Curses/Attic/Input.pm,v 1.14 1999/04/09 22:48:25 josh Exp $
 
 package TLily::UI::Curses::Input;
 
@@ -38,7 +38,7 @@ sub new {
 
     # A flag indicating if password mode is set.  The contents of the input
     # line are not drawn when in password mode.
-    $self->{password}    = 0;
+    $self->{'password'}  = 0;
 
     $self->{topln}       = 0;
     $self->{text_lines}  = 1;
@@ -68,7 +68,7 @@ sub new {
 # when in password mode.
 sub password {
     my($self, $v) = @_;
-    $self->{password} = $v;
+    $self->{'password'} = $v;
     $self->rationalize();
     $self->redraw();
 }
@@ -77,7 +77,7 @@ sub password {
 # Translates an offset into the input string into a y/x coordinate pair.
 sub find_coords {
     my($self, $point) = @_;
-    $point = $self->{password} ? 0 : $self->{point}
+    $point = $self->{'password'} ? 0 : $self->{point}
       unless (defined($point));
     $point += length($self->{prefix});
 
@@ -135,7 +135,7 @@ sub drawlines {
     $count = $self->{lines} if (!$count || $count > $self->{lines});
 
     my $text = $self->{prefix};
-    $text   .= $self->{text} unless ($self->{password});
+    $text   .= $self->{text} unless ($self->{'password'});
     my $i = ($start && $start > 0) ? $start : 0;
     my $ti = (($i + $self->{topln}) * $self->{cols});
 
@@ -185,7 +185,7 @@ sub rationalize {
     my($self) = @_;
 
     my $text_len  = length($self->{prefix});
-    $text_len += length($self->{text}) unless ($self->{password});
+    $text_len += length($self->{text}) unless ($self->{'password'});
 
     my $text_lines = int($text_len / $self->{cols}) + 1;
     if ($text_lines != $self->{text_lines}) {
@@ -265,7 +265,7 @@ sub accept_line {
     $self->rationalize();
     $self->redraw();
 
-    if ($text ne "" && $text ne $self->{history}->[-1] && !$self->{password}) {
+    if ($text ne "" && $text ne $self->{history}->[-1] && !$self->{'password'}) {
 	$self->{history}->[-1] = $text;
 	push @{$self->{history}}, "";
 	$self->{history_pos} = $#{$self->{history}};
@@ -334,9 +334,9 @@ sub addchar {
     $self->update_style();
 
     $self->{kill_reset} = 1;
-    return if ($self->{password});
+    return if ($self->{'password'});
 
-    if ($self->{style_fn}) {
+    if ($self->{'style_fn'}) {
 	$self->rationalize();
 	$self->redraw();
 	return;
@@ -365,9 +365,9 @@ sub del {
     $self->update_style();
 
     $self->{kill_reset} = 1;
-    return if ($self->{password});
+    return if ($self->{'password'});
 
-    if ($self->{style_fn}) {
+    if ($self->{'style_fn'}) {
 	$self->rationalize();
 	$self->redraw();
 	return;
@@ -471,7 +471,7 @@ sub transpose_chars {
     $self->update_style();
 
     $self->{kill_reset} = 1;
-    return if ($self->{password});
+    return if ($self->{'password'});
 
     for my $c ($c1, $c2) {
 	my($y, $x) = $self->find_coords($c);

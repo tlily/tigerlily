@@ -14,7 +14,9 @@ Before 2.0 release:
     - when the last open server connection is closed, provide a exit/reconnect
       option. (integrate with smartexit feature)
 
+Bug Fixes:
    autologin - doesn't work after the first use
+   autoreview - frank mentioned this had a problem?
 
 Later:
   helper.pl/program.pl

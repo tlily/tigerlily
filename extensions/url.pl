@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/url.pl,v 1.6 1999/03/23 23:59:53 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/url.pl,v 1.7 1999/04/09 22:48:36 josh Exp $
 
 #
 # URL handling
@@ -27,6 +27,7 @@ sub url_cmd {
     my ($arg,$num)=split /\s+/, "@_";
     my ($url,$ret);
 
+    $arg ||= "";
     $arg = "show" if ($arg eq "view");
     
     if ($arg eq "clear") {

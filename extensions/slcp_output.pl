@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_output.pl,v 1.2 1999/04/03 05:06:14 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_output.pl,v 1.3 1999/04/09 22:48:29 josh Exp $
 
 use strict;
 
@@ -258,12 +258,12 @@ sub timestamp {
     my ($min, $hour) = (localtime($time))[1,2];
     my $t = ($hour * 60) + $min;
     my $ampm = '';
-    $t += $config{zonedelta};
+    $t += $config{zonedelta} if defined($config{zonedelta});
     $t += (60 * 24) if ($t < 0);
     $t -= (60 * 24) if ($t >= (60 * 24));
     $hour = int($t / 60);
     $min  = $t % 60;
-    if ($config{zonetype} eq '12') {
+    if (defined($config{zonetype}) and ($config{zonetype} eq '12')) {
 	if ($hour >= 12) {
 	    $ampm = 'p';
 	    $hour -= 12 if $hour > 12;

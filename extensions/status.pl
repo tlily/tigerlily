@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/status.pl,v 1.9 1999/03/23 08:34:02 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/status.pl,v 1.10 1999/04/09 22:48:34 josh Exp $
 
 use strict;
 
@@ -14,7 +14,7 @@ sub set_clock {
 	$a[2] = int($t / 60);
 	$a[1] = $t % 60;
     }
-    my($ampm);
+    my($ampm) = "";
     if(defined $config{clocktype}) {
 	if($a[2] >= 12 && $config{clocktype} eq '12') {
 	    $ampm = 'p';

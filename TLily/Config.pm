@@ -8,7 +8,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Config.pm,v 1.6 1999/03/23 08:33:13 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Config.pm,v 1.7 1999/04/09 22:48:15 josh Exp $
 
 package TLily::Config;
 
@@ -299,7 +299,7 @@ sub collapse_list {
 #    print STDERR "collapse lref\n";
 #    main::dumpValue($lref);
     foreach $ext (@{$lref}) {
-	next if $ext eq undef;
+	next if (! defined($ext));
 	if($ext =~ /^-(.*)$/) {
 	    delete $list{$1};
 	} else {

@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/spellcheck.pl,v 1.16 1999/03/23 08:33:59 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/spellcheck.pl,v 1.17 1999/04/09 22:48:33 josh Exp $
 
 use strict;
 use IPC::Open2;
@@ -131,7 +131,7 @@ sub lookup_word {
 	};
 	
 	my $resp  = <I_READ>;
-	while (my $blank = <I_READ>) {
+	while (defined(my $blank = <I_READ>)) {
 	    last if $blank =~ /^$/;
 	}
 	

@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Curses/Attic/Text.pm,v 1.18 1999/03/24 01:17:36 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Curses/Attic/Text.pm,v 1.19 1999/04/09 22:48:26 josh Exp $
 
 package TLily::UI::Curses::Text;
 
@@ -424,10 +424,10 @@ sub style {
 sub indent {
     my $self  = shift;
     my($style, $str) = @_;
-    my $style = (@_ > 1) ? shift : "default";
-    my $str   = (@_)     ? shift : "";
-    $style    = "default" if (!defined $style);
-    $str      = ""        if (!defined $str);
+    $style = (@_ > 1) ? shift : "default";
+    $str   = (@_)     ? shift : "";
+    $style = "default" if (!defined $style);
+    $str   = ""        if (!defined $str);
 
     if ($self->{indents}->[-4] == length($self->{text})) {
 	pop @{$self->{indents}};

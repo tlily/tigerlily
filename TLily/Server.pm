@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Server.pm,v 1.14 1999/04/06 03:19:11 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Server.pm,v 1.15 1999/04/09 22:48:18 josh Exp $
 
 package TLily::Server;
 
@@ -292,8 +292,8 @@ sub reader {
 
     # End of line.
     elsif ($rc == 0) {
-	my $ui = TLily::UI::name($self->{ui_name}) if ($self->{ui_name});
-	$ui->print("*** Lost connection to \"$self->{name}\" ***\n");
+	my $ui = TLily::UI::name($self->{"ui_name"}) if ($self->{"ui_name"});
+	$ui->print("*** Lost connection to \"" . $self->{"name"} . "\" ***\n");
 	$self->terminate();
     }
 

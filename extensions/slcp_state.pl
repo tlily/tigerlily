@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_state.pl,v 1.2 1999/03/23 08:33:58 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_state.pl,v 1.3 1999/04/09 22:48:32 josh Exp $
 
 # This hash keeps track of what fields from %USER and %DISC are stored in 
 # the state database.  We need to ensure that every one of these state 
@@ -30,7 +30,7 @@ my %keep;
 foreach (keys %keep) {
     my $s;
     foreach $s (keys %{$keep{$_}}) {
-	next if ($keep{$_}{$s} == 1);
+	next if ($keep{$_}{$s} eq "1");
 	
 	my $sub = sub {
 	    my($e) = @_;
