@@ -8,17 +8,21 @@
 #
 
 # BUGS:
-# Login procedure needs work.
-#    (optionally prompt if autologin not set up)
+# Login procedure needs work.  (often fails repeatedly, should be able to read 
+#   login/pw from afile or cmdline)
+# globals really should be toned down. (move them into the registry sstuff)
+# need to catch failure of the timed keepalive and re-login.
+#
 # Only one bot extension should be loaded at a time.   We can set a flag
 #    in here, but i'll need a hook in the regular extension unloading thing 
-#    to clear that flag.
+#    to clear that flag.   This is a nice way to allow bot extension reloading
+#    to work right.
 # bot_r should vomit if not in standard bot mode.
 # bots are NOT multi-server safe.
 # cmd's whose only output is a %NOTIFY don't respond. (i.e. /here, /away, /bl)
 
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Bot.pm,v 1.1 1999/09/17 07:20:21 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Bot.pm,v 1.2 1999/09/23 02:34:22 josh Exp $
 
 package TLily::Bot;
 
@@ -31,6 +35,7 @@ use Safe;
 use strict;
 use vars qw(@ISA %EXPORT_TAGS @EXPORT_OK);
 
+my ($username,$password);
 my (%bot_handlers,$bhid);
 
 @ISA = qw(Exporter);
@@ -88,8 +93,6 @@ sub init {
     # use the "text" UI by default, unless specified otherwise.
     $config{UI} ||= "Text";    
 
-    # make sure autologin's variables are OK..
-    # xxxx
 
     # avoid prompts by hitting enter at all of them. 
     # (specific ones can be overridden)
@@ -97,11 +100,17 @@ sub init {
 	    order => 'after',
 	    call  => sub {
 		my($event, $handler) = @_;
-		
-		# if we see a login prompt at this point, 
-		# there was a problem logging in..
+
 		if ($event->{text} =~ /^login:/) {
-		    realdie("FATAL: Error logging in.\n");
+		    print "(sending username)\n";
+		    $event->{server}->sendln($username);
+		    return 1;
+		}
+		
+		if ($event->{text} =~ /^password:/) {
+		    print "(sending password)\n";
+		    $event->{server}->sendln($password);
+		    return 1;
 		}
 
 		# Try to avoid reviewing :)
@@ -120,8 +129,12 @@ sub init {
     # "keepalive" so we notice if we get disconnected.
     TLily::Event::time_r(interval => 120,
 			 call => sub { 
-			     my $server = TLily::Server::name();
-			     $server->sendln("/display time"); 
+			     cmd_process("/display time", sub {
+					     my ($e) = @_;
+					     # hide it from the user.
+					     $e->{ui_name} = undef;
+					 });
+			     
 			 } );
 
 
@@ -146,6 +159,10 @@ sub import {
     
     if (@options) {
     	
+	# this needs work ;)
+	print "Username: ";	chomp($username=<STDIN>);
+	print "Password: ";	chomp($password=<STDIN>);
+
 	foreach (@options) {
 	    if ($_ eq "standard") {
 		# a "standard" bot has a default message handler, and common 
