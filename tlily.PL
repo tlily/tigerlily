@@ -8,7 +8,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/tlily.PL,v 1.35 1999/04/03 05:05:53 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/tlily.PL,v 1.36 1999/04/04 02:23:02 neild Exp $
 
 use strict;
 no strict qw(refs);
@@ -675,7 +675,7 @@ $ui->print("\n");
 
 TLily::Event::send(type => 'user_input',
 		   ui   => $ui,
-		   text => "%connect");
+		   text => "%connect") unless ($config{noauto});
 
 while (1) {
     eval { TLily::Event::loop; };
