@@ -7,16 +7,17 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Server.pm,v 1.17 1999/04/20 17:03:11 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Server.pm,v 1.18 1999/05/08 17:23:50 neild Exp $
 
 package TLily::Server;
 
 use strict;
 
 use Carp;
-#use IO::Socket;
 use Socket;
 use Fcntl;
+
+require "errno.ph";
 
 use TLily::Event;
 
@@ -306,17 +307,11 @@ sub reader {
     my $buf;
     my $rc = sysread($self->{sock}, $buf, 1024);
 
-    # Error of some kind.
-    if ($rc < 0) {
-	# The following is broken, and must be fixed.
-	#if ($errno != EAGAIN) {
-	#	die "sysread: $!\n";
-	#}
-	# A signal interrupted us -- just fall out, we'll be back.
-    }
+    # Interrupted by a signal.
+    return if (!defined($rc) && $! == &EAGAIN);
 
     # End of line.
-    elsif ($rc == 0) {
+    if (!defined($rc) || $rc == 0) {
 	my $ui = TLily::UI::name($self->{"ui_name"}) if ($self->{"ui_name"});
 	$ui->print("*** Lost connection to \"" . $self->{"name"} . "\" ***\n");
 	$self->terminate();
