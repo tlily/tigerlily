@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/autologin.pl,v 1.5 1999/03/23 08:33:39 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/autologin.pl,v 1.6 1999/04/09 23:43:13 neild Exp $
 
 #
 # Handle autologins.
@@ -46,7 +46,6 @@ sub init {
 			    $ui->print("(using autologin information)\n");
 			    my $server = server_name();
 			    $server->sendln("${user} ${pass}");
-			    event_u($handler->{id});
 			    return 1;
 			});
 		
