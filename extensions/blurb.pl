@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/blurb.pl,v 1.6 2000/11/22 16:42:57 coke Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/blurb.pl,v 1.7 2000/12/12 18:50:33 coke Exp $
 
 use strict;
 
@@ -26,12 +26,16 @@ down to size, and failing those, will lop off the end of your blurb.");
 #
 
 my %abbr = (
-	qr/fou?r/ => "4",
-	qr/ate|eight/ => "8",
-	qr/\b(too?|two)/ => "2",
-	qr/and/ => "&",
+	qr/fou?r/i => "4",
+	qr/ate|eight/i => "8",
+	qr/\b(too?|two)/i => "2",
+	qr/and/i => "&",
 );
 
+my %abbr_must = (
+	qr/fuck/i => "f***",
+	qr/shit/i => "sh*t",
+);
 
 sub unload {
 	## Nothing to do here right now.
@@ -70,11 +74,17 @@ sub blurb_cmd {
 		return;
 	}
 
+	#Handle any -required- substitutions. (swear filter)
+
+	foreach my $re (keys %abbr_must) {
+		$blurb =~s /$re/$abbr_must{$re}/g;
+	}
+
 	## strip off exterior braces/quotes.
 
 	if ($blurb =~ /^"(.*)"$/) {
 		$blurb = $1;
-	} elsif ($blurb =~ /^[(.*)]$/) {
+	} elsif ($blurb =~ /^\[(.*)\]$/) {
 		$blurb = $1;
 	}
 
