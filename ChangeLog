@@ -1,4 +1,6 @@
 Version 2.0-post
+  * [extensions/slcp_parse.pl] TLily looked for %SLCP-SYNC anywhere
+    in a line, not just at the beginning.  Fixed.  [MJR]
   * Extended TLily::Server::SLCP::fetch() to also fetch verbs, and
     added program.pl with verb editing [MJR]
   * Fixed the client-name-and-version-not-set problem. [CWS]
