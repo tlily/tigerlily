@@ -9,8 +9,6 @@ Before 2.0 release:
   based on the ones we've already finished.
   
   run_command.pl(easy)  
-  mirror.pl     (easy)
-  countdown.pl  (easy)
   stock.pl      (easy)
   helper.pl     (pretty easy)
   hidesend.pl   (medium)
