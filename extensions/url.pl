@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/url.pl,v 1.23 2001/11/16 06:37:07 tale Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/url.pl,v 1.24 2001/11/27 22:02:51 tale Exp $
 
 #
 # URL handling
@@ -8,7 +8,7 @@
 use strict;
 
 my @urls = ();
-my $url_base = q%\S+[^\s;:,.!?(){}\[\]\"\']+%;
+my $url_base = q%\S+[^\s;:,.!?()<>{}\[\]\"\']+%;
 my $text_wrapping;
 
 sub handler {
