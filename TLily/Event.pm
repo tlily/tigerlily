@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Event.pm,v 1.35 2001/11/12 04:43:11 tale Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Event.pm,v 1.36 2003/02/28 01:48:45 josh Exp $
 
 package TLily::Event::Core;
 
@@ -594,7 +594,10 @@ sub loop_once {
 
     my $timeout;
     if (@e_idle) {
-	$timeout = 0;
+        # when we are sitting idle, guarantee that any idle event
+        # handlers won't be repeatedly called more than once every
+        # 0.01 seconds.
+	$timeout = 0.01;
     } elsif ($e_time[0]) {
 	$timeout = $e_time[0]->{'time'} - $time;
 	$timeout = 0 if ($timeout < 0);

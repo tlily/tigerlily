@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/TextWindow.pm,v 1.4 2003/02/26 03:43:29 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/TextWindow.pm,v 1.5 2003/02/28 01:48:46 josh Exp $
 
 package TLily::UI::TextWindow::Proxy;
 
@@ -380,11 +380,11 @@ sub new {
 
     # xxx this should be moved into foiledagain land.
     if ($^O eq 'MSWin32') {
-        # unforunately, this doesn't actually work- i believe time_r is
-        # technically limited to integer second intervals.  But at least this
-	# way we don't chew CPU.
-        TLily::Event::time_r(call     => sub { $self->run; },
-	                     interval => 0.05);
+        # select() doesn't work on stdin with Win32::Console, apparently, so 
+        # we poll for input during idle times instead.  Responsiveness 
+        # can be tuned vs. CPU utilization in the idle timeout part of
+        # Event.pm.
+        TLily::Event::idle_r(call => sub { $self->run; });
     } else {
         TLily::Event::io_r(handle => \*STDIN,
                            mode   => 'r',
