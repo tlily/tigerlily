@@ -1,6 +1,6 @@
 @@PERL@@
 
-  require 5.00307;
+require 5.00307;
 
 #$TL_ETCDIR=".";
 $TL_LIBDIR="@@LIBDIR@@";
@@ -160,38 +160,36 @@ while (1) {
 
 
 sub load_ui {
+    my %available;
+
+    $config{UI} ||= "Curses";
+
     opendir(D,"$::TL_LIBDIR/TLily/UI");
-    my @u = map { s/.pm$//; $_; } grep /\.pm$/, readdir(D);
+    map { s/.pm$//; $available{$_}++; } grep /\.pm$/, readdir(D);
     closedir D;
 
-    my @try;
-    my ($desired_ui) = grep { /$config{UI}/i } @u;
-    $desired_ui =~ s/\.pm$//g;
-    $desired_ui ||= "Curses";
-    $config{UI} ||= "Curses";      
-    push @try, $desired_ui;
-    foreach (@u) { push @try,$_ unless /$desired_ui/; }
-    if ($desired_ui ne $config{UI}) {
-	print "UI \"$config{UI}\" was not found.\n";
-	print "Press ENTER to try the $desired_ui UI, or Control-C to quit.\n";
-	<STDIN>;
+    # did they specify a substring or case-insensitive match of an available
+    # UI?
+    if (! $available{$config{UI}}) {
+	foreach (keys %available) { 
+	    if (/$config{UI}/i) { $config{UI} = $_; }
+	}
     }
 
-    my $ui;    
-    foreach (@try) {
-	$config{UI} = $_;
-	if (! /$desired_ui/) {
-	    print "Press ENTER to try the $_ UI, or Control-C to quit.\n";
-	    <STDIN>;
-	}
-	eval "use TLily::UI::$config{UI}; \$ui = TLily::UI::$config{UI}->new(name => 'main');";
-	if ($@) {
-	    warn "ERROR: Unable to load UI \"$config{UI}\".\n$@\n";
-	    # sometimes they die() in the new(), leaving a half-allocated UI.
-	    TLily::UI::purge("main");
-	} else { 
-	    last; 
-	}
+    # nope?  ok, fall back to Curses.
+    if (! $available{$config{UI}}) {
+	print "UI \"$config{UI}\" was not found.\n";
+	print "Press ENTER to try the default UI, or Control-C to quit.\n";
+	<STDIN>;
+	$config{UI}="Curses";
+    }
+
+    # OK, load the UI..
+    eval "use TLily::UI::$config{UI}; \$ui = TLily::UI::$config{UI}->new(name => 'main');";
+    if ($@) {
+	warn "ERROR: Unable to load UI \"$config{UI}\".\n$@\n";
+	# sometimes they die() in the new(), leaving a half-allocated UI.
+	TLily::UI::purge("main");
     }
     
     die "FATAL: Unable to load a UI module.  Exiting.\n" unless $ui;
