@@ -1,7 +1,9 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/Attic/look.pl,v 1.2 1999/03/02 19:51:57 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/Attic/look.pl,v 1.3 1999/03/15 23:53:06 josh Exp $
 #
 # "look" tlily extension
 #
+
+use strict;
 
 sub spellcheck {
     my($ui, $command, $key) = @_;
@@ -19,10 +21,10 @@ sub spellcheck {
     # Just keep the alphabetic characters at the beginning (if any).
     $b =~ s/[^A-Za-z].*//;
 
-    $word = $a . $b;
+    my $word = $a . $b;
     return if ($word eq '');
 
-    @res = `look $word`;
+    my @res = `look $word`;
     chomp(@res);
 
     if (@res == 0) {

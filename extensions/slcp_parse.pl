@@ -1,4 +1,4 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/Attic/slcp.pl,v 1.14 1999/03/04 00:26:16 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_parse.pl,v 1.1 1999/03/15 23:53:15 josh Exp $
 
 use strict;
 use vars qw(%config);

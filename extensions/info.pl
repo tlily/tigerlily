@@ -1,5 +1,7 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/info.pl,v 1.4 1999/03/13 00:52:10 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/info.pl,v 1.5 1999/03/15 23:53:03 josh Exp $
+
+use strict;
 
 sub info_set {
     my ($ui,%args)=@_;
@@ -136,7 +138,7 @@ sub export_cmd {
 	$ui->print("(file \"$file\" not found)\n");
 	return;
     }
-    @lines=<FH>;
+    my @lines=<FH>;
     close(FH);
     info_set($ui,
 	     data=>\@lines,

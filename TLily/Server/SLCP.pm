@@ -19,9 +19,6 @@ sub new {
 	$args{protocol}   = "slcp";
 	$args{ui_name}    = "main" unless exists($args{ui_name});
 
-	# Load in the parser.
-	TLily::Extend::load("slcp");
-
 	my $self = $class->SUPER::new(%args);
 
 	$self->{HANDLE} = {};

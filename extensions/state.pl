@@ -12,6 +12,7 @@
 # ol' "1" to avoid this behavior, for cases where a less generic handler is
 # needed.
 
+use strict;
 
 my %keep;
 %{$keep{USER}} = (HANDLE => 1,
@@ -101,11 +102,4 @@ event_r(type  => 'away',
 
 # DISC/destroy
 # (need to add one.. not that it matters really)
-
-
-# The other thing SLCP does is to get rid of a lot of the informational 
-# messages from the server.  Here's an attempt to provide an easy way for 
-# the client to provide these..
-
-
 

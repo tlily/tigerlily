@@ -1,5 +1,7 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/source.pl,v 1.1 1999/02/28 05:23:26 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/source.pl,v 1.2 1999/03/15 23:53:16 josh Exp $
+
+use strict;
 
 sub do_source($) {
     my ($ui,$fname) = @_;
@@ -21,6 +23,7 @@ sub do_source($) {
     $ui->print("$size lines\n");
     close FH;
     
+    my $l;
     foreach $l (@data) {
 	chomp $l;
 	TLily::Event::send({type => 'user_input',

@@ -1,7 +1,9 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/autologin.pl,v 1.3 1999/02/28 04:45:25 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/autologin.pl,v 1.4 1999/03/15 23:52:58 josh Exp $
 #
 # Handle autologins.
 #
+
+use strict;
 
 # List of places to look for an autologin file.
 my @files = ("$ENV{HOME}/.lily/tlily/autologin",

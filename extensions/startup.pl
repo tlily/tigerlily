@@ -1,5 +1,7 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/startup.pl,v 1.1 1999/02/28 05:08:18 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/startup.pl,v 1.2 1999/03/15 23:53:17 josh Exp $
+
+use strict;
 
 event_r(type => 'connected',
 	order => 'after',

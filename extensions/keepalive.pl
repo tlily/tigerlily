@@ -1,8 +1,10 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/keepalive.pl,v 1.1 1999/03/01 21:09:09 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/keepalive.pl,v 1.2 1999/03/15 23:53:04 josh Exp $
 #
 # keepalive -- periodically ping the server, just to verify our connection
 #              is still there.
 #
+
+use strict;
 
 shelp_r("keepalive" => "Send periodic pings to the server.");
 help_r("keepalive",

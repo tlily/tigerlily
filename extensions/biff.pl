@@ -1,4 +1,4 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/biff.pl,v 1.2 1999/02/28 08:03:58 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/biff.pl,v 1.3 1999/03/15 23:53:00 josh Exp $
 #
 # A Biff module
 #
@@ -9,6 +9,8 @@
 #
 use IO::Socket;
 use IO::Select;
+use strict;
+no strict "refs";
 
 # Set the check interval (in seconds);
 my $check_interval = $config{biff_interval} || 60;
@@ -43,7 +45,8 @@ my $active;			# Is mail notification on?
 #  *sock => Handle of socket connection to server
 #  *request => preconstructed request packet
 #  *bytes => Number of bytes waiting for user
-@drops;
+
+my @drops;
 
 # Check functions.  Each function is named check_<type>, and is passed a
 # hashRef of the drop.
@@ -94,13 +97,14 @@ sub check_rpimchk(\%) {
 
 sub handle_rpimchk {
     my $evt = shift;
-    
+
+    my $drop;
     foreach $drop (@drops) {
 	if (($drop->{type} eq 'rpimchk') && ($drop->{sock} == $evt->{handle})) {
 	    my $reply;
 	    $evt->{handle}->recv($reply, 256);
 	    last if (length($reply) != 6);
-	    ($h1,$h2,$bytes)=unpack("CCN",$reply);
+	    my ($h1,$h2,$bytes)=unpack("CCN",$reply);
 	    last if ($h1 != 0x1 || $h2 != 0x2);
 	    if ($bytes == 0) {
 		$drop->{status} = 0;
@@ -147,6 +151,7 @@ sub update_biff {
     my $status = 0;
     my $ui = ui_name();
 
+    my $drop;
     foreach $drop (@drops) {
 	$status |= $drop->{status};
 	$drop->{status} &= 1;	# Unset the bell bit.
@@ -169,6 +174,7 @@ sub biff_cmd {
 	if ($active) {
 	    event_u($check_eventid) if ($check_eventid);
 	    undef $check_eventid;
+	    my $drop;
 	    foreach $drop (@drops) {
 		if ($drop->{type} eq 'rpimchk') {
 		    $drop->{sock}->close();
@@ -190,6 +196,7 @@ sub biff_cmd {
 	    $check_eventid = TLily::Event::time_r(interval => $check_interval,
 						  call     => \&check_drops);
 	    
+	    my $drop;
 	    foreach $drop (@drops) {
 		$drop->{status} = 0;
 		if ($drop->{type} eq 'rpimchk') {

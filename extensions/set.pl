@@ -1,7 +1,12 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/set.pl,v 1.1 1999/02/28 04:57:36 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/set.pl,v 1.2 1999/03/15 23:53:10 josh Exp $
+
+use strict;
+
 sub dumpit {
     my($ui,$l,%H) = @_;
     $l = 0 if ! $l;
+
+    my($k,$v);
     while(($k,$v) = each %H) {
 	if(ref($v) eq '' || ref($v) eq 'SCALAR') {
 	    $ui->print("\t"x$l."$k = $v\n");

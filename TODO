@@ -13,7 +13,6 @@ Before 2.0 release:
   mirror.pl     (easy)
   countdown.pl  (easy)
   stock.pl      (easy)
-  submit.pl     (easy)
   helper.pl     (pretty easy)
   hidesend.pl   (medium)
   pipes.pl      (medium)
@@ -28,3 +27,5 @@ Before 2.0 release:
   
 Later:
   multiserver, multiui
+  irc mode/ TLily::Server::SubClient
+  

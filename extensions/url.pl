@@ -1,7 +1,9 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/url.pl,v 1.2 1999/03/10 00:46:39 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/url.pl,v 1.3 1999/03/15 23:53:20 josh Exp $
 #
 # URL handling
 #
+
+use strict;
 
 my @urls = ();
 
@@ -21,7 +23,7 @@ sub handler {
 sub url_cmd {
     my ($ui) = shift;
     my ($arg,$num)=split /\s+/, "@_";
-    my $url;
+    my ($url,$ret);
 
     $arg = "show" if ($arg eq "view");
     
