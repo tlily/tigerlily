@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/paste.pl,v 1.6 2001/08/17 00:57:00 kazrak Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/paste.pl,v 1.7 2001/11/13 23:48:45 tale Exp $
 
 use strict;
 
@@ -56,9 +56,12 @@ sub toggle_paste_mode {
     $ui->{_eat_space_buffer} = '';
     if ($ui->intercept_u("paste-mode")) {
 	$ui->prompt("");
-    }
-    elsif ($ui->intercept_r("paste-mode")) {
+    } elsif ($ui->intercept_r("paste-mode")) {
 	$ui->prompt("Paste:");
+    } else {
+        $ui->style("input_error");
+        $ui->print("(cannot start paste mode in current mode)\n");
+        $ui->style("normal");
     }
 }
 

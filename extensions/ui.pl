@@ -1,4 +1,4 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/ui.pl,v 1.29 2000/12/13 19:29:11 kazrak Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/ui.pl,v 1.30 2001/11/13 23:48:45 tale Exp $
 use strict;
 
 =head1 NAME
@@ -107,7 +107,9 @@ sub keyname_command {
     }
 
     if (!$ui->intercept_r("name-self")) {
+        $ui->style("input_error");
 	$ui->print("(sorry; a keyboard intercept is already in place)\n");
+        $ui->style("normal");
 	return;
     }
 
@@ -296,19 +298,19 @@ sub input_search_mode {
         }
         $key = "";
     }
-        
+
     # If key is "", then it was originally C-r or C-s.
     # Thus if the search is not being extended to the next match, it
-    # must be switching directions.  Also, if the C-r or C-s comes 
-    # while the search string is empty, set the search string to the last 
-    # searched string. 
+    # must be switching directions.  Also, if the C-r or C-s comes
+    # while the search string is empty, set the search string to the last
+    # searched string.
     my $switch_dir = 0;
     if ($key eq "") {
         $switch_dir = ! $next_match;
         $ui->{_search_text} = $ui->{_search_last}
             if $ui->{_search_text} eq "" && $next_match;
     }
-            
+
     my $input = $ui->{input};
     my $dir = $ui->{_search_dir} eq 'fwd' ? 1 : -1;
 
@@ -391,6 +393,15 @@ sub search_start {
     my ($ui, $dir) = @_;
     my $input = $ui->{input};
 
+    unless ($ui->intercept_r("input-search-mode")) {
+        # XXXDCL Perhaps there should be a different way to communicate this.
+        # Or maybe still do the print, but with a different style.
+        $ui->style("input_error");
+        $ui->print("(can't start a search in current mode)\n");
+        $ui->style("normal");
+        return;
+    }
+
     $ui->{_search_text} = "";
     $ui->{_search_last} = "" unless defined $ui->{_search_last};
     $ui->{_search_dir} = $dir;
@@ -404,7 +415,6 @@ sub search_start {
     # into the history buffer.
     $input->save_history_excursion;
 
-    $ui->intercept_r("input-search-mode");
     $ui->prompt("($dir-i-search):");
 }
 

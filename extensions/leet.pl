@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/leet.pl,v 1.1 2001/10/02 21:57:12 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/leet.pl,v 1.2 2001/11/13 23:48:45 tale Exp $
 
 use strict;
 
@@ -43,9 +43,14 @@ sub toggle_leet_mode {
     if ($ui->intercept_u("leet-mode")) {
 	    $ui->set(leet => undef);
     } else {
-	    $ui->intercept_r("leet-mode");
-	    $ui->define(leet => 'left');
-	    $ui->set(leet => "L33T");
+	    if ($ui->intercept_r("leet-mode")) {
+                $ui->define(leet => 'left');
+                $ui->set(leet => "L33T");
+            } else {
+                $ui->style("input_error");
+                $ui->print("(cannot start leet-mode in current mode)");
+                $ui->style("normal");
+            }
     }
     return;
 }
