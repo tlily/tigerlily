@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Curses/Attic/Text.pm,v 1.26 2001/11/30 20:20:53 kazrak Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Curses/Attic/Text.pm,v 1.27 2001/12/03 18:45:42 kazrak Exp $
 
 package TLily::UI::Curses::Text;
 
@@ -330,15 +330,21 @@ sub print {
     $self->{indents}->[-1] = length($self->{text}) + 1;
 
     # rbj =-= Adding expiry here.  Check if we've passed our maximum
-    # length; if so, expire the first line.
+    # length; if so, expire back to 90% of max_scrollback.
     my $linelen = 0;
-    while ($#{$self->{indexes}} > $config{max_scrollback} &&
-           $config{max_scrollback} > 0 &&
-           $self->{idx_anchor} > $self->{lines}) {
-        $self->{idx_anchor}--;
-        $self->{idx_unseen}--;
-        $linelen = $self->{indexes}->[1];
-        shift @{$self->{indexes}};
+    if ($#{$self->{indexes}} > $config{max_scrollback}) {
+	my $trimto = int($config{max_scrollback} * 0.9);
+        if (($config{max_scrollback} - $trimto) > 1000) {
+            $trimto = 1000;
+        }
+        while ($#{$self->{indexes}} > $trimto &&
+               $config{max_scrollback} > 0 &&
+               $self->{idx_anchor} > $self->{lines}) {
+            $self->{idx_anchor}--;
+            $self->{idx_unseen}--;
+            $linelen = $self->{indexes}->[1];
+            shift @{$self->{indexes}};
+        }
     }
 
 
