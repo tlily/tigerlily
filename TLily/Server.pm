@@ -28,6 +28,7 @@ exceptions if this matters to you!
 =cut
 
 
+my $active_server;
 my %server;
 
 
@@ -49,6 +50,8 @@ sub new {
 	my $class = ref($proto) || $proto;
 	my $self  = {};
 
+	my $ui = LC::UI::name($args{ui_name}) if ($args{ui_name});
+
 	croak "required parameter \"event\" missing"
 	  unless (defined $args{event});
 	croak "required parameter \"host\" missing"
@@ -58,19 +61,26 @@ sub new {
 
 	$args{name} = "$args{host}:$args{port}" if (!defined($args{name}));
 	$server{$args{name}} = $self;
+	$active_server = $self unless ($active_server);
 
+	$self->{name}    = $args{name};
 	$self->{event}   = $args{event};
 	$self->{host}    = $args{host};
 	$self->{port}    = $args{port};
 	$self->{ui_name} = $args{ui_name};
 	$self->{proto}   = defined($args{protocol}) ? $args{protocol}:"server";
 
+	$ui->print("Connecting to $self->{host}, port $self->{port}...");
+
 	$self->{sock} = IO::Socket::INET->new(PeerAddr => $self->{host},
 					      PeerPort => $self->{port},
 					      Proto    => 'tcp');
 	if (!defined $self->{sock}) {
-		die "Failed to contact server: $!\n";
+		$ui->print("failed: $!\n");
+		return;
 	}
+
+	$ui->print("connected.\n");
 
 	fcntl($self->{sock}, F_SETFL, O_NONBLOCK) or die "fcntl: $!\n";
 
@@ -85,6 +95,54 @@ sub new {
 			     server => $self);
 
 	return $self;
+}
+
+
+=item terminate()
+
+Shuts down a server instance.
+
+=cut
+
+sub terminate {
+	my($self) = @_;
+
+	close($self->{sock}) if ($self->{sock});
+	$self->{sock} = undef;
+	delete $server{$self->{name}};
+	return;
+}
+
+
+=item ui_name()
+
+Returns the name of the UI object associated with the server.
+
+=cut
+
+sub ui_name {
+	my($self) = @_;
+	return $self->{ui_name};
+}
+
+
+=item name()
+
+Returns the server with the given name, or the currently active server
+if no argument is given.
+
+=cut
+
+sub name {
+	shift if (@_ > 1);
+	my($a) = @_;
+	if (!defined $a) {
+		return $active_server;
+	} elsif (ref($a)) {
+		return $a->{"name"};
+	} else {
+		return $server{$a};
+	}
 }
 
 

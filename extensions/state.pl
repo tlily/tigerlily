@@ -35,11 +35,11 @@ foreach (keys %keep) {
 
 			if ($s eq "NAME") {
 				$serv->state(HANDLE => $e->{HANDLE},
-				NAME => $e->{VALUE},
-				UPDATED => 1);
+					     NAME => $e->{VALUE},
+					     UPDATED => 1);
 			} else {
 				$serv->state(HANDLE => $e->{HANDLE},
-				$s, $e->{VALUE});
+					     $s, $e->{VALUE});
 			}
 			return;
 		};

@@ -70,7 +70,7 @@ sub sigint {
 		       });
 }
 $ui->command_r("interrupt", \&sigint);
-$ui->bind("C-C" => "interrupt");
+$ui->bind("C-c" => "interrupt");
 
 sub output_handler {
 	my($event, $handler) = @_;

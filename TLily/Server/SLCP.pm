@@ -11,8 +11,6 @@ use LC::Config qw(%config);
 
 @ISA = qw(LC::Server);
 
-my $server;
-
 sub new {
 	my($proto, %args) = @_;
 	my $class = ref($proto) || $proto;
@@ -29,9 +27,6 @@ sub new {
 	$self->{HANDLE} = {};
 	$self->{NAME}   = {};
 	$self->{DATA}   = {};
-
-	# FIX!
-	$server = $self;
 
 	bless $self, $class;
 }
@@ -55,7 +50,7 @@ comma-separated list of their members.
 =cut
 
 sub expand_name {
-	unshift @_, $server if (@_ < 2);
+	unshift @_, LC::Server::name() if (@_ < 2);
 	my($self, $name) = @_;
 	my $disc;
 

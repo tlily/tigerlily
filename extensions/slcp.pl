@@ -1,4 +1,4 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/Attic/slcp.pl,v 1.4 1999/02/25 01:06:10 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/Attic/slcp.pl,v 1.5 1999/02/25 08:40:06 neild Exp $
 
 use strict;
 
@@ -333,6 +333,7 @@ sub parse_line {
 
 	# Welcome...
 	if ($line =~ /^Welcome to lily.*?at (.*?)\s*$/) {
+		$serv->state(DATA => 1, NAME => "NAME", VALUE => $1);
 		# Set servername to $1.
 	}
 

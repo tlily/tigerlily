@@ -224,7 +224,7 @@ sub read_char {
 	if (defined $keycodemap{$c}) {
 		$c = $keycodemap{$c};
 	} elsif (ord($c) <= 31) {
-		$c = chr(ord($c) + 64);
+		$c = lc(chr(ord($c) + 64));
 		$ctrl = 1;
 	}
 

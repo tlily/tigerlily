@@ -152,36 +152,38 @@ sub accept_line {
 %bindmap =
   (
    'right'      => 'forward-char',
-   'C-F'        => 'forward-char',
+   'C-f'        => 'forward-char',
    'left'       => 'backward-char',
-   'C-B'        => 'backward-char',
+   'C-b'        => 'backward-char',
    'M-f'        => 'forward-word',
    'M-b'        => 'backward-word',
-   'C-A'        => 'beginning-of-line',
-   'C-E'        => 'end-of-line',
-   'C-P'        => 'previous-history',
+   'C-a'        => 'beginning-of-line',
+   'C-e'        => 'end-of-line',
+   'C-p'        => 'previous-history',
    'up'         => 'previous-history',
-   'C-N'        => 'next-history',
+   'C-n'        => 'next-history',
    'down'       => 'next-history',
-   'C-D'        => 'delete-char',
+   'C-d'        => 'delete-char',
    'del'        => 'delete-char',
    'bs'         => 'backward-delete-char',
-   'C-H'        => 'backward-delete-char',
-   'C-T'        => 'transpose-chars',
-   'C-K'        => 'kill-line',
-   'C-U'        => 'backward-kill-line',
+   'C-h'        => 'backward-delete-char',
+   'C-t'        => 'transpose-chars',
+   'C-k'        => 'kill-line',
+   'C-u'        => 'backward-kill-line',
    'M-d'        => 'kill-word',
-   'C-W'        => 'backward-kill-word',
-   'C-Y'        => 'yank',
+   'C-w'        => 'backward-kill-word',
+   'C-y'        => 'yank',
    'nl'         => 'accept-line',
    'pageup'     => 'page-up',
-   'C-B'        => 'page-up',
+   'M-v'        => 'page-up',
    'pagedown'   => 'page-down',
-   'C-F'        => 'page-down',
-   'C-Y'        => 'line-up',
-   'C-E'        => 'line-down',
-   'C-L'        => 'refresh',
-   'C-Z'        => 'suspend',
+   'C-v'        => 'page-down',
+   'M-['        => 'line-up',
+   'M-]'        => 'line-down',
+   'M-<'        => 'scroll-top',
+   'M->'        => 'scroll-bottom',
+   'C-l'        => 'refresh',
+   'C-z'        => 'suspend',
   );
 
 
@@ -465,6 +467,7 @@ sub command {
 sub prompt {
 	my($self, $prompt) = @_;
 	$self->{input}->prefix($prompt);
+	$self->{input}->position_cursor();
 	doupdate;
 }
 
@@ -472,6 +475,7 @@ sub prompt {
 sub define {
 	my($self, $name, $pos) = @_;
 	$self->{text}->{main}->{status}->define($name, $pos);
+	$self->{input}->position_cursor();
 	doupdate;
 }
 
@@ -479,6 +483,7 @@ sub define {
 sub set {
 	my($self, $name, $val) = @_;
 	$self->{text}->{main}->{status}->set($name, $val);
+	$self->{input}->position_cursor();
 	doupdate;
 }
 

@@ -1,4 +1,4 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/expand.pl,v 1.2 1999/02/24 21:51:56 neild Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/expand.pl,v 1.3 1999/02/25 08:40:04 neild Exp $ 
 
 use strict;
 
@@ -97,13 +97,13 @@ sub exp_complete {
 }
 
 
-LC::UI::command_r("expand"   => \&exp_expand);
-LC::UI::command_r("complete" => \&exp_complete);
-LC::UI::bind(','   => "expand");
-LC::UI::bind(':'   => "expand");
-LC::UI::bind(';'   => "expand");
-LC::UI::bind('='   => "expand");
-LC::UI::bind('C-I' => "complete");
+LC::UI::command_r("intelligent-expand" => \&exp_expand);
+LC::UI::command_r("complete-send"      => \&exp_complete);
+LC::UI::bind(','   => "intelligent-expand");
+LC::UI::bind(':'   => "intelligent-expand");
+LC::UI::bind(';'   => "intelligent-expand");
+LC::UI::bind('='   => "intelligent-expand");
+LC::UI::bind('C-i' => "complete-send");
 
 sub private_handler {
 	my($event,$handler) = @_;

@@ -4,38 +4,21 @@ use LC::Global qw($event);
 use LC::UI;
 use LC::Server::SLCP;
 
-my $server;
-
 sub server_command {
 	my($ui, $arg) = @_;
-	my @argv = split /\s+/, $arg;
-
-	#@argv = qw(pauline.einstein.org 7777);
-	@argv = qw(lily.acm.rpi.edu 8888);
-	if (@argv != 2) {
-		$ui->print("(usage: %server <host> <port>)\n");
-		return;
-	}
+	my(@argv) = split /\s+/, $arg;
 
 	my($host, $port) = @argv;
-	#my $server;
-	eval {
-		$server = LC::Server::SLCP->new(host    => $host,
-						port    => $port,
-						ui_name => $ui->name,
-						event   => $event);
-	};
-	unless ($server) {
-		$ui->print($@);
-		return;
-	}
+	$host = "lily.acm.rpi.edu" unless defined($host);
+	$port = 8888               unless defined($port);
 
-	$event->event_r(type  => "user_input",
-			order => "after",
-			call  => \&to_server);
+	my $server;
+	$server = LC::Server::SLCP->new(host    => $host,
+					port    => $port,
+					ui_name => $ui->name,
+					event   => $event);
 }
-
-LC::User::command_r(server => \&server_command);
+LC::User::command_r(connect => \&server_command);
 
 sub send_handler {
 	my($e, $h) = @_;
@@ -46,6 +29,7 @@ $event->event_r(type => 'user_send',
 
 sub to_server {
 	my($e, $h) = @_;
+	my $server = LC::Server::name();
 
 	if ($e->{text} =~ /^(\S*)([;:])(.*)/) {
 		$event->send(type   => 'user_send',
@@ -59,3 +43,6 @@ sub to_server {
 	$server->sendln($e->{text});
 	return 1;
 }
+$event->event_r(type  => "user_input",
+		order => "after",
+		call  => \&to_server);
