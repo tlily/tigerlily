@@ -8,7 +8,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/Attic/tlily.global,v 1.49 2002/06/06 22:23:38 bwelling Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/Attic/tlily.global,v 1.50 2002/08/27 13:26:36 coke Exp $
 
 # Global defaults for tlily
 # PLEASE DO NOT EDIT EXCEPT FOR DEVELOPMENT!
@@ -118,7 +118,7 @@ $port=7777;
 $mono=0;
 $pager=1;
 
-if($^O =~ /cygwin/) {
+if($^O =~ /cygwin/ or $^O =~MSWin32) {
     $editor ||= $ENV{VISUAL} || $ENV{EDITOR} || 'NOTEPAD.EXE';
     $browser_textmode=0;
     $browser="explorer.exe";
