@@ -1,4 +1,7 @@
 Version 2.3
+  * [TLily/Server/SLCP.pm] During startup, some server output would be
+    inadvertently lost because a text event handler was stopping processing of
+    all text that did not match what it was looking for. [DCL]
   * [Makefile.PL] Detect the presence of Curses or Tk support at build time
     to determine which UIs to include, or fail if neither Curses nor Tk is
     available. [DCL]

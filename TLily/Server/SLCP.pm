@@ -6,7 +6,7 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Server/Attic/SLCP.pm,v 1.42 2001/04/09 22:22:05 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Server/Attic/SLCP.pm,v 1.43 2001/11/12 04:39:37 tale Exp $
 
 package TLily::Server::SLCP;
 
@@ -584,7 +584,7 @@ sub get_user_perms {
                                           VALUE => $1);
                              TLily::Event::event_u($handler);
                          }
-                         return 1;
+                         return 0;
                      }
              );
 
