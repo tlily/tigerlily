@@ -263,6 +263,9 @@ sub parse_command_line {
 	if($ARGV[0] =~ /^-(m|mono)$/) {
 	    shift @ARGV; $config{mono} = 1; next;
 	}
+	if($ARGV[0] =~ /^-(i|insecure)$/) {
+	    shift @ARGV; $config{insecure} = 1; next;
+	}
 #	print STDERR "$ARGV[0]\n";
 	if($ARGV[0] =~ /^-(\w+)=(\S+)$/) {
 	    my($var,$val) = ($1,$2);

@@ -19,6 +19,18 @@ use Socket;
 use Fcntl;
 
 use TLily::Event;
+use File::Path;
+my $SSL_avail = 1;
+BEGIN {
+    eval { require IO::Socket::SSL; };
+    if ($@) {
+	warn("*** WARNING: Unable to load IO::Socket::SSL ***\n");
+	$SSL_avail = 0;
+    } else {
+	$SSL_avail = 1;
+    }
+}
+
 
 =head1 NAME
 
@@ -105,22 +117,26 @@ sub new {
     $self->{host}      = $args{host};
     $self->{port}      = $args{port};
     $self->{ui_name}   = $args{ui_name};
+    $self->{insecure}  = $TLily::Config::config{insecure};
     $self->{proto}    = defined($args{protocol}) ? $args{protocol}:"server";
     $self->{bytes_in}  = 0;
     $self->{bytes_out} = 0;
 
-    $ui->print("Connecting to $self->{host}, port $self->{port}...");
+    $ui->print("Connecting to $self->{host}:$self->{port}...\n");
 
-#    $self->{sock} = IO::Socket::INET->new(PeerAddr => $self->{host},
-#					  PeerPort => $self->{port},
-#					  Proto    => 'tcp');
-    eval { $self->{sock} = contact($self->{host}, $self->{port}); };
+    eval {
+	if($self->{insecure} != 1 && $SSL_avail == 1) {
+	    $self->{sock} = contact_ssl($self->{host}, $self->{port});
+	} else {
+	    $self->{sock} = contact($self->{host}, $self->{port});
+	}
+    };
     if ($@) {
 	$ui->print("failed: $@");
 	return;
     }
 
-    $ui->print("connected.\n");
+    $ui->print("Connected to $self->{host}:$self->{port}.\n");
 
     tl_nonblocking($self->{sock});
 
@@ -166,6 +182,7 @@ sub contact {
 
     my($iaddr, $paddr, $proto);
     local *SOCK;
+    warn("*** Warning: this session is NOT encrypted! ***\n");
 
     $port = getservbyname($port, 'tcp') if ($port =~ /\D/);
     croak "No port" unless $port; 
@@ -177,6 +194,97 @@ sub contact {
     socket(SOCK, PF_INET, SOCK_STREAM, $proto) or die "$!\n";
     connect(SOCK, $paddr) or die "$!\n";
     return *SOCK;
+}
+
+#This is the SSL connection routine. 
+#it also falls back to non-ssl connections.
+sub contact_ssl {
+    my($serv, $port) = @_;
+    my($iaddr, $paddr, $proto);
+    my($sock);
+    my($cert,$other_cert, $string_cert);
+    my(@arr);
+    my($temp);
+    my $cert_path = $ENV{HOME}."/.lily/certs";
+    my $cert_filename;
+    my $ui = TLily::UI::name();
+
+    $sock = IO::Socket::SSL->new(PeerAddr => $serv,
+				 PeerPort => $port+1,
+				 SSL_use_cert => 0,
+				 SSL_verify_mode => 0x00,
+				 );
+    
+    if(!$sock)
+    {
+	$sock = contact($serv, $port);
+	return $sock;
+    }
+
+    @arr = gethostbyname($serv);
+
+    $cert_filename = $cert_path."/".$arr[0].":".$port;
+
+    # This piece of code goes into private data in IO::Socket::SSL, alas
+    # there is no other way to get the data that we need, even worse,
+    # the location of the data has changed between versions of 
+    # IO::Socket::SSL.  Expect to revisit this code every so often, in
+    # a moderately unpleasant manner. - Phreaker
+
+    $cert = Net::SSLeay::get_peer_certificate($sock->_get_ssl_object());
+    
+    File::Path::mkpath([$cert_path],0,0711);
+
+    if(-f $cert_filename)
+    {
+	$temp = $/;
+	undef $/;
+
+	# Slurp in the whole certificate.
+	open(SSL_CERT,"<".$cert_filename);
+	sysread(SSL_CERT, $other_cert, 500000);
+	close(SSL_CERT);
+
+	$/ = $temp;
+
+	$string_cert =  Net::SSLeay::PEM_get_string_X509($cert);
+
+	# Not using a hash is intentional... It's only 6-7k of string compare
+	# at the worst. and it's not subject to birthday attacks.
+
+	if(($other_cert cmp $string_cert) != 0)
+	{
+	    $ui->print("\nThe ".$cert_filename."\n"); 
+	    $ui->print("certificate does not match the\n");
+	    $ui->print("certificate given by the server before, a man in the middle\n");
+	    $ui->print("attack could be going on.  If you don't believe one is for\n");
+	    $ui->print("then remove ".$cert_filename."\n");
+	    $ui->print("to connect.\n");
+	    $ui->print("\n**** THIS IS A SERIOUS PROBLEM ****\n");
+	    return;
+	}
+    } else {
+	$ui->print("\nNew server contacted,\n".
+	Net::SSLeay::X509_NAME_oneline(Net::SSLeay::X509_get_issuer_name($cert)."\n"));
+	$ui->print(
+	Net::SSLeay::X509_NAME_oneline(Net::SSLeay::X509_get_subject_name($cert)."\n"));
+	$ui->print("The actual certificate is in ".$cert_filename." for\n");
+	$ui->print("your inspection.  If you are concerned about the certificate's integrity\n");
+	$ui->print("please disconnect and verify it. (Disconnect by typing Ctrl-C twice)\n");
+	write_cert($cert, $cert_filename);
+    }
+
+    return $sock;
+}
+
+sub write_cert
+{
+    my($cert, $file) = @_;
+    my($str_cert);
+    open(SSL_CERT, ">".$file);
+    $str_cert = Net::SSLeay::PEM_get_string_X509($cert);
+    print(SSL_CERT $str_cert);
+    close(SSL_CERT);
 }
 
 =item terminate()
@@ -419,23 +527,47 @@ sub reader {
     my($self, $mode, $handler) = @_;
 
     my $buf;
-    my $rc = sysread($self->{sock}, $buf, 1024);
-
+    my $rc = read($self->{sock}, $buf,  1000000);
     # Interrupted by a signal or would block
     return if (!defined($rc) && $! == $::EAGAIN);
 
+    # This is a kludge for the SSL layer, I looked into this back when
+    # I wrote the patches and there was no good way around it.
+    # Without this, I disconnect during the SLCP sync to the RPI
+    # server. - Phreaker
+
+    # IO::Socket doesn't have an errstr function, so this call needs
+    # to be wrapped.  What I have here isn't quite correct, as it
+    # doesn't account fro failures in the contact_ssl function that
+    # cause it to fall back to a non-SSL connection, so it will have
+    # to be fixed.  But in the meantime, this makes it work for me...
+    # -Steve
+
+    if ($self->{insecure} != 1 and $SSL_avail == 1) {
+        if ($self->{sock}->errstr eq "SSL read error\nSSL wants a read first!") {
+            $self->{sock}->error("");
+
+            $self->{bytes_in} += length($buf);
+	
+            TLily::Event::send(type   => "$self->{proto}_data",
+                               server => $self,
+                               data   => $buf);
+            return;
+	}
+    }
+	
     # Would block.  (used only on win32 right now)
     return if (($^O eq "MSWin32") && (!defined($rc) && $! == &EWOULDBLOCK));
 
     # End of line.
-    if (!defined($rc) || $rc == 0) {
+    if ($rc == 0 || !defined($rc)) {
 	my $ui = TLily::UI::name($self->{"ui_name"}) if ($self->{"ui_name"});
 	$ui->print("*** Lost connection to \"" . $self->{"name"} . "\" ***\n");
 	$self->terminate();
-    }
-
+   }
     # Data as usual.
-    else {
+    else 
+    {
 	$self->{bytes_in} += length($buf);
 	
 	TLily::Event::send(type   => "$self->{proto}_data",
