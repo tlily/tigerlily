@@ -1,10 +1,13 @@
 package TLily::User;
 
 use strict;
+use vars qw(@ISA @EXPORT_OK);
+
 use Carp;
 use Text::Abbrev;
 use Exporter;
-use vars qw(@ISA @EXPORT_OK);
+
+use TLily::Config qw(%config);
 
 @ISA = qw(Exporter);
 @EXPORT_OK = qw(&help_r &shelp_r &command_r);
@@ -38,18 +41,18 @@ my %shelp;
 
 
 sub init {
-	TLily::Registrar::class_r("command"    => \&command_u);
-	TLily::Registrar::class_r("short_help" => \&command_u);
-	TLily::Registrar::class_r("help"       => \&command_u);
+    TLily::Registrar::class_r("command"    => \&command_u);
+    TLily::Registrar::class_r("short_help" => \&command_u);
+    TLily::Registrar::class_r("help"       => \&command_u);
 
-	TLily::Event::event_r(type  => "user_input",
-			      order => "during",
-			      call  => \&input_handler);
+    TLily::Event::event_r(type  => "user_input",
+			  order => "during",
+			  call  => \&input_handler);
 
-	command_r(help => \&help_command);
-	shelp_r(help => "Display help pages.");
-	help_r(commands => \&command_help);
-	help_r(help => '
+    command_r(help => \&help_command);
+    shelp_r(help => "Display help pages.");
+    help_r(commands => \&command_help);
+    help_r(help => '
 Welcome to Tigerlily!
 
 Tigerlily is a client for the lily CMC, written entirely in 100% pure Perl.
@@ -68,10 +71,10 @@ Registers a new %command.  %commands are tracked via TLily::Registrar.
 =cut
 
 sub command_r {
-	my($command, $sub) = @_;
-	TLily::Registrar::add("command" => $command);
-	$commands{$command} = $sub;
-	%abbrevs = abbrev keys %commands;
+    my($command, $sub) = @_;
+    TLily::Registrar::add("command" => $command);
+    $commands{$command} = $sub;
+    %abbrevs = abbrev keys %commands;
 }
 
 
@@ -84,10 +87,10 @@ Deregisters an existing %command.
 =cut
 
 sub command_u {
-	my($command) = @_;
-	TLily::Registrar::remove("command" => $command);
-	delete $commands{$command};
-	%abbrevs = abbrev keys %commands;
+    my($command) = @_;
+    TLily::Registrar::remove("command" => $command);
+    delete $commands{$command};
+    %abbrevs = abbrev keys %commands;
 }
 
 
@@ -102,9 +105,9 @@ via TLily::Registrar.
 =cut
 
 sub shelp_r {
-	my($command, $help) = @_;
-	TLily::Registrar::add("short_help" => $command);
-	$shelp{$command} = $help;
+    my($command, $help) = @_;
+    TLily::Registrar::add("short_help" => $command);
+    $shelp{$command} = $help;
 }
 
 
@@ -117,9 +120,9 @@ Clears the short help for a command.
 =cut
 
 sub shelp_u {
-	my($command) = @_;
-	TLily::Registrar::remove("short_help" => $command);
-	delete $shelp{$command};
+    my($command) = @_;
+    TLily::Registrar::remove("short_help" => $command);
+    delete $shelp{$command};
 }
 
 
@@ -132,13 +135,13 @@ Sets a help page.  Help is tracked via TLily::Registrar.
 =cut
 
 sub help_r {
-	my($topic, $help) = @_;
-	TLily::Registrar::add("help" => $topic);
-	if (!ref($help)) {
-		# Eliminate all leading newlines, and enforce only one trailing
-		$help =~ s/^\n*//s; $help =~ s/\n*$/\n/s;
-	}
-	$help{$topic} = $help;
+    my($topic, $help) = @_;
+    TLily::Registrar::add("help" => $topic);
+    if (!ref($help)) {
+	# Eliminate all leading newlines, and enforce only one trailing
+	$help =~ s/^\n*//s; $help =~ s/\n*$/\n/s;
+    }
+    $help{$topic} = $help;
 }
 
 
@@ -151,66 +154,68 @@ Clears a help page.
 =cut
 
 sub help_u {
-	my($topic) = @_;
-	TLily::Registrar::remove("help" => $topic);
-	delete $help{$topic};
+    my($topic) = @_;
+    TLily::Registrar::remove("help" => $topic);
+    delete $help{$topic};
 }
 
 
 # Input handler to parse %commands.
 sub input_handler {
-	my($e, $h) = @_;
+    my($e, $h) = @_;
 
-	return unless ($e->{text} =~ /^\s*%(\w+)\s*(.*?)\s*$/);
-	my $command = $abbrevs{$1};
+    return unless ($e->{text} =~ /^\s*([%\/])(\w+)\s*(.*?)\s*$/);
+    my $command = $abbrevs{$2};
 
-	unless ($command) {
-		$e->{ui}->print("(The \"$1\" command is unknown.)\n");
-		return 1;
-	}
+    return if ($1 ne "%" && !grep($_ eq $command, @{$config{slash}}));
 
-	$commands{$command}->($e->{ui}, $2, $command);
+    unless ($command) {
+	$e->{ui}->print("(The \"$2\" command is unknown.)\n");
 	return 1;
+    }
+
+    $commands{$command}->($e->{ui}, $3, $command);
+    return 1;
 }
 
 
 # Display the "/help commands" help page.
 sub command_help {
-	my($ui, $arg) = @_;
+    my($ui, $arg) = @_;
 
-	$ui->indent("? ");
-	$ui->print("Tigerlily client commands:\n");
+    $ui->indent("? ");
+    $ui->print("Tigerlily client commands:\n");
 
-	my $c;
-	foreach $c (sort keys %commands) {
-		$ui->printf("  %%%-15s", $c);
-		$ui->print($shelp{$c}) if ($shelp{$c});
-		$ui->print("\n");
-	}
+    my $c;
+    foreach $c (sort keys %commands) {
+	$ui->printf("  %%%-15s", $c);
+	$ui->print($shelp{$c}) if ($shelp{$c});
+	$ui->print("\n");
+    }
 
-	$ui->indent("");
+    $ui->indent("");
 }
 
 
 # %help command.
 sub help_command {
-	my($ui, $arg) = @_;
-	$arg = "help" if ($arg eq "");
-	$arg =~ s/^%//;
+    my($ui, $arg) = @_;
+    $arg = "help" if ($arg eq "");
+    $arg =~ s/^%//;
 
-	unless ($help{$arg}) {
-		$ui->print("(there is no help on \"$arg\")\n");
-	}
+    unless ($help{$arg}) {
+	$ui->print("(there is no help on \"$arg\")\n");
+    }
 
-	elsif (ref($help{$arg}) eq "CODE") {
-		$help{$arg}->($ui, $arg);
-	}
+    elsif (ref($help{$arg}) eq "CODE") {
+	$help{$arg}->($ui, $arg);
+    }
 
-	else {
-		$ui->indent("? ");
-		$ui->print($help{$arg});
-		$ui->indent("");
-	}
+    else {
+	$ui->indent("? ");
+	$ui->print($help{$arg});
+	$ui->indent("");
+    }
 }
 
 
