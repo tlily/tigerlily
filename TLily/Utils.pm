@@ -7,7 +7,7 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Utils.pm,v 1.10 2002/06/11 01:55:48 bwelling Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Utils.pm,v 1.11 2003/02/26 03:32:15 josh Exp $
 package TLily::Utils;
 
 use strict;
@@ -61,8 +61,8 @@ sub edit_text {
     my $mtime = 0;
 
     unlink($tmpfile);
+    open(FH, ">$tmpfile") or die "$tmpfile: $!";
     if (@{$text}) {
-        open(FH, ">$tmpfile") or die "$tmpfile: $!";
         foreach (@{$text}) { 
 	    chomp; 
             if ($^O =~ /cygwin/) {	    
@@ -72,8 +72,8 @@ sub edit_text {
 	    }
 	}
         $mtime = (stat FH)[10];
-        close FH;
     }
+    close FH;
 
     $ui->suspend;
     TLily::Event::keepalive();

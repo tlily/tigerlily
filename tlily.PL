@@ -7,7 +7,7 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/tlily.PL,v 1.58 2003/02/14 02:16:44 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/tlily.PL,v 1.59 2003/02/26 03:32:14 josh Exp $
 
 require 5.00307;
 use strict;
@@ -42,6 +42,10 @@ if ($^O =~ /cygwin/) {
     $::TL_TMPDIR = $ENV{TEMP} || 'C:\WINDOWS\TEMP';
     $::TL_TMPDIR =~ s/^.://g;
     $::TL_TMPDIR =~ s/\\/\//g;
+}
+
+if ($^O eq 'MSWin32') {
+    $::TL_TMPDIR = $ENV{TEMP} || 'C:\WINDOWS\TEMP';
 }
 
 if ($^O =~ /cygwin/) {
