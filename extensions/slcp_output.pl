@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_output.pl,v 1.9 1999/05/27 01:11:30 steve Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_output.pl,v 1.10 1999/08/30 23:49:29 kazrak Exp $
 
 use strict;
 
@@ -82,9 +82,11 @@ event_r(type  => 'public',
 # Print emote sends.
 sub emote_fmt {
     my($ui, $e) = @_;
+    my $ts = '';
     
+    $ts = etimestamp ($e->{TIME}) if ($e->{STAMP} || $config{'stampemotes'});
     $ui->indent(emote_body   => "> ");
-    $ui->prints(emote_body   => "(to ",
+    $ui->prints(emote_body   => "(${ts}to ",
 		emote_dest   => $e->{RECIPS},
 		emote_body   => ") ",
 		emote_sender => $e->{SOURCE},
@@ -253,6 +255,28 @@ my $sub = sub {
 event_r(type  => 'all',
 	order => 'before',
 	call  => $sub);
+
+sub etimestamp {
+    my ($time) = @_;
+    
+    my ($min, $hour) = (localtime($time))[1,2];
+    my $t = ($hour * 60) + $min;
+    my $ampm = '';
+    $t += $config{zonedelta} if defined($config{zonedelta});
+    $t += (60 * 24) if ($t < 0);
+    $t -= (60 * 24) if ($t >= (60 * 24));
+    $hour = int($t / 60);
+    $min  = $t % 60;
+    if (defined($config{zonetype}) and ($config{zonetype} eq '12')) {
+	if ($hour >= 12) {
+	    $ampm = 'p';
+	    $hour -= 12 if $hour > 12;
+	} else {
+	    $ampm = 'a';
+		}
+	}
+	return sprintf("%02d:%02d%s - ", $hour, $min, $ampm);
+}
 
 sub timestamp {
     my ($time) = @_;
