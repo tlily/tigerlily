@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Curses/Attic/Input.pm,v 1.17 1999/12/20 17:52:29 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Curses/Attic/Input.pm,v 1.18 2000/02/05 21:10:22 neild Exp $
 
 package TLily::UI::Curses::Input;
 
@@ -549,6 +549,9 @@ sub transpose_chars {
 
     $self->{kill_reset} = 1;
     return if ($self->{'password'});
+
+    # Advance the character.
+    $self->{point}++ unless $self->{point} >= length($self->{text});
 
     for my $c ($c1, $c2) {
 	my($y, $x) = $self->find_coords($c);
