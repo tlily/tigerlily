@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/Curses.pm,v 1.31 1999/05/05 06:03:17 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/Curses.pm,v 1.32 1999/05/08 17:46:04 josh Exp $
 
 package TLily::UI::Curses::Proxy;
 
@@ -394,6 +394,18 @@ sub run {
 	$sigwinch = 0;
 	if ($termsize_installed) {
 	    ($ENV{'COLUMNS'}, $ENV{'LINES'}) = Term::Size::chars();
+	} else {
+	    local(*F);
+	    if (open (F, "resize -u|")) {
+	       while(<F>) { 
+	       	  if (/COLUMNS=(\d+)/) { $ENV{COLUMNS} = $1; }
+	       	  if (/LINES=(\d+)/)   { $ENV{LINES}   = $1; }		  
+	       }
+	       close(F);
+	    } else {
+	       # darn. resize didn't work. give up and assume 80x24.
+	       ($ENV{'COLUMNS'}, $ENV{'LINES'}) = (80, 24);
+	    }
 	}
 	$self->stop_curses();
 	$self->start_curses();
