@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/Curses.pm,v 1.48 2001/01/26 03:01:52 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/Curses.pm,v 1.49 2001/01/26 04:27:35 mjr Exp $
 
 package TLily::UI::Curses::Proxy;
 
@@ -84,7 +84,6 @@ use TLily::UI::Curses::StatusLine;
 use TLily::UI::Curses::Input;
 use TLily::Event;
 use TLily::Config qw(%config);
-use POSIX ':signal_h';
 
 @ISA = qw(TLily::UI); #) cperl mode is getting confused
 
@@ -370,11 +369,7 @@ sub start_curses {
 
     TLily::UI::Curses::Generic::start_curses();
 
-    sigaction(28,
-	      POSIX::SigAction->new('TLily::UI::Curses::sigwinch',
-				    POSIX::SigSet->new(28),
-				    0)
-	     );
+    $SIG{WINCH} = sub { $sigwinch = 1; };
 }
 
 
@@ -458,7 +453,6 @@ sub run {
 	       ($ENV{'COLUMNS'}, $ENV{'LINES'}) = (80, 24);
 	    }
 	}
-	#eval { resizeterm($ENV{'LINES'}, $ENV{'COLUMNS'}); };
 	$self->stop_curses();
 	$self->start_curses();
 	$self->layout();

@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Extend.pm,v 1.20 2001/01/26 03:10:29 neild Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Extend.pm,v 1.21 2001/01/26 04:27:35 mjr Exp $ 
 
 package TLily::Extend;
 use strict;
@@ -54,14 +54,16 @@ and can be unregistered automatically if the extension is unloaded.
 =cut
 
 sub init {
-    TLily::User::command_r(extension => \&extension_cmd);
-    TLily::User::shelp_r  (extension => "manage tlily extensions");
-    TLily::User::help_r   (extension => "
+    TLily::User::command_r('extension' => \&extension_cmd);
+    TLily::User::shelp_r  ('extension' => "manage tlily extensions");
+    TLily::User::help_r   ('extension' => "
 usage: %extension list
        %extension load <extension>
        %extension unload <extension>
        %extension reload <extension>
 ");
+    TLily::User::shelp_r  ('load' =>
+      'A list of extensions to load on startup', 'variables');
 }
 
 =item load()

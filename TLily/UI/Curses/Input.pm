@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Curses/Attic/Input.pm,v 1.24 2001/01/26 03:01:54 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Curses/Attic/Input.pm,v 1.25 2001/01/26 04:27:36 mjr Exp $
 
 package TLily::UI::Curses::Input;
 
@@ -28,6 +28,10 @@ sub min($$) { ($_[0] < $_[1]) ? $_[0] : $_[1] }
 TLily::UI::Curses::Input - Curses input window
 
 =head1 DESCRIPTION
+
+=head1 SYNOPSIS
+
+use TLily::UI::Curses::Input;
 
 =head1 FUNCTIONS
 
