@@ -16,10 +16,10 @@ sub spellcheck_input {
     my $m = $message;
     my $word;
     my $inc;
-    foreach $word (split /\W+/, $m) {
+    foreach $word (split /\W/, $m) {
 	if (!spelled_correctly($word)) {
-	    $inc++;
 	    $message =~ s/\b$word\b/_${word}_/g;
+	    $inc++; 
 	}
     }
 
@@ -44,21 +44,23 @@ sub spelled_correctly {
     $word =~ s/ing^//g;
     return 1 if lookup_word($word);
 
+    return 0;
 }
 
 sub lookup_word {
     my ($word) = @_;
+    $word = lc($word);
 
     $word =~ s/[^A-Za-z]//g;
     return 1 if ($word !~ /\S/);    
     if (scalar(keys %look_cache) > 500) { undef %look_cache; }
-    
+     
     return 1 if $stop_list{$word};   
 
     if (exists $look_cache{$word}) {
 	return $look_cache{$word};
     }
-    my $ui = ui_name();
+
     if (`look -f $word` =~ m/\b${word}\b/i) {
        $look_cache{$word}=1;
     } else {
@@ -85,29 +87,10 @@ sub load {
     TLily::UI::command_r("spellcheck-input"        => \&spellcheck_input);
     command_r("spellcheck" => \&spellcheck_cmd);
 
-    foreach (qw(I a about an and are as at by for from in is of on or
-		the to with)) {
+    foreach (qw(i a about an and are as at by for from in is of on or
+		the to with ok foo bar baz)) {
 	$stop_list{$_}=1;
     }
 }
 
-
-
-# This is just an example..  shrugga.
-
-# Data Structure for input line:
-# @input = (['a','normal'], ...);
-my @input = ();
-sub insert_char {
-    my ($position,$newchar);
-
-    my ($rstyle,$lstyle,$lchar,$rchar);
-
-    if ($position < 0 || $position > $#input) {
-	$rstyle = "normal"; 
-	$rchar  = " ";
-    } else {
-	$rstyle = $input[$position][1];
-	$rchar  = $input[$position][0];
-    }
 
