@@ -47,10 +47,10 @@ my $tag = $forreal ? $CVStag : "HEAD";
 command("cvs", "export", "-r", $tag, "tlily2");
 unlink("tlily2/.cvsignore");
 
-command("mv", "tlily2", "tlily2-$version");
-command("tar", "cvf", "tlily2-$version.tar", "tlily2-$version");
-command("rm", "-rf", "tlily2-$version");
-command("gzip", "-9", "tlily2-$version.tar");
+command("mv", "tlily2", "tlily-$version");
+command("tar", "cvf", "tlily-$version.tar", "tlily-$version");
+command("rm", "-rf", "tlily-$version");
+command("gzip", "-9", "tlily-$version.tar");
 
 make_version_file($version . "-post");
 command("cvs", "commit", "-m", "Automatic postcommit of version file",
