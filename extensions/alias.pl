@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/alias.pl,v 1.8 2000/02/11 22:58:27 tale Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/alias.pl,v 1.9 2000/02/11 23:54:27 tale Exp $
 
 use strict;
 
@@ -12,9 +12,13 @@ sub load {
     command_r(alias => \&alias_cmd);
 
     shelp_r(alias => "Define client aliases");
-    help_r(alias => "%alias <command> <newcommand>
+    help_r(alias => qq{%alias <command> <newcommand>
 %alias clear <command>
-%alias list
+%alias list [<command>]
+
+<command> must contain only A-Z, a-z, 0-9 and _.
+
+You cannot alias "clear" or "list".
 
 Supports the following special characters in \"newcommand]\":
 \$1 .. \$9  arguments to command
@@ -25,13 +29,13 @@ Examples:
 
 %alias hi bob;hi there\\njim;I hate you!
 %alias inbeener /who beener \$*
-");
+});
 }
 
 sub alias_cmd {
     my ($ui,$args) = @_;
     
-    if (! length($args) || $args eq "list") {
+    if ($args =~ m/^\s*$/ || $args =~ /^\s*list\s*$/) {
 	if (scalar keys %alias) {
 	    $ui->print("The following aliases are defined:\n");
 	    foreach (sort keys %alias) {
@@ -43,21 +47,37 @@ sub alias_cmd {
 	return;
     }
     
-    my ($key,$val) = ($args =~ /(\S+)\s+(.*)/);
-    
+    my ($key,$val) = ($args =~ /^\s*(\w+)\s*(.*?)\s*$/);
+
+    unless (length($key) > 0) {
+        $ui->print("(First argument to %alias must be in set [A-Za-z0-9_])\n");
+        return;
+    }
+
     if ($key eq "clear") {
 	if($val eq "") {
-	    $ui->print("(Usage: %alias clear [alias])\n"); return;
+	    $ui->print("(Usage: %alias clear <command>)\n");
+            return;
 	}
 	delete $alias{$val};
         $ui->print("(\%$val is now unaliased.)\n");
         return;
     }
 
-    if ($key =~ /\S/ and $val =~ /\S/) {
-	$alias{$key}=$val;
-        $ui->print("(\%$key is now aliased to '$val')\n");
+    if ($key eq "list" || ! $val) {
+        $val = $key unless $val;
+        for (split(/ /, $val)) {
+            if (exists $alias{$_}) {
+                $ui->print("$_: $alias{$_}\n");
+            } else {
+                $ui->print("($_ is not aliased)\n");
+            }
+        }
+        return;
     }
+
+    $alias{$key} = $val;
+    $ui->print("(\%$key is now aliased to '$val')\n");
 }
 
 sub aliaser {
