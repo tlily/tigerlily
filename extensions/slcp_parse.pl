@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_parse.pl,v 1.22 2000/01/28 19:13:22 steve Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_parse.pl,v 1.23 2000/03/02 01:30:03 steve Exp $
 
 use strict;
 use vars qw(%config);
@@ -442,6 +442,8 @@ sub unwind_queue {
 	$serv->{process_queue} = 0;
 
 	$serv->{_queue} = undef;
+
+	return 1;
 }
 
 sub load {
