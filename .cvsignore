@@ -1,8 +1,0 @@
-Makefile
-blib
-pm_to_blib
-tlily
-tlily.curses.plx
-tlily.tk.plx
-tlily.win32.plx
-
