@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/status.pl,v 1.21 1999/12/29 08:20:04 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/status.pl,v 1.22 2001/08/21 18:33:52 albert Exp $
 
 use strict;
 
@@ -22,6 +22,7 @@ sub set_clock {
 	    $a[2] -= 12 if $a[2] > 12;
 	}
 	elsif ($a[2] < 12) {
+            $hour = 12 if $hour == 0;
 	    $ampm = 'a';
 	}
         $format = "%2d:%02d%s";

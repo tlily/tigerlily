@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_output.pl,v 1.21 2001/07/23 04:12:59 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_output.pl,v 1.22 2001/08/21 18:33:51 albert Exp $
 
 use strict;
 
@@ -428,6 +428,7 @@ sub etimestamp {
             $ampm = 'p';
             $hour -= 12 if $hour > 12;
         } else {
+            $hour = 12 if $hour == 0;
             $ampm = 'a';
         }
     }
@@ -450,6 +451,7 @@ sub timestamp {
             $ampm = 'p';
             $hour -= 12 if $hour > 12;
         } else {
+            $hour = 12 if $hour == 0;
             $ampm = 'a';
         }
     }
