@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Curses/Attic/Input.pm,v 1.27 2002/03/26 18:41:42 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Curses/Attic/Input.pm,v 1.28 2003/04/21 21:47:50 neild Exp $
 
 package TLily::UI::Curses::Input;
 
@@ -591,13 +591,13 @@ sub addchar {
     }
 
     $self->char_style($self->{point}-1);
-    $self->{W}->insch($self->{Y}, $self->{X}, $c);
+    $self->{W}->insstr($self->{Y}, $self->{X}, $c);
 
     for (my $i = $self->{Y}+1; $i < $self->{lines}; $i++) {
 	my $start = ($self->{topln} + $i) * $self->{cols};
 	last if ($start > length($self->{text}));
 	$self->char_style($start);
-	$self->{W}->insch($i, 0, substr($self->{text}, $start, 1));
+	$self->{W}->insstr($i, 0, substr($self->{text}, $start, 1));
     }
 
     $self->rationalize();
