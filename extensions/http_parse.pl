@@ -1,6 +1,6 @@
 # -*- Perl -*-
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/http_parse.pl,v 1.5 1999/04/11 02:35:33 steve Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/http_parse.pl,v 1.6 1999/04/11 17:02:52 steve Exp $
 
 use strict;
 
@@ -172,7 +172,7 @@ sub save_file {
 	
 	unless (open FH, ">$filename") {
 	    my $ui = TLily::UI::name();
-	    $ui->print ("(Unable to save file $filename: $!)");
+	    $ui->print ("(Unable to save file $filename: $!)\n");
 	    $event->{server}->terminate() if $event->{server};
 	    $event->{daemon}->close() if $event->{daemon};
 	    return;
