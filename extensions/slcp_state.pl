@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_state.pl,v 1.4 1999/04/18 19:55:59 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_state.pl,v 1.5 2003/05/01 19:07:16 steve Exp $
 
 # This hash keeps track of what fields from %USER and %DISC are stored in 
 # the state database.  We need to ensure that every one of these state 
@@ -105,4 +105,15 @@ event_r(type  => 'away',
 
 # DISC/destroy
 # (need to add one.. not that it matters really)
+$sub = sub {
+    my ($e) = @_;
+    
+    my $name = $e->{server}->get_name(HANDLE => $e->{RHANDLE}->[0]);
+    
+    $e->{server}->state(HANDLE   => $e->{RHANDLE}->[0],
+                        NAME     => $name,
+                        __DELETE => 1);
+};
+event_r(type => 'destroy',
+        call => $sub);
 

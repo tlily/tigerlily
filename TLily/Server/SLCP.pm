@@ -6,7 +6,7 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Server/Attic/SLCP.pm,v 1.47 2003/05/01 17:37:43 steve Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Server/Attic/SLCP.pm,v 1.48 2003/05/01 19:07:16 steve Exp $
 
 package TLily::Server::SLCP;
 
@@ -508,6 +508,8 @@ sub state {
 	delete $self->{HANDLE}->{$record->{HANDLE}}
 	  if (defined($args{HANDLE}) && !$config{save_crufty_renames});
 	delete $self->{NAME}->{$record->{NAME}} if defined ($args{NAME});
+
+	return undef if $args{__DELETE};
 
 	# OK, now update the record with our arguments.
 	foreach (keys %args) {

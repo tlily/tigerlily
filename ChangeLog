@@ -1,4 +1,6 @@
 Version 2.3-post
+  * [TLily/Server/SLCP.pm,extension/slcp_state.pl] Tigerlily now notices
+    discussion discussion, and removes their names from its database. [SMC]
   * [TLily/Server/SLCP.pm] Added support for '~' to match only users. [SMC]
   * [extensions/keepalive.pl] When re-connecting to a lost connection, fixed
     bug that prevented keepalive pings. [SMC]
