@@ -32,6 +32,10 @@ sub new {
 	my $self  = {};
 	my %arg   = @_;
 
+	LC::Registrar::class_r("command"    => sub { $self->command_u(@_) });
+	LC::Registrar::class_r("short_help" => sub { $self->shelp_u(@_) });
+	LC::Registrar::class_r("help"       => sub { $self->help_u(@_) });
+
 	$self->{event}    = $arg{event}
 	  or croak "Required parameter \"event\" missing.";
 
@@ -71,6 +75,7 @@ Registers a new %command.
 
 sub command_r {
 	my($self, $command, $sub) = @_;
+	LC::Registrar::add("command" => $command);
 	$self->{commands}->{$command} = $sub;
 	%{$self->{abbrevs}} = abbrev keys %{$self->{commands}};
 }
@@ -86,6 +91,7 @@ Deregisters an existing %command.
 
 sub command_u {
 	my($self, $command) = @_;
+	LC::Registrar::remove("command" => $command);
 	delete $self->{commands}->{$command};
 	%{$self->{abbrevs}} = abbrev keys %{$self->{commands}};
 }
@@ -93,17 +99,33 @@ sub command_u {
 
 sub shelp_r {
 	my($self, $command, $help) = @_;
+	LC::Registrar::add("short_help" => $command);
 	$self->{shelp}->{$command} = $help;
+}
+
+
+sub shelp_u {
+	my($self, $command) = @_;
+	LC::Registrar::remove("short_help" => $command);
+	delete $self->{shelp}->{$command};
 }
 
 
 sub help_r {
 	my($self, $topic, $help) = @_;
+	LC::Registrar::add("help" => $topic);
 	if (!ref($help)) {
 		# Eliminate all leading newlines, and enforce only one trailing
 		$help =~ s/^\n*//s; $help =~ s/\n*$/\n/s;
 	}
 	$self->{help}->{$topic} = $help;
+}
+
+
+sub help_u {
+	my($self, $topic) = @_;
+	LC::Registrar::remove("help" => $topic);
+	delete $self->{shelp}->{$topic};
 }
 
 

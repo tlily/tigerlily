@@ -83,6 +83,7 @@ sub print {
 
 sub printf {
 	my($self, $s, @args) = @_;
+	$self->print(sprintf($s, @args));
 }
 
 

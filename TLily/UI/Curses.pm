@@ -34,8 +34,7 @@ sub print {
 
 sub seen {
 	my($self) = @_;
-	$self->[0]->{text}->{$self->[1]}->{text}->seen();
-}
+	$self->[0]->{text}->{$self->[1]}->{text}->seen(); }
 
 
 AUTOLOAD {

@@ -25,6 +25,14 @@ sub io_r {
 }
 
 
+sub io_u {
+	my($self, $fileno, $mode) = @_;
+	vec($self->{rbits}, $fileno, 1) = 0 if ($mode =~ /r/);
+	vec($self->{wbits}, $fileno, 1) = 0 if ($mode =~ /w/);
+	vec($self->{ebits}, $fileno, 1) = 0 if ($mode =~ /e/);
+}
+
+
 sub run {
 	my($self, $timeout) = @_;
 
@@ -67,7 +75,9 @@ sub new {
 	# Replacable event core.
 	$self->{core}    = LC::Event::Core->new;
 
-	LC::Registrar::class_r("event" => sub { $self->unregister($_[0]) });
+	LC::Registrar::class_r(name_event => sub { $self->event_u(@_) });
+	LC::Registrar::class_r(io_event   => sub { $self->io_u(@_) });
+	LC::Registrar::class_r(time_event => sub { $self->time_u(@_) });
 
 	bless $self, $class;
 }
@@ -79,18 +89,6 @@ sub send {
 	my $e = (@_ == 1) ? shift : {@_};
 	croak "Event sent without \"type\"." unless ($e->{type});
 	push @{$self->{queue}}, $e;
-}
-
-
-# Deregister an event handler.
-sub unregister {
-	my($self, $id) = @_;
-	my $hl;
-	foreach $hl ($self->{e_name}, $self->{e_time}, $self->{e_io}) {
-		@$hl = grep { $_->{id} != $id } @$hl;
-	}
-	LC::Registrar::remove("event", $id);
-	return;
 }
 
 
@@ -114,8 +112,18 @@ sub event_r {
 	  (@{$self->{e_name}}, $h);
 
 	$h->{registrar} = LC::Registrar::default();
-	LC::Registrar::add("event", $h->{id});
+	LC::Registrar::add("name_event", $h->{id});
 	return $h->{id};
+}
+
+
+# Deregister a named event handler.
+sub event_u {
+	my($self, $id) = @_;
+	$id = $id->{id} if (ref $id);
+	@{$self->{e_name}} = grep { $_->{id} != $id } @{$self->{e_name}};
+	LC::Registrar::remove("name_event", $id);
+	return;
 }
 
 
@@ -134,14 +142,40 @@ sub io_r {
 	my $n = fileno($h->{handle});
 	croak "Handler registered with bad handle."    unless(defined $n);
 
+	# Hang on to the fileno.  We can't trust the handle to still be
+	# valid when the caller unregisters the handler: once the handle
+	# has been closed, the fileno goes away.
+	$h->{'fileno'} = $n;
+
 	$h->{id} = $self->{id}++;
 	push @{$self->{e_io}}, $h;
 
 	$self->{core}->io_r($n, $h->{mode});
 
 	$h->{registrar} = LC::Registrar::default();
-	LC::Registrar::add("event", $h->{id});
+	LC::Registrar::add("io_event", $h->{id});
 	return $h->{id};
+}
+
+
+# Deregister an IO event handler.
+sub io_u {
+	my($self, $id) = @_;
+	$id = $id->{id} if (ref $id);
+
+	my($io, @io);
+	foreach $io (@{$self->{e_io}}) {
+		if ($io->{id} == $id) {
+			$self->{core}->io_u($io->{'fileno'},
+					    $io->{mode});
+		} else {
+			push @io, $io;
+		}
+	}
+	@{$self->{e_io}} = @io;
+
+	LC::Registrar::remove("io_event", $id);
+	return;
 }
 
 
@@ -169,14 +203,25 @@ sub time_r {
 	  sort { $a->{'time'} <=> $b->{'time'} } (@{$self->{e_time}}, $h);
 
 	$h->{registrar} = LC::Registrar::default();
-	LC::Registrar::add("event", $h->{id});
+	LC::Registrar::add("time_event", $h->{id});
 	return $h->{id};
+}
+
+
+# Deregister a timed event handler.
+sub time_u {
+	my($self, $id) = @_;
+	$id = $id->{id} if (ref $id);
+	@{$self->{e_time}} = grep { $_->{id} != $id } @{$self->{e_time}};
+	LC::Registrar::remove("time_event", $id);
+	return;
 }
 
 
 sub invoke {
 	my $h = shift;
 	$h->{registrar}->push_default if ($h->{registrar});
+	unshift @_, $h->{obj} if ($h->{obj});
 	my $rc = $h->{call}->(@_);
 	$h->{registrar}->pop_default  if ($h->{registrar});
 	return $rc;
@@ -231,16 +276,14 @@ sub loop_once {
 
 	# IO events.
 	my($r, $w, $e, $n) = $self->{core}->run($timeout);
-	my $c = 0;
 	foreach my $h (@{$self->{e_io}}) {
-		last if ($c++ >= $n);
 		if (vec($r, fileno($h->{handle}), 1) && $h->{mode} =~ /r/) {
 			invoke($h, 'r', $h);
 		}
-		elsif (vec($w, fileno($h->{handle}), 1) && $h->{mode} =~ /r/) {
+		elsif (vec($w, fileno($h->{handle}), 1) && $h->{mode} =~ /w/) {
 			invoke($h, 'w', $h);
 		}
-		elsif (vec($e, fileno($h->{handle}), 1) && $h->{mode} =~ /r/) {
+		elsif (vec($e, fileno($h->{handle}), 1) && $h->{mode} =~ /e/) {
 			invoke($h, 'e', $h);
 		}
 	}

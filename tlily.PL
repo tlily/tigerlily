@@ -13,10 +13,10 @@ use lib qw(LC);
 use LC::Event;
 use LC::UI;
 use LC::UI::Curses;
-#use LC::Server;
+use LC::Server;
 use LC::User;
 use LC::Extend;
-use LC::Global qw($event);
+use LC::Global qw($event $user);
 
 if ( -f 'tlily.PL' ) {
 	my @tstat = stat('tlily.PL');
@@ -27,14 +27,16 @@ if ( -f 'tlily.PL' ) {
 	}
 }
 
-$event    = LC::Event->new();
-my $ui    = LC::UI::Curses->new(name => 'main', event => $event);
-my $cmd   = LC::User->new(event => $event);
+$event = LC::Event->new();
+my $ui = LC::UI::Curses->new(name => 'main', event => $event);
+$user  = LC::User->new(event => $event);
 
-LC::Extend::cmd_init($cmd);
+LC::Extend::cmd_init($user);
 
-$cmd->command_r(quit => sub { exit; });
-$cmd->command_r(foo  => sub { $ui->print("Foo you too!\n"); });
+LC::Extend::load("server", $ui, 1);
+
+$user->command_r(quit => sub { exit; });
+$user->command_r(foo  => sub { $ui->print("Foo you too!\n"); });
 
 # remove
 $ui->defcstyle("status" => 'yellow', 'blue', 'bold');
