@@ -7,7 +7,7 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Utils.pm,v 1.6 1999/12/20 22:11:41 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Utils.pm,v 1.7 1999/12/27 21:11:19 mjr Exp $
 package TLily::Utils;
 
 use strict;
@@ -17,7 +17,7 @@ use TLily::Config;
 use vars qw(@ISA @EXPORT_OK);
 @ISA = qw(Exporter);
 
-@EXPORT_OK = qw(&max &min &edit_text &diff_text &columnize_list);
+@EXPORT_OK = qw(&max &min &edit_text &diff_text &columnize_list &dead_file);
 
 # These are handy in a couple of places.
 sub max($$) { ($_[0] > $_[1]) ? $_[0] : $_[1] }
@@ -145,4 +145,25 @@ sub diff_text {
 
 }
 
+sub dead_file {
+    my($type, $server, $name, $text) = @_;
+
+    my $escaped_name = $server->name() . "::$name";
+    $escaped_name =~ s|/|,|g;
+    my $deadfile = $ENV{HOME}."/.lily/tlily/dead.$type.$escaped_name
+";
+    unlink($deadfile);
+    local *DF;
+    my $rc = open(DF, ">$deadfile");
+    if (!$rc) {
+        return 0;
+    }
+
+    foreach my $l (@{$text}) {
+        print DF $l, "\n";
+    }
+    close DF;
+
+    return 1;
+}
 1;

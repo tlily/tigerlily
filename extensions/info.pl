@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/info.pl,v 1.16 1999/12/13 17:48:26 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/info.pl,v 1.17 1999/12/27 21:11:19 mjr Exp $
 
 use strict;
 
@@ -89,6 +89,32 @@ sub helper_cmd {
 		       target => $target,
 		       name   => $name,
 		       text   => \@text);
+    }
+    elsif ($cmd eq 'reedit') {
+        # First generate the name of the file we think the dead help would
+        # be stored in.  Be sure to translate any '/' chars into ',' chars.
+        my $escaped_name = $server->name() . "::$target:$name";
+        $escaped_name =~ s|/|,|g;
+        my $deadfile = $ENV{HOME}."/.lily/tlily/dead.help.$escaped_name";
+
+        # Now attempt to open and snarf in the file.
+        my $text = [];
+        local *DF;
+        my $rc = open(DF, "$deadfile");
+        if (!$rc) {
+            $ui->print("(Unable to recall help from $escaped_name: $!)\n");
+        } else {
+            my $text = [];
+            @{$text} = <DF>;
+            close DF;
+
+	    edit_text($ui, $text) or return;
+	    $server->store(ui     => $ui,
+		           type   => "help",
+		           target => $target,
+		           name   => $name,
+		           text   => $text);
+        }
     }
     elsif ($cmd eq 'edit') {
 	my $sub = sub {

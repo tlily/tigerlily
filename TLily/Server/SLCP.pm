@@ -6,7 +6,7 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Server/Attic/SLCP.pm,v 1.32 1999/12/27 02:06:08 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Server/Attic/SLCP.pm,v 1.33 1999/12/27 21:11:19 mjr Exp $
 
 package TLily::Server::SLCP;
 
@@ -20,6 +20,7 @@ use TLily::Server;
 use TLily::Extend;
 use TLily::Config qw(%config);
 use TLily::UI;
+use TLily::Utils qw(&dead_file);
 
 @ISA = qw(TLily::Server);
 
@@ -646,13 +647,22 @@ sub store {
     }
     elsif ($type eq "help") {
         my $target = defined($args{target}) ? $args{target} : "lily";
+
+        if (@$text > 24) {
+	    $args{ui}->print("(Help \"$target $name\" is too long (max 24 lines), saving to deadfile)\n") if ($args{ui});
+            unless (dead_file($type, $server, "$target:$name", $text)) {
+	        $args{ui}->print("(Unable to save \"$target $name\"; changes lost)\n") if ($args{ui});
+            }
+            return;
+        }
+
         my $success = 0;
         my $sub = sub {
             my ($event) = @_;
             # $event->{NOTIFY} = 0;
             if ($event->{'type'} eq 'begincmd') {
                 foreach (@$text) { next if /^\.$/; $server->sendln($_); }
-                $server->sendln(".");
+                $server->sendln(".") unless (@$text == 24);
                 return;
             } elsif ($event->{type} eq 'endcmd' && !$success) {
 	        $args{ui}->print("(Store of help \"$target $name\" failed)\n") if ($args{ui});
