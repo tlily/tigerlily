@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/UI.pm,v 1.21 1999/12/13 04:58:24 albert Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/UI.pm,v 1.22 2000/02/05 21:07:23 neild Exp $
 
 package TLily::UI;
 
@@ -182,6 +182,7 @@ Sends the text to the UI.
 
 sub print {
     my $self = shift;
+    return if $TLily::Config::config{quiet};
     return unless ($self->{log_fh});
     $self->{log_queued} .= join('', @_);
     return unless ($self->{log_queued} =~ s/^(.*\n)//s);
