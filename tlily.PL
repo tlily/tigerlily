@@ -168,6 +168,7 @@ sub load_ui {
     my ($desired_ui) = grep { /$config{UI}/i } @u;
     $desired_ui =~ s/\.pm$//g;
     $desired_ui ||= "Curses";
+    $config{UI} ||= "Curses";      
     push @try, $desired_ui;
     foreach (@u) { push @try,$_ unless /$desired_ui/; }
     if ($desired_ui ne $config{UI}) {
