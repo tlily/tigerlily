@@ -1,4 +1,6 @@
 Version 2.1.1-post
+  * [extensions/slcp_parse.pl] Added support for queueing %NOTIFY events
+    before the initial SLCP sync.  (No more "> #1739 kills Kazrak.") [SMC]
   * extended %on to support variable expansion, unregistering and listing
     handlers, and regexp matching. [JDW]
 

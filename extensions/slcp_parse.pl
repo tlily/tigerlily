@@ -1,10 +1,11 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_parse.pl,v 1.19 2000/01/02 10:36:17 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_parse.pl,v 1.20 2000/01/28 02:21:04 steve Exp $
 
 use strict;
 use vars qw(%config);
 
 use TLily::Config qw(%config);
+use Data::Dumper;
 
 =head1 NAME
 
@@ -225,6 +226,12 @@ sub parse_line {
     # SLCP %NOTIFY messages.  We pretty much just push these through to 
     # tlily's internal event system.
     if ($line =~ /^%NOTIFY /) {
+		if (!$serv->{logged_in} && !$serv->{process_queue}) {
+#			$serv->{_queue} = [] unless (ref($serv->{_queue}));
+			push @{$serv->{_queue}}, $line;
+			return;
+		}
+
 	%event = SLCP_parse($line);
 	
 	# SLCP bug?!
@@ -327,9 +334,9 @@ sub parse_line {
     
     # %connected
     if ($line =~ /^%connected/) {
-	$serv->{logged_in} = 1;
+#	$serv->{logged_in} = 1;
 	%event = (type => 'connected',
-		  text => $line);
+			  text => $line);
 	goto found;
     }
     
@@ -416,10 +423,31 @@ sub parse_line {
     return;
 }
 
+# Execute any events that are in the queue (%NOTIFYs that came before
+# we had SLCP data)
+
+sub unwind_queue {
+	my ($event, $handler) = @_;
+
+	my $serv = $event->{server};
+
+	foreach my $line (@{$serv->{_queue}}) {
+		$ui->print("Queue: $line\n");
+		parse_line ($serv, $line);
+	}
+
+	# Now we can say that we're logged in.
+	$serv->{logged_in} = 1;
+	$serv->{process_queue} = 0;
+
+
+}
 
 sub load {
     event_r(type => 'slcp_data',
 			  call => \&parse_raw);
+	event_r(type => 'connected',
+			call => \&unwind_queue);
 
 }
 
