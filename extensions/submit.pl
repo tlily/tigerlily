@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/submit.pl,v 1.9 2001/01/26 03:01:57 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/submit.pl,v 1.10 2001/11/07 05:23:18 tale Exp $
 
 use TLily::Version;
 use strict;
@@ -155,5 +155,6 @@ report with the -r option.
 END
 );
 
+# ' <- This single quote is here to resync Emacs font-lock-mode
 
 1;

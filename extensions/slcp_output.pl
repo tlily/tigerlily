@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_output.pl,v 1.22 2001/08/21 18:33:51 albert Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_output.pl,v 1.23 2001/11/07 05:23:18 tale Exp $
 
 use strict;
 
@@ -306,6 +306,7 @@ my $sub = sub {
         next unless ($type eq $e->{type});
 
         while ($flags =~ /\G([AEVUDSMTtCcL])(?:([<>]?=)"([^"]+)";)?/g) {
+	    # " <- This doublequote is necessary to resync Emacs font-lock-mode
             if (defined($2) && defined($3)) {
                 $flags{$1} = [$2,$3];
             } else {
