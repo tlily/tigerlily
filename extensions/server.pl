@@ -122,6 +122,8 @@ help_r('connect' => "
 Usage: %connect [host] [port]
 
 Create a new connection to a server.
+  
+(See also: %close)
 ");
 
 
