@@ -55,6 +55,49 @@ use vars qw(@ISA @EXPORT_OK);
 @ISA = qw(Exporter);
 @EXPORT_OK = qw(&event_r &event_u);
 
+
+=head1 NAME
+
+TLily::Event - Event queue.
+
+=head1 DESCRIPTION
+
+This class implements the core tlily event loop.  (Ideally, Perl would have
+its own event loop, rendering this class needless...but at this time the
+Perl Event.pm is not yet complete, so we use our own internal version.)
+
+=head2 EVENTS
+
+The event system handles four types of events: named events, timed events,
+I/O events, and idle events.
+
+=over
+
+=item Named events
+
+Named events are triggered with the send() call (see below).  A named event
+is a hashref.  All named events must have a 'type' parameter, which is used
+to determine which handlers receive that event.
+
+=item Timed events
+
+Timed events are triggered at specified times.
+
+=item I/O events
+
+I/O events are triggered when activity occurs on a given filehandle.
+
+=item Idle events
+
+Idle events are triggered when there is no other activity.
+
+=head2 FUNCTIONS
+
+=over
+
+=cut
+
+
 # Queue of waiting events.
 my @queue;
 
@@ -67,6 +110,9 @@ my @e_time;
 # IO handlers.
 my @e_io;
 
+# Idle handlers.
+my @e_idle;
+
 # ID counter.
 my $next_id = 1;
 
@@ -74,14 +120,30 @@ my $next_id = 1;
 my $core;
 
 
+=item init()
+
+Initializes the event system.  This must be called before any other event
+calls.
+
+=cut
+
 sub init {
     $core = TLily::Event::Core->new;
     
     TLily::Registrar::class_r(name_event => \&event_u);
     TLily::Registrar::class_r(io_event   => \&io_u);
     TLily::Registrar::class_r(time_event => \&time_u);
+    TLily::Registrar::class_r(idle_event => \&idle_u);
 }
 
+
+=item send()
+
+Send a named event.  Takes either a hash reference, or a hash.
+
+    TLily::Event::send(type => 'text', 'text' => 'foo');
+
+=cut
 
 # Send an event.
 sub send {
@@ -90,6 +152,29 @@ sub send {
     push @queue, $e;
 }
 
+=item event_r()
+
+Register a named event handler.  Takes either a hash reference, or a hash.
+Options are:
+
+=over
+
+=item type
+
+The type of event handled by this handler: may be an event type, or 'all'.
+
+=item order
+
+The priority of the handler: either 'before', 'during', or 'after'.
+
+=item call
+
+The handler function.  This function will be called with an event and the
+handler as its arguments.
+
+=back
+
+=cut
 
 # Register a new named event handler.
 sub event_r {
@@ -114,6 +199,12 @@ sub event_r {
     return $h->{id};
 }
 
+
+=item event_u()
+
+Unregister a named event handler.
+
+=cut
 
 # Deregister a named event handler.
 sub event_u {
@@ -217,6 +308,30 @@ sub time_u {
 }
 
 
+# Register a new idle event handler.
+sub idle_r {
+    my $h = (@_ == 1) ? shift : {@_};
+    
+    # Sanity check.
+    croak "Handler registered without \"call\"." unless ($h->{call});
+
+    $h->{id} = $next_id++;
+    push @e_idle, $h;
+    TLily::Registrar::add("idle_event", $h->{id});
+    return;
+}
+
+
+# Deregister an idle event handler.
+sub idle_u {
+    my($id) = @_;
+    $id = $id->{id} if (ref $id);
+    @e_idle = grep { $_->{id} != $id } @e_idle;
+    TLily::Registrar::remove("idle_event", $id);
+    return;
+}
+
+
 sub invoke {
     my $h = shift;
     $h->{registrar}->push_default if ($h->{registrar});
@@ -267,7 +382,9 @@ sub loop_once {
     }
     
     my $timeout;
-    if ($e_time[0]) {
+    if (@e_idle) {
+	$timeout = 0;
+    } elsif ($e_time[0]) {
 	$timeout = $e_time[0]->{'time'} - $time;
 	$timeout = 0 if ($timeout < 0);
     }
@@ -283,6 +400,10 @@ sub loop_once {
 	    invoke($h, 'e', $h);
 	}
     }
+
+    foreach my $h (@e_idle) {
+	invoke($h, $h);
+    }
 }
 
 
@@ -291,3 +412,7 @@ sub loop {
 }
 
 1;
+
+
+__END__
+
