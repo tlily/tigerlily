@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/on.pl,v 1.7 2000/05/02 01:14:02 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/on.pl,v 1.8 2000/05/02 01:39:11 josh Exp $
 
 use strict;
 use Text::ParseWords qw(quotewords);
@@ -134,14 +134,17 @@ sub on_cmd {
 
     $ui->print($str);
 
+    my $order = "after";
     my $attr;
     if ($args[0] eq '%attr') {
 	shift @args;
 	$attr = shift @args;
+	$order = "before";
     }
 
-    my $handler = event_r(type => $event_type,
-			  call => sub {
+    my $handler = event_r(type  => $event_type,
+                          order => $order,
+ 			  call  => sub {
 			      my ($e,$h) = @_;
 			      my $match = 1;
 			      my ($m1,$m2,$m3,$m4,$m5,$m6,$m7,$m8,$m9);
@@ -167,11 +170,14 @@ sub on_cmd {
 				  last if $match == 0;
 			      }
 
+			      my $sender = $server->expand_name($e->{SOURCE});
+			      $sender =~ s/^-//;
+			      $sender =~ s/ /_/g;
+
 			      if ($match) {
 				  my $cmd = "@args";
-				  my ($sender, $value);
 
-				  $cmd =~ s/\$sender/$e->{SOURCE}/g;
+				  $cmd =~ s/\$sender/$sender/g;
 				  $cmd =~ s/\$value/$e->{VALUE}/g;
 				  $cmd =~ s/\$1/$m1/g;
 				  $cmd =~ s/\$2/$m2/g;
@@ -194,10 +200,12 @@ sub on_cmd {
                                       if ($cmd =~ /^%eval (.*)/) {
                                           $cmd = eval "$1;";
                                           $cmd .= "ERROR: $@" if $@;
-                                          $cmd = "$e->{'SOURCE'};" .
+                                          $cmd = "$sender;" .
                                             TLily::Bot::wrap_lines($cmd);
                                       }
-                                      
+
+		 		      $ui->prints(on => "[%on] $cmd\n");
+				      
                                       foreach (split /\\n/, $cmd) {
                                           TLily::Event::send({type => 'user_input',
                                                               ui   => $e->{ui},
