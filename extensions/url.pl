@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/url.pl,v 1.16 2000/02/16 02:28:30 tale Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/url.pl,v 1.17 2000/02/16 02:39:44 kazrak Exp $
 
 #
 # URL handling
@@ -21,6 +21,21 @@ sub handler {
             }
             my $t=$config{tag_urls} ? '['.scalar(@urls).']' : "";
             "$1$t";|ge;
+    }
+    return 0;
+}
+
+sub text_handler {
+    my($event, $handler) = @_;
+
+    my $type;
+    foreach $type ('http', 'https', 'ftp') {
+        $event->{text} =~ s|($type://\S+[^\s\(\)\[\]\{\}\"\'\?\,\;\:\.])|
+            if ($1 ne $urls[$#urls])
+            {
+              push @urls, $1;
+            }
+            "$1";|ge;
     }
     return 0;
 }
@@ -142,7 +157,7 @@ event_r(type  => 'emote',
 # of that happening, however, are almost certainly less than the chances that
 # a URL will have wrapped onto multiple lines.
 event_r(type  => 'text',
-	call  => \&handler,
+	call  => \&text_handler,
 	order => 'before');
 
 command_r('url' => \&url_cmd);
