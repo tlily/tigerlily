@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Event.pm,v 1.34 2001/11/10 07:27:01 tale Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Event.pm,v 1.35 2001/11/12 04:43:11 tale Exp $
 
 package TLily::Event::Core;
 
@@ -580,7 +580,8 @@ sub loop_once {
 		    warn "Event handler returned $rc.";
 #                    warn Dumper($h);
 		}
-                TLily::UI::name()->print("\thandler returned $rc\n")
+                TLily::UI::name()->print("\thandler returned ",
+                                         defined($rc) ? $rc : "undef", "\n")
                     if $debug;
 		next EVENT if ($rc);
 	    }
