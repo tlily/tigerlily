@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Curses/Attic/Input.pm,v 1.19 2000/02/05 21:13:52 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Curses/Attic/Input.pm,v 1.20 2000/02/07 01:05:24 tale Exp $
 
 package TLily::UI::Curses::Input;
 
@@ -238,11 +238,22 @@ sub rationalize {
     $self->{W}->noutrefresh();
 }
 
+# Return two character class regexps that will match or not match
+# (respectively) a word character.
+sub word_characters {
+    my $wordchars = ($TLily::Config::config{word_characters} ?
+                     $TLily::Config::config{word_characters} : "") .
+                       "A-Za-z0-9";
+    return ("[$wordchars]", "[^$wordchars]");
+}
+
 
 # Returns the offset in the input string of the end of the current word.
 sub end_of_word {
     my($self) = @_;
-    if (substr($self->{text}, $self->{point}) =~ /^(.*?\w+)/) {
+    my($word, $notword) = word_characters();
+
+    if (substr($self->{text}, $self->{point}) =~ /^(.*?$word+)/) {
 	return $self->{point} + length($1);
     } else {
 	return length($self->{text});
@@ -253,13 +264,39 @@ sub end_of_word {
 # Returns the offset in the input string of the start of the current word.
 sub start_of_word {
     my($self) = @_;
-    if (substr($self->{text}, 0, $self->{point}) =~ /^(.*\W)\w/) {
+    my($word, $notword) = word_characters();
+
+
+    if (substr($self->{text}, 0, $self->{point}) =~ /^(.*$notword)$word/) {
 	return length($1);
     } else {
 	return 0;
     }
 }
 
+sub end_of_sentence {
+    my($self) = @_;
+    my $spaces = $TLily::Config::config{doublespace_period} ? "  " : " ";
+
+    if (substr($self->{text}, $self->{point}) =~
+        /^(.*?[.!?][]\"')]*)($| $|\t|$spaces)/) {  # from Emacs
+	return $self->{point} + length($1);
+    } else {
+	return length($self->{text});
+    }
+}
+
+sub start_of_sentence {
+    my($self) = @_;
+    my $spaces = $TLily::Config::config{doublespace_period} ? "  " : " ";
+
+    if (substr($self->{text}, 0, $self->{point}) =~
+        /^((.*[.!?][]\"')]*)($| $|\t|$spaces)[ \t]*)[^ \t]/) {
+	return length($1);
+    } else {
+	return 0;
+    }
+}
 
 # Sets the prefix (or prompt) string.
 sub prefix {
@@ -318,7 +355,7 @@ sub search_history {
     my $string = $args{string};
 
     # Reset the saved search position.
-    $self->{_search_pos} = $self->{history_pos} if (!defined($self->{_search_pos}) || $args{reset});
+    $self->{_search_pos} = $self->{history_pos} if (!defined($self->{_search_pos}) || $args{"reset"});
 
     # If no string is passed, return.
     return unless ($string);
@@ -530,6 +567,19 @@ sub backward_word {
     $self->rationalize();
 }
 
+sub forward_sentence {
+    my($self) = @_;
+    $self->{kill_reset} = 1;
+    $self->{point} = $self->end_of_sentence();
+    $self->rationalize();
+}
+
+sub backward_sentence {
+    my($self) = @_;
+    $self->{kill_reset} = 1;
+    $self->{point} = $self->start_of_sentence();
+    $self->rationalize();
+}
 
 # Transpose the two characters before point.
 sub transpose_chars {
@@ -563,24 +613,128 @@ sub transpose_chars {
     $self->rationalize();
 }
 
+# This is zsh-like, not Emacs-like.  zsh-like it more intuitive, I believe,
+# because it allows you to transpose the last two words entered, while Emacs
+# does not.
+sub transpose_words {
+    my($self) = @_;
+    my($word, $notword) = word_characters();
+    my($word1_start, $word2_start, $word2_end);
+    my($point_in_word1, $point_in_word2);
+
+    # this should be configurable, so that someone could opt, for example,
+    # to have underscore be a word character.
+    $self->{kill_reset} = 1;
+
+    # First, identify where the cursor is with regard to surrounding words.
+    # The first match will attempt to find the last two groups of word
+    # characters before point.
+    substr($self->{text}, 0, $self->{point}) =~
+        /^(.*?)($word+)($notword*)($word*)($notword*)$/i;
+
+    #print STDERR "1='$1', 2='$2', 3='$3', 4='$4', 5='$5'\n";
+
+    # The length function is used to see whether a $word pattern matched so
+    # that "0" can be identified as a word.  If just "if ($2)" were used,
+    # then "0" would cause the test to fail.
+    return if length($2) == 0;
+
+    $word1_start = length($1);
+    $point_in_word1 = ($3 ? 0 : 1);
+
+    if (length($4) > 0) {
+      $word2_start = length($1 . $2 . $3);
+      $word2_end = $word2_start + length($4);
+      $point_in_word2 = ($5 ? 0 : 1);
+    }
+
+    # Now match the word characters following point.
+    substr($self->{text}, $self->{point}) =~
+        /^($word*)($notword*)($word*)/i;
+
+    # If point is wholly within word1 (not just at its end), then nothing
+    # can be transposed.
+    return if $point_in_word1 && length($1) > 0;
+
+    # Adjust the start of word1 and end of word2 with regard to where point is.
+    if ($point_in_word2 && length($1) > 0) {
+        # point is wholly in word2 (not just at its end), so only the end
+        # of the word2 needs to adjusted because word1_start already points
+        # to the right place.
+        $word2_end = $self->{point} + length($1);
+
+    } elsif (length($1) > 0) {
+        # point is right at the start of a word, but word1_start points to
+        # two words back, and word2_start points to the prior word.
+        $word1_start = $word2_start;
+        $word2_end = $self->{point} + length($1);
+
+    } elsif (length($3) > 0) {
+        # point is between words, but word1_start points to
+        # two words back, and word2_start points to the prior word.
+        $word1_start = $word2_start;
+        $word2_end = $self->{point} + length($2 . $3);
+    }
+
+    # With the bounds of the start of word1 and the end of word2, the rest
+    # is easy.
+    substr($self->{text}, $word1_start, $word2_end - $word1_start) =~
+        s/^($word+)($notword+)($word+)$/$3$2$1/i;
+
+    $self->{point} = $word2_end;
+
+    $self->update_style();
+    $self->rationalize();
+    $self->redraw();
+}
+
 sub capitalize_word {
     my($self) = @_;
+    my ($word, $notword) = word_characters();
+
+    $self->{kill_reset} = 1;
 
     substr($self->{text}, $self->{point}) =~
-        s/^([^a-z0-9]*)([0-9]*)([a-z]?)([a-z]*)/$1$2\u$3\L$4/i;
+        s/^([^a-z]*)([a-z]?)($word*)/$1\u$2\L$3/i;
+
+    $self->{point} += length($1 . $2 . $3);
+
+    $self->update_style();
+    $self->rationalize();
+    $self->redraw();
+}
+
+sub down_case_word {
+    my($self) = @_;
+    my ($word, $notword) = word_characters();
+
+    $self->{kill_reset} = 1;
+
+    substr($self->{text}, $self->{point}) =~
+        s/^($notword*)($word*)/$1\L$2/;
 
     $self->{point} += length($1 . $2);
 
-    for (my $i = 0; $i < length ($3 . $4); $i++) {
-        my($y, $x) = $self->find_coords($self->{point});
-
-        $self->char_style($self->{point});
-        $self->{W}->addch($y, $x, substr($self->{text}, $self->{point}++, 1));
-    }
-
+    $self->update_style();
     $self->rationalize();
+    $self->redraw();
 }
 
+sub up_case_word {
+    my($self) = @_;
+    my ($word, $notword) = word_characters();
+
+    $self->{kill_reset} = 1;
+
+    substr($self->{text}, $self->{point}) =~
+        s/^($notword*)($word*)/$1\U$2/;
+
+    $self->{point} += length($1 . $2);
+
+    $self->update_style();
+    $self->rationalize();
+    $self->redraw();
+}
 
 # Kill a given range of text, and append it to the kill buffer.
 sub kill_append {

@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/Curses.pm,v 1.37 2000/02/05 21:13:51 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/Curses.pm,v 1.38 2000/02/07 01:05:24 tale Exp $
 
 package TLily::UI::Curses::Proxy;
 
@@ -165,10 +165,15 @@ sub accept_line {
    'backward-word'        => sub { $_[0]->{input}->backward_word(); },
    'beginning-of-line'    => sub { $_[0]->{input}->beginning_of_line(); },
    'end-of-line'          => sub { $_[0]->{input}->end_of_line(); },
+   'forward-sentence'     => sub { $_[0]->{input}->forward_sentence(); },
+   'backward-sentence'    => sub { $_[0]->{input}->backward_sentence(); },
    'delete-char'          => sub { $_[0]->{input}->del(); },
    'backward-delete-char' => sub { $_[0]->{input}->bs(); },
    'capitalize-word'      => sub { $_[0]->{input}->capitalize_word(); },
+   'down-case-word'       => sub { $_[0]->{input}->down_case_word(); },
+   'up-case-word'         => sub { $_[0]->{input}->up_case_word(); },
    'transpose-chars'      => sub { $_[0]->{input}->transpose_chars(); },
+   'transpose-words'      => sub { $_[0]->{input}->transpose_words(); },
    'kill-line'            => sub { $_[0]->{input}->kill_line(); },
    'backward-kill-line'   => sub { $_[0]->{input}->backward_kill_line(); },
    'kill-word'            => sub { $_[0]->{input}->kill_word(); },
@@ -182,47 +187,56 @@ sub accept_line {
    'scroll-to-bottom'     => sub { $_[0]->{text}->scroll_bottom(); },
    'refresh'              => sub { $_[0]->{input}->{W}->clearok(1); $_[0]->redraw(); },
    'suspend'              => sub { TLily::Event::keepalive(); kill 'TSTP', $$; },
+   'quoted-insert'        => sub { $_[0]->{input}->{quoted_insert} = 1 }
   );
 
 # The default set of keybindings.
 %bindmap =
   (
-   'right'      => 'forward-char',
-   'C-f'        => 'forward-char',
-   'left'       => 'backward-char',
-   'C-b'        => 'backward-char',
-   'M-f'        => 'forward-word',
-   'M-b'        => 'backward-word',
-   'C-a'        => 'beginning-of-line',
-   'C-e'        => 'end-of-line',
-   'C-p'        => 'previous-history',
-   'up'         => 'previous-history',
-   'C-n'        => 'next-history',
-   'down'       => 'next-history',
-   'C-d'        => 'delete-char',
-   'del'        => 'backward-delete-char',
-   'bs'         => 'backward-delete-char',
    'C-?'        => 'backward-delete-char',   
+   'C-a'        => 'beginning-of-line',
+   'C-b'        => 'backward-char',
+   'C-d'        => 'delete-char',
+   'C-e'        => 'end-of-line',
+   'C-f'        => 'forward-char',
    'C-h'        => 'backward-delete-char',
-   'C-t'        => 'transpose-chars',
    'C-k'        => 'kill-line',
+   'C-l'        => 'refresh',
+   'C-m'        => 'accept-line',  
+   'C-n'        => 'next-history',
+   'C-p'        => 'previous-history',
+   'C-q'        => 'quoted-insert',
+   'C-t'        => 'transpose-chars',
    'C-u'        => 'backward-kill-line',
-   'M-d'        => 'kill-word',
+   'C-v'        => 'page-down',
    'C-w'        => 'backward-kill-word',
    'C-y'        => 'yank',
-   'nl'         => 'accept-line',
-   'C-m'        => 'accept-line',  
-   'pageup'     => 'page-up',
-   'M-v'        => 'page-up',
-   'pagedown'   => 'page-down',
-   'C-v'        => 'page-down',
-   'M-c'        => 'capitalize-word',
+   'C-z'        => 'suspend',
+   'C-M-?'      => 'backward-kill-word',
    'M-,'        => 'line-up',
    'M-.'        => 'line-down',
    'M-<'        => 'scroll-to-top',
    'M->'        => 'scroll-to-bottom',
-   'C-l'        => 'refresh',
-   'C-z'        => 'suspend',
+   'M-a'        => 'backward-sentence',
+   'M-b'        => 'backward-word',
+   'M-bs'       => 'backward-kill-word',
+   'M-c'        => 'capitalize-word',
+   'M-d'        => 'kill-word',
+   'M-e'        => 'forward-sentence',
+   'M-f'        => 'forward-word',
+   'M-l'        => 'down-case-word',
+   'M-t'        => 'transpose-words',
+   'M-u'        => 'up-case-word',
+   'M-v'        => 'page-up',
+   'bs'         => 'backward-delete-char',
+   'del'        => 'backward-delete-char',
+   'down'       => 'next-history',
+   'left'       => 'backward-char',
+   'nl'         => 'accept-line',
+   'pagedown'   => 'page-down',
+   'pageup'     => 'page-up',
+   'right'      => 'forward-char',
+   'up'         => 'previous-history',
   );
 
 
@@ -431,6 +445,7 @@ sub run {
 	$self->command($cmd, $key);
     } elsif (length($key) == 1) {
 	$self->{input}->addchar($key);
+        $self->{input}->{quoted_insert} = 0;
     }
 
     $self->{input}->position_cursor;
