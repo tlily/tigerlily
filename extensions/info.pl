@@ -1,80 +1,7 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/info.pl,v 1.7 1999/04/03 06:26:18 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/info.pl,v 1.8 1999/04/14 01:37:12 albert Exp $
 
 use strict;
-
-sub fetch {
-    my(%args) = @_;
-
-    my $server = $args{server};
-    my $call   = $args{call};
-    my $type   = defined($args{type}) ? $args{type} : "info";
-    my $target = defined($args{target}) ? $args{target} : "me";
-    my $name   = $args{name};
-    my $ui     = $args{ui};
-
-    my $uiname;
-    $uiname    = $ui->name() if ($ui);
-
-    my @data;
-    my $sub = sub {
-	my($event) = @_;
-	$event->{NOTIFY} = 0;
-	if (defined($event->{text}) && $event->{text} =~ /^\* (.*)/) {
-	    return if (($type eq "info") && (@data == 0) &&
-		       ($event->{text} =~ /^\* Last Update: /));
-	    push @data, substr($event->{text},2);
-	} elsif ($event->{type} eq 'endcmd') {
-	    $call->(server => $event->{server},
-		    ui     => ui_name($uiname),
-		    type   => $type,
-		    target => $target,
-		    name   => $name,
-		    text   => \@data);
-	}
-	return;
-    };
-
-    if ($type eq "info") {
-	$ui->print("(fetching info from server)\n") if ($ui);
-	cmd_process("/info $target", $sub);
-    } elsif ($type eq "memo") {
-	$ui->print("(fetching memo from server)\n") if ($ui);
-	cmd_process("/memo $target $name", $sub);
-    }
-
-    return;
-}
-
-sub store {
-    my(%args) = @_;
-
-    my $server = $args{server};
-    my $text   = $args{text};
-    my $type   = defined($args{type}) ? $args{type} : "info";
-    my $target = defined($args{target}) ? $args{target} : "me";
-    my $name   = $args{name};
-
-    my $uiname;
-    $uiname    = $args{ui}->name() if ($args{ui});
-
-    if ($type eq "info") {
-	my $size = @$text;
-	my $t = $target;  $t = "" if ($target eq "me");
-	$server->sendln("\#\$\# export_file info $size $t");
-    }
-    elsif ($type eq "memo") {
-	my $size = 0;
-	foreach (@$text) { $size += length($_); }
-	my $t = $target;  $t = "" if ($target eq "me");
-	$server->sendln("\#\$\# export_file memo $size $name $t");
-    }
-
-    push @{$server->{_export_queue}},
-      { uiname => $uiname, text => $text, type => $type };
-
-    return;
-}
 
 sub export_handler {
     my($event, $handler) = @_;
@@ -163,24 +90,22 @@ sub info_cmd {
     if ($cmd eq 'set') {
 	my @text;
 	edit_text($ui, \@text) or return;
-	store(server => $server,
-	      ui     => $ui,
-	      type   => "info",
-	      target => $disc,
-	      text   => \@text);
+	$server->store(ui     => $ui,
+		       type   => "info",
+		       target => $disc,
+		       text   => \@text);
     }
     elsif ($cmd eq 'edit') {
 	my $sub = sub {
 	    my(%args) = @_;
 	    edit_text($args{ui}, $args{text}) or return;
-	    store(@_);
+	    $server->store(@_);
 	};
 
-	fetch(server => $server,
-	      ui     => $ui,
-	      type   => "info",
-	      target => $disc,
-	      call   => $sub);
+	$server->fetch(ui     => $ui,
+		       type   => "info",
+		       target => $disc,
+		       call   => $sub);
     }
     else {
 	$server->sendln("/info $args");
@@ -202,26 +127,24 @@ sub memo_cmd {
     if ($cmd eq 'set') {
 	my @text;
 	edit_text($ui, \@text) or return;
-	store(server => $server,
-	      ui     => $ui,
-	      type   => "memo",
-	      target => $target,
-	      name   => $name,
-	      text   => \@text);
+	$server->store(ui     => $ui,
+		       type   => "memo",
+		       target => $target,
+		       name   => $name,
+		       text   => \@text);
     }
     elsif ($cmd eq 'edit') {
 	my $sub = sub {
 	    my(%args) = @_;
 	    edit_text($args{ui}, $args{text}) or return;
-	    store(@_);
+	    $server->store(@_);
 	};
 
-	fetch(server => $server,
-	      ui     => $ui,
-	      type   => "memo",
-	      target => $target,
-	      name   => $name,
-	      call   => $sub);
+	$server->fetch(ui     => $ui,
+		       type   => "memo",
+		       target => $target,
+		       name   => $name,
+		       call   => $sub);
     }
     else {
 	$server->sendln("/memo $args");
@@ -278,12 +201,11 @@ sub export_cmd {
     close(FH);
 
     my $server = server_name();
-    store(server => $server,
-	  ui     => $ui,
-	  type   => $type,
-	  target => $target,
-	  name   => $name,
-	  text   => \@text);
+    $server->store(ui     => $ui,
+		   type   => $type,
+		   target => $target,
+		   name   => $name,
+		   text   => \@text);
 }
 
 command_r('info'   => \&info_cmd);

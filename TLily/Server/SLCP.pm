@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Server/Attic/SLCP.pm,v 1.15 1999/04/09 22:48:21 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Server/Attic/SLCP.pm,v 1.16 1999/04/14 01:37:15 albert Exp $
 
 package TLily::Server::SLCP;
 
@@ -361,6 +361,104 @@ sub set_client_name {
   $serv->sendln("\#\$\# client TigerLily $TLily::Version::VERSION");
 }
 
+=item fetch()
+
+Fetch a file from the server.
+Args(as hash):
+    call    --  sub to call with returned data
+    type    --  info or memo or (coming soon) config
+    target  --  user or discussion to apply to; leave out for yourself
+    name    --  if type == memo, the memo name
+    ui      --  the ui to print a message to
+
+=cut
+
+sub fetch {
+    my($this, %args) = @_;
+
+    my $server = $this;
+    my $call   = $args{call};
+    my $type   = defined($args{type}) ? $args{type} : "info";
+    my $target = defined($args{target}) ? $args{target} : "me";
+    my $name   = $args{name};
+    my $ui     = $args{ui};
+
+    my $uiname;
+    $uiname    = $ui->name() if ($ui);
+
+    my @data;
+    my $sub = sub {
+        my($event) = @_;
+        $event->{NOTIFY} = 0;
+        if (defined($event->{text}) && $event->{text} =~ /^\* (.*)/) {
+            return if (($type eq "info") && (@data == 0) &&
+                       ($event->{text} =~ /^\* Last Update: /));
+            push @data, substr($event->{text},2);
+        } elsif ($event->{type} eq 'endcmd') {
+            $call->(server => $event->{server},
+                    ui     => TLily::UI::name($uiname),
+                    type   => $type,
+                    target => $target,
+                    name   => $name,
+                    text   => \@data);
+        }
+        return;
+    };
+
+    if ($type eq "info") {
+        $ui->print("(fetching info from server)\n") if ($ui);
+        TLily::Command::cmd_process("/info $target", $sub);
+    } elsif ($type eq "memo") {
+        $ui->print("(fetching memo from server)\n") if ($ui);
+        TLily::Command::cmd_process("/memo $target $name", $sub);
+    }
+
+    return;
+}
+
+=item store()
+
+Store a file on the server.
+Args(as hash):
+    text    --  text to save
+    type    --  info or memo or (coming soon) config
+    target  --  user or discussion to apply to; leave out for yourself
+    name    --  if type == memo, the memo name
+    ui      --  the ui to print a message to
+
+=cut
+
+sub store {
+    my($this, %args) = @_;
+
+    my $server = $this;
+    my $text   = $args{text};
+    my $type   = defined($args{type}) ? $args{type} : "info";
+    my $target = defined($args{target}) ? $args{target} : "me";
+    my $name   = $args{name};
+
+    my $uiname;
+    $uiname    = $args{ui}->name() if ($args{ui});
+
+    if ($type eq "info") {
+        my $size = @$text;
+        my $t = $target;  $t = "" if ($target eq "me");
+        $server->sendln("\#\$\# export_file info $size $t");
+    }
+    elsif ($type eq "memo") {
+        my $size = 0;
+        foreach (@$text) { $size += length($_); }
+        my $t = $target;  $t = "" if ($target eq "me");
+        $server->sendln("\#\$\# export_file memo $size $name $t");
+    }
+    elsif ($type eq "config") {
+    }
+
+    push @{$server->{_export_queue}},
+      { uiname => $uiname, text => $text, type => $type };
+
+    return;
+}
 
 1;
 
