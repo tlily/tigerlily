@@ -212,8 +212,9 @@ sub send_handler {
 
     $e->{server} = $server;
  
-    $e->{server}->sendln(join(",",@{$e->{RECIPS}}),$e->{dtype},$e->{text});
+    $server->send_message(join(",",@{$e->{RECIPS}}),$e->{dtype},$e->{text});
 }
+
 event_r(type => 'user_send',
 	call => \&send_handler);
 
