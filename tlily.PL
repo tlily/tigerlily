@@ -32,16 +32,23 @@ if ( -f 'tlily.PL' ) {
 $event = LC::Event->new();
 my $ui = LC::UI::Curses->new(name => 'main', event => $event);
 
+# remove
+$ui->defstyle("status" => 'reverse');
+$ui->defcstyle("status" => 'yellow', 'blue', 'bold');
+
+show_banner();
+    
 LC::User::init;
 LC::Extend::cmd_init;
 
-LC::Extend::load("server", $ui);
-LC::Extend::load("output", $ui);
+LC::Extend::load("server", $ui, 1);
+LC::Extend::load("output", $ui, 1);
+LC::Extend::load("expand", $ui, 1);
+LC::Extend::load("status", $ui, 1);
+
+$ui->print("Use the %server command to connect to a lily server.\n");
 
 LC::User::command_r(quit => sub { exit; });
-
-# remove
-$ui->defcstyle("status" => 'yellow', 'blue', 'bold');
 
 $SIG{__WARN__} = \&sig_warn;
 sub sig_warn {
@@ -123,8 +130,6 @@ $event->event_r(type  => "prompt",
 		order => "after",
 		call  => \&prompt_handler);
 
-show_banner();
-    
 while (1) {
 	eval { $event->loop; };
 
