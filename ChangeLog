@@ -22,6 +22,13 @@ Version 2.3-post
     status (must be on, must be off, doesn't matter). [RBJ]
   * [TLily/UI/Curses/Input.pm] Bugfix: spurious ^s should no longer appear
     in the input area. [DPN]
+  * [TLily/UI/*] Restructured the Curses UI into a generic "TextWindow" UI
+    and a mediation layer called "FoiledAgain".  Provided a FoiledAgain 
+    backends for Curses and Win32::Console, which now work identically.  [JDW]
+  * Made tlily work well with a vanilla activestate [win32] perl installation,
+    without additional modules or cygwin.  This will become the preferred
+    way to run tlily on win32, and should be much more reliable than the
+    cygwin/curses-based version. [JDW]
 
 Version 2.3
   * [extensions/url.pl] Multiline URIs in /review, /memo and /info should be
