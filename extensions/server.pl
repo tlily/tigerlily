@@ -53,7 +53,8 @@ sub connect_command {
 	}
     }
 
-    my($host, $port, $user, $pass) = @argv;
+    my $host = shift @argv;
+    my ($port, $user, $pass) = @argv;
 
     if (!defined $host) {
 	if (!defined($config{server})) {
@@ -64,7 +65,7 @@ sub connect_command {
 	$host = $config{server};
 	$port = $config{port};
     }
-
+    
     # Expand host aliases.
     if (!defined($port) && $config{server_info}) {
 	foreach my $i (@{$config{server_info}}) {
@@ -89,25 +90,28 @@ sub connect_command {
 	    }
 	}
     }
-
-    my $server;
+    
     my $class = 'TLily::Server::SLCP';
 
     if ($host =~ /^aim$/i) {
         $host = "host not used";
+        $port = "port not used";
         $class = 'TLily::Server::AIM';
+        ($user, $pass) = @argv;
 
     } elsif ($host =~ /^aim:([^\:]+):([^\:]+)/i) {
         $host = "host not used";
+        $host = "host not used";
+        $port = "port not used";
         $class = 'TLily::Server::AIM';
         $user = $1; $pass = $2;
     }
 
-    $server = $class->new(host      => $host,
-                          port      => $port,
-                          user      => $user,
-                          password  => $pass,
-                          'ui_name' => $ui->name);
+    my $server = $class->new(host      => $host,
+                             port      => $port,
+                             user      => $user,
+                             password  => $pass,
+                             'ui_name' => $ui->name);
     return unless $server;
 
     $server->activate();

@@ -78,6 +78,7 @@ extensions/stock.pl
 extensions/stripper.pl
 extensions/submit.pl
 extensions/todeath.pl
+extensions/toc_parse.pl
 extensions/ui.pl
 extensions/uitest.pl
 extensions/url.pl
@@ -99,6 +100,7 @@ lib/TLily/FoiledAgain/TermScreen.pm
 lib/TLily/FoiledAgain/Win32.pm
 lib/TLily/Registrar.pm
 lib/TLily/Server.pm
+lib/TLily/Server/AIM.pm
 lib/TLily/Server/HTTP.pm
 lib/TLily/Server/SLCP.pm
 lib/TLily/UI.pm

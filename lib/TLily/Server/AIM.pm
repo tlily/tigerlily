@@ -21,7 +21,6 @@ use vars qw(@ISA %config);
 
 use Carp;
 
-use Date::Format;
 use TLily::Version;
 use TLily::Server;
 use TLily::Extend;
@@ -105,6 +104,12 @@ sub new {
 
     $ui->print("Logging into AIM...");
 
+    unless ($self->{user} =~ /\S/ &&
+            $self->{password} =~ /\S/) {
+        $ui->print("\nLogin Error: Username/Password Not Specified!\n");
+        return $self;
+    }
+
     # remember ourselves..
     $self->state(HANDLE      => lc($self->{user}),
                  NAME        => $self->{user},
@@ -117,6 +122,10 @@ sub new {
 
     eval {
         require Net::AOLIM;
+    };
+    die "Error loading Net::AOLIM: $@\n" if $@;
+
+    eval {
         $self->{aim} = Net::AOLIM->new(
             username => $self->{user},
             password => $self->{password},
@@ -482,9 +491,11 @@ sub cmd_who {
 
             $c++;
 
-            my $onsince_str = time2str("%D", $r{ON_SINCE});
+            my @t = localtime($r{ON_SINCE});
+            my $onsince_str = sprintf("%02d/%02d/%02d", 
+                                      $t[4]+1, $t[3], substr($t[5]+1900,2,2));
             if (time - $r{ON_SINCE} < 24*60*60) {
-                $onsince_str = time2str("%X", $r{ON_SINCE});                
+                $onsince_str = sprintf("%02d:%02d:%02d", $t[2], $t[1], $t[0]);
             }
 
             my $idle_str = idle_str($r{IDLE} + (time - $r{LAST_UPDATE}));

@@ -125,6 +125,7 @@ sub get_tlily_plx {
         TLily::UI::TextWindow
         TLily::Extend
         TLily::Server
+        TLily::Server::AIM
         TLily::Server::SLCP
         TLily::Server::HTTP
         TLily::Daemon
