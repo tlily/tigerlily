@@ -1,4 +1,6 @@
 Version 2.1.1-post
+  * [TLily/UI/Curses/Text.pm] Default pager value for text widget set based
+    on $config{page}. [DCL]
   * [extensions/keepalive.pl] Changing $config{keepalive_interval}
     after keepalive is loaded now affects the working interval. [DCL]
   * [tlily.global, TLily/UI/Curses.pm, extensions/ui.pl] New function,

@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Curses/Attic/Text.pm,v 1.19 1999/04/09 22:48:26 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Curses/Attic/Text.pm,v 1.20 2000/02/15 00:01:09 tale Exp $
 
 package TLily::UI::Curses::Text;
 
@@ -17,6 +17,7 @@ use Curses;
 use TLily::UI::Util qw(next_line);
 use TLily::UI::Curses::Generic;
 use TLily::Event;
+use TLily::Config qw(%config);
 
 @ISA = qw(TLily::UI::Curses::Generic);
 
@@ -62,7 +63,7 @@ sub new {
     $self->{status}->define(t_more => 'override') if ($self->{status});
 
     # Is paging active?
-    $self->{'page'}       = 1;
+    $self->{'page'}       = defined($config{page}) ? $config{page} : 1;
 
     bless($self, $class);
 }
