@@ -1,11 +1,11 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/pipes.pl,v 1.2 1999/04/09 23:34:10 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/pipes.pl,v 1.3 1999/10/02 17:46:56 josh Exp $
 #
 # Piped command processing.
 #
 
 my $counter = 0;
 sub pipe_handler {
-    my($ui, $cmd) = @_;
+    my($server, $ui, $cmd) = @_;
 
     my $lcmd;
     my $run = '';
@@ -59,7 +59,7 @@ sub pipe_handler {
 	$ui->print("Error in pipe: $l\n");
     }
 
-    cmd_process($lcmd, sub {
+    $server->cmd_process($lcmd, sub {
 	my($event) = @_;
 	$event->{NOTIFY} = 0;
 	if ($event->{type} eq 'begincmd') {
@@ -94,7 +94,7 @@ sub pipe_handler {
 sub and_handler {
     my($event, $handler) = @_;
     if ($event->{text} =~ /^\s*&\s*(.*?)\s*$/) {
-        pipe_handler($event->{ui}, $1);
+        pipe_handler($event->{server}, $event->{ui}, $1);
         return 1;
     }
     return;
@@ -102,7 +102,7 @@ sub and_handler {
 
 event_r(type => 'user_input',
         call => \&and_handler);
-command_r("pipe", \&pipe_handler);
+command_r("pipe", sub { pipe_handler(TLily::Server::active(), @_); });
 shelp_r("pipe", "Pipe lily commands through shell commands");
 help_r("pipe", "
 Usage: %pipe /who | grep foo

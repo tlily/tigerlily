@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/view.pl,v 1.1 1999/03/19 01:11:47 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/view.pl,v 1.2 1999/10/02 17:46:58 josh Exp $
 
 use strict;
 
@@ -31,7 +31,8 @@ sub view_cmd($;$$) {
     my ($ui,$cmd,$filter,$doneproc) = @_;
 
     my @lines = ();
-    cmd_process($cmd, sub {
+    my $server = TLily::Server::active();
+    $server->cmd_process($cmd, sub {
 	my($event) = @_;
 	$event->{NOTIFY} = 0;
 	if ($event->{type} eq 'endcmd') {
