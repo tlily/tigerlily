@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/gag.pl,v 1.7 2000/10/26 20:20:33 coke Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/gag.pl,v 1.8 2001/01/04 20:46:26 coke Exp $ 
 
 use strict;
 
@@ -83,26 +83,35 @@ sub gag_command_handler {
 	return;
     }
 
+    my $tmp = $config{expand_group};
+
+    $config{expand_group} =1;
     my $name = TLily::Server::SLCP::expand_name($args[0]);
     if ((!defined $name) || ($name =~ /^-/)) {
 	$ui->print("(could find no match to \"$args[0]\")\n");
 	return;
     }
-
-    my %state = $server->state(NAME => $name);
-    if (!$state{HANDLE}) {
-	ui->print("(could find no match to \"$args[0]\")\n");
-	return;
+    $config{expand_group} =$tmp;
+    my @names;
+    if (! (@names = split(/,/,$name))) {
+      $names[0] = $name;
     }
 
-    if (defined $gagged{$state{HANDLE}}) {
-	delete $gagged{$state{HANDLE}};
-	$ui->print("($name is no longer gagged.)\n");
-    } else {
-	$gagged{$state{HANDLE}} = $name;
-	$ui->print("($name is now gagged.)\n");
-    }
+    foreach my $nm (@names) {
+        my %state = $server->state(NAME => $nm);
+        if (!$state{HANDLE}) {
+	    $ui->print("(could find no match to \"$args[0]\")\n");
+	    return;
+        }
 
+        if (defined $gagged{$state{HANDLE}}) {
+	    delete $gagged{$state{HANDLE}};
+	    $ui->print("($nm is no longer gagged.)\n");
+        } else {
+	    $gagged{$state{HANDLE}} = $nm;
+	    $ui->print("($nm is now gagged.)\n");
+        }
+    }
     return;
 }
 
