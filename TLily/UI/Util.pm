@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/Util.pm,v 1.1 1999/03/24 01:17:35 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/Util.pm,v 1.2 1999/03/24 01:34:02 neild Exp $
 
 package TLily::UI::Util;
 
@@ -86,3 +86,5 @@ sub wrap {
 
     return @r;
 }
+
+1;
