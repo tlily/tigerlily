@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/status.pl,v 1.11 1999/04/18 19:56:01 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/status.pl,v 1.12 1999/05/05 03:08:54 steve Exp $
 
 use strict;
 
@@ -44,7 +44,8 @@ sub set_serverstatus {
     
     %state = $server->state(NAME => $name);
     
-    $name .= " [$state{BLURB}]" if ($state{BLURB} =~ /\S/);
+    $name .= " [$state{BLURB}]" if (defined $state{BLURB} &&
+				    $state{BLURB} =~ /\S/);
     $ui->set(nameblurb => $name);
     $ui->set(state => $state{STATE}) if defined($state{STATE});
     

@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_output.pl,v 1.6 1999/05/05 02:10:44 steve Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_output.pl,v 1.7 1999/05/05 03:08:52 steve Exp $
 
 use strict;
 
@@ -22,16 +22,15 @@ that the parser module (slcp.pl) send into appopriate output for the user.
 sub private_fmt {
     my($ui, $e) = @_;
     my $ts = '';
-	my $blurb = $e->{server}->get_blurb(HANDLE => $e->{SHANDLE});
-	$blurb = " [$blurb]" if $blurb;
+    my $blurb = $e->{server}->get_blurb(HANDLE => $e->{SHANDLE});
     
     $ui->print("\n");
     
     $ts = timestamp($e->{TIME}) if ($e->{STAMP});
     $ui->indent(private_header => " >> ");
     $ui->prints(private_header => "${ts}Private message from ",
-		private_sender => $e->{SOURCE},
-        private_header => $blurb);
+		private_sender => $e->{SOURCE});
+    $ui->prints(private_header => " [$blurb]") if defined $blurb;
     if ($e->{RECIPS} =~ /,/) {
 	$ui->prints(private_header => ", to ",
 		    private_dest   => $e->{RECIPS});

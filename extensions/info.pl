@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/info.pl,v 1.9 1999/04/21 19:05:05 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/info.pl,v 1.10 1999/05/05 03:08:51 steve Exp $
 
 use strict;
 
@@ -122,6 +122,11 @@ sub memo_cmd {
 	($name) = @args;
     } else {
 	($target, $name) = @args;
+    }
+
+    if (!defined ($cmd)) {
+	$server->sendln("/memo");
+	return;
     }
 
     if ($cmd eq 'set') {
