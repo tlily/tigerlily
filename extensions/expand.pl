@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/expand.pl,v 1.25 2001/07/23 04:12:59 mjr Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/expand.pl,v 1.26 2001/07/31 21:49:13 neild Exp $ 
 
 use strict;
 use TLily::UI;
@@ -229,7 +229,7 @@ sub server_change_handler {
     my $newsname = $event->{server}->name();
     my $nline = "";
 
-    while ($line =~ /\G([^,:;=]*)([,:;=])/g) {
+    while ($line =~ /\G([^,:;=\/%]*)([,:;=])/g) {
 	my($tgt, $sym) = ($1, $2);
 
 	if ($tgt !~ /@/) {
