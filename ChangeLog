@@ -1,4 +1,7 @@
 Version 2.3
+  * [TLily/Server/SLCP.pm, extensions/expand.pl] Fixed up a few bugs in
+    multiserver expand.  Always add the @Server when expanding to a target
+    which exists on multiple servers.  [DPN]
   * [tlily.PL] Use current perl when calling find_eagain.  [DPN]
   * [tlily.global] Changed default server to "rpi.lily.org".  [DPN]
   * [README] Added an example to (hopefully) clarify .cf usage. [WJC]

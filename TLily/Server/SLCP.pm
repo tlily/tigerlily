@@ -6,7 +6,7 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Server/Attic/SLCP.pm,v 1.41 2001/02/19 20:44:07 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Server/Attic/SLCP.pm,v 1.42 2001/04/09 22:22:05 neild Exp $
 
 package TLily::Server::SLCP;
 
@@ -291,7 +291,7 @@ comma-separated list of their members.
 
 sub expand_name {
     unshift @_, scalar(TLily::Server::active()) if (@_ < 2);
-    my($self, $name) = @_;
+    my($self, $name, %opts) = @_;
     my $disc;
 
     $name = lc($name);
@@ -322,6 +322,8 @@ sub expand_name {
 	}
     }
 
+    return if $opts{exact};
+
     # Check the "preferred match" list.
     if (ref($config{prefer}) eq "ARRAY") {
 	my $m;
@@ -347,9 +349,10 @@ sub expand_name {
 	return map($self->{NAME}->{$_}->{NAME}, @m) if (@m);
     }
     @m = grep { index($_, $name) == 0 } @dnames;
-    return '-' . $self->{NAME}->{$m[0]}->{NAME} if (@m == 1);
+    return if (@m > 1 && !wantarray);
+    return map('-'.$self->{NAME}->{$_}->{NAME}, @m) if (@m);
     return if (@m > 1);
-        
+
     # Check for a substring match.
     unless ($disc) {
 	@m = grep { index($_, $name) != -1 } @unames;
@@ -359,7 +362,7 @@ sub expand_name {
     @m = grep { index($_, $name) != -1 } @dnames;
     return if (@m > 1 && !wantarray);
     return map('-'.$self->{NAME}->{$_}->{NAME}, @m) if (@m);
-	
+
     return;
 }
 

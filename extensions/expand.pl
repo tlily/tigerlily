@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/expand.pl,v 1.23 2001/02/19 21:08:50 neild Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/expand.pl,v 1.24 2001/04/09 22:22:05 neild Exp $ 
 
 use strict;
 use TLily::UI;
@@ -32,22 +32,33 @@ my $last_send;
 sub mserv_expand_name {
     my($name) = @_;
 
-    # First, try to expand the name on the current server.
     my $active  = TLily::Server::active();
-    my @exps = $active->expand_name($name);
-    return $exps[0].($config{always_add_server}?$active->name():"")
-      if (@exps == 1);
-    return undef if (@exps > 1);
+    my @servers = ($active, grep($_ != $active, TLily::Server::find()));
+    my @exps;
 
-    # Next, try the other servers.
-    my @servers = TLily::Server::find();
-    for my $server (@servers) {
-	next if ($server == $active);
-	my $exp = $server->expand_name($name);
-	return $exp."@".$server->name() if defined($exp);
+    # Look for an exact match somewhere.
+    @exps = map { my @e = $_->expand_name($name, exact => 1);
+		  @e ? [ $_, @e ] : () } @servers;
+    if (@exps) {
+	    if (@exps > 1 || $exps[0]->[0] != $active ||
+		$config{always_add_server}) {
+		    $exps[0]->[1] =~ s/(?=,|$)/'@'.$exps[0]->[0]->name()/eg;
+	    }
+	    return $exps[0]->[1];
     }
 
-    return undef;
+    # Look for partial matches.
+    @exps = map { my @e = $_->expand_name($name);
+		  @e ? [ $_, @e ] : () } @servers;
+
+    return unless @exps; # Nothing matches anywhere.
+    return if (@exps > 1 && $exps[0]->[0] != $active); # Too much confusion.
+    return if (@{$exps[0]} > 2); # Too many matches on this server.
+
+    if (@exps > 1 || $exps[0]->[0] != $active || $config{always_add_server}) {
+	    $exps[0]->[1] =~ s/(?=,|$)/'@'.$exps[0]->[0]->name()/eg;
+    }
+    return $exps[0]->[1];
 }
 
 sub exp_expand {
@@ -216,7 +227,7 @@ sub server_change_handler {
     my $newsname = $event->{server}->name();
     my $nline = "";
 
-    while ($line =~ /\G([^,:;]*)([,:;])/g) {
+    while ($line =~ /\G([^,:;=]*)([,:;=])/g) {
 	my($tgt, $sym) = ($1, $2);
 
 	if ($tgt !~ /@/) {
@@ -236,7 +247,7 @@ sub server_change_handler {
 	    $nline .= $tgt . $sym;
 	}
 
-	last if ($sym eq ';');
+	last if ($sym ne ',');
     }
 
     $nline .= substr($line, pos($line));
