@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Curses/Attic/Input.pm,v 1.25 2001/01/26 04:27:36 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Curses/Attic/Input.pm,v 1.26 2001/12/05 20:33:18 neild Exp $
 
 package TLily::UI::Curses::Input;
 
@@ -627,8 +627,8 @@ sub del {
 	my $start = ($self->{topln} + $i + 1) * $self->{cols} - 1;
 	last if ($start >= length($self->{text}));
 	$self->char_style($start);
-	$self->{W}->addch($i, $self->{cols}-1,
-			  substr($self->{text}, $start, 1));
+	$self->{W}->addstr($i, $self->{cols}-1,
+			   substr($self->{text}, $start, 1));
 	$self->{W}->move($i + 1, 0);
     }
 
@@ -741,7 +741,7 @@ sub transpose_chars {
 	my($y, $x) = $self->find_coords($c);
 	next if ($y < 0);
 	$self->char_style($c);
-	$self->{W}->addch($y, $x, substr($self->{text}, $c, 1));
+	$self->{W}->addstr($y, $x, substr($self->{text}, $c, 1));
     }
 
     $self->rationalize();
