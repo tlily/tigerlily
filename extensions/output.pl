@@ -1,9 +1,10 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/Attic/output.pl,v 1.14 1999/03/01 00:47:28 steve Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/Attic/output.pl,v 1.15 1999/03/01 18:13:58 steve Exp $
 
 use strict;
 
 use TLily::UI;
+use TLily::Config qw(%config);
 
 =head1 NAME
 
@@ -22,11 +23,13 @@ that the parser module (slcp.pl) send into appopriate output for the user.
 # Print private sends.
 sub private_fmt {
     my($ui, $e) = @_;
+	my $ts = '';
     
     $ui->print("\n");
     
+	$ts = timestamp($e->{TIME}) if ($e->{STAMP});
     $ui->indent(private_header => " >> ");
-    $ui->prints(private_header => "Private message from ",
+    $ui->prints(private_header => "${ts}Private message from ",
 		private_sender => $e->{SOURCE});
     if ($e->{RECIPS} =~ /,/) {
 	$ui->prints(private_header => ", to ",
@@ -48,11 +51,13 @@ event_r(type  => 'private',
 # Print public sends.
 sub public_fmt {
     my($ui, $e) = @_;
+	my $ts = '';
     
     $ui->print("\n");
-    
+
+    $ts = timestamp ($e->{TIME}) if ($e->{STAMP});
     $ui->indent(public_header => " -> ");
-    $ui->prints(public_header => "From ",
+    $ui->prints(public_header => "${ts}From ",
 		public_sender => $e->{SOURCE},
 		public_header => ", to ",
 		public_dest   => $e->{RECIPS},
@@ -97,6 +102,7 @@ event_r(type  => 'emote',
 # %T: title of discussion whose name is in VALUE.
 # %R: RECIPS
 # %O: name of thingy whose OID is in VALUE.
+# %S: timestamp, if STAMP is defined, empty otherwise.
 #
 # leading characters (up to first space) define behavior as follows: 
 # A: always use this message
@@ -110,51 +116,51 @@ event_r(type  => 'emote',
 
 # the first matching message is always used.
 
-my @infomsg = ('connect'  => 'A *** %U has entered lily ***',
-	       attach     => 'A *** %U has reattached ***',
-	       disconnect => 'V *** %U has left lily (%V) ***',
-	       disconnect => 'E *** %U has left lily ***',
-	       detach     => 'E *** %U has detached ***',
-	       detach     => 'V *** %U has been detached %V ***',
+my @infomsg = ('connect'  => 'A *** %S%U has entered lily ***',
+	       attach     => 'A *** %S%U has reattached ***',
+	       disconnect => 'V *** %S%U has left lily (%V) ***',
+	       disconnect => 'E *** %S%U has left lily ***',
+	       detach     => 'E *** %S%U has detached ***',
+	       detach     => 'V *** %S%U has been detached %V ***',
 	       here       => 'e (you are now here)',
-	       here       => 'E *** %U is now "here" ***',
+	       here       => 'E *** %S%U is now "here" ***',
 	       away       => 'e (you are now away)',
-	       away       => 'E *** %U is now "away" ***',
-	       away       => 'V *** %U has idled "away" ***', # V=idled really.
+	       away       => 'E *** %S%U is now "away" ***',
+	       away       => 'V *** %S%U has idled "away" ***', # V=idled really.
 	       'rename'   => 'v (you are now named %V)',
-	       'rename'   => 'V *** %u is now named %V ***',
+	       'rename'   => 'V *** %S%u is now named %V ***',
 	       blurb      => 'e (your blurb has been turned off)',
 	       blurb      => 'v (your blurb has been set to [%V])',
-	       blurb      => 'V *** %u has changed their blurb to [%V] ***',
-	       blurb      => 'E *** %u has turned their blurb off ***',
+	       blurb      => 'V *** %S%u has changed their blurb to [%V] ***',
+	       blurb      => 'E *** %S%u has turned their blurb off ***',
            info       => 'd (you have changed the info for %R)',
 	       info       => 'e (your info has been cleared)',
 	       info       => 'v (your info has been changed)',
            info       => 'D *** Discussion %R has changed info ***',
-	       info       => 'V *** %u has changed their info ***',
-	       info       => 'E *** %u has cleared their info ***',
-	       ignore     => 'A *** %u is now ignoring you %V ***',
-	       unignore   => 'A *** %u is no longer ignoring you ***',
-	       unidle     => 'A *** %u is now unidle ***',
+	       info       => 'V *** %S%u has changed their info ***',
+	       info       => 'E *** %S%u has cleared their info ***',
+	       ignore     => 'A *** %S%u is now ignoring you %V ***',
+	       unignore   => 'A *** %S%u is no longer ignoring you ***',
+	       unidle     => 'A *** %S%u is now unidle ***',
 	       create     => 'e (you have created discussion %R "%T")',
-	       create     => 'E *** %u has created discussion %R "%T" ***',
+	       create     => 'E *** %S%u has created discussion %R "%T" ***',
 	       destroy    => 'e (you have destroyed discussion %R)',
-	       destroy    => 'E *** %u has destroyed discussion %R ***',
+	       destroy    => 'E *** %S%u has destroyed discussion %R ***',
 	       # bugs in slcp- permit/depermit don't specify people right.
 	       #	       permit     => 'e (someone is now permitted to discussion %R)',
 	       #	       permit     => 'E (You are now permitted to some discussion)',
 	       #	       depermit   => 'e (Someone is now depermitted from %R)',
 	       # note that slcp doesn't do join and quit quite right
-	       permit     => 'V *** %O is now permitted to discussion %R ***',
-	       depermit   => 'V *** %O is now depermitted from %R ***',
+	       permit     => 'V *** %S%O is now permitted to discussion %R ***',
+	       depermit   => 'V *** %S%O is now depermitted from %R ***',
 	       'join'     => 'e (you have joined %R)',
-	       'join'     => 'E *** %u is now a member of %R ***',
+	       'join'     => 'E *** %S%u is now a member of %R ***',
 	       quit       => 'e (you have quit %R)',
-	       quit       => 'E *** %u is no longer a member of %R ***',
+	       quit       => 'E *** %S%u is no longer a member of %R ***',
 	       retitle    => 'v (you have changed the title of %R to "%V")',
-	       retitle    => 'V *** %u has changed the title of %R to "%V" ***',
+	       retitle    => 'V *** %S%u has changed the title of %R to "%V" ***',
 	       sysmsg     => 'V %V',
-	       pa         => 'V ** Public address message from %U: %V **'
+	       pa         => 'V ** %SPublic address message from %U: %V **'
 	       # need to handle review, sysalert, pa, game, and consult.
 	      );
 
@@ -212,6 +218,8 @@ my $sub = sub {
 	$found =~ s/\%U/$source/g;
 	$found =~ s/\%V/$e->{VALUE}/g;
 	$found =~ s/\%R/$e->{RECIPS}/g;
+	my $ts = ($e->{STAMP}) ? timestamp($e->{TIME}) : '';
+	$found =~ s/\%S/$ts/g;
 	if ($found =~ m/\%O/) {
 	    my $target = $serv->get_name(HANDLE => $e->{VALUE});
 	    $found =~ s/\%O/$target/g;
@@ -232,3 +240,24 @@ event_r(type  => 'all',
 	order => 'before',
 	call  => $sub);
 
+sub timestamp {
+	my ($time) = @_;
+
+	my ($min, $hour) = (localtime($time))[1,2];
+	my $t = ($hour * 60) + $min;
+	my $ampm = '';
+	$t += $config{zonedelta};
+	$t += (60 * 24) if ($t < 0);
+	$t -= (60 * 24) if ($t >= (60 * 24));
+	$hour = int($t / 60);
+	$min  = $t % 60;
+	if ($config{zonetype} eq '12') {
+		if ($hour >= 12) {
+			$ampm = 'p';
+			$hour -= 12 if $hour > 12;
+		} else {
+			$ampm = 'a';
+		}
+	}
+	return sprintf("(%02d:%02d%s) ", $hour, $min, $ampm);
+}
