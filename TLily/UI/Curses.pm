@@ -1,7 +1,7 @@
 package TLily::UI::Curses::Proxy;
 
 use strict;
-use vars qw($AUTOLOAD);
+use vars qw($AUTOLOAD); #) cperl mode is getting confused.
 use Curses;
 use Carp;
 
@@ -57,7 +57,7 @@ use TLily::UI::Curses::StatusLine;
 use TLily::UI::Curses::Input;
 use TLily::Event;
 
-@ISA = qw(TLily::UI);
+@ISA = qw(TLily::UI); #) cperl mode is getting confused
 
 
 #
@@ -97,10 +97,10 @@ sub accept_line {
 	    $ui->print($text);
 	    $ui->style("normal");
 	}
-	
+
 	$ui->print("\n");
 	$args->{call}->($ui, $text);
-	
+
 	if (@{$ui->{prompt}} > 0) {
 	    $args = $ui->{prompt}->[0];
 	    $ui->prompt($args->{prompt})
@@ -117,7 +117,7 @@ sub accept_line {
 	$ui->style("user_input");
 	$ui->print($text, "\n");
 	$ui->style("normal");
-	
+
 	TLily::Event::send(type => 'user_input',
 			   text => $text,
 			   ui   => $ui);
@@ -199,39 +199,39 @@ sub new {
     my $self  = $class->SUPER::new(@_);
     my %arg   = @_;
     bless($self, $class);
-    
+
     $self->{want_color} = (defined($arg{color}) ? $arg{color} : 1);
     $self->{input_maxlines} = $arg{input_maxlines};
     start_curses($self);
-    
+
     $self->{text}->{main}->{status} = TLily::UI::Curses::StatusLine->new
       (layout  => $self,
-       color   => $self->{color});
-    
+       color   => 0);
+
     $self->{text}->{main}->{text} = TLily::UI::Curses::Text->new
       (layout  => $self,
-       color   => $self->{color},
+       color   => $self->{want_color},
        status  => $self->{text}->{main}->{status});
-    
+
     $self->{input} = TLily::UI::Curses::Input->new
       (layout  => $self,
-       color   => $self->{color});
-    
+       color   => $self->{want_color});
+
     $self->{command}   = { %commandmap };
     $self->{bindings}  = { %bindmap };
 
     $self->{intercept} = undef;
-    
+
     $self->{prompt}    = [];
-    
+
     $self->layout();
-    
+
     TLily::Event::io_r(handle => \*STDIN,
 		       mode   => 'r',
 		       call   => sub { $self->run; });
-    
+
     $self->inherit_global_bindings();
-    
+
     return $self;
 }
 
@@ -255,14 +255,14 @@ sub splitwin {
     unless ($self->{text}->{$name}) {
 	$self->{text}->{$name}->{status} = TLily::UI::Curses::StatusLine->new
 	  ( layout => $self, color => $self->{color} );
-	
+
 	$self->{text}->{$name}->{text} = TLily::UI::Curses::Text->new
 	  ( layout => $self, color => $self->{color},
 	    status => $self->{text}->{$name}->{status} );
-	
+
 	$self->layout();
     }
-    
+
     return TLily::UI::Curses::Proxy->new($self, $name);
 }
 
@@ -308,16 +308,16 @@ sub layout {
     my($self) = @_;
 
     my $tcount = scalar(keys %{$self->{text}});
-    
+
     # Calculate the max height the input line is allowed to grow to.
     my $imax = $self->{input_imax} || ($LINES - (2 * $tcount));
     $imax = 1 if ($imax <= 0);
-    
+
     # Find out how large the input line wants to be.
     my($ilines, $icols) = $self->{input}->req_size();
     $ilines = 1 if (!$ilines);
     $ilines = $imax if ($ilines > $imax);
-    
+
     my $tlines = ($LINES - $ilines) / $tcount;
     my $trem   = ($LINES - $ilines) % $tcount;
     my $y      = 0;
@@ -325,7 +325,7 @@ sub layout {
     foreach my $tpair (values %{$self->{text}}) {
 	my $l = $tlines;
 	if ($trem) { $l++; $trem--; }
-	
+
 	$tpair->{text}->size($y, 0, $l-1, $COLS);
 	$y += $l-1;
 
@@ -374,7 +374,7 @@ sub run {
     } elsif (length($key) == 1) {
 	$self->{input}->addchar($key);
     }
-    
+
     $self->{input}->position_cursor;
     doupdate;
 }
