@@ -1,10 +1,9 @@
 use strict;
-use vars qw(%config $event);
+use vars qw(%config);
 
 use TLily::UI;
 use TLily::Server;
 use TLily::Config qw(%config);
-use TLily::Global qw($event);
 
 
 sub set_clock {
@@ -68,14 +67,14 @@ sub load {
 
 	my $sec = (localtime)[0];
 	set_clock();
-	$event->time_r(after    => 60 - $sec,
-		       interval => 60,
-		       call     => \&set_clock);
+	TLily::Event::time_r(after    => 60 - $sec,
+		             interval => 60,
+		             call     => \&set_clock);
 
 	if ($server) {
 		set_serverstatus();
 	} else {
-		$event->event_r(type => 'connected',
-				call => \&set_serverstatus);
+		TLily::Event::event_r(type => 'connected',
+				      call => \&set_serverstatus);
 	}
 }

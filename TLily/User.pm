@@ -4,8 +4,6 @@ use strict;
 use Carp;
 use Text::Abbrev;
 
-use TLily::Global qw($event);
-
 =head1 NAME
 
 TLily::User - User command manager.
@@ -39,9 +37,9 @@ sub init {
 	TLily::Registrar::class_r("short_help" => \&command_u);
 	TLily::Registrar::class_r("help"       => \&command_u);
 
-	$event->event_r(type  => "user_input",
-			order => "during",
-			call  => \&input_handler);
+	TLily::Event::event_r(type  => "user_input",
+			      order => "during",
+			      call  => \&input_handler);
 
 	command_r(help => \&help_command);
 	shelp_r(help => "Display help pages.");

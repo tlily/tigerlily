@@ -7,7 +7,6 @@ require 5.00307;
 $TL_EXTDIR="@@LIBEXTDIR@@";
 
 use strict;
-use vars qw($event);
 use lib qw(@@LIBMODDIR@@);
 
 use TLily::Event;
@@ -17,7 +16,6 @@ use TLily::Server;
 use TLily::Server::SLCP;
 use TLily::User;
 use TLily::Extend;
-use TLily::Global qw($event);
 use TLily::Version;
 
 if ( -f 'tlily.PL' ) {
@@ -29,8 +27,8 @@ if ( -f 'tlily.PL' ) {
 	}
 }
 
-$event = TLily::Event->new();
-my $ui = TLily::UI::Curses->new(name => 'main', event => $event);
+TLily::Event::init();
+my $ui = TLily::UI::Curses->new(name => 'main');
 
 # remove
 $ui->defstyle('status'          => 'reverse');
@@ -73,11 +71,11 @@ sub sigint {
 	exit if ($sigint);
 	$ui->print("(hit ctrl-c again within 5 seconds to exit)\n");
 	$sigint = 1;
-	$event->time_r(after => 5,
-		       call  => sub {
-			       $sigint = 0;
-			       $ui->print("(you waited too long to hit ctrl-c; exit aborted)\n");
-		       });
+	TLily::Event::time_r(after => 5,
+		             call  => sub {
+			             $sigint = 0;
+			             $ui->print("(you waited too long to hit ctrl-c; exit aborted)\n");
+		             });
 }
 $ui->command_r("interrupt", \&sigint);
 $ui->bind("C-c" => "interrupt");
@@ -104,9 +102,9 @@ sub output_handler {
 
 	return;
 }
-$event->event_r(type  => "all",
-		order => "after",
-		call  => \&output_handler);
+TLily::Event::event_r(type  => "all",
+		      order => "after",
+		      call  => \&output_handler);
 
 sub prompt_handler {
 	my($event, $handler) = @_;
@@ -129,7 +127,7 @@ sub prompt_handler {
 	warn "Unanswerable prompt: $event->{text}\n";
 	return;
 }
-$event->event_r(type  => "prompt",
+TLily::Event::event_r(type  => "prompt",
 		order => "after",
 		call  => \&prompt_handler);
 
@@ -139,7 +137,7 @@ TLily::Extend::load("expand", $ui, 1);
 TLily::Extend::load("status", $ui, 1);
 
 while (1) {
-	eval { $event->loop; };
+	eval { TLily::Event::loop; };
 
 	# Normal exit.
 	if ($@ eq '') {

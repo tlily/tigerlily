@@ -7,7 +7,6 @@ use IO::Socket;
 use Fcntl;
 
 use TLily::Event;
-use TLily::Global qw($event);
 
 =head1 NAME
 
@@ -34,14 +33,13 @@ my %server;
 
 =item new(%args)
 
-Creates a new TLily::Server object.  Takes 'event', 'host', 'port', and
+Creates a new TLily::Server object.  Takes 'host', 'port', and
 'protocol' arguments.  The 'protocol' argument is used to determine the
 events generated for server data -- the event type will be "protocol_data".
 
-    $serv = TLily::Server->new(event    => $event,
-                            protocol => "slcp",
-                            host     => "lily",
-                            port     => 7777);
+    $serv = TLily::Server->new(protocol => "slcp",
+                               host     => "lily",
+                               port     => 7777);
 
 =cut
 
@@ -52,8 +50,6 @@ sub new {
 
 	my $ui = TLily::UI::name($args{ui_name}) if ($args{ui_name});
 
-	croak "required parameter \"event\" missing"
-	  unless (defined $args{event});
 	croak "required parameter \"host\" missing"
 	  unless (defined $args{host});
 	croak "required parameter \"port\" missing"
@@ -64,7 +60,6 @@ sub new {
 	$active_server = $self unless ($active_server);
 
 	$self->{name}    = $args{name};
-	$self->{event}   = $args{event};
 	$self->{host}    = $args{host};
 	$self->{port}    = $args{port};
 	$self->{ui_name} = $args{ui_name};
@@ -84,37 +79,37 @@ sub new {
 
 	fcntl($self->{sock}, F_SETFL, O_NONBLOCK) or die "fcntl: $!\n";
 
-	$self->{event}->io_r(handle => $self->{sock},
-			     mode   => 'r',
-			     obj    => $self,
-			     call   => \&reader);
+	TLily::Event::io_r(handle => $self->{sock},
+		     	   mode   => 'r',
+			   obj    => $self,
+			   call   => \&reader);
 
 	bless $self, $class;
 
-	$self->{event}->send(type   => 'server_connected',
-			     server => $self);
+	TLily::Event::send(type   => 'server_connected',
+			   server => $self);
 	
 	# set the client name once we're %connected.
-	$self->{event}->event_r(type => "connected",
-				call => sub {
+	TLily::Event::event_r(type => "connected",
+			      call => sub {
 				  my ($e,$h) = @_;
 				  
 				  return 0 unless ($e->{server} == $self);
 				  
 				  $self->set_client_name();
-				  $event->event_u($h->{Id});
+				  TLily::Event::event_u($h->{Id});
 
 				  return 0;
 				});
 	
 	# set the client options at the first prompt.
-	$self->{event}->event_r(type => "prompt",
+	TLily::Event::event_r(type => "prompt",
 				call => sub {
 				  my ($e,$h) = @_;
 				  return 0 unless ($e->{server} == $self);
 				  
 				  $self->set_client_options();
-				  $event->event_u($h->{Id});
+				  TLily::Event::event_u($h->{Id});
 				
 				  return 0;
 				});
@@ -232,14 +227,14 @@ sub reader {
 		$self->{sock}->close();
 		undef $self->{sock};
 
-		$self->{event}->send(type   => 'server_disconnected',
+		TLily::Event::send(type   => 'server_disconnected',
 				     server => $self);
-		$self->{event}->io_u($handler);
+		TLily::Event::io_u($handler);
 	}
 
 	# Data as usual.
 	else {
-		$self->{event}->send(type   => "$self->{proto}_data",
+		TLily::Event::send(type   => "$self->{proto}_data",
 				     server => $self,
 				     data   => $buf);
 	}

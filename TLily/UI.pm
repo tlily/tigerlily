@@ -18,11 +18,9 @@ sub new {
 	my($proto, %a) = @_;
 	my $class = ref($proto) || $proto;
 
-	croak "Required UI parameter \"event\" missing." unless ($a{event});
 	croak "Required UI parameter \"name\" missing."  unless ($a{"name"});
 
 	my $self        = {};
-	$self->{event}  = $a{event};
 	$self->{"name"} = $a{"name"};
 
 	$ui{$a{"name"}} = $self;

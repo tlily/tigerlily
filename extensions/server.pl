@@ -1,6 +1,5 @@
 use strict;
 
-use TLily::Global qw($event);
 use TLily::UI;
 use TLily::Server::SLCP;
 
@@ -15,8 +14,7 @@ sub server_command {
 	my $server;
 	$server = TLily::Server::SLCP->new(host    => $host,
 					port    => $port,
-					ui_name => $ui->name,
-					event   => $event);
+					ui_name => $ui->name);
 }
 TLily::User::command_r(connect => \&server_command);
 
@@ -24,7 +22,7 @@ sub send_handler {
 	my($e, $h) = @_;
 	$e->{server}->sendln(join(",",@{$e->{RECIPS}}),$e->{dtype},$e->{text});
 }
-$event->event_r(type => 'user_send',
+TLily::Event::event_r(type => 'user_send',
 		call => \&send_handler);
 
 sub to_server {
@@ -32,7 +30,7 @@ sub to_server {
 	my $server = TLily::Server::name();
 
 	if ($e->{text} =~ /^(\S*)([;:])(.*)/) {
-		$event->send(type   => 'user_send',
+		TLily::Event::send(type   => 'user_send',
 			     server => $server,
 			     RECIPS => [split /,/, $1],
 			     dtype  => $2,
@@ -43,6 +41,6 @@ sub to_server {
 	$server->sendln($e->{text});
 	return 1;
 }
-$event->event_r(type  => "user_input",
+TLily::Event::event_r(type  => "user_input",
 		order => "after",
 		call  => \&to_server);

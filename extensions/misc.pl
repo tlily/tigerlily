@@ -1,7 +1,6 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/misc.pl,v 1.5 1999/02/26 00:00:55 josh Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/misc.pl,v 1.6 1999/02/26 00:26:58 neild Exp $ 
 
 use strict;
-use TLily::Global qw($event);
 use TLily::Version;
 
 
@@ -42,7 +41,7 @@ TLily::User::help_r('shell' => '
 Usage: %shell <command>
        ! <command>
 ');
-$event->event_r(type => 'user_input',
+TLily::Event::event_r(type => 'user_input',
 		call => \&bang_handler);
 TLily::User::command_r('shell' => \&shell_handler);
 

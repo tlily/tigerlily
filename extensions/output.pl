@@ -1,7 +1,6 @@
 use strict;
 
 use TLily::UI;
-use TLily::Global qw($event);
 
 my $sub;
 
@@ -25,7 +24,7 @@ $sub = sub {
 	$ui->print("\n");
 	return;
 };
-#$event->event_r(type => 'all', call => $sub);
+#TLily::Event::event_r(type => 'all', call => $sub);
 
 
 sub private_fmt {
@@ -55,7 +54,7 @@ sub private_fmt {
 	$ui->style("default");
 	return;
 };
-$event->event_r(type  => 'private',
+TLily::Event::event_r(type  => 'private',
 		order => 'before',
 		call  => sub { $_[0]->{formatter} = \&private_fmt; return });
 
@@ -85,7 +84,7 @@ sub public_fmt {
 
 	return;
 };
-$event->event_r(type  => 'public',
+TLily::Event::event_r(type  => 'public',
 		order => 'before',
 		call  => sub { $_[0]->{formatter} = \&public_fmt; return });
 
@@ -100,7 +99,7 @@ sub emote_fmt {
 
 	return;
 };
-$event->event_r(type  => 'emote',
+TLily::Event::event_r(type  => 'emote',
 		order => 'before',
 		call  => sub { $_[0]->{formatter} = \&emote_fmt; return });
 
@@ -228,7 +227,7 @@ $sub = sub {
 
 	return;
 };
-$event->event_r(type  => 'all',
+TLily::Event::event_r(type  => 'all',
 		order => 'before',
 		call  => $sub);
 

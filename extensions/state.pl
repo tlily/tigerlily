@@ -44,7 +44,7 @@ foreach (keys %keep) {
 			return;
 		};
 
-		$event->event_r(type  => $keep{$_}{$s},
+		TLily::Event::event_r(type  => $keep{$_}{$s},
 		                order => 'after',
 		                call  => $sub);
 	}
@@ -68,12 +68,12 @@ my $sub = sub {
 		             from   => 'away',
 		             to     => 'here',
 		             server => $e->{Server});
-		$event->send(\%event);
+		TLily::Event::send(\%event);
 	}
 
 	return;
 };
-$event->event_r(type  => 'here',
+TLily::Event::event_r(type  => 'here',
 		order => 'before',
 		call  => $sub);
 
@@ -91,12 +91,12 @@ $sub = sub {
 		             from   => 'here',
 		             to     => 'away',
 		             server => $serv);
-		$event->send(\%event);
+		TLily::Event::send(\%event);
 	}
 
 	return;
 };
-$event->event_r(type  => 'away',
+TLily::Event::event_r(type  => 'away',
 		order => 'before',
 		call  => $sub);
 

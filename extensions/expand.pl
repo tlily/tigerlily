@@ -1,10 +1,9 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/expand.pl,v 1.6 1999/02/26 00:00:53 josh Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/expand.pl,v 1.7 1999/02/26 00:26:57 neild Exp $ 
 
 use strict;
 
 use TLily::UI;
 use TLily::Server::SLCP;
-use TLily::Global qw($event);
 
 
 my %expansions = ('sendgroup' => '',
@@ -125,8 +124,8 @@ sub private_handler {
 
 	return;
 }
-$event->event_r(type => 'private',
-		call => \&private_handler);
+TLily::Event::event_r(type => 'private',
+		      call => \&private_handler);
 
 sub user_send_handler {
 	my($event, $handler) = @_;
@@ -140,5 +139,5 @@ sub user_send_handler {
 
 	return;
 }
-$event->event_r(type => 'user_send',
-		call => \&user_send_handler);
+TLily::Event::event_r(type => 'user_send',
+		      call => \&user_send_handler);

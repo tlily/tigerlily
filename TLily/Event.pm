@@ -52,49 +52,44 @@ use Carp;
 use TLily::Registrar;
 
 
-sub new {
-	my $proto = shift;
-	my $class = ref($proto) || $proto;
-	my $self  = {};
+# Queue of waiting events.
+my @queue;
 
-	# Queue of waiting events.
-	$self->{queue}   = [];
+# Priority-sorted list of event handlers.
+my @e_name;
 
-	# Priority-sorted list of event handlers.
-	$self->{e_name}  = [];
+# Time-sorted list of timed handlers.
+my @e_time;
 
-	# Time-sorted list of timed handlers.
-	$self->{e_time}  = [];
+# IO handlers.
+my @e_io;
 
-	# IO handlers.
-	$self->{e_io}    = [];
+# ID counter.
+my $next_id;
 
-	# ID counter.
-	$self->{id}      = 1;
+# Replacable event core.
+my $core;
 
-	# Replacable event core.
-	$self->{core}    = TLily::Event::Core->new;
 
-	TLily::Registrar::class_r(name_event => sub { $self->event_u(@_) });
-	TLily::Registrar::class_r(io_event   => sub { $self->io_u(@_) });
-	TLily::Registrar::class_r(time_event => sub { $self->time_u(@_) });
+sub init {
+	$core = TLily::Event::Core->new;
 
-	bless $self, $class;
+	TLily::Registrar::class_r(name_event => \&event_u);
+	TLily::Registrar::class_r(io_event   => \&io_u);
+	TLily::Registrar::class_r(time_event => \&time_u);
 }
 
 
 # Send an event.
 sub send {
-	my $self = shift;
 	my $e = (@_ == 1) ? shift : {@_};
 	croak "Event sent without \"type\"." unless ($e->{type});
-	push @{$self->{queue}}, $e;
+	push @queue, $e;
 }
 
 
 # Register a new named event handler.
 sub event_r {
-	my $self = shift;
 	my $h = (@_ == 1) ? shift : {@_};
 	my %order = (before => 1, during => 2, after => 3);
 
@@ -107,9 +102,9 @@ sub event_r {
 	croak "Handler registered with odd order \"$h->{order}\"."
 	  unless ($order{$h->{order}});
 
-	$h->{id} = $self->{id}++;
-	@{$self->{e_name}} = sort {$order{$a->{order}} <=> $order{$b->{order}}}
-	  (@{$self->{e_name}}, $h);
+	$h->{id} = $next_id++;
+	@e_name = sort {$order{$a->{order}} <=> $order{$b->{order}}}
+	  (@e_name, $h);
 
 	$h->{registrar} = TLily::Registrar::default();
 	TLily::Registrar::add("name_event", $h->{id});
@@ -119,9 +114,9 @@ sub event_r {
 
 # Deregister a named event handler.
 sub event_u {
-	my($self, $id) = @_;
+	my($id) = @_;
 	$id = $id->{id} if (ref $id);
-	@{$self->{e_name}} = grep { $_->{id} != $id } @{$self->{e_name}};
+	@e_name = grep { $_->{id} != $id } @e_name;
 	TLily::Registrar::remove("name_event", $id);
 	return;
 }
@@ -129,7 +124,6 @@ sub event_u {
 
 # Register a new IO event handler.
 sub io_r {
-	my $self = shift;
 	my $h = (@_ == 1) ? shift : {@_};
 
 	# Sanity check.
@@ -147,10 +141,10 @@ sub io_r {
 	# has been closed, the fileno goes away.
 	$h->{'fileno'} = $n;
 
-	$h->{id} = $self->{id}++;
-	push @{$self->{e_io}}, $h;
+	$h->{id} = $next_id++;
+	push @e_io, $h;
 
-	$self->{core}->io_r($n, $h->{mode});
+	$core->io_r($n, $h->{mode});
 
 	$h->{registrar} = TLily::Registrar::default();
 	TLily::Registrar::add("io_event", $h->{id});
@@ -160,19 +154,19 @@ sub io_r {
 
 # Deregister an IO event handler.
 sub io_u {
-	my($self, $id) = @_;
+	my($id) = @_;
 	$id = $id->{id} if (ref $id);
 
 	my($io, @io);
-	foreach $io (@{$self->{e_io}}) {
+	foreach $io (@e_io) {
 		if ($io->{id} == $id) {
-			$self->{core}->io_u($io->{'fileno'},
-					    $io->{mode});
+			$core->io_u($io->{'fileno'},
+				    $io->{mode});
 		} else {
 			push @io, $io;
 		}
 	}
-	@{$self->{e_io}} = @io;
+	@e_io = @io;
 
 	TLily::Registrar::remove("io_event", $id);
 	return;
@@ -181,7 +175,6 @@ sub io_u {
 
 # Register a new timed event handler.
 sub time_r {
-	my $self = shift;
 	my $h = (@_ == 1) ? shift : {@_};
 
 	# Sanity check.
@@ -198,9 +191,8 @@ sub time_r {
 		croak "Handler registered without \"after\" or \"time\".";
 	}
 
-	$h->{id} = $self->{id}++;
-	@{$self->{e_time}} =
-	  sort { $a->{'time'} <=> $b->{'time'} } (@{$self->{e_time}}, $h);
+	$h->{id} = $next_id++;
+	@e_time = sort { $a->{'time'} <=> $b->{'time'} } (@e_time, $h);
 
 	$h->{registrar} = TLily::Registrar::default();
 	TLily::Registrar::add("time_event", $h->{id});
@@ -210,9 +202,9 @@ sub time_r {
 
 # Deregister a timed event handler.
 sub time_u {
-	my($self, $id) = @_;
+	my($id) = @_;
 	$id = $id->{id} if (ref $id);
-	@{$self->{e_time}} = grep { $_->{id} != $id } @{$self->{e_time}};
+	@e_time = grep { $_->{id} != $id } @e_time;
 	TLily::Registrar::remove("time_event", $id);
 	return;
 }
@@ -231,12 +223,10 @@ sub invoke {
 
 
 sub loop_once {
-	my($self) = @_;
-
 	# Named events.
       EVENT:
-	while (my $e = shift @{$self->{queue}}) {
-		foreach my $h (@{$self->{e_name}}) {
+	while (my $e = shift @queue) {
+		foreach my $h (@e_name) {
 			if ($e->{type} eq $h->{type} or $h->{type} eq 'all') {
 				my $rc = invoke($h, $e, $h);
 				if (defined($rc) && ($rc != 0) && ($rc != 1)) {
@@ -251,7 +241,7 @@ sub loop_once {
 	# This is a tad ugly -- rewrite if you're feeling bored. -DN
 	my $time = time;
 	my $sort = 0;
-	foreach my $h (@{$self->{e_time}}) {
+	foreach my $h (@e_time) {
 		if ($h->{'time'} <= $time) {
 			invoke($h, $h);
 			if ($h->{interval}) {
@@ -263,22 +253,21 @@ sub loop_once {
 			}
 		}
 	}
-	@{$self->{e_time}} = grep { $_->{'time'} > $time } @{$self->{e_time}};
+	@e_time = grep { $_->{'time'} > $time } @e_time;
 
 	if ($sort) {
-		@{$self->{e_time}} =
-		  sort { $a->{'time'} <=> $b->{'time'} } @{$self->{e_time}};
+		@e_time = sort { $a->{'time'} <=> $b->{'time'} } @e_time;
 	}
 
 	my $timeout;
-	if ($self->{e_time}->[0]) {
-		$timeout = $self->{e_time}->[0]->{'time'} - $time;
+	if ($e_time[0]) {
+		$timeout = $e_time[0]->{'time'} - $time;
 		$timeout = 0 if ($timeout < 0);
 	}
 
 	# IO events.
-	my($r, $w, $e, $n) = $self->{core}->run($timeout);
-	foreach my $h (@{$self->{e_io}}) {
+	my($r, $w, $e, $n) = $core->run($timeout);
+	foreach my $h (@e_io) {
 		if (vec($r, fileno($h->{handle}), 1) && $h->{mode} =~ /r/) {
 			invoke($h, 'r', $h);
 		}
@@ -293,8 +282,7 @@ sub loop_once {
 
 
 sub loop {
-	my($self) = @_;
-	while (1) { $self->loop_once; }
+	while (1) { loop_once; }
 }
 
 1;

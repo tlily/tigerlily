@@ -55,6 +55,7 @@ use Curses;
 use TLily::UI::Curses::Text;
 use TLily::UI::Curses::StatusLine;
 use TLily::UI::Curses::Input;
+use TLily::Event;
 
 @ISA = qw(TLily::UI);
 
@@ -117,7 +118,7 @@ sub accept_line {
 		$ui->print($text, "\n");
 		$ui->style("normal");
 
-		$ui->{event}->send(type => 'user_input',
+		TLily::Event::send(type => 'user_input',
 				   text => $text,
 				   ui   => $ui);
 	}
@@ -223,9 +224,9 @@ sub new {
 
 	$self->layout();
 
-	$self->{event}->io_r(handle => \*STDIN,
-			     mode   => 'r',
-			     call   => sub { $self->run; });
+	TLily::Event::io_r(handle => \*STDIN,
+			   mode   => 'r',
+			   call   => sub { $self->run; });
 
 	$self->inherit_global_bindings();
 

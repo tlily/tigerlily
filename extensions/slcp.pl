@@ -1,9 +1,8 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/Attic/slcp.pl,v 1.7 1999/02/26 00:00:59 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/Attic/slcp.pl,v 1.8 1999/02/26 00:27:02 neild Exp $
 
 use strict;
 use vars qw(%config);
 
-use TLily::Global qw($event);
 use TLily::Config qw(%config);
 
 =head1 NAME
@@ -348,13 +347,13 @@ sub parse_line {
 
 	$serv->{BELL} = undef;
 
-	$event->send(\%event);
+	TLily::Event::send(\%event);
 	return;
 }
 
 
 sub load {
-	$event->event_r(type => 'slcp_data',
+	TLily::Event::event_r(type => 'slcp_data',
 			call => \&parse_raw);
 }
 
