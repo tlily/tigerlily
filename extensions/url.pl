@@ -1,4 +1,4 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/url.pl,v 1.1 1999/02/28 04:37:19 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/url.pl,v 1.2 1999/03/10 00:46:39 neild Exp $
 #
 # URL handling
 #
@@ -62,11 +62,13 @@ sub url_cmd {
 	    $cmd .= " $url";
  	}
  	if ($config{browser_textmode}) {
+	    TLily::Event::keepalive();
  	    $ui->suspend();
 	    $ret=`$cmd 2>&1`;	    
  	    $ui->resume();
  	    $ui->print("$ret\n") if $ret;
  	} else {
+	    TLily::Event::keepalive(15);
    	    $ret=`$cmd 2>&1`;
  	    $ui->print("$ret\n") if $ret;
  	}
