@@ -37,16 +37,22 @@ sub alias_cmd {
 	} else {
 	    $ui->print("(no aliases are currently defined)\n");
 	}
+	return;
     }
     
     my ($key,$val) = ($args =~ /(\S+)\s+(.*)/);
     
     if ($key eq "clear") {
+	if($val eq "") {
+	    $ui->print("Usage: %alias clear [alias]\n"); return;
+	}
 	undef $alias{$val};
+        $ui->print("\%$key is now unaliased.\n");
     }
 
     if ($key =~ /\S/ and $val =~ /\S/) {
 	$alias{$key}=$val;
+        $ui->print("\%$key is now aliased to '$val'\n");
     }
 }
 
