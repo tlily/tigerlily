@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_parse.pl,v 1.9 1999/06/17 22:54:04 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_parse.pl,v 1.10 1999/06/28 08:09:31 josh Exp $
 
 use strict;
 use vars qw(%config);
@@ -232,13 +232,13 @@ sub parse_line {
 	    $event{NOTIFY} = 1;
 	}
 	
-	if ($event{EVENT} =~ /unidle/ && 
-	    $event{SOURCE} eq $serv->user_name) {
-	    $event{NOTIFY} = 0;
-	}
-	
 	$event{SHANDLE} = $event{SOURCE};
 	$event{SOURCE}  = $serv->get_name(HANDLE => $event{SOURCE});
+
+	if ($event{EVENT} =~ /unidle/ &&	
+	    $event{SOURCE} eq $serv->user_name) {
+	    $event{NOTIFY} = 0;
+	}       	
 	
 	if ($event{RECIPS}) {
 	    $event{RHANDLE} = [ split /,/, $event{RECIPS} ];
