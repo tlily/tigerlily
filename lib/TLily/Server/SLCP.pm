@@ -20,6 +20,7 @@ use TLily::Version;
 use TLily::Server;
 use TLily::Extend;
 use TLily::Config qw(%config);
+use TLily::User qw(&shelp_r);
 use TLily::UI;
 use TLily::Utils qw(&save_deadfile &get_deadfile);
 
@@ -127,6 +128,10 @@ sub init () {
 #        $ui = ui_name($ex->{ui_name}) if (defined $ex->{ui_name});
 #
 #    });
+
+     TLily::User::shelp_r(prefer => "List of preferred tab-complete expansions (SLCP only)", 'variables');
+     TLily::User::shelp_r(expand_group => "Expand groups into list of members on tab-complete (SLCP only)", 'variables');
+
 }
 
 
