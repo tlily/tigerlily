@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/misc.pl,v 1.17 1999/04/21 18:52:08 neild Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/misc.pl,v 1.18 1999/04/28 16:00:12 josh Exp $ 
 
 use strict;
 use TLily::Version;
@@ -133,6 +133,19 @@ shelp_r('exit' => 'Exit TigerLily');
 help_r('exit' => 'Usage: %exit');
 command_r('exit' => sub { TLily::Event::keepalive(); exit; });
 
+#
+# %sync
+#
+
+shelp_r('sync' => 'Resync with SLCP');
+help_r('sync' => 'Usage: %sync');
+command_r('sync' => sub { 
+	      my ($e) = @_;
+	      TLily::Event::send({type => 'user_input',
+				  ui   => $e->{ui},
+				  text => "#\$# slcp-sync\n"});
+	  });
+	      
 
 #
 # Credits.

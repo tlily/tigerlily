@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_parse.pl,v 1.7 1999/04/26 17:46:35 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_parse.pl,v 1.8 1999/04/28 16:00:14 josh Exp $
 
 use strict;
 use vars qw(%config);
@@ -209,6 +209,15 @@ sub parse_line {
 	%event = (type   => 'text',
 		  NOTIFY => 1,
 		  text   => $line);
+	goto found;
+    }
+    
+    # SLCP-SYNC messages
+    if ($line =~ /%SLCP-SYNC (.*)/) {
+	my $be = lc($1);
+	%event = (type   => "slcp-sync",
+		  NOTIFY => 1,
+		  text   => "(SLCP sync ${be}ing)");
 	goto found;
     }
     
