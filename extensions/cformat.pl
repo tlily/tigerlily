@@ -87,12 +87,12 @@ sub generic_fmt {
 	    $fmt = $e->{format};
     } elsif ($e->{type} eq 'public') {
 	    $fmt = $config{public_fmt} || 
-	      '\n%[ -> ]%(Server )%(Time )From %From%{ FromBlurb}, to %To:%|'.
+	      '\n%[ -> ]%(Server )%(Time )From %From%{ Blurb}, to %To:%|'.
 		'%[ - ]\n%Body\n';
     } elsif ($e->{type} eq 'private') {
 	    $fmt = $config{private_fmt} || 
 	      '\n%[ -> ]%(Server )%(Time )'.
-		'Private message from %From%{ FromBlurb}:%|'.
+		'Private message from %From%{ Blurb}:%|'.
 		'%[ - ]\n%Body\n';
     } elsif ($e->{type} eq 'emote') {
 	    $fmt = $config{emote_fmt} ||
