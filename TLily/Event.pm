@@ -152,6 +152,22 @@ sub send {
     push @queue, $e;
 }
 
+
+=item keepalive()
+
+Event handlers are killed if they take more than five seconds to complete.
+Call keepalive to give a handler more time.  If called with an argument,
+the handler will be killed if it takes more than that number of seconds
+to complete.
+
+=cut
+
+sub keepalive {
+    my($t) = @_;
+    alarm($t || 0);
+}
+
+
 =item event_r()
 
 Register a named event handler.  Takes either a hash reference, or a hash.

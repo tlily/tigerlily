@@ -2,10 +2,12 @@ use strict;
 
 use TLily::UI;
 use TLily::Server::SLCP;
+use TLily::Event;
 
 sub server_command {
     my($ui, $arg) = @_;
     my(@argv) = split /\s+/, $arg;
+    TLily::Event::keepalive();
 
     $ui ||= ui_name();
 
