@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/startup.pl,v 1.10 2000/02/05 21:08:57 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/startup.pl,v 1.11 2000/02/07 01:07:30 tale Exp $
 
 use strict;
 
@@ -72,12 +72,20 @@ sub startup_handler ($$) {
 			   ui   => $args{ui});
 	return 0;
     };
-    $server->fetch(ui     => $ui,
-		   type   => "memo",
-                   name   => "tlilyStartup",
-		   target => "me",
-		   call   => $sub)
-      unless $config{no_startup_memo};
+
+    unless ($config{no_startup_memo}) {
+        $server->fetch(ui     => $ui,
+		       type   => "memo",
+                       name   => "tlilyStartup",
+		       target => "me",
+		       call   => $sub);
+    } else {
+        event_u($handler);
+	TLily::Event::send(%$event,
+			   type => 'connected',
+			   ui   => $ui);
+        return 0;
+    }
 
     event_u($handler);
     return 1;
