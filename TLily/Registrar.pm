@@ -78,7 +78,6 @@ Returns the current default registrar, or undef if there is none.
 =cut
 
 sub default {
-	warn "def: @default\n";
 	return @default ? $default[-1] : undef;
 }
 
@@ -104,7 +103,6 @@ sub add {
 	return unless $self;
 
 	my($class, $data) = @_;
-	warn "track: add($class, $data)\n";
 	push @{$self->{$class}}, $data;
 }
 
@@ -116,7 +114,6 @@ sub remove {
 	return unless $self;
 
 	my($class, $data) = @_;
-	warn "track: remove($class, $data)\n";
 	@{$self->{$class}} = grep { $_ ne $data } @{$self->{$class}};
 }
 
@@ -126,12 +123,10 @@ sub unwind {
 	$self = ref($self) ? $self : $default[-1];
 	return unless $self;
 
-	warn "track: unwind\n";
 	my $class;
 	foreach $class (keys %$self) {
 		my $data;
 		foreach $data (@{$self->{$class}}) {
-			warn "  remove($class, $data)\n";
 			$classes{$class}->($data);
 		}
 	}
