@@ -14,7 +14,7 @@ die "Usage: $0 <version> [confirm | announce]\n"
   unless defined($version);
 
 die "You do not appear to be a developer.  You cannot use this function\n"
-  unless (-d "CVS");
+  unless (-d ".svn");
 
 die "The tlily2 directory must not be present"
   if (-e "tlily2");
@@ -27,6 +27,11 @@ if ($opt && $opt eq "confirm") {
 	$forreal = undef;
 }
 
+my $rev = `svnversion .`;
+die "This checkout is either not up-to-date, or contains uncommited changes.\n"
+  if ($rev !~ m/^\d+$/);
+
+my $url = get_repo_url();
 if ($opt && $opt eq "announce") {
 	do_announcement($version);
 	exit(0);
@@ -34,20 +39,20 @@ if ($opt && $opt eq "announce") {
 
 
 make_version_file($version);
-command("cvs", "commit", "-m", "Automatic precommit of version file",
-	"TLily/Version.pm");
+make_changelog($version);
+command("svn", "commit",
+        "-m", "Automatic update of version and ChangeLog for release.",
+	"lib/TLily/Version.pm", "ChangeLog");
+command("svn", "update");
 
-make_changelog($version, "Automatic commit of ChangeLog file");
-command("cvs", "commit", "-m", "Automatic commit of ChangeLog file",
-	"ChangeLog");
+my $tag = "/tags/release-" . $version;
+$tag =~ s/\./-/g;
+command("svn", "cp",
+        "-m", "Tag trunk for $version release.",
+        ".", "$url$tag");
 
-my $CVStag = "release-" . $version;
-$CVStag =~ s/\./-/g;
-command("cvs", "tag", "-F", $CVStag);
-
-my $tag = $forreal ? $CVStag : "HEAD";
-command("cvs", "export", "-r", $tag, "tlily2");
-unlink("tlily2/.cvsignore");
+$tag = $forreal ? $tag : "/trunk";
+command("svn", "export", "$url$tag", "tlily2");
 
 command("mv", "tlily2", "tlily-$version");
 command("tar", "cvf", "tlily-$version.tar", "tlily-$version");
@@ -55,8 +60,8 @@ command("rm", "-rf", "tlily-$version");
 command("gzip", "-9", "tlily-$version.tar");
 
 make_version_file($version . "-post");
-command("cvs", "commit", "-m", "Automatic postcommit of version file",
-	"TLily/Version.pm");
+command("svn", "commit", "-m", "Automatic postcommit of version file.",
+	"lib/TLily/Version.pm");
 
 do_announcement($version);
 
@@ -69,9 +74,11 @@ exit 0;
 sub make_version_file {
 	my($version) = @_;
 
+my $year = 1900 + (localtime())[5];
+
 	my $verfile = <<END
 ##    TigerLily:  A client for the lily CMC, written in Perl.
-##    Copyright (C) 1999-2003  The TigerLily Team, <tigerlily\@tlily.org>
+##    Copyright (C) 1999-$year  The TigerLily Team, <tigerlily\@tlily.org>
 ##                             http://www.tlily.org/tigerlily/
 ##
 ##  This program is free software; you can redistribute it and/or modify it
@@ -86,11 +93,11 @@ END
 	    ;
 	$verfile =~ s/^\#//gm;
 
-	write_file("TLily/Version.pm", $verfile);
+	write_file("lib/TLily/Version.pm", $verfile);
 
 	if ($forreal) {
-		chmod(0444, "TLily/Version.pm")
-		  or die "Cannot chmod TLily/Version.pm: $!\n";
+		chmod(0444, "lib/TLily/Version.pm")
+		  or die "Cannot chmod lib/TLily/Version.pm: $!\n";
 	}
 }
 
@@ -134,6 +141,32 @@ sub write_file {
 	}
 }
 
+
+#
+# Figure out repository URL
+#
+sub get_repo_url {
+  open(my $fd, 'svn info|')
+    or die "Could not call svn info on current directory: $?\n";
+
+  my $url;
+  while (defined(my $line = <$fd>)) {
+    chomp($line);
+    next unless $line =~ m|^URL: ([^:]+://.+)$|;
+    $url = $1;
+    last;
+  }
+
+  close($fd);
+
+  die "Could not determine repository URL from svn info output.\n"
+    unless defined($url);
+
+  die "Can only do a release from the trunk.\n"
+    unless ($url =~ s|/trunk$||);
+
+  return $url;
+}
 
 #
 # Conditionally execute a command.
