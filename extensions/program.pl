@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/program.pl,v 1.13 1999/10/23 06:16:02 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/program.pl,v 1.14 1999/12/20 20:37:25 mjr Exp $
 
 $perms = undef;
 
@@ -125,9 +125,9 @@ sub obj_show {
           $ui->print("Object: " . $objRef->{objid} .
               (($objRef->{name} ne "")?(" (" . $objRef->{name} . ")\n"):"\n"));
           $ui->print("Parent: " . $objRef->{parentid} .
-              (($objRef->{parent} ne "")?(" (" . $objRef->{name} . ")\n"):"\n"));
+              (($objRef->{parent} ne "")?(" (" . $objRef->{parent} . ")\n"):"\n"));
           $ui->print("Owner: " . $objRef->{ownerid} .
-              (($objRef->{owner} ne "")?(" (" . $objRef->{name} . ")\n"):"\n"));
+              (($objRef->{owner} ne "")?(" (" . $objRef->{owner} . ")\n"):"\n"));
           $ui->print("Flags: " . $objRef->{flags} . "\n");
           $ui->print("Location: " . $objRef->{location} . "\n");
         }
