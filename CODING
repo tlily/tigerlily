@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-$Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/CODING,v 1.7 1999/03/23 08:33:05 josh Exp $
+$Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/CODING,v 1.8 1999/04/05 23:10:47 neild Exp $
 
 Tigerlily Coding Standards  (Such as they are)
 --------------------------
@@ -148,6 +148,9 @@ want to stick a bit of private data into one of these objects.  This is
 permitted.  Extension-private hash keys should begin with "_", and care
 must be taken for different extensions to not accidentally use the same
 key.
+
+Several UIs may share a single input line.  If you want to store data
+relating to the input line, put it in $ui->{input}.
 
 -------------------------------------------------------------------------------
 8) Other
