@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/server.pl,v 1.28 2000/12/12 19:49:41 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/server.pl,v 1.29 2000/12/13 19:18:16 neild Exp $
 
 use strict;
 
@@ -150,14 +150,19 @@ sub next_server {
     }
 
     $idx = ($idx + 1) % @server;
-    $server = $server[$idx];
-    $server->activate();
+    my $new_server = $server[$idx];
+    $new_server->activate();
 
     if (@server == 1) {
         return;
     }
 
-    $ui->print("(switching to server \"", scalar($server->name()), "\")\n");
+    TLily::Event::send({type       => 'server_change',
+			old_server => $server,
+			server     => $new_server});
+
+    $ui->print("(switching to server \"",
+	       scalar($new_server->name()), "\")\n");
     return;
 }
 TLily::UI::command_r("next-server" => \&next_server);
