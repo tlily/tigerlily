@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/Curses.pm,v 1.52 2001/11/15 04:23:34 tale Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/Curses.pm,v 1.53 2001/11/15 04:35:25 tale Exp $
 
 package TLily::UI::Curses::Proxy;
 
@@ -209,20 +209,28 @@ sub mark_output {
    'C-?'        => 'backward-delete-char',
    'C-a'        => 'beginning-of-line',
    'C-b'        => 'backward-char',
+ # 'C-c'        is interrupt, TLily.PL
    'C-d'        => 'delete-char',
    'C-e'        => 'end-of-line',
    'C-f'        => 'forward-char',
+ # 'C-g'        is look, extensions/spellcheck.pl
    'C-h'        => 'backward-delete-char',
+ # 'C-i'        is complete-send, extensions/expand.pl
+ # 'C-j'        is accept-line ('nl', below)
    'C-k'        => 'kill-line',
    'C-l'        => 'refresh',
    'C-m'        => 'accept-line',
    'C-n'        => 'next-history',
+ # 'C-o'        is UNBOUND
    'C-p'        => 'previous-history',
    'C-q'        => 'quoted-insert',
+ # 'C-r'        is 'isearch-backward', extensions/ui.pl
+ # 'C-s'        is 'isearch-forward', extensions/ui.pl
    'C-t'        => 'transpose-chars',
    'C-u'        => 'backward-kill-line',
    'C-v'        => 'page-down',
    'C-w'        => 'backward-kill-word',
+ # 'C-x'        is 'next-input-contex', extensions/ui.pl
    'C-y'        => 'yank',
    'C-z'        => 'suspend',
    'C-M-?'      => 'backward-kill-word',
@@ -237,11 +245,27 @@ sub mark_output {
    'M-d'        => 'kill-word',
    'M-e'        => 'forward-sentence',
    'M-f'        => 'forward-word',
+ # 'M-g'        is UNBOUND
+ # 'M-h'        is UNBOUND
+ # 'M-i'        is UNBOUND
+ # 'M-j'        is UNBOUND
+ # 'M-k'        is UNBOUND
    'M-l'        => 'down-case-word',
+ # 'M-l'        is _also_ 'toggle-leet-mode', extensions/leet.pl
    'M-m'        => 'mark-output',
+ # 'M-n'        is UNBOUND
+ # 'M-o'        is UNBOUND
+ # 'M-p'        is 'toggle-paste-mode', extensions/paste.pl
+ # 'M-q'        is UNBOUND
+ # 'M-r'        is UNBOUND
+ # 'M-s'        is UNBOUND
    'M-t'        => 'transpose-words',
    'M-u'        => 'up-case-word',
    'M-v'        => 'page-up',
+ # 'M-w'        is UNBOUND
+ # 'M-x'        is UNBOUND
+ # 'M-y'        is UNBOUND
+ # 'M-z'        is UNBOUND
    'bs'         => 'backward-delete-char',
    'del'        => 'backward-delete-char',
    'down'       => 'next-history',
@@ -251,6 +275,8 @@ sub mark_output {
    'pageup'     => 'page-up',
    'right'      => 'forward-char',
    'up'         => 'previous-history',
+ # Many M-<punctuation> and all M-<digit> are also currently unbound,
+ # but M-<digit> will probably become a prefix argument a la Emacs.
   );
 
 
