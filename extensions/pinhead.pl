@@ -72,6 +72,21 @@ sub zippify {
     my($event, $handler) = @_;
     return unless (defined $pinheads{$event->{SHANDLE}});
 
+    # This little bit here uses the message itself to seed the random
+    # number generator.  This ensures that every user with the same
+    # version of the extension will see the same alterations to the
+    # message.
+
+    # XXX This should really be a separate pseudo-random number source
+    # than perl's builtin one, since this could affect other uses of
+    # rand() within tigerlily.
+
+    my $seed=0;
+    for my $ch (split(//,$event->{VALUE})) {
+      $seed+=ord($ch);
+    }
+    srand($seed);
+
     my @candidates=zip_find_candidates($event->{VALUE});
     return unless @candidates;
     my $max_victims=round(@candidates/2+0.5);
