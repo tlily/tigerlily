@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/blurb.pl,v 1.10 2001/04/23 18:50:06 tale Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/blurb.pl,v 1.11 2001/07/17 16:44:20 coke Exp $
 
 use strict;
 
@@ -10,9 +10,15 @@ use strict;
 # Ping me if you think this is happening.
 #
 
-shelp_r("blurb_all" => "(boolean) update blurb on ALL cores or just local", "variables");
+shelp_r("server_all" => "(boolean) run %command on -all- cores?", "variables");
 command_r('blurb', \&blurb_cmd);
+command_r('here', \&here_cmd);
+command_r('away', \&away_cmd);
 shelp_r('blurb', "Format your blurb so it fits.");
+shelp_r('here', "like /here, but also does %blurb, and respects multi-core");
+shelp_r('away', "like /away, but also does %blurb, and respects multi-core");
+help_r('here', "like /here, but also does %blurb, and respects multi-core");
+help_r('away', "like /away, but also does %blurb, and respects multi-core");
 help_r( 'blurb',"%blurb <blurb> will try to wedge your blurb into the available space
 if it won't fit. There is, by default, a 35 character limit on the length
 of your psuedo + the length of your blurb. (Toss in another 3 for the ' []',
@@ -27,7 +33,7 @@ psuedo. This might cause problems if you use psuedos of various lengths on
 different cores.
 ");
 
-$config{"blurb_all"} = 0 if !exists($config{"blurb_all"});
+$config{"server_all"} = 0 if !exists($config{"server_all"});
 
 #
 # Abbrs: a hash of regexen and their abbreviations.
@@ -63,6 +69,40 @@ sub check_blurb {
 	return 0;
 }
 
+
+#
+# Go here or away, respecting multicore
+#
+sub away_cmd {
+ 	my ($ui, $blurb) = @_;
+	state_cmd($ui,$blurb,"away");
+}
+
+sub here_cmd {
+ 	my ($ui, $blurb) = @_;
+	state_cmd($ui,$blurb,"here");
+}
+
+sub state_cmd {
+ 	my ($ui, $blurb,$state) = @_;
+ 	my @servers;
+	if ($config{server_all}) {
+		@servers = TLily::Server::find();
+	} else {
+		$servers[0] = TLily::Server->active();
+	}
+
+	foreach my $core (@servers) {	
+		next if !defined $core;
+		$core->cmd_process("/$state", sub {
+			# I don't see how to get the output of the cmd back...
+		});
+	};
+	if ($blurb && $blurb ne "") {
+		blurb_cmd($ui,$blurb);
+	}
+}
+
 #
 # Apply a set of rules to reduce your blurb into something that will 
 # fit into a smaller space. Apply this rules in order of readability.
@@ -77,7 +117,7 @@ sub blurb_cmd {
 
 	if ($blurb eq "off") {
 		my @servers=();
-		if ($config{blurb_all}) {
+		if ($config{server_all}) {
 			@servers = TLily::Server::find();
 		} else {
 			$servers[0] = TLily::Server->active();
@@ -175,7 +215,7 @@ sub blurb_cmd {
    	DONE:
 	#$ui->print("K'PLA!\n");
 	my @servers=();
-	if ($config{blurb_all}) {
+	if ($config{server_all}) {
 		@servers = TLily::Server::find();
 	} else {
 		$servers[0] = TLily::Server->active();

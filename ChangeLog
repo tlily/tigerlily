@@ -1,4 +1,6 @@
 Version 2.3
+  * [extensions/blurb.pl] changed config var to server_all, added support
+    for %here, %away [WJC]
   * [TLily/Server/SLCP.pm, extensions/expand.pl] Fixed up a few bugs in
     multiserver expand.  Always add the @Server when expanding to a target
     which exists on multiple servers.  [DPN]
