@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w
+#!/usr/bin/perl
 #    TigerLily:  A client for the lily CMC, written in Perl.
 #    Copyright (C) 1999  The TigerLily Team, <tigerlily@einstein.org>
 #                                http://www.hitchhiker.org/tigerlily/
@@ -7,7 +7,7 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/tlily.PL,v 1.49 2000/12/16 01:32:59 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/tlily.PL,v 1.50 2000/12/16 01:41:33 neild Exp $
 
 require 5.00307;
 use strict;
@@ -43,15 +43,13 @@ if ($^O =~ /cygwin/) {
 if ($^O =~ /cygwin/) {
     $EAGAIN = $::fallback_EAGAIN;
 } else {
-    eval { require "errno.ph"; EAGAIN(); };
+    $EAGAIN = eval { require "errno.ph"; EAGAIN(); };
     if ($@) { 
        print "WARNING: Unable to load errno.ph successfully.\n";
        $EAGAIN = $::fallback_EAGAIN;
        die "No fallback value for EAGAIN defined!  Unable to continue.\n" 
           unless $EAGAIN;       
        print "         Using EAGAIN=$EAGAIN\n";
-    } else {
-       $EAGAIN = EAGAIN()
     };
 }
 TLily::Config::init();
