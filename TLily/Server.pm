@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Server.pm,v 1.13 1999/04/03 05:06:01 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Server.pm,v 1.14 1999/04/06 03:19:11 josh Exp $
 
 package TLily::Server;
 
@@ -44,10 +44,9 @@ matters to you!
 
 =cut
 
-my $active_server;
 my %server;
 my @server; # For ordering.
-
+my $active_server;
 
 =item new(%args)
 
@@ -65,6 +64,8 @@ sub new {
     my($proto, %args) = @_;
     my $class = ref($proto) || $proto;
     my $self  = {};
+
+    bless $self, $class;
     
     my $ui = TLily::UI::name($args{ui_name}) if ($args{ui_name});
 
@@ -103,9 +104,6 @@ sub new {
 
     $ui->print("connected.\n");
 
-    $server{$name} = $self;
-    push @server, $self;
-
     fcntl($self->{sock}, F_SETFL, O_NONBLOCK) or die "fcntl: $!\n";
 
     $self->{io_id} = TLily::Event::io_r(handle => $self->{sock},
@@ -113,13 +111,26 @@ sub new {
 					obj    => $self,
 					call   => \&reader);
 
-    bless $self, $class;
+    $self->add_server();
 
     TLily::Event::send(type   => 'server_connected',
 		       server => $self);
 	
     return $self;
 }
+
+=item add_server()
+
+Add the server object to the list of available servers.
+
+=cut
+
+sub add_server {
+    my ($self) = @_;
+    $server{$self->{name}} = $self;
+    push @server, $self;
+}
+
 
 # internal utility function
 sub contact {
