@@ -537,13 +537,10 @@ sub reader {
     # server. - Phreaker
 
     # IO::Socket doesn't have an errstr function, so this call needs
-    # to be wrapped.  What I have here isn't quite correct, as it
-    # doesn't account fro failures in the contact_ssl function that
-    # cause it to fall back to a non-SSL connection, so it will have
-    # to be fixed.  But in the meantime, this makes it work for me...
+    # to be wrapped.  This should do the trick.
     # -Steve
 
-    if ($self->{insecure} != 1 and $SSL_avail == 1) {
+    if ($self->{sock}->can('errstr')) {
         if ($self->{sock}->errstr eq "SSL read error\nSSL wants a read first!") {
             $self->{sock}->error("");
 
