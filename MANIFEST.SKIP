@@ -1,0 +1,11 @@
+CVS/
+\.\#
+\.bak$
+\.BAK$
+\.old$
+\.OLD$
+\~$
+Makefile
+Build.PL
+build.cache
+^core$

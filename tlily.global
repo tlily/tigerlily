@@ -1,5 +1,13 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/Attic/tlily.global,v 1.23 1999/03/17 02:20:50 josh Exp $
+#    TigerLily:  A client for the lily CMC, written in Perl.
+#    Copyright (C) 1999  The TigerLily Team, <tigerlily@einstein.org>
+#                                http://www.hitchhiker.org/tigerlily/
+#
+#  This program is free software; you can redistribute it and/or modify it
+#  under the terms of the GNU General Public License version 2, as published
+#  by the Free Software Foundation; see the included file COPYING.
+#
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/Attic/tlily.global,v 1.24 1999/03/23 08:04:55 albert Exp $
 # Global defaults for tlily
 # PLEASE DO NOT EDIT EXCEPT FOR DEVELOPMENT!
 # EDIT YOUR SITE CONFIG FILE INSTEAD!

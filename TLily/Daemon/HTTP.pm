@@ -1,5 +1,13 @@
 # *-* Perl *-*
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Daemon/Attic/HTTP.pm,v 1.2 1999/03/23 01:16:34 steve Exp $
+#    TigerLily:  A client for the lily CMC, written in Perl.
+#    Copyright (C) 1999  The TigerLily Team, <tigerlily@einstein.org>
+#                                http://www.hitchhiker.org/tigerlily/
+#
+#  This program is free software; you can redistribute it and/or modify it
+#  under the terms of the GNU General Public License version 2, as published
+#  by the Free Software Foundation; see the included file COPYING.
+#
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Daemon/Attic/HTTP.pm,v 1.3 1999/03/23 08:05:26 albert Exp $
 
 package TLily::Daemon::HTTP::Connection;
 

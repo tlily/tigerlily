@@ -1,3 +1,12 @@
+#    TigerLily:  A client for the lily CMC, written in Perl.
+#    Copyright (C) 1999  The TigerLily Team, <tigerlily@einstein.org>
+#                                http://www.hitchhiker.org/tigerlily/
+#
+#  This program is free software; you can redistribute it and/or modify it
+#  under the terms of the GNU General Public License version 2, as published
+#  by the Free Software Foundation; see the included file COPYING.
+#
+
      ("`-/")_.-'"``-._ 
       . . `; -._    )-;-,_`)          TigerLily 2.x
      (v_,)'  _  )`-.  ``-'             "Feel Free"
@@ -9,12 +18,17 @@
 Installing
 ----------
 TigerLily requires Perl 5.003 or greater.  You will also need
-Curses.pm. (from CPAN)
+Curses.pm or Term::Readline::Gnu. (from CPAN)
 
 To create a usable tlily executable, run the command:
-   perl Build.PL
-To see the full usage for Build.PL, run the command:
-   perl Build.PL -h
+    perl Makefile.PL ; make
+Run it with the command:
+    ./blib/bin/tlily [options]
+
+There is NO install yet.  There is no release yet.
+
+To see the full usage for Makefile.PL, run the command: (NOT YET)
+    perl Makefile.PL -h
 
 Colors
 ------

@@ -1,0 +1,56 @@
+diff -u -r Curses-1.02-orig/Curses.c Curses-1.02/Curses.c
+--- Curses-1.02-orig/Curses.c   Mon Feb 16 14:38:28 1998
++++ Curses-1.02/Curses.c    Sat Feb 27 18:29:48 1999
+@@ -2680,6 +2680,23 @@
+     XSRETURN(1);
+ }
+
++XS(XS_Curses_use_default_colors)
++{
++    dXSARGS;
++#ifdef C_USE_DEFAULT_COLORS
++    c_exactargs("use_default_colors", items, 0);
++    {
++   int ret = use_default_colors();
++
++   ST(0) = sv_newmortal();
++   sv_setiv(ST(0), (IV)ret);
++    }
++#else
++    c_not_there("use_default_colors");
++#endif
++    XSRETURN(1);
++}
++ 
+ XS(XS_Curses_vline)  
+ {
+     dXSARGS;
+@@ -3460,6 +3477,7 @@
+     newXS("Curses::typeahead",     XS_Curses_typeahead,        file);
+     newXS("Curses::unctrl",        XS_Curses_unctrl,       file);
+     newXS("Curses::ungetch",       XS_Curses_ungetch,      file);
++    newXS("Curses::use_default_colors",    XS_Curses_use_default_colors, file);
+     newXS("Curses::vline",     XS_Curses_vline,        file);
+ 
+     newXS("Curses::newterm",       XS_Curses_newterm,      file);
+diff -u -r Curses-1.02-orig/Curses.pm Curses-1.02/Curses.pm
+--- Curses-1.02-orig/Curses.pm  Mon Feb 16 14:35:18 1998
++++ Curses-1.02/Curses.pm   Sat Feb 27 18:24:45 1999
+@@ -85,6 +85,7 @@
+ slk_refresh slk_restore slk_set slk_touch standend standout
+ start_color subpad subwin syncok timeout touchline touchln
+ touchoverlap touchwin typeahead unctrl ungetch vline newterm set_term
++use_default_colors
+ );
+
+ @_CONSTANTS = qw(
+diff -u -r Curses-1.02-orig/test.syms Curses-1.02/test.syms
+--- Curses-1.02-orig/test.syms  Mon Feb 16 14:25:02 1998
++++ Curses-1.02/test.syms   Sat Feb 27 18:30:27 1999
+@@ -405,5 +405,6 @@
+ wvline(stdscr,0,0)
+ unctrl(0)
+ ungetch(0)
++use_default_colors()
+ newterm(0,0,0)
+ set_term(0)
