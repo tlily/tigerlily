@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/url.pl,v 1.26 2002/04/27 18:36:40 coke Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/url.pl,v 1.27 2003/03/16 14:37:40 josh Exp $
 
 #
 # URL handling
@@ -124,10 +124,7 @@ sub url_cmd {
 	    $cmd .= " '$url'";
  	}
 	if ($^O =~ /MSWin32/) {
-
-		require Win32::Shell;
-
-		Win32::Shell::Execute("open", $url, undef, undef, "SW_SHOWNORMAL");
+            system("start", $url);
 
 	} elsif ($config{browser_textmode}) {
 	    TLily::Event::keepalive();
