@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/on.pl,v 1.3 2000/03/20 08:04:57 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/on.pl,v 1.4 2000/03/20 08:07:34 neild Exp $
 
 use strict;
 use Text::ParseWords qw(quotewords);
@@ -178,7 +178,6 @@ sub on_cmd {
 				  $cmd =~ s/\$9/$m9/g;
 
 				  if (defined $attr) {
-				      $ui->print("$attr => $cmd\n");
 				      $e->{$attr} = $cmd;
 				  } else {
 				      # ignore events from me.
