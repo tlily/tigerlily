@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_parse.pl,v 1.20 2000/01/28 02:21:04 steve Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_parse.pl,v 1.21 2000/01/28 19:02:47 steve Exp $
 
 use strict;
 use vars qw(%config);
@@ -432,7 +432,6 @@ sub unwind_queue {
 	my $serv = $event->{server};
 
 	foreach my $line (@{$serv->{_queue}}) {
-		$ui->print("Queue: $line\n");
 		parse_line ($serv, $line);
 	}
 
