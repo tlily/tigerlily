@@ -1,7 +1,7 @@
 # -*- Perl -*-
 # $Header: /data/cvs/lily/tigerlily2/extensions/cj.pl,v 1.2 2000/12/01 19:22:54 coke Exp $
 
-use strict;
+#use strict;
 use CGI qw/escape unescape/;
 use lib qw(/Users/cjsrv/lib);
 
@@ -49,31 +49,31 @@ use Chatbot::Eliza;
 # a ComplexBot module
 
 #########################################################################
-my %response; #Container for all response handlers. 
-my %throttle; #Container for all throttling information. 
+#my %response; #Container for all response handlers. 
+#my %throttle; #Container for all throttling information. 
 #my $irc_obj = new Net::IRC;
 #my %irc; #Container for all irc channel information
-my $throttle_interval = 1; #seconds
-my $throttle_safety   = 5; #seconds
-my %prefs; #dbmopen'd hash of lily user prefs. (XXX KILL THIS)
-my $config; # Config::IniFiles object storing preferences.
-my $disc="cj-admin"; #where we keep our memos.
-my %disc_feed; # A cached copy of which discussions each feed goes to
-my %disc_annotations; # A cached copy of which discussions each annotation goes to.
-my %annotations; # A cached copy of what our annotations do.
-my %annotation_code; # ala response, but for annotations.
+#my $throttle_interval = 1; #seconds
+#my $throttle_safety   = 5; #seconds
+#my %prefs; #dbmopen'd hash of lily user prefs. (XXX KILL THIS)
+#my $config; # Config::IniFiles object storing preferences.
+#my $disc="cj-admin"; #where we keep our memos.
+#my %disc_feed; # A cached copy of which discussions each feed goes to
+#my %disc_annotations; # A cached copy of which discussions each annotation goes to.
+#my %annotations; # A cached copy of what our annotations do.
+#my %annotation_code; # ala response, but for annotations.
 
 # some array refs of sayings...
-my $sayings;   # pithy 8ball-isms.
-my $overhear;  # listen for my name occasionally;
-my $buzzwords; # random set of words.
-my $unified;   # special handling for the unified discussion.
+#my $sayings;   # pithy 8ball-isms.
+#my $overhear;  # listen for my name occasionally;
+#my $buzzwords; # random set of words.
+#my #$unified;   # special handling for the unified discussion.
 
 # we don't expect to be changing our name frequently, cache it.
-my $name = active_server()->user_name();
+$name = active_server()->user_name();
 
 # we'll use Eliza to handle any commands we don't understand, so set her up.
-my $eliza = new Chatbot::Eliza {name=>$name,prompts_on=>0};
+$eliza = new Chatbot::Eliza {name=>$name,prompts_on=>0};
 
 # register a complaint
 sub bleat {
@@ -81,7 +81,7 @@ sub bleat {
 }
 
 # XXX use File::*
-my $config_file = $ENV{HOME} . "/.lily/tlily/CJ.ini";
+$config_file = $ENV{HOME} . "/.lily/tlily/CJ.ini";
 
 =head1
 
@@ -132,7 +132,8 @@ sub get_feeds {
 }
 
 # Get a feed.
-my %rss_feeds;
+#my %rss_feeds;
+my $xmlparser = new XML::RSS::Parser;
 sub get_feed {
   my ($source,$url) = @_;
   add_throttled_HTTP(url => $url,
@@ -140,13 +141,26 @@ sub get_feed {
                     callback => sub { 
 
   my ($response) = @_; 
-  my $parser = new XML::RSS::Parser;
-  my $feed = $parser->parse($response->{_content});
+
+  foreach my $url (keys %{$rss_feeds{$source}}) {
+      # 12 is arbitrary here.  I believe updates are every half hours, so
+      # this would mean more than 6 hours without the URL being referenced in
+      # the feed data.
+
+      if ($rss_feeds{$source}{$url}{'__untouchedcount'}++ > 12) {
+        delete $rss_feeds{$source}{$url};
+      }
+  }
+
+  my $feed = $xmlparser->parse($response->{_content});
+
   foreach my $item ($feed->items()) {
     my $data = {};
     map { $data->{$_->name} = $_->value} $item->children;
+    $rss_feeds{$source}{$url}{'__untouchedcount'} = 0;
     my $url = $data->{link};
     foreach my $key (keys %$data) {
+      # XXX this cleanHTML may be the cause of the yahoo failures.
       $rss_feeds{$source}{$url}{$key} = cleanHTML($data->{$key});
     }
   }
@@ -224,7 +238,7 @@ sub save_value {
 
 ### Process stock requests
 
-my $wrapline = 76; # This is where we wrap lines...
+$wrapline = 76; # This is where we wrap lines...
 sub get_stock {
   my ($event,@stock)=@_;
   my %stock = ();
@@ -326,7 +340,7 @@ sub wrap {
 # These events are queued up and then run - at a very quick interval, but
 # not immediately.
 
-my @throttled_events;
+#my @throttled_events;
 sub add_throttled_HTTP {
   my (%options) = @_;
 
@@ -370,6 +384,17 @@ $annotation_code{shorten} = {
     my ($shorten) = shift;
 
     if (length($shorten) <=32) { return; }
+    
+    # don't bother shortening as much if the url begins the send.
+
+=pod
+
+not quite right yet.
+
+    if ((index($event->{VALUE},$shorten) == 0 ) && 
+        length($shorten) <= 64) { return; }
+
+=cut
 
     if ($shorten !~ m|^http://xrl.us|) {
       shorten($shorten, sub { 
@@ -431,8 +456,8 @@ $response{help} = {
 	RE      => qr/\bhelp\b/i,
 };
 
-my $year = qr/\d{4}/;
-my $month = qr/(?:[1-9]|10|11|12)/;
+$year = qr/\d{4}/;
+$month = qr/(?:[1-9]|10|11|12)/;
 
 $response{cal} = {
 	CODE   => sub { 
@@ -592,7 +617,7 @@ $response{"ping"} = {
 	CODE   => sub {
 		return "pong";
 	},
-	HELP   => sub { return "stats";},
+	HELP   => sub { return "hello! (may eventually return stats)";},
 	TYPE   => [qw/private/],
 	POS    => '0', 
 	STOP   => 1,
@@ -775,6 +800,7 @@ sub scrape_webster {
   }
 
 =cut
+
  # tack on any other items that turned up on the main list, for kicks.
   if (scalar(@see_also)) {
     $retval .= "| SEE ALSO: " . join(", ", @see_also);
@@ -880,8 +906,8 @@ $response{lynx} = {
 }
 };
 
-my @ascii = qw/NUL SOH STX ETX EOT ENQ ACK BEL BS HT LF VT FF CR SO SI DLE DC1 DC2 DC3 DC4 NAK SYN ETB CAN EM SUB ESC FS GS RS US SPACE/;
-my %ascii;
+@ascii = qw/NUL SOH STX ETX EOT ENQ ACK BEL BS HT LF VT FF CR SO SI DLE DC1 DC2 DC3 DC4 NAK SYN ETB CAN EM SUB ESC FS GS RS US SPACE/;
+#my %ascii;
 
 for my $cnt (0..$#ascii) {
   $ascii{$ascii[$cnt]} = $cnt;
@@ -1227,7 +1253,7 @@ for (qw/public private emote/) {
 }
 event_r(type=>"away", order=>'after', call=> \&away_event);
 
-my ($every_10m, $every_30s,$frequently);
+#my ($every_10m, $every_30s,$frequently);
 
 
 sub load {
@@ -1281,16 +1307,39 @@ sub load {
   $server->fetch(call=>sub {my %event=@_;  $unified= $event{text}}, type=>"memo", target=>$disc, name=>"-unified");
 
   $every_10m= TLily::Event::time_r( call => sub { 
-    get_feeds(); } , interval => 60*10);
+    get_feeds();dump_stats() } , interval => 60*10);
   $every_30s= TLily::Event::time_r( call => sub { 
-    broadcast_feeds();checkpoint();dump_stats() } , interval => 60*.5);
+    broadcast_feeds();checkpoint() } , interval => 60*.5);
   $frequently= TLily::Event::time_r( call => sub { 
     do_throttled_HTTP();} , interval => 2.0);
   TLily::Server->active()->cmd_process("/blurb off");
+
+  dump_stats();
 }
 
-sub dump_stats {
+
+use Data::Dumper;
   #print out the size of all of our globals.
+sub dump_stats {
+  my @vars = qw/%response %throttle %prefs $config @throttled_events %disc_feed
+  %disc_annotations %annotations %annotation_code $sayings $overhear $buzzwords
+  $unified %rss_feeds/; # and possibly some stuff from TLily::Server
+
+  my $output ;
+  foreach my $var (@vars) {
+    $output .= "$var=";
+    my $dumped = join("",eval "Dumper($var)");
+    if ($@) {
+      $output .= "error..;"
+    } else {
+#      $output .= "DUMPED:'$dumped'";
+      $output .= length($dumped);
+      $output .= ";"
+    }
+  }
+
+  print $output ."\n";
+  #print length(Dumper(\%response));
 }
 
 sub checkpoint {
