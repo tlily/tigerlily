@@ -1,4 +1,4 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/ui.pl,v 1.27 2000/02/14 18:18:04 tale Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/ui.pl,v 1.28 2000/03/10 07:31:09 mjr Exp $ 
 use strict;
 
 =head1 NAME
@@ -12,6 +12,7 @@ This extension contains %commands for dealing with the user interface.
 =head1 COMMANDS
 
 =over 10
+
 =cut
 #
 # Keybindings.
@@ -19,7 +20,7 @@ This extension contains %commands for dealing with the user interface.
 
 =item %bind
 
-Binds a key to a command.  See L<"%help bind"|%help bind> for details.
+Binds a key to a command.  See "%help bind" for details.
 
 =cut
 
@@ -84,7 +85,7 @@ help_r('bind' => $bind_help);
 
 =item %key
 
-Echos the key symbol of the next key pressed.  See L<"%help key"|%help key> for details.
+Echos the key symbol of the next key pressed.  See "%help key" for details.
 
 =cut
 
@@ -134,7 +135,7 @@ sub ui_command {
 
 =item %page
 
-Enables and disables output paging.  See L<"%help page"|%help page> for details.
+Enables and disables output paging.  See "%help page" for details.
 
 =cut
 
@@ -177,7 +178,7 @@ help_r(page => $page_help);
 
 =item Input Contexts
 
-Input cut buffers.  See L<"%help icontext"|%help icontext> for details.
+Input cut buffers.  See "%help icontext" for details.
 
 =cut
 
@@ -237,7 +238,7 @@ help_r("icontext" => $icontext_help);
 =item Input History Searching
 
 Allows you to search your input buffer for a string, as in bash.
-See L<"%help isearch"|%help isearch> for details.
+See "%help isearch" for details.
 
 =cut
 
@@ -442,7 +443,7 @@ help_r("isearch" => $isearch_help);
 
 Allows you to redefine the attributes used to render text in monochrome
 mode.
-See L<"%help style"|%help style> for details.
+See "%help style" for details.
 
 =cut
 
@@ -488,7 +489,7 @@ help_r(style => $style_help);
 
 Allows you to redefine the colors and attributes used to render text
 in color mode.
-See L<"%help cstyle"|%help cstyle> for details.
+See "%help cstyle" for details.
 
 =cut
 

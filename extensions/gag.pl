@@ -1,11 +1,26 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/gag.pl,v 1.5 2000/02/09 19:34:50 kazrak Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/gag.pl,v 1.6 2000/03/10 07:31:09 mjr Exp $ 
 
 use strict;
 
 #
 # The gag extension adds the ability to `gag' all sends from a given user.
 #
+
+=head1 NAME
+
+gag.pl - Gag sends from given user
+
+=head1 DESCRIPTION
+
+This extension contains the %gag command, which replaces the text of sends
+from a given user with onomatopoeic mrffls.
+
+=head1 COMMANDS
+
+=over 10
+
+=cut
 
 my %gagged;
 
@@ -39,6 +54,12 @@ sub preserve_case($$) {
     }
     return $new;
 }
+
+=item %gag
+
+Gags a user.  See "%help gag" for details.
+
+=cut
 
 sub gag_command_handler {
     my($ui, $args) = @_;

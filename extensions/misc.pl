@@ -1,13 +1,34 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/misc.pl,v 1.21 1999/11/29 22:27:53 josh Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/misc.pl,v 1.22 2000/03/10 07:31:09 mjr Exp $ 
 
 use strict;
 use TLily::Version;
 
 
+=head1 NAME
+
+misc.pl - Miscellaneous extensions
+
+=head1 DESCRIPTION
+
+This extension contains miscellaneous %commands.
+
+=head1 COMMANDS
+
+=over 10
+
+=cut
+
+
 #
 # !commands, %command
 #
+
+=item %shell, !
+
+Runs a shell command from within tlily.  See "%help shell" for details.
+
+=cut
 
 my $last_command = '';
 sub shell_handler {
@@ -55,6 +76,12 @@ command_r('shell' => \&shell_handler);
 # %eval
 #
 
+=item %eval
+
+Evaluate arbitrary Perl code within tlily.  See "%help eval" for details.
+
+=cut
+
 sub eval_handler {
     my($ui, $args) = @_;
     if ($args =~ /^(?:list|l|array|a)\s+(.*)/) {
@@ -95,6 +122,12 @@ The results of the eval, if any, will be printed.
 # %version
 #
 
+=item %version
+
+Display the versions of TLily and the currently active server.
+
+=cut
+
 sub version_handler {
     my($ui, $args) = @_;
     $ui->print("(Tigerlily version $TLily::Version::VERSION)\n");
@@ -116,6 +149,12 @@ command_r('version' => \&version_handler);
 # %echo
 #
 
+=item %echo
+
+Echo text, a la the echo command in Bourne shell.
+
+=cut
+
 # %echo handler
 sub echo_handler {
     my($ui, $text) = @_;
@@ -133,6 +172,12 @@ command_r('echo' => \&echo_handler);
 # %exit
 #
 
+=item %exit
+
+Exit Tigerlily.
+
+=cut
+
 shelp_r('exit' => 'Exit TigerLily');
 help_r('exit' => 'Usage: %exit');
 command_r('exit' => sub { TLily::Event::keepalive(); exit; });
@@ -140,6 +185,12 @@ command_r('exit' => sub { TLily::Event::keepalive(); exit; });
 #
 # %sync
 #
+
+=item %sync
+
+Resynchronize SLCP state.
+
+=cut
 
 shelp_r('sync' => 'Resync with SLCP');
 help_r('sync' => 'Usage: %sync');
@@ -155,6 +206,12 @@ command_r('sync' => sub {
 # Credits.
 #
 
+=item %credits
+
+Display Tigerlily credits.
+
+=cut
+
 my $credits = qq{
 Steve "Steve" Czetty       HTTP, CTC.
 Damien "damien" Neil       UI(, UI, UI), event loop, design
@@ -164,6 +221,12 @@ Josh "Josh" Wilmes         Parser (classic and SLCP), extensions, subclient.
 };
 shelp_r("credits" => "The people who brought you tlily.", "concepts");
 help_r("credits" => $credits);
+
+=item %history
+
+Tigerlily history.
+
+=cut
 
 my $history = qq{
 Tigerlily began sometime around September 1997, when Chris "Albert" Stevens, \

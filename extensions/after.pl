@@ -1,7 +1,22 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/after.pl,v 1.9 1999/12/11 21:40:49 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/after.pl,v 1.10 2000/03/10 07:31:09 mjr Exp $
 
 use strict;
+
+=head1 NAME
+
+after.pl - Time delay functions
+
+=head1 DESCRIPTION
+
+This extension contains %commands for executing commands in a time-delayed
+and/or recurring fashion, a la the Unix cron daemon.
+
+=head1 COMMANDS
+
+=over 10
+
+=cut
 
 my $interval_help = "
 Time intervals can be in any of the following formats:
@@ -12,6 +27,25 @@ Time intervals can be in any of the following formats:
       Nd       N days
 ";
 help_r("interval" => $interval_help);
+
+=item %cron
+
+Runs a command at a given time.  See "%help cron" for details.
+
+=cut
+
+=item %after
+
+Runs a command after a given time has elapsed.  See
+"%help after" for details.
+
+=cut
+
+=item %every
+
+Runs a command once per given interval.  See "%help every" for details.
+
+=cut
 
 my $cron_help = qq(
 Usage: %cron [after|every] <offset> <command>

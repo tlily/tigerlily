@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/server.pl,v 1.24 1999/12/20 17:52:30 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/server.pl,v 1.25 2000/03/10 07:31:09 mjr Exp $
 
 use strict;
 
@@ -147,6 +147,11 @@ sub next_server {
     $idx = ($idx + 1) % @server;
     $server = $server[$idx];
     $server->activate();
+
+    if (@server == 1) {
+        return;
+    }
+
     $ui->print("(switching to server \"", scalar($server->name()), "\")\n");
     return;
 }

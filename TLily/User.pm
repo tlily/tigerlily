@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/User.pm,v 1.29 2000/02/12 00:32:47 tale Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/User.pm,v 1.30 2000/03/10 07:31:09 mjr Exp $
 
 package TLily::User;
 
@@ -377,7 +377,7 @@ sub help_command {
     
     elsif ($help{$arg} =~ /^POD:(\S+)/) {
 	$ui->indent("? ");
-	$ui->print(`perldoc -t $1`);
+	$ui->print(`COLUMNS=77 perldoc -t $1`);
 	$ui->indent("");	
     }
 
