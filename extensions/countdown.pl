@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/countdown.pl,v 1.4 2000/09/09 06:07:26 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/countdown.pl,v 1.5 2003/11/13 01:40:59 mjr Exp $
 
 use strict;
 
@@ -28,6 +28,7 @@ my $end_t;
 my $interval;
 my $interval_c;
 my $timer = '';
+my $msg = '';
 my $event_id;
 
 sub set_timer {
@@ -53,14 +54,21 @@ sub set_timer {
     my $l = $r % $interval;
 
     if ($r <= 0) {
-	$timer = '';
-	$ui->set(countdown => $timer);
+        $timer = '';
+        $ui->set(countdown => $timer);
 
-	undef $event_id;
-	$ui->set(countdown => $timer);
-	$ui->bell();
-	$ui->print("(Timer has expired)\n");
-	return 0;
+        undef $event_id;
+        $ui->set(countdown => $timer);
+        $ui->bell();
+        $ui->print("(Timer has expired)\n");
+        if ($msg eq '') {
+            $ui->print("(Timer has expired)\n");
+        } else  {
+            $ui->print("(Timer has expired - $msg)\n");
+            $msg = '';
+        }
+
+        return 0;
     }
 
     if($config{countdown_fmt}) {
@@ -105,18 +113,24 @@ sub set_timer {
 
 sub countdown_cmd {
     my($ui,$args) = @_;
+    my(@argarr) = split(/\s+/,$args,2);
 
-    if ($args eq 'off') {
+    if ($argarr[0] eq 'off') {
         TLily::Event::time_u($event_id) if ($event_id);
         $timer = '';
         $ui->set(countdown => $timer);
+        $msg = '';
         undef $event_id;
         return 0;
     }
 
-    if ($args !~ /^(\d+)([dhms]?)$/) {
-        $ui->print("Usage: %countdown [<time> | off]\n");
+    if ($argarr[0] !~ /^(\d+)([dhms]?)$/) {
+        $ui->print("Usage: %countdown [off | <time> [string]]\n");
         return 0;
+    }
+
+    if ($argarr[1]) {
+        $msg = $argarr[1];
     }
 
     $ui->define(countdown => 'right');
