@@ -1,9 +1,7 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/program.pl,v 1.6 1999/09/20 02:02:53 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/program.pl,v 1.7 1999/09/20 06:48:55 mjr Exp $
 
 $perms = undef;
-
-use Data::Dumper;
 
 sub edit_text {
     my($ui, $text) = @_;
@@ -90,57 +88,19 @@ sub verb_set(%) {
   $server->sendln(".");
 }
 
-sub verb_list {
-  my $ui = shift;
-  my $obj = shift;
-  my $verb = shift;
+sub verb_showlist {
+  my ($cmd, $ui, $obj, $verb) = @_;
 
   unless (defined($obj)) {
-    $ui->print("Usage: %verb list (object):(verb)\n");
+    $ui->print("Usage: %verb $cmd object[:verb]\n");
     return 0;
   }
 
   if (defined($verb)) {
-    $server->sendln("\@list $obj:$verb");
+    $server->sendln("\@list $obj:$verb") if ($cmd eq 'list');
+    $server->sendln("\@show $obj:$verb") if ($cmd eq 'show');
   } else {
-    cmd_process("\@show $obj", sub {
-        my($event) = @_;
-        $event->{NOTIFY} = 0;
-        if ($event->{type} eq 'endcmd') {
-          my $objRef = parse_show_obj(@lines);
-          if (scalar(@{$objRef->{verbdefs}}) > 0) {
-            $ui->print(join("\n", @{columnize_list(@{$objRef->{verbdefs}})},""));
-          } else {
-            $ui->print("(No verbs defined on $obj)\n");
-          }
-        } elsif ( $event->{type} ne 'begincmd' ) {
-          my $l = $event->{text};
-          if ( $l =~ /^Can\'t find anything named \'$obj\'\./ ) {
-            $event->{NOTIFY} = 1;
-            return 1;
-          }
-          push @lines, $l;
-        }
-        return 0;
-    });
-  }
-}
-
-sub verb_show {
-  my $cmd = shift;
-  my $ui = shift;
-  my $obj = shift;
-  my $verb = shift;
-
-  unless (defined($obj)) {
-    $ui->print("Usage: %verb show object[:verb]\n");
-    return 0;
-  }
-
-  my @lines = ();
-  if (defined($verb)) {
-    $server->sendln("\@show $obj:$verb");
-  } else {
+    my @lines = ();
     cmd_process("\@show $obj", sub {
         my($event) = @_;
         $event->{NOTIFY} = 0;
@@ -165,9 +125,8 @@ sub verb_show {
 }
 
 sub obj_show {
-  my $cmd = shift;
-  my $ui = shift;
-  my $obj = shift;
+  my ($cmd, $ui, $obj) = @_;
+  my $master = 0;
 
   unless (defined($obj)) {
     $ui->print("Usage: %obj show {object|'master'}\n");
@@ -177,40 +136,26 @@ sub obj_show {
   my @lines = ();
 
   if ($obj eq 'master') {
-    cmd_process("\@show #0", sub {
-        my($event) = @_;
-        # User doesn't want to see output of @show
-        $event->{NOTIFY} = 0;
-        if ($event->{type} eq 'endcmd') {
-          # We've received all the output from @show. Now call parse_show_obj()
-          # to parse the output for @show into something more easily usable.
-          my $objRef = parse_show_obj(@lines);
+    $obj = '#0';
+    $master = 1;
+  }
+
+  cmd_process("\@show $obj", sub {
+      my($event) = @_;
+      # User doesn't want to see output of @show
+      $event->{NOTIFY} = 0;
+      if ($event->{type} eq 'endcmd') {
+        # We've received all the output from @show. Now call parse_show_obj()
+        # to parse the output for @show into something more easily usable.
+        my $objRef = parse_show_obj(@lines);
+        if ($master) {
           my @masterObjs = ();
 
           foreach my $prop (keys %{$objRef->{props}}) {
             push(@masterObjs, "\$$prop") if ($objRef->{props}{$prop} =~ /^#\d+$/);
           }
           $ui->print(join("\n", @{columnize_list(@masterObjs)},""));
-        } elsif ( $event->{type} ne 'begincmd' ) {
-          my $l = $event->{text};
-          if ( $l =~ /^Can\'t find anything named \'$obj\'\./ ) {
-            $ui->print("(WARNING: Could not find System Object (#0) - the world is ending.)");
-            return 0;
-          }
-          push @lines, $l;
-        }
-        return 0;
-    });
-  } else {
-    cmd_process("\@show $obj", sub {
-        my($event) = @_;
-        # User doesn't want to see output of @show
-        $event->{NOTIFY} = 0;
-        if ($event->{type} eq 'endcmd') {
-          # We've received all the output from @show. Now call parse_show_obj()
-          # to parse the output for @show into something more easily usable.
-          my $objRef = parse_show_obj(@lines);
-
+        } else {
           $ui->print("Object: " . $objRef->{objid} .
               (($objRef->{name} ne "")?(" (" . $objRef->{name} . ")\n"):"\n"));
           $ui->print("Parent: " . $objRef->{parentid} .
@@ -219,25 +164,21 @@ sub obj_show {
               (($objRef->{owner} ne "")?(" (" . $objRef->{name} . ")\n"):"\n"));
           $ui->print("Flags: " . $objRef->{flags} . "\n");
           $ui->print("Location: " . $objRef->{location} . "\n");
-        } elsif ( $event->{type} ne 'begincmd' ) {
-          my $l = $event->{text};
-          if ( $l =~ /^Can\'t find anything named \'$obj\'\./ ) {
-            $event->{NOTIFY} = 1;
-            return 1;
-          }
-          push @lines, $l;
         }
-        return 0;
-    });
-  }
+      } elsif ( $event->{type} ne 'begincmd' ) {
+        my $l = $event->{text};
+        if ( $l =~ /^Can\'t find anything named \'$obj\'\./ ) {
+          $event->{NOTIFY} = 1;
+          return 1;
+        }
+        push @lines, $l;
+      }
+      return 0;
+  });
 }
 
-
 sub prop_show {
-  my $cmd = shift;
-  my $ui = shift;
-  my $obj = shift;
-  my $prop = shift;
+  my ($cmd, $ui, $obj, $prop) = @_;
 
   unless (defined($obj)) {
     $ui->print("Usage: %prop show[all] object[.prop]\n");
@@ -406,9 +347,9 @@ sub verb_cmd {
   my $verb = $2;
 
   if ($cmd eq 'show') {
-    verb_show($cmd, $ui, $obj, $verb);
+    verb_showlist($cmd, $ui, $obj, $verb);
   } elsif ($cmd eq 'list') {
-    verb_list($ui, $obj, $verb);
+    verb_showlist($cmd, $ui, $obj, $verb);
   } elsif ($cmd eq 'reedit') {
     my $deadfile = $ENV{HOME}."/.lily/tlily/dead.verb.$verb_spec";
     local *DF;
