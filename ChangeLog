@@ -1,10 +1,15 @@
 Version 2.1.1-post
-  * [extension/pinhead.pl] Updated tlily1.x print call [WJC]
-  * [extension/gag.pl] Updated tlily1.x print call [WJC]
+  * [TLily/Server/HTTP.pm] bugfix + addition of callback, used by the 
+    http2 "protocol" [WJC]
+  * [extensions/httpd2_parse.pl] Added another httpd parsing mechanism 
+    that stores the web page in memory rather than dumping it to a file. [WJC]
+  * [extensions/pinhead.pl] Updated tlily1.x print call [WJC]
+  * [extensions/gag.pl] Updated tlily1.x print call [WJC]
   * [extensions/misc.pl] New config vars to help suppress output [WJC]
   * [extensions/after.pl] Added support for multi-line commands [WJC]
   * [extensions/keepalive.pl] Added help for vars. [WJC]
-  * [extensions/stock.pl] Rewrite, removed dep on 'wget', uses config vars now [WJC]
+  * [extensions/stock.pl] Rewrite, removed dep on 'wget', uses config vars 
+    now [WJC]
   * [extensions/xmms.pl] Fixes, added ability to play a URL. [MJR]
   * [extensions/xmms.pl] New extension; allows user to control Xmms from
     within tlily. [WJC]
