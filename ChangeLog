@@ -1,4 +1,10 @@
 Version 2.1.1-post
+  * [TLily/Extend.pm] In load(), when testing to see if the argument
+    is an existing file, insist that a "/" be present in the name, to
+    prevent from accidentally loading a file from the directory that
+    tlily was started in if it happens to have the same name as an
+    extension.  To explicitly load a file from the current directory,
+    prepend it with "./". [DCL]
   * [TLily/UI.pm, README] Use $config{bindings} in inherit_global_bindings,
     in addition to %gbind. [DCL]
   * [extensions/source.pl, extensions/startup.pl] '#' is now a comment
