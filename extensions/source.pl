@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/source.pl,v 1.2 1999/03/15 23:53:16 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/source.pl,v 1.3 1999/04/03 10:36:52 josh Exp $
 
 use strict;
 
@@ -28,7 +28,7 @@ sub do_source($) {
 	chomp $l;
 	TLily::Event::send({type => 'user_input',
 			    ui   => $ui,
-			    text => "$l\n"});
+			    text => $l});
     }
     return;
 }   
