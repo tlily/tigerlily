@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/url.pl,v 1.14 2000/02/14 02:12:27 tale Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/url.pl,v 1.15 2000/02/16 01:11:05 kazrak Exp $
 
 #
 # URL handling
@@ -14,8 +14,11 @@ sub handler {
 
     my $type;
     foreach $type ('http', 'https', 'ftp') {
-        $event->{text} =~ s|($type://\S+[^\s\(\)\[\]\{\}\"\'\?\,\;\:\.])|
-            push @urls, $1;
+        $event->{VALUE} =~ s|($type://\S+[^\s\(\)\[\]\{\}\"\'\?\,\;\:\.])|
+            if ($1 ne $urls[$#urls])
+            {
+              push @urls, $1;
+            }
             my $t=$config{tag_urls} ? '['.scalar(@urls).']' : "";
             "$1$t";|ge;
     }
