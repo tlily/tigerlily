@@ -1,10 +1,10 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/startup.pl,v 1.5 1999/05/15 03:58:32 albert Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/startup.pl,v 1.6 1999/06/23 14:33:23 neild Exp $
 
 use strict;
 
 event_r(type  => 'connected',
-	order => 'during',
+	order => 'before',
 	call  => \&startup_handler);
 
 sub startup_handler ($$) {
@@ -59,6 +59,8 @@ sub startup_handler ($$) {
 				ui   => $args{ui},
 				text => "$_\n"});
 	}
+	TLily::Event::send(type => 'connected',
+			    ui   => $ui);
     };
     $server->fetch(ui     => $ui,
 		   type   => "memo",
@@ -67,7 +69,7 @@ sub startup_handler ($$) {
 		   call   => $sub);
 
     event_u($handler->{id});
-    return 0;
+    return 1;
 }
 
 1;
