@@ -277,6 +277,11 @@ Sets the current style.
 Sets the current indentation string.  All lines output from this point on
 will be prefixed with this string.
 
+=item page($page)
+
+Enables/disables paging.  When called with no argument, returns the current
+setting.
+
 =item prompt($prompt)
 
 Sets the current prompt.

@@ -19,12 +19,12 @@ Before 2.0 release:
   view.pl       (medium)
   program.pl    (medium)
   ctc.pl/httpd.pl/Httpd.pm  (hard)
-  page.pl       (requires UI support)
   
   The following need to be tested!:
   biff.pl
   log.pl
   gag.pl
+  Paging.  (Part of ui.pl.)
   
 Later:
   multiserver, multiui

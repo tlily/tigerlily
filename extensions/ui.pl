@@ -1,4 +1,4 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/ui.pl,v 1.7 1999/03/16 07:24:44 neild Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/ui.pl,v 1.8 1999/03/16 19:44:02 neild Exp $ 
 use strict;
 
 
@@ -101,6 +101,41 @@ sub ui_command {
 }
 command_r(ui => \&ui_command);
 
+
+#
+# Paging.
+#
+
+my $page_help = "
+Usage: %page [on | off]
+
+%page enables and disables output paging.
+";
+
+sub page_command {
+    my($ui, $args) = @_;
+
+    if ($args eq "") {
+	if ($ui->page()) {
+		$ui->print("(paging is currently enabled)\n");
+	} else {
+		$ui->print("(paging is currently disabled)\n");
+	}
+    } elsif ($args eq "on") {
+	$ui->page(1);
+	$ui->print("(paging is now enabled)\n");
+    } elsif ($args eq "off") {
+	$ui->page(0);
+	$ui->print("(paging is now disabled)\n");
+    } else {
+	$ui->print("(%page on|off; type %help for help)\n");
+    }
+
+    return;
+}
+command_r(page => \&page_command);
+shelp_r(page => "Turn output paging on and off.");
+help_r(page => $page_help);
 
 #
 # Styles.

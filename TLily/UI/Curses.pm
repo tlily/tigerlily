@@ -30,6 +30,12 @@ sub indent {
 }
 
 
+sub page {
+    my $self = shift;
+    $self->{text}->page(@_);
+}
+
+
 sub print {
     my $self = shift;
     $self->SUPER::print(@_);
@@ -521,6 +527,12 @@ sub prompt {
     $self->{input}->prefix($prompt);
     $self->{input}->position_cursor();
     doupdate;
+}
+
+
+sub page {
+    my $self = shift;
+    $self->{text}->page(@_);
 }
 
 

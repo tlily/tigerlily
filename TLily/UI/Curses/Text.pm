@@ -48,6 +48,9 @@ sub new {
     $self->{status}      = $a{status};
     $self->{status}->define(t_more => 'override') if ($self->{status});
 
+    # Is paging active?
+    $self->{'page'}       = 1;
+
     bless($self, $class);
 }
 
@@ -69,6 +72,14 @@ sub size {
     }
 
     return $self->SUPER::size(@_);
+}
+
+
+# Set whether paging is active.
+sub page {
+    my $self = shift;
+    return $self->{'page'} if (@_ == 0);
+    $self->{'page'} = $_[0];
 }
 
 
@@ -329,6 +340,7 @@ sub print {
 
     my $max_scroll = $self->{lines} - ($self->{idx_anchor} -
 				       $self->{idx_unseen});
+    $max_scroll = $self->{lines} unless ($self->{'page'});
     return if ($max_scroll <= 0);
 
     $self->{idx_anchor} = $#{$self->{indexes}};
