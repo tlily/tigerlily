@@ -16,6 +16,12 @@ use strict;
 use TLily::Config qw(%config);
 use TLily::Version;
 
+BEGIN {
+    if ($^O eq 'MSWin32') {
+        require Win32;
+    }
+}
+
 sub new {
     print STDERR ": TLily::Event::Core::new\n" if $config{ui_debug};
     my $proto = shift;
@@ -62,8 +68,27 @@ sub run {
 
     my($rout, $wout, $eout) =
       ($self->{rbits}, $self->{wbits}, $self->{ebits});
-    my $nfound = select($rout, $wout, $eout, $timeout);
 
+    # On Win32, select() returns immediately when there are no
+    # filehandles to select on, regardless of $timeout.  In addition,
+    # Win32 doesn't allow us to select() on stdio (or files or
+    # anything that's not a socket, in fact), forcing us to poll for
+    # UI activity (See UI::TextWindow->new()).  As a result, when
+    # there are no server connections active, a standard select() loop
+    # will just spin and peg the CPU uselessly.
+    #
+    # So, if we're on Win32, and there are no filehandles to poll
+    # (that is, if there are no "1"s in any of the three select
+    # vectors), we use Win32::Sleep, a high-res, native version of
+    # sleep, instead.  What a hack.  Windows is dumb.  Bla bla bla.
+
+    my $nfound=0;
+    if ( $^O eq 'MSWin32' &&
+	 join('',unpack('b*',join('',$rout,$wout,$eout)))==0 ) {
+        Win32::Sleep($timeout*1000);
+    } else {
+        $nfound = select($rout, $wout, $eout, $timeout);
+    }
     return ($rout, $wout, $eout, $nfound);
 }
 
