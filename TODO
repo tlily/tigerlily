@@ -15,7 +15,6 @@ Before 2.0 release:
       option. (integrate with smartexit feature)
 
 Bug Fixes:
-   autologin - doesn't work after the first use
    autoreview - frank mentioned this had a problem?
 
 Later:
