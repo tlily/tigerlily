@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/url.pl,v 1.24 2001/11/27 22:02:51 tale Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/url.pl,v 1.25 2002/04/23 13:53:51 coke Exp $
 
 #
 # URL handling
@@ -123,7 +123,13 @@ sub url_cmd {
 	} else {
 	    $cmd .= " '$url'";
  	}
- 	if ($config{browser_textmode}) {
+	if ($^O =~ /MSWin32/) {
+
+		use Win32::Shell;
+
+		Win32::Shell::Execute("open", $url, undef, undef, "SW_SHOWNORMAL");
+
+	} elsif ($config{browser_textmode}) {
 	    TLily::Event::keepalive();
  	    $ui->suspend();
 	    if ($^O =~ /cygwin/) {
@@ -200,6 +206,11 @@ Usage: %url
        %url show <num> | <regex> | <url>
        %url show  (will show last url)
        %url <num>
+
+Note: the browser and browser_textmode variables are ignored if you're on
+a win32 OS. In that case, your default browser is used.
 ");
 
+shelp_r('browser', "browser command for %url", "variables");
+shelp_r('browser_textmode', "should browser open in tlily? (boolean)", "variables");
 
