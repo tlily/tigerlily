@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/source.pl,v 1.3 1999/04/03 10:36:52 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/source.pl,v 1.4 2000/02/08 01:45:21 tale Exp $
 
 use strict;
 
@@ -25,6 +25,7 @@ sub do_source($) {
     
     my $l;
     foreach $l (@data) {
+        next if $l =~ /^#/;
 	chomp $l;
 	TLily::Event::send({type => 'user_input',
 			    ui   => $ui,

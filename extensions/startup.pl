@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/startup.pl,v 1.11 2000/02/07 01:07:30 tale Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/startup.pl,v 1.12 2000/02/08 01:45:21 tale Exp $
 
 use strict;
 
@@ -21,6 +21,7 @@ sub startup_handler ($$) {
 	}
         $ui->print("(Running ~/.lily/tlily/Startup)\n\n");
 	while(<SUP>) {
+            next if /^#/;
 	    chomp;
 	    TLily::Event::send({type => 'user_input',
 				ui   => $ui,
@@ -61,6 +62,7 @@ sub startup_handler ($$) {
         }
         $args{ui}->print("(Running memo tlilyStartup)\n\n");
 	foreach (@{$args{text}}) {
+            next if /^#/;
 	    chomp;
 	    TLily::Event::send({type => 'user_input',
 				ui   => $args{ui},
