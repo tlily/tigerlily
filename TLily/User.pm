@@ -174,7 +174,8 @@ sub input_handler {
 	return 1;
     }
 
-    $commands{$command}->($e->{ui}, $3, $command);
+    #$commands{$command}->($e->{ui}, $3, $command);
+    $commands{$command}->($e->{ui}, $3);
     return 1;
 }
 
