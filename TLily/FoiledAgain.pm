@@ -1,0 +1,194 @@
+#    TigerLily:  A client for the lily CMC, written in Perl.
+#    Copyright (C) 1999-2001  The TigerLily Team, <tigerlily@tlily.org>
+#                                http://www.tlily.org/tigerlily/
+#
+#  This program is free software; you can redistribute it and/or modify it
+#  under the terms of the GNU General Public License version 2, as published
+#  by the Free Software Foundation; see the included file COPYING.
+#
+
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/FoiledAgain.pm,v 1.1 2003/02/13 15:11:09 josh Exp $
+
+package TLily::FoiledAgain;
+
+use strict;
+use Carp;
+
+use vars qw($DEBUG);
+
+$DEBUG = 0;
+my $UI_CLASS = undef;
+
+=head1 NAME
+
+TLily::FoiledAgain - An interface that UIs can call against instead of Curses.pm
+
+=head2 CLASS (SCREEN) METHODS
+
+=item set_ui($package_name)
+
+Choose the underlying UI implementation.   This must be called before anything else will work.
+
+=cut
+
+sub set_ui {
+    ($UI_CLASS) = @_;
+
+    eval "require $UI_CLASS;";
+    die $@ if $@;
+}
+
+
+=item start()
+
+Brings up the user interface.
+
+=item stop()
+
+Tears down the user interface.  Note that the UI can be restarted by
+re-calling start(), but no state needs to be preserved- it is up to the
+caller to re-draw the screen if this is done.
+
+=item sanity_poll()
+
+This can be called arbitrarily often (normally upon user input) and may do
+whatever is necessary to ensure that the UI is in a sane state.  Its intended
+use under Curses is to resize the terminal if needed.
+
+=item suspend()
+
+=item resume()
+
+=item screen_width()
+
+=item screen_height()
+
+=item update_screen()
+
+Copy the current contents of the virtual screen described by any windows
+(see below) to the real screen.  The cursor should be left at the location of
+the point (in the last window?)
+
+=head2 OBJECT (WINDOW) METHODS
+
+In addition to the above class methods, this is also an object representing
+a virtual window within the real screen.   The following methods apply to one
+of these windows.   Note that coordinates (other than in the constructor) are
+relative to the window, not the screen.
+
+=item new($lines, $cols, $begin_x, $begin_y)
+
+Allocate the window.
+
+=item destroy()
+
+Clean up the window.
+
+=item clear()
+
+=item clear_background($style)
+
+Clear the window and set its background to $style.
+
+=item reset_styles()
+
+=item defstyle($style, @attrs)
+
+=utem defcstyle($style, $fg, $bg, @attrs)
+
+=item set_style($style)
+
+Set the style for text to be added.
+
+=item clear_line($line)
+
+This function should clear the given line and set the point to the 
+beginning of the deleted line.
+
+=item move_point($line, $col)
+
+=item addstr_at_point($string)
+
+=item addstr($line, $col, $string)
+
+=item insch($line, $col, $character)
+
+=item delch_at_point()
+
+=item position_cursor($line, $col)
+
+=item scroll($num_lines)
+
+Scroll up $num_lines lines.  $num_lines may be negative to scroll the
+other direction.
+
+=item commit()
+
+Must be called after any changes to the window in order for the changes
+to show up on the next call to update_screen.
+
+=item read_char()
+
+=cut
+
+# screen operations
+sub start            { dispatch_classmethod(start            => @_); }
+sub stop             { dispatch_classmethod(stop             => @_); }
+sub sanity_poll      { dispatch_classmethod(sanity_poll      => @_); }
+sub suspend          { dispatch_classmethod(suspend          => @_); }
+sub resume           { dispatch_classmethod(resume           => @_); }
+sub screen_width     { dispatch_classmethod(screen_width     => @_); }
+sub screen_height    { dispatch_classmethod(screen_height    => @_); }
+sub update_screen    { dispatch_classmethod(update_screen    => @_); }
+sub bell             { dispatch_classmethod(bell             => @_); }
+
+
+sub new {           
+    my $proto = shift;
+    my $class = ref($proto) || $proto;
+
+    my $object = dispatch_classmethod(new => @_);
+}
+
+sub NOTIMPLEMENTED() { 
+    my $method = (caller(1))[3];
+    $method =~ s/TLily::FoiledAgain//g;
+
+    die "$method not implemented by subclass $UI_CLASS.\n";
+}
+
+sub destroy { NOTIMPLEMENTED; }
+sub clear { NOTIMPLEMENTED; }
+sub clear_background { NOTIMPLEMENTED; }
+sub reset_styles { NOTIMPLEMENTED; }
+sub defstyle { NOTIMPLEMENTED; }
+sub defcstyle { NOTIMPLEMENTED; }
+sub set_style { NOTIMPLEMENTED; }
+sub clear_line { NOTIMPLEMENTED; }
+sub move_point { NOTIMPLEMENTED; }
+sub addstr_at_point { NOTIMPLEMENTED; }
+sub addstr { NOTIMPLEMENTED; }
+sub insch { NOTIMPLEMENTED; }
+sub delch_at_point { NOTIMPLEMENTED; }
+sub scroll { NOTIMPLEMENTED; }
+sub commit { NOTIMPLEMENTED; }
+sub read_char { NOTIMPLEMENTED; }
+
+
+sub dispatch_classmethod {
+    my $method = shift @_;
+
+    croak "TLily::FoiledAgain::set_ui has not been called!\n"
+        unless defined($UI_CLASS);
+
+    if ($DEBUG) {
+        open(F, ">>uilog") || die;
+        print F "$method(@_)\n"; 
+        close(F);
+    }
+
+    $UI_CLASS->$method(@_);
+}
+
+
+1;

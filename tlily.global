@@ -8,7 +8,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/Attic/tlily.global,v 1.51 2002/08/28 14:14:19 coke Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/Attic/tlily.global,v 1.52 2003/02/13 15:11:09 josh Exp $
 
 # Global defaults for tlily
 # PLEASE DO NOT EDIT EXCEPT FOR DEVELOPMENT!
@@ -18,6 +18,12 @@
 	   after alias autologin autoreply countdown gag info misc paste pipes
 	   set startup source spellcheck submit url view vinfo log http_parse
 	   on blurbless dumpscrollback);
+
+if ($^O =~ /(MSWin32)/) {
+    $textwindow_ui = 'TLily::FoiledAgain::Win32';
+} else {
+    $textwindow_ui = 'TLily::FoiledAgain::Curses';
+}
 
 if ($^O =~ /(cygwin|MSWin32)/) {
      @load = grep { $_ !~ /ctc|spellcheck|submit/ } @load;

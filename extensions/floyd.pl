@@ -5,7 +5,7 @@ use POSIX ":sys_wait_h";
     
 my %running_games;
 my $max_games = 5;
-my $interpreter = "./rezrov_slave.pl HITCHHIK.DAT";
+my $interpreter = "./rezrov_slave.pl ZORK1.DAT";
 
 $SIG{CHLD} = \&reaper;
 
