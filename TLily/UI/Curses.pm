@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/Curses.pm,v 1.46 2000/04/10 19:27:01 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/Curses.pm,v 1.47 2000/12/13 19:26:02 neild Exp $
 
 package TLily::UI::Curses::Proxy;
 
@@ -84,6 +84,7 @@ use TLily::UI::Curses::StatusLine;
 use TLily::UI::Curses::Input;
 use TLily::Event;
 use TLily::Config qw(%config);
+use POSIX ':signal_h';
 
 @ISA = qw(TLily::UI); #) cperl mode is getting confused
 
@@ -369,7 +370,16 @@ sub start_curses {
 
     TLily::UI::Curses::Generic::start_curses();
 
-    $SIG{WINCH} = sub { $sigwinch = 1; };
+    sigaction(28,
+	      POSIX::SigAction->new('TLily::UI::Curses::sigwinch',
+				    POSIX::SigSet->new(28),
+				    0)
+	     );
+}
+
+
+sub sigwinch {
+    $sigwinch = 1;
 }
 
 
@@ -448,6 +458,7 @@ sub run {
 	       ($ENV{'COLUMNS'}, $ENV{'LINES'}) = (80, 24);
 	    }
 	}
+	#eval { resizeterm($ENV{'LINES'}, $ENV{'COLUMNS'}); };
 	$self->stop_curses();
 	$self->start_curses();
 	$self->layout();
@@ -690,7 +701,8 @@ sub get_input {
 
 sub set_input {
     my $self = shift;
-    return $self->{input}->set(@_);
+    $self->{input}->set(@_);
+    doupdate();
 }
 
 
