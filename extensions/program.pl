@@ -1,5 +1,7 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/program.pl,v 1.17 2000/01/03 08:07:06 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/program.pl,v 1.18 2001/01/09 04:52:19 albert Exp $
+
+use TLily::Utils 'get_deadfile';
 
 sub verb_showlist {
     my ($cmd, $ui, $verb_spec) = @_;
@@ -312,7 +314,7 @@ sub verb_cmd {
         my $verbstr = join(":", @{$verb_spec}[1..2]);
 
         # Attempt to recall deadfile
-        my $text = get_deadfile("help", $server, "$verbstr");
+        my $text = get_deadfile("verb", $server, "$verbstr");
         if (!defined($text)) {
             $ui->print("(Unable to recall dead verb \"$verbstr\": $!)\n");
         } else {
@@ -346,9 +348,9 @@ sub verb_cmd {
                     ("/* This verb $verb_str has not yet been written. */");
             }
 
-            map { s|^\s*"(.*)";\s*$|/\*$1\*/|; } @{$args{'text'}};
+            map { s|^(\s*)"(.*)";\s*$|$1/\*$2\*/|; } @{$args{'text'}};
             edit_text($ui, $args{'text'}) or return;
-            map { s|^\s*/\*(.*)\*/\s*$|"$1";|; } @{$args{'text'}};
+            map { s|^(\s*)/\*(.*)\*/\s*$|$1"$2";|; } @{$args{'text'}};
             $server->store(%args);
         };
 
