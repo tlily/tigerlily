@@ -1,4 +1,6 @@
 Version 2.3-post
+  * [extensions/keepalive.pl] When re-connecting to a lost connection, fixed
+    bug that prevented keepalive pings.
   * [extensions/gag.pl] Add '%gag topic <foo>', which will gag based on the
     content of sends instead of the sender.
   * [TLily/UI/Curses.pm,TLily/UI/Curses/StatusLine.pm,TLily/UI/Curses/Text.pm,
