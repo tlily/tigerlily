@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Event.pm,v 1.30 2000/02/11 20:45:14 albert Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Event.pm,v 1.31 2000/02/14 23:19:45 tale Exp $
 
 package TLily::Event::Core;
 
@@ -495,6 +495,15 @@ sub loop_once {
     # This is a tad ugly -- rewrite if you're feeling bored. -DN
     my $time = time;
     my $sort = 0;
+    # BUG: If a timed event is registered while in this loop, there is a
+    # very good chance it will be forever lost.  I (DCL) became aware of
+    # the problem when changing the keepalive extension to be able to
+    # reregister its interval.  The first attempt to do this called time_u
+    # to unregister the existing timer and then time_r to register a new
+    # one, and the new timer was lost.  (In the new registration, "interval"
+    # was set to '2' but "after" not set; I haven't tried to figure out
+    # whether that was relevant, though adding "after" also set
+    # to 2 did make the problem go away.)
     foreach my $h (@e_time) {
 	if ($h->{'time'} <= $time) {
 	    invoke($h, $h);
