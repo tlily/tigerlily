@@ -52,6 +52,8 @@ END
 $help =~ s/^\#//gm;
 help_r("cformat" => $help);
 
+my %fmt_cache = ();
+
 sub timestamp {
     my ($time) = @_;
     
@@ -75,7 +77,70 @@ sub timestamp {
     return sprintf("%02d:%02d%s", $hour, $min, $ampm);
 }
 
-# 09:22 mellon This is really much better
+sub compile_fmt {
+    my($fmt) = @_;
+
+    my $code = "sub {\n";
+    $code .= '  my($ui, $vars, $fmts) = @_;' . "\n";
+    $code .= '  my $default = $fmts->{header};' . "\n";
+
+    pos($fmt) = 0;
+    while (pos($fmt) < length($fmt)) {
+	    if ($fmt =~ /\G \\n/xgc) {
+		    $code .= '  $ui->print("\n");' . "\n";
+	    }
+
+	    elsif ($fmt =~ /\G \\(.?)/xgc) {
+		    my $arg = $1; $arg =~ s/([\'\\])/\\$1/g;
+		    $code .= '  $ui->prints($default => \''.$arg."\');\n"
+		      if defined($1);
+	    }
+
+	    elsif ($fmt =~ /\G %(\() ([^\)]*) \)/xgc ||
+		   $fmt =~ /\G %(\{) ([^\}]*) \}/xgc ||
+		   $fmt =~ /\G %() (\w+)/xgc) {
+
+		    my $type = $1;
+		    my $var  = $2;
+		    my $prefix;
+		    my $suffix;
+
+		    ($prefix, $var, $suffix) = $var =~ /^(\W*)(.*?)(\W*)$/;
+		    if ($type eq '(') {
+			    $prefix .= "(";
+			    $suffix  = ")" . $suffix;
+		    }
+
+		    $var = lc($var);
+		    $prefix =~ s/([\'\\])/\\$1/g;
+		    $suffix =~ s/([\'\\])/\\$1/g;
+
+		    $code .= '  $ui->prints($default => \''.$prefix."\',\n";
+		    $code .= '              $fmts->{'.$var.'} || $default => $vars->{'.$var."},\n";
+		    $code .= '              $default => \''.$suffix."\')\n";
+		    $code .= '    if defined($vars->{'.$var."});\n";
+	    }
+
+	    elsif ($fmt =~ /\G %\| /xgc) {
+		    $code .= '  $default = $fmts->{body};' . "\n";
+	    }
+
+	    elsif ($fmt =~ /\G %\[ ([^\]]*) \]/xgc) {
+		    my $arg = $1; $arg =~ s/([\'\\])/\\$1/g;
+		    $code .= '  $ui->indent($default => \''.$arg."\');\n";
+	    }
+
+	    elsif ($fmt =~ /\G ([^%\\]+)/xgc) {
+		    my $arg = $1; $arg =~ s/([\'\\])/\\$1/g;
+		    $code .= '  $ui->prints($default => \''.$arg."\');\n";
+	    }
+    }
+
+    $code .= '  $ui->indent();' . "\n";
+    $code .= "}\n";
+
+    return $code;
+}
 
 sub generic_fmt {
     my($ui, $e) = @_;
@@ -106,7 +171,6 @@ sub generic_fmt {
     $fmts{from}   = $e->{sender_fmt} || "$e->{type}_sender";
     $fmts{to}     = $e->{dest_fmt}   || "$e->{type}_dest";
     $fmts{body}   = $e->{body_fmt}   || "$e->{type}_body";
-    my $default = $fmts{header};
 
     $vars{server} = $e->{server}->name()
       if (scalar(TLily::Server::find()) > 1);
@@ -122,53 +186,13 @@ sub generic_fmt {
     $vars{to} = $e->{RECIPS};
     $vars{body} = $e->{VALUE};
 
-    while (pos($fmt) < length($fmt)) {
-	    if ($fmt =~ /\G \\n/xgc) {
-		    $ui->print("\n");
-	    }
-
-	    elsif ($fmt =~ /\G \\(.?)/xgc) {
-		    $ui->print($1) if defined($1);
-	    }
-
-	    elsif ($fmt =~ /\G %(\() ([^\)]*) \)/xgc ||
-		   $fmt =~ /\G %(\{) ([^\}]*) \}/xgc ||
-		   $fmt =~ /\G %() (\w+)/xgc) {
-
-		    my $type = $1;
-		    my $var  = $2;
-		    my $prefix;
-		    my $suffix;
-
-		    ($prefix, $var, $suffix) = $var =~ /^(\W*)(.*?)(\W*)$/;
-		    if ($type eq '(') {
-			    $prefix .= "(";
-			    $suffix  = ")" . $suffix;
-		    }
-
-		    $var = lc($var);
-
-		    if (defined($vars{$var})) {
-			    $ui->prints($default                => $prefix,
-					$fmts{$var} || $default => $vars{$var},
-					$default                => $suffix);
-		    }
-	    }
-
-	    elsif ($fmt =~ /\G %\| /xgc) {
-		    $default = $fmts{body};
-	    }
-
-	    elsif ($fmt =~ /\G %\[ ([^\]]*) \]/xgc) {
-		    $ui->indent($default => $1);
-	    }
-
-	    elsif ($fmt =~ /\G ([^%\\]+)/xgc) {
-		    $ui->prints($default => $1);
-	    }
+    if (!$fmt_cache{$fmt}) {
+	    $ui->print("compiling format\n");
+	    $fmt_cache{$fmt} = eval compile_fmt($fmt);
     }
+    $fmt_cache{$fmt}->($ui, \%vars, \%fmts);
 
-    $ui->indent();
+    return;
 }
 
 event_r(type  => 'public',
@@ -177,3 +201,15 @@ event_r(type  => 'private',
         call  => sub { $_[0]->{formatter} = \&generic_fmt; return });
 event_r(type  => 'emote',
         call  => sub { $_[0]->{formatter} = \&generic_fmt; return });
+
+sub compile_handler {
+	my($ui, $args) = @_;
+
+	my $code = compile_fmt($args);
+	$ui->print($code);
+	my $sub = eval $code;
+	$ui->print("$sub\n");
+
+	return;
+}
+command_r('compile', \&compile_handler);
