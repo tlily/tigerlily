@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/Curses.pm,v 1.55 2002/06/01 02:56:55 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/Curses.pm,v 1.56 2002/06/02 01:24:11 neild Exp $
 
 package TLily::UI::Curses::Proxy;
 
@@ -428,7 +428,7 @@ sub layout {
     $ilines = 1 if (!$ilines);
     $ilines = $imax if ($ilines > $imax);
 
-    my $tlines = ($LINES - $ilines) / $tcount;
+    my $tlines = int(($LINES - $ilines) / $tcount);
     my $trem   = ($LINES - $ilines) % $tcount;
     my $y      = 0;
 
