@@ -8,7 +8,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Daemon.pm,v 1.4 1999/03/23 08:33:14 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Daemon.pm,v 1.5 1999/04/03 05:05:57 josh Exp $
 
 package TLily::Daemon;
 
@@ -22,13 +22,18 @@ use Carp;
 
 TLily::Daemon - Tigerlily daemon object
 
+=head1 SYNOPSIS
+
+use TLily::Daemon;
+
 =head1 DESCRIPTION
 
 The Daemon module defines a class that represents listening tcp connections
 of some type.  Anything that wants to open a socket for listening should
 create a subclass of this class.
 
-=head2 Functions
+=head1 FUNCTIONS
+
 =over 10
 
 =cut

@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_output.pl,v 1.1 1999/03/15 23:53:15 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_output.pl,v 1.2 1999/04/03 05:06:14 josh Exp $
 
 use strict;
 
@@ -14,8 +14,6 @@ output.pl - The lily output formatter
 
 The job of output.pl is to register event handlers to convert the events
 that the parser module (slcp.pl) send into appopriate output for the user.
-
-=back
 
 =cut
 

@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/User.pm,v 1.15 1999/03/23 08:33:23 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/User.pm,v 1.16 1999/04/03 05:06:05 josh Exp $
 
 package TLily::User;
 
@@ -27,11 +27,23 @@ use TLily::Config qw(%config);
 
 TLily::User - User command manager.
 
+=head1 SYNOPSIS
+
+     
+use TLily::User;
+
+TLily::User::init();
+
+TLily::User::command_r(foo => \&foo);
+TLily::User::shelp_r(foo => "A Foo Command");
+TLily::User::help_r(foo => "Foo does stuff .. long description");
+(...)
+
 =head1 DESCRIPTION
 
 This module manages user commands (%commands), and help for these commands.
 
-=head2 FUNCTIONS
+=head1 FUNCTIONS
 
 =over 10
 
@@ -50,6 +62,14 @@ my %help;
 # Short help text for commands.
 my %shelp;
 
+=item init
+
+Initializes the user command and help subsystems.  This command should be 
+called once, from tlily.PL, during client initialization.
+
+  TLily::User::init();
+
+=cut
 
 sub init {
     TLily::Registrar::class_r("command"    => \&command_u);
@@ -77,7 +97,14 @@ For a list of commands, try "%help commands".
 
 Registers a new %command.  %commands are tracked via TLily::Registrar.
 
-  TLily::User::command_r("quit" => sub { exit; });
+  TLily::User::command_r("foo" => sub {
+       my ($ui,$args) = @_;
+       $ui->print("You typed %foo $args\n");
+    });
+
+The function reference in the second parameter will be invoked when the 
+%command is typed, and passed two arguments: a UI object and a scalar
+containing any arguments to the %command. 
 
 =cut
 
@@ -141,7 +168,7 @@ sub shelp_u {
 
 Sets a help page.  Help is tracked via TLily::Registrar.
 
-    TLily::User::shelp_r("lily" => $help_on_lily);
+    TLily::User::help_r("lily" => $help_on_lily);
 
 =cut
 
@@ -171,7 +198,18 @@ sub help_u {
 }
 
 
-# Input handler to parse %commands.
+
+=head1 HANDLERS
+
+=over 10
+
+=item input_handler
+
+Input handler to parse %commands.
+This is registered automatically by init().    
+
+=cut
+
 sub input_handler {
     my($e, $h) = @_;
 
@@ -191,7 +229,13 @@ sub input_handler {
 }
 
 
-# Display the "/help commands" help page.
+=item command_help
+
+Help handler to display the "/help commands" help page.
+This is registered automatically by init().    
+
+=cut
+
 sub command_help {
     my($ui, $arg) = @_;
 
@@ -209,7 +253,12 @@ sub command_help {
 }
 
 
-# %help command.
+=item help_command
+
+Command handler to provide the %help command.
+This is registered automatically by init().    
+
+=cut
 sub help_command {
     my($ui, $arg) = @_;
     $arg = "help" if ($arg eq "");

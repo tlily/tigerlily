@@ -11,7 +11,9 @@ Before 2.0 release:
   program.pl    (medium)
   ctc.pl/httpd.pl/Httpd.pm  (steve is working on this)
 			    (steve is almost done with this)
-
+  Reworking:
+    I want to rewrite TLily::Command.  It needs to make more sense, I think.
+    
   New functionality:
     - Makefile.PL   (albert is working on this)  
     - when the last open server connection is closed, provide a exit/reconnect

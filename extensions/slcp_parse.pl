@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_parse.pl,v 1.3 1999/03/23 08:33:57 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_parse.pl,v 1.4 1999/04/03 05:06:17 josh Exp $
 
 use strict;
 use vars qw(%config);
@@ -21,8 +21,6 @@ the SLCP protocol.
 - need to queue events until SLCP sync is complete
 - UI escaping is breaking SLCP parser.
 - Discussion destruction handler
-
-=back
 
 =cut
 

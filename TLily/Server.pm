@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Server.pm,v 1.12 1999/03/23 08:33:20 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Server.pm,v 1.13 1999/04/03 05:06:01 josh Exp $
 
 package TLily::Server;
 
@@ -22,7 +22,12 @@ use TLily::Event;
 
 =head1 NAME
 
-TLily::Server - Lily server objet
+TLily::Server - Lily server base class
+
+=head1 SYNOPSIS
+
+
+use TLily::Server();
 
 =head1 DESCRIPTION
 
@@ -30,14 +35,14 @@ The Server module defines a class that represents a tcp connection of
 some form.  It includes I/O functions -- protocol specific functions
 go in subclasses (such as TLily::Server::SLCP).
 
-new() and connect() will call die() on failure, so be sure to catch
-exceptions if this matters to you!
+new() will call die() on failure, so be sure to catch exceptions if this
+matters to you!
 
-=head2 Functions
+=head1 FUNCTIONS
+
 =over 10
 
 =cut
-
 
 my $active_server;
 my %server;
@@ -55,23 +60,6 @@ events generated for server data -- the event type will be "protocol_data".
                                port     => 7777);
 
 =cut
-
-sub contact {
-    my($serv, $port) = @_;
-
-    my($iaddr, $paddr, $proto);
-    local *SOCK;
-
-    $port = getservbyname($port, 'tcp') if ($port =~ /\D/);
-    croak "No port" unless $port;
-
-    $iaddr = inet_aton($serv);
-    $paddr = sockaddr_in($port, $iaddr);
-    $proto = getprotobyname('tcp');
-    socket(SOCK, PF_INET, SOCK_STREAM, $proto) or return;
-    connect(SOCK, $paddr) or return;
-    return *SOCK;
-}
 
 sub new {
     my($proto, %args) = @_;
@@ -133,6 +121,23 @@ sub new {
     return $self;
 }
 
+# internal utility function
+sub contact {
+    my($serv, $port) = @_;
+
+    my($iaddr, $paddr, $proto);
+    local *SOCK;
+
+    $port = getservbyname($port, 'tcp') if ($port =~ /\D/);
+    croak "No port" unless $port;
+
+    $iaddr = inet_aton($serv);
+    $paddr = sockaddr_in($port, $iaddr);
+    $proto = getprotobyname('tcp');
+    socket(SOCK, PF_INET, SOCK_STREAM, $proto) or return;
+    connect(SOCK, $paddr) or return;
+    return *SOCK;
+}
 
 =item terminate()
 
@@ -206,7 +211,6 @@ sub activate {
     $active_server = undef unless ref($active_server);
 }
 
-
 =item send()
 
 Send a chunk of data to the server, synchronously.  This call will block until
@@ -252,6 +256,14 @@ sub sendln {
 }
 
 
+=head2 HANDLERS
+
+=item reader()
+
+IO Handler to process input from the server.
+
+=cut
+
 sub reader {
     my($self, $mode, $handler) = @_;
 
@@ -288,5 +300,8 @@ sub reader {
 
 DESTROY { warn "Server object going down!\n"; }
 
-
 1;
+
+__END__
+
+=cut

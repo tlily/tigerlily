@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/UI.pm,v 1.17 1999/03/24 01:32:43 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/UI.pm,v 1.18 1999/04/03 05:06:03 josh Exp $
 
 package TLily::UI;
 
@@ -17,6 +17,30 @@ use Carp;
 use TLily::UI::Util qw(wrap);
 use TLily::Registrar;
 
+=head1 NAME
+
+TLily::UI - UI base class.
+
+=head1 SYNOPSIS
+
+
+use TLily::UI;
+
+=head1 DESCRIPTION
+
+TLily::UI is the base UI class.  All UIs inherit from it.  This document
+describes the UI functionality provided by this class and its subclasses.
+
+The UI, once created, will generate user_input events containing the
+lines typed by the user in the "text" field..
+
+=head1 FUNCTIONS
+
+=over 10
+
+=head2 FUNCTIONS DEFINED BY UI.pm:
+
+=cut
 
 # List of all UIs, indexed by name.
 my %ui;
@@ -29,6 +53,14 @@ my %gbind;
 
 my $gstyle_fn;
 
+=item TLily::UI->new()
+
+Create a new UI object.  This function should only be called by subclasses
+of UI.  Takes a hash list containing the "name" parameter as its argument.
+
+    TLily::UI->new(name => 'main');
+
+=cut
 
 sub new {
     my($proto, %a) = @_;
@@ -67,6 +99,18 @@ sub inherit_global_bindings {
 }
 
 
+=item name()
+
+When the name() method is called without a parameter, it returns the name
+of the UI object it is called upon.  When it is called with a parameter,
+it returns the UI object with that name, or the UI object with the name
+"main" if no UI object has that name.
+
+    $name = $ui->name();
+    $ui = TLily::UI::name($name);
+
+=cut
+
 sub name {
     shift if (@_ > 1);
     my($a) = @_;
@@ -83,16 +127,40 @@ sub DESTROY {
     delete $ui{$self->{"name"}};
 }
 
+
+=item needs_terminal()
+
+Returns true if the UI runs on the terminal, false otherwise.
+
+=cut
+
 sub needs_terminal {
     0;
 }
+
+=item printf($fmt, @params)
+
+Identical to C<$ui-E<gt>print(C<sprintf($fmt, C<@params>)>)>.
+
+=cut
 
 sub printf {
     my($self, $s, @args) = @_;
     $self->print(sprintf($s, @args));
 };
 
-# Usage: $ui->prints(pubhdr => "From ", pubfrom => "damien");
+
+=item prints($style, $text, ...)
+
+Takes a list of style/text pairs.  Prints each piece of text in the given
+style.
+
+    $ui->prints(normal => "This is ",
+		em     => "important",
+		normal => ".");
+
+=cut
+
 sub prints {
     my($self, @args) = @_;
 
@@ -105,6 +173,12 @@ sub prints {
     }
 }
 
+=item print(@text)
+
+Sends the text to the UI.
+
+=cut
+
 sub print {
     my $self = shift;
     return unless ($self->{log_fh});
@@ -116,6 +190,14 @@ sub print {
     }
     return;
 };
+
+
+=item indent($text)
+
+Sets the current indentation string.  All lines output from this point on
+will be prefixed with this string.
+
+=cut
 
 sub indent {
     my($self, $indent) = @_;
@@ -142,6 +224,14 @@ sub log {
     return;
 }
 
+=item command_r($command, $func)
+
+Registers a named command.  When this command is executed, the command
+function will be called with the UI object, command executed, and key
+pressed to invoke this command as parameters.
+
+=cut
+
 sub command_r {
     return if (ref($_[0])); # Don't do anything as an object method.
     shift if (@_ > 2);      # Lose the package, if called as a class method.
@@ -158,6 +248,11 @@ sub command_r {
     return;
 }
 
+=item command_u($command)
+
+Unregisters a named command.
+
+=cut
 
 sub command_u {
     return if (ref($_[0])); # Don't do anything as an object method.
@@ -175,6 +270,13 @@ sub command_u {
     return;
 }
 
+
+=item bind($key, $command)
+
+Binds a key to a named command -- when the key is pressed, the command will
+be invoked.
+
+=cut
 
 sub bind {
     return if (ref($_[0])); # Don't do anything as an object method.
@@ -226,59 +328,11 @@ TLily::Registrar::class_r(global_istyle_fn  => \&istyle_fn_u);
 
 __END__
 
-=head1 NAME
+=back
 
-TLily::UI - UI base class.
+=head2 FUNCTIONS DEFINED BY SUBCLASSES:
 
-=head1 DESCRIPTION
-
-TLily::UI is the base UI class.  All UIs inherit from it.  This document
-describes the UI functionality provided by this class and its subclasses.
-
-The UI, once created, will generate user_input events containing the
-lines typed by the user in the "text" field..
-
-=head2 FUNCTIONS
-
-=over 7
-
-=item TLily::UI->new()
-
-Create a new UI object.  This function should only be called by subclasses
-of UI.  Takes a hash list containing the "name" parameter as its argument.
-
-    TLily::UI->new(name => 'main');
-
-=item name()
-
-When the name() method is called without a parameter, it returns the name
-of the UI object it is called upon.  When it is called with a parameter,
-it returns the UI object with that name, or the UI object with the name
-"main" if no UI object has that name.
-
-    $name = $ui->name();
-    $ui = TLily::UI::name($name);
-
-=item needs_terminal()
-
-Returns true if the UI runs on the terminal, false otherwise.
-
-=item print(@text)
-
-Sends the text to the UI.
-
-=item printf($fmt, @params)
-
-Identical to C<$ui-E<gt>print(C<sprintf($fmt, C<@params>)>)>.
-
-=item prints($style, $text, ...)
-
-Takes a list of style/text pairs.  Prints each piece of text in the given
-style.
-
-    $ui->prints(normal => "This is ",
-		em     => "important",
-		normal => ".");
+=over 10
 
 =item defstyle($style, @attrs)
 
@@ -300,11 +354,6 @@ Clears all styles.
 =item style($style)
 
 Sets the current style.
-
-=item indent($text)
-
-Sets the current indentation string.  All lines output from this point on
-will be prefixed with this string.
 
 =item page($page)
 
@@ -336,21 +385,6 @@ on UIs which do not use the terminal.
 =item resume
 
 Resumes a suspended UI.
-
-=item command_r($command, $func)
-
-Registers a named command.  When this command is executed, the command
-function will be called with the UI object, command executed, and key
-pressed to invoke this command as parameters.
-
-=item command_u($command)
-
-Unregisters a named command.
-
-=item bind($key, $command)
-
-Binds a key to a named command -- when the key is pressed, the command will
-be invoked.
 
 =item intercept_r($command)
 
@@ -387,7 +421,7 @@ Sounds a bell.
 
 =back
 
-=head2 COMMANDS
+=head1 COMMANDS
 
 The UI has the concept of named commands.  Commands may be tied to functions
 with the command_r() method, which are called when that command is invoked.

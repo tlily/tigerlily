@@ -7,12 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Extend.pm,v 1.10 1999/03/23 08:33:18 josh Exp $ 
-
-# initial version, 10/24/97, Josh Wilmes
-
-# Provide a secure environment for user extensions to TigerLily.  We use
-# an ExoSafe to provide strict control over what the extensions have access to.
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Extend.pm,v 1.11 1999/04/03 05:06:00 josh Exp $ 
 
 package TLily::Extend;
 use strict;
@@ -28,6 +23,61 @@ use TLily::Command qw(&cmd_process);
 my %extensions = ();
 my @share=qw(%config &help_r &shelp_r &command_r &event_r &event_u &cmd_process
 	     &ui_name &server_name);
+
+
+=head1 NAME
+
+TLily::Extend - Tigerlily Extension Manager
+
+=head1 SYNOPSIS
+
+     
+use TLily::Extend;
+
+=head1 DESCRIPTION
+
+This module manages tigerlily extensions.  Tigerlily attempts to isolate
+extensions using the ExoSafe module to give each a separate namespace.  In
+addition, all handlers registered by an extension are tracked by the Registrar
+and can be unregistered automatically if the extension is unloaded.
+
+=head1 FUNCTIONS
+
+=over 10
+
+=cut
+
+=item init()
+
+  TLily::Extend::init();
+
+=cut
+
+sub init {
+    TLily::User::command_r(extension => \&extension_cmd);
+    TLily::User::shelp_r  (extension => "manage tlily extensions");
+    TLily::User::help_r   (extension => "
+usage: %extension list
+       %extension load <extension>
+       %extension unload <extension>
+       %extension reload <extension>
+");
+}
+
+=item load()
+
+Loads an extension into tlily.
+
+  TLily::Extend::load($name,$ui,$verbose);
+
+Extensions are executed in a restricted environment called an ExoSafe.
+This means that each one gets its own package, so they don't step on each 
+other.   For convenience, each ExoSafe is exported a number of functions so
+that they don't have to be typed out fully (for example, you can type shelp_r() instead of having to type TLily::User::shelp_r()).
+
+For a list of the exported functions and variables, see @share in Extend.pm.
+
+=cut
 
 sub load {
     my ($name, $ui, $verbose)=@_;
@@ -93,7 +143,14 @@ sub load {
 }
 
 
-# Unload an extension.
+=item unload()
+
+Unloads a loaded extension.
+
+  TLily::Extend::unload($name,$ui,$verbose);
+
+=cut
+
 sub unload {
     my($name, $ui, $verbose) = @_;
     
@@ -113,7 +170,13 @@ sub unload {
 }
 
 
-# Snarf extensions out of standard locations.
+=item load_extensions()
+
+Loads all extensions listed in the $config{load} array.
+
+  TLily::Extend::load_extensions($ui);
+
+=cut
 sub load_extensions {
     my($ui) = @_;
     my $ext;
@@ -124,6 +187,15 @@ sub load_extensions {
     extension_cmd($ui,"list");
 }
 
+
+=head1 HANDLERS
+
+=item extension_cmd()
+
+Command handler for the %extension command.  Allows the user to load, unload,
+and reload extensions.
+
+=cut
 
 sub extension_cmd {
     my($ui, $args) = @_;
@@ -162,18 +234,6 @@ sub extension_cmd {
     }
 }
 
-
-sub cmd_init {
-    TLily::User::command_r(extension => \&extension_cmd);
-    TLily::User::shelp_r  (extension => "manage tlily extensions");
-    TLily::User::help_r   (extension => "
-usage: %extension list
-       %extension load <extension>
-       %extension unload <extension>
-       %extension reload <extension>
-");
-}
-
 # Convenience functions for the extensions
 sub ui_name {
     TLily::UI::name(@_);
@@ -184,3 +244,4 @@ sub server_name {
 }
 
 1;
+

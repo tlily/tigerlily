@@ -8,7 +8,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/tlily.PL,v 1.34 1999/03/24 00:55:41 albert Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/tlily.PL,v 1.35 1999/04/03 05:05:53 josh Exp $
 
 use strict;
 no strict qw(refs);
@@ -574,8 +574,8 @@ my $ui = load_ui();
 
 show_banner();
 
-TLily::User::init;
-TLily::Extend::cmd_init;
+TLily::User::init();
+TLily::Extend::init();
 
 $SIG{__WARN__} = \&sig_warn;
 sub sig_warn {

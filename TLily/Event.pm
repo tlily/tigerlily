@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Event.pm,v 1.18 1999/03/23 08:33:15 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Event.pm,v 1.19 1999/04/03 05:05:58 josh Exp $
 
 package TLily::Event::Core;
 
@@ -71,6 +71,10 @@ use vars qw(@ISA @EXPORT_OK);
 
 TLily::Event - Event queue.
 
+=head1 SYNOPSIS
+
+use TLily::Event;
+
 =head1 DESCRIPTION
 
 This class implements the core tlily event loop.  (Ideally, Perl would have
@@ -102,12 +106,13 @@ I/O events are triggered when activity occurs on a given filehandle.
 
 Idle events are triggered when there is no other activity.
 
-=head2 FUNCTIONS
+=back
+
+=head1 FUNCTIONS
 
 =over
 
 =cut
-
 
 # Queue of waiting events.
 my @queue;
@@ -202,8 +207,6 @@ handler as its arguments.
 =back
 
 =cut
-
-# Register a new named event handler.
 sub event_r {
     my $h = (@_ == 1) ? shift : {@_};
     my %order = (before => 1, during => 2, after => 3);
@@ -232,8 +235,6 @@ sub event_r {
 Unregister a named event handler.
 
 =cut
-
-# Deregister a named event handler.
 sub event_u {
     my($id) = @_;
     $id = $id->{id} if (ref $id);
@@ -243,7 +244,28 @@ sub event_u {
 }
 
 
-# Register a new IO event handler.
+=item io_r()
+
+Register an IO event handler.
+
+=over
+
+=item handle
+
+The filehandle associated with this handler.
+
+=item mode
+
+Mode of the handler: r or w  (read/write)
+
+=item call
+
+The handler function.  This function will be called with an event and the
+handler as its arguments.
+
+=back
+
+=cut
 sub io_r {
     my $h = (@_ == 1) ? shift : {@_};
     
@@ -273,7 +295,11 @@ sub io_r {
 }
 
 
-# Deregister an IO event handler.
+=item io_u()
+
+Unregister an IO event handler.
+
+=cut
 sub io_u {
     my($id) = @_;
     $id = $id->{id} if (ref $id);
@@ -294,7 +320,28 @@ sub io_u {
 }
 
 
-# Register a new timed event handler.
+=item time_r()
+
+Register a timed event handler.
+
+=over 
+
+=item call
+
+The handler function.  This function will be called with an event and the
+handler as its arguments.
+
+=item interval
+
+Every <interval> seconds, the event handler will fire.
+
+=item after
+
+After <interval> seconds, the event handler will fire (once)
+
+=back
+
+=cut
 sub time_r {
     my $h = (@_ == 1) ? shift : {@_};
     
@@ -325,7 +372,11 @@ sub time_r {
 }
 
 
-# Deregister a timed event handler.
+=item io_u()
+
+Unregister a timed event handler.
+
+=cut
 sub time_u {
     my($id) = @_;
     $id = $id->{id} if (ref $id);
@@ -335,7 +386,20 @@ sub time_u {
 }
 
 
-# Register a new idle event handler.
+=item idle_r()
+
+Register an idle event handler.
+
+=over
+
+=item call
+
+The handler function.  This function will be called with an event and the
+handler as its arguments.
+
+=back
+
+=cut
 sub idle_r {
     my $h = (@_ == 1) ? shift : {@_};
     
@@ -349,7 +413,11 @@ sub idle_r {
 }
 
 
-# Deregister an idle event handler.
+=item idle_u()
+
+Unregister an idle event handler.
+
+=cut
 sub idle_u {
     my($id) = @_;
     $id = $id->{id} if (ref $id);
@@ -359,6 +427,9 @@ sub idle_u {
 }
 
 
+=item invoke()
+
+=cut
 sub invoke {
     my $h = shift;
     $h->{registrar}->push_default if ($h->{registrar});
@@ -375,7 +446,9 @@ sub invoke {
     return $rc;
 }
 
+=item loop_once()
 
+=cut
 sub loop_once {
     # Named events.
   EVENT:
@@ -438,7 +511,9 @@ sub loop_once {
     }
 }
 
+=item loop()
 
+=cut
 sub loop {
     loop_once while (1);
 }
