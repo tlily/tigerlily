@@ -9,3 +9,4 @@ Makefile
 Build.PL
 build.cache
 ^core$
+.cvsignore$

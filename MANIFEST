@@ -12,7 +12,6 @@ TLily/Daemon/HTTP.pm
 TLily/Event.pm
 TLily/ExoSafe.pm
 TLily/Extend.pm
-TLily/Global.pm
 TLily/Registrar.pm
 TLily/Server.pm
 TLily/Server/SLCP.pm
@@ -26,6 +25,7 @@ TLily/UI/ReadLine.pm
 TLily/User.pm
 TLily/Version.pm
 TODO
+contrib/Curses.pm.patch
 extensions/after.pl
 extensions/alias.pl
 extensions/autologin.pl
