@@ -1,4 +1,4 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/ui.pl,v 1.13 1999/04/12 22:39:33 neild Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/ui.pl,v 1.14 1999/04/12 22:57:14 neild Exp $ 
 use strict;
 
 
@@ -143,6 +143,24 @@ help_r(page => $page_help);
 # Input contexts.
 #
 
+my $icontext_help = qq{
+Have you ever typed in half of a very long send, when suddenly you want to \
+make a quick send to someone else, or check if a person is on line?  Input \
+contexts are designed to save the contents of the input buffer and return \
+to it later.  If you press the next-input-context key (bound to C-x by \
+default), your current input state is saved, and a new one opened.  Press \
+the key again to move to the next input context.
+
+An example may make this easier to understand.  Type "foo", and press C-x. \
+The input line clears.  Press C-x again, and "foo" returns.  You can have \
+more than one saved input context: Press C-x.  (The input line clears.)  \
+Type "bar", and press C-x again.  The input line clears, as you move to a \
+third input context.  Press C-x again, and you return to the first context
+("foo").
+
+(see also: %bind)
+};
+
 sub next_input_context {
     my($ui, $command, $key) = @_;
     my($pos, $line) = $ui->get_input;
@@ -166,6 +184,9 @@ sub next_input_context {
 }
 TLily::UI::command_r("next-input-context" => \&next_input_context);
 TLily::UI::bind("C-x" => "next-input-context");
+shelp_r("icontext" => "Input contexts let you defer sends until later.",
+        "concepts");
+help_r("icontext" => $icontext_help);
 
 #
 # Styles.

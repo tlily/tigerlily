@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/User.pm,v 1.18 1999/04/06 03:00:32 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/User.pm,v 1.19 1999/04/12 22:57:16 neild Exp $
 
 package TLily::User;
 
@@ -86,14 +86,17 @@ sub init {
     command_r(help => \&help_command);
     shelp_r(help => "Display help pages.");
     help_r(commands  => sub { help_index("commands",  @_); } );
+    help_r(variables => sub { help_index("variables", @_); } );
+    help_r(concepts  => sub { help_index("concepts", @_); } );
     help_r(internals => sub { help_index("internals", @_); } );
     help_r(help => '
 Welcome to Tigerlily!
 
 Tigerlily is a client for the lily CMC, written entirely in 100% pure Perl.
 
+For general information on how to use tlily, try "%help concepts".
 For a list of commands, try "%help commands".
-
+For a list of configuration variables, try "%help variables".
 If you\'re interested in tlily\'s guts, try "%help internals".
 ');
     
@@ -289,6 +292,7 @@ Command handler to provide the %help command.
 This is registered automatically by init().    
 
 =cut
+
 sub help_command {
     my($ui, $arg) = @_;
     $arg = "help" if ($arg eq "");
