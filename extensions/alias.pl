@@ -44,15 +44,15 @@ sub alias_cmd {
     
     if ($key eq "clear") {
 	if($val eq "") {
-	    $ui->print("Usage: %alias clear [alias]\n"); return;
+	    $ui->print("(Usage: %alias clear [alias])\n"); return;
 	}
 	undef $alias{$val};
-        $ui->print("\%$key is now unaliased.\n");
+        $ui->print("(\%$key is now unaliased.)\n");
     }
 
     if ($key =~ /\S/ and $val =~ /\S/) {
 	$alias{$key}=$val;
-        $ui->print("\%$key is now aliased to '$val'\n");
+        $ui->print("(\%$key is now aliased to '$val')\n");
     }
 }
 
