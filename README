@@ -1,5 +1,10 @@
-TigerLily
-=========
+     ("`-/")_.-'"``-._ 
+      . . `; -._    )-;-,_`)          TigerLily 2.x
+     (v_,)'  _  )`-.  ``-'             "Feel Free"
+    _.- _..-_/ / ((.'
+  ((,.-'   ((,/ 
+
+===============================================================================
 
 Installing
 ----------
@@ -96,10 +101,6 @@ Here is a summary of the common configuration file(CF) options:
 	    # and d will be loaded, and extensions c and e will not be loaded.
 	The default extension list is in the global CF, and can be
 	changed using this method in the site and/or user CFs.
-
-$terminal
-        This variable controls the default terminal implementation to use.
-        Valid settings are 'LC::CTerminal' and 'LC::TTerminal'.
 
 %color_attrs
 %mono_attrs
