@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/on.pl,v 1.14 2001/12/13 18:45:06 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/on.pl,v 1.15 2002/01/14 18:04:52 neild Exp $
 
 use strict;
 use Text::ParseWords qw(quotewords);
@@ -222,6 +222,8 @@ sub on_cmd {
 	$mask{EVENT} = $event_type;
 	$mask{ACTION} = \@args;
 
+	$mask{NOTIFY} = "always" if (!$mask{NOTIFY});
+
 	# Print an accounting of what we're doing, unless this is being
 	# run out of a startup file.
 	if (!$startup) {
@@ -233,16 +235,12 @@ sub on_cmd {
 	    $str .= " to $mask{TO}"           if defined($mask{RHANDLE});
 	    $str .= " to group $mask{TO}"     if defined($mask{RGROUP});
 
-	    if ($mask{NOTIFY}) {
-		if ($mask{NOTIFY} eq 'always') {
-		    $str .= " always";
-		} else {
-		    $str .= " when";
-		    $str .= " not" if $mask{NOTIFY} eq 'no';
-		    $str .= " notified";
-		}
+	    if ($mask{NOTIFY} eq 'always') {
+		$str .= " always";
 	    } else {
-		$mask{NOTIFY} = "always";
+		$str .= " when";
+		$str .= " not" if $mask{NOTIFY} eq 'no';
+		$str .= " notified";
 	    }
 
 	    $str .= " with a value like \"$mask{LIKE}\""
