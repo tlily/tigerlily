@@ -47,7 +47,7 @@ sub new {
 
 sub size {
 	my $self = shift;
-	my $newc = $_[2];
+	my $newc = $_[3];
 
 	if ($newc && ($newc != $self->{cols})) {
 		$self->{indexes}  = [ 0 ];
