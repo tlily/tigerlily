@@ -6,7 +6,7 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Server/Attic/SLCP.pm,v 1.40 2001/02/19 20:22:28 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Server/Attic/SLCP.pm,v 1.41 2001/02/19 20:44:07 neild Exp $
 
 package TLily::Server::SLCP;
 
@@ -491,8 +491,10 @@ sub state {
 	}
 
 	# If the handle (unlikely) or name are being updated, remove the
-	# old entry from the indices.
-	delete $self->{HANDLE}->{$record->{HANDLE}} if defined ($args{HANDLE});
+	# old entry from the indices.  (Note: save_crufty_renames is
+	# intentionally undocumented.)
+	delete $self->{HANDLE}->{$record->{HANDLE}}
+	  if (defined($args{HANDLE}) && !$config{save_crufty_renames});
 	delete $self->{NAME}->{$record->{NAME}} if defined ($args{NAME});
 
 	# OK, now update the record with our arguments.

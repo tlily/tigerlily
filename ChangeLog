@@ -1,4 +1,7 @@
 Version 2.3
+  * [TLily/Server/SLCP.pm] Added 'save_crufty_renames' knob to preserve
+    the old, broken behavior on renames.  This feature is intentionally
+    undocumented. [DPN]
   * [TLily/Server/SLCP.pm] When a user renamed, the entry for their old
     name was not correctly deleted.  Fixed. [DPN]
   * [TLily/UI/Curses/Text.pm] Added scrollback expiration.  There may still
