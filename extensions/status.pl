@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/status.pl,v 1.14 1999/05/15 03:58:34 albert Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/status.pl,v 1.15 1999/07/02 08:06:26 albert Exp $
 
 use strict;
 
@@ -23,10 +23,10 @@ sub set_clock {
 	elsif($a[2] < 12 && $config{clocktype} eq '12') {
 	    $ampm = 'a';
 	}
-	
-	$ui->set(clock => sprintf("%02d:%02d%s", $a[2], $a[1], $ampm));
-	return 0;
     }
+	
+    $ui->set(clock => sprintf("%02d:%02d%s", $a[2], $a[1], $ampm));
+    return 0;
 }    
 
 sub set_serverstatus {

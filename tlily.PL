@@ -7,7 +7,7 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/tlily.PL,v 1.38 1999/06/17 01:26:41 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/tlily.PL,v 1.39 1999/07/02 08:06:17 albert Exp $
 
 use strict;
 use Config;
@@ -198,7 +198,7 @@ sub output_handler {
 	
     }
     
-    return;
+    return 0;
 }
 TLily::Event::event_r(type  => "all",
 		      order => "after",

@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/startup.pl,v 1.6 1999/06/23 14:33:23 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/startup.pl,v 1.7 1999/07/02 08:06:24 albert Exp $
 
 use strict;
 
@@ -12,10 +12,11 @@ sub startup_handler ($$) {
     my $ui = ui_name();
 
     if(-f $ENV{HOME}."/.lily/tlily/Startup") {
+        local(*SUP);
 	open(SUP, "<$ENV{HOME}/.lily/tlily/Startup");
 	if($!) {
 	    $ui->print("Error opening Startup: $!\n");
-	    event_u($handler->{id});
+	    event_u($handler);
 	    return 0;
 	}
         $ui->print("(Running ~/.lily/tlily/Startup)\n\n");
@@ -38,7 +39,10 @@ sub startup_handler ($$) {
         
 	if(!$args{text}) {
 	    $args{ui}->print("Error opening *tlilyStartup: $!\n");
-	    event_u($handler->{id});
+	    event_u($handler);
+	    TLily::Event::send(%$event,
+                               type => 'connected',
+			       ui   => $args{ui});
 	    return 0;
 	}
         {   my $f;
@@ -48,7 +52,10 @@ sub startup_handler ($$) {
 		$args{ui}->print("(No startup memo found.)\n",
 		    "(If you want to install one, ",
 		    "call it tlilyStartup or *tlilyStartup)\n");
-		event_u($handler->{id});
+		event_u($handler);
+		TLily::Event::send(%$event,
+				   type => 'connected',
+				   ui   => $args{ui});
 		return 0;
 	    }
         }
@@ -59,8 +66,11 @@ sub startup_handler ($$) {
 				ui   => $args{ui},
 				text => "$_\n"});
 	}
-	TLily::Event::send(type => 'connected',
-			    ui   => $ui);
+	event_u($handler);
+	TLily::Event::send(%$event,
+			   type => 'connected',
+			   ui   => $args{ui});
+	return 0;
     };
     $server->fetch(ui     => $ui,
 		   type   => "memo",
@@ -68,7 +78,7 @@ sub startup_handler ($$) {
 		   target => "me",
 		   call   => $sub);
 
-    event_u($handler->{id});
+    event_u($handler);
     return 1;
 }
 

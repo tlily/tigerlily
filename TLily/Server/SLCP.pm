@@ -6,7 +6,7 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Server/Attic/SLCP.pm,v 1.22 1999/05/13 21:45:50 albert Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Server/Attic/SLCP.pm,v 1.23 1999/07/02 08:06:20 albert Exp $
 
 package TLily::Server::SLCP;
 
@@ -15,6 +15,7 @@ use vars qw(@ISA %config);
 
 use Carp;
 
+use TLily::Version;
 use TLily::Server;
 use TLily::Extend;
 use TLily::Config qw(%config);

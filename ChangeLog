@@ -1,5 +1,6 @@
 Version 2.0-post
-  * [TLily/Event.pm] Hopefully fixed the lost-handler bug.
+  * Fixed the client-name-and-version-not-set problem. [CWS]
+  * [TLily/Event.pm] Hopefully fixed the lost-handler bug. [CWS]
 
 Version 2.0
   * Added %memo. [DPN]
