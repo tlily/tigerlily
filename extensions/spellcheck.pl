@@ -30,19 +30,22 @@ sub spellcheck_input {
     my $word;
     foreach $word (split /\W/, $m) {
 	if (!spelled_correctly($word)) {
+	    $message =~ s/\0$word\0/$word/g;
 	    $message =~ s/\b$word\b/\0${word}\0/g;
 	}
     }
-
-    my $style = "input_window";
-    foreach (split /\0/,$message) {
-	push @f, length($_), $style;
-        if ($style eq "input_window") {
-	    $style = "input_error";
-	} else { 
-	    $style = "input_window";
-	}
+ 
+    # take the \0 markers around the misspelled words and generate the style
+    # list
+    while ($message =~ /\0[^\0]*\0/) {
+	my ($norm,$err)= ($message =~ /^([^\0]*)\0([^\0]*)\0/);
+	$message =~ s/^([^\0]*)\0([^\0]*)\0//;
+	if (length($norm)) {
+	    push @f, length($norm), "input_window";
+        }
+	push @f, length($err), "input_error";
     }
+    push @f, length($message), "input_window" if length($message);
 
     return @f;
 }
