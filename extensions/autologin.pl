@@ -1,4 +1,4 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/autologin.pl,v 1.2 1999/02/26 22:45:35 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/autologin.pl,v 1.3 1999/02/28 04:45:25 josh Exp $
 #
 # Handle autologins.
 #
@@ -33,23 +33,24 @@ sub init {
 	    }
 
 	    if (($host eq $config{'server'}) && ($port eq $config{'port'})) {
-		register_eventhandler(Type => 'prompt',
-				      Order => 'before',
-				      Call => sub {
-		    my($event, $handler) = @_;
-		    return 0 unless ($event->{Text} =~ /^login:/);
-		    ui_output("(using autologin information)");
-		    my $server = server_name();
-		    $server->sendln("${user} ${pass}");
-		    TLily::Event::time_u($handler->{Id});
-		    return 1;
-		});
+		event_r(type => 'prompt',
+			order => 'before',
+			call => sub {
+			    my($event, $handler) = @_;
+			    return 0 unless ($event->{text} =~ /^login:/);
+			    my $ui = ui_name();
+			    $ui->print("(using autologin information)\n");
+			    my $server = server_name();
+			    $server->sendln("${user} ${pass}");
+			    event_u($handler->{id});
+			    return 1;
+			});
 		
 		last;
 	    }
 	}
 	close(FD);
-
+	
 	last;
     }
 }
