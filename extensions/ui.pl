@@ -1,4 +1,4 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/ui.pl,v 1.23 2000/02/12 00:14:14 tale Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/ui.pl,v 1.24 2000/02/12 00:37:37 tale Exp $ 
 use strict;
 
 =head1 NAME
@@ -252,8 +252,14 @@ control characters will terminate search mode.
 
 sub input_search_mode {
     my($ui, $command, $key) = @_;
-    $key = "" if ($key eq "C-r");
-    if (length($key) <= 1) {
+
+    # ASSERT().
+    die "key is null in input_search_mode at "
+        unless defined($key) && $key ne "";
+
+    $key = "" if $key eq "C-r";
+
+    if (length($key) == 1) {
         unless ($ui->{input}->search_history(string =>
                                              $ui->{_search_text} . $key,
                                              reset => 1)) {
@@ -265,6 +271,9 @@ sub input_search_mode {
         return 1;
     } else {
         $ui->command("toggle-input-search-mode");
+        # if the key was C-r, return 1 so the key processing function
+        # does not continue.
+        return 1 if $key eq "";
     }
     return;
 }
