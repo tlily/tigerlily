@@ -1,4 +1,9 @@
 Version 2.3
+  * [TLily/UI/Curses.pm,extensions/leet.pl,extensions/paste.pl,
+    extensions/ui.pl] Now you *can* have your multiline paste leet'd,
+    but if you do we will find you and kill you.  Key command intercepts
+    are now a list internally rather than a single item, so various
+    modes are not mutually exclusive. [DCL]
   * [extensions/leet.pl,extensions/paste.pl,extensions/ui.pl] leet-mode,
     paste-mode and input-search-mode all ignored the return value of
     intercept_u, so they didn't detect failure to enter their mode because

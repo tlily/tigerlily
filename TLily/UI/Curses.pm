@@ -7,12 +7,12 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/Curses.pm,v 1.51 2001/02/12 18:39:55 kazrak Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/Curses.pm,v 1.52 2001/11/15 04:23:34 tale Exp $
 
 package TLily::UI::Curses::Proxy;
 
 use strict;
-use vars qw($AUTOLOAD @ISA); #) cperl mode is getting confused.
+use vars qw($AUTOLOAD @ISA $a $b); #) cperl mode is getting confused.
 use Curses;
 use Carp;
 
@@ -165,7 +165,7 @@ sub mark_output {
 }
 
 # The default set of mappings from command names to functions.
-%commandmap = 
+%commandmap =
   (
    'accept-line'          => \&accept_line,
    'mark-output'          => \&mark_output,
@@ -206,7 +206,7 @@ sub mark_output {
 # The default set of keybindings.
 %bindmap =
   (
-   'C-?'        => 'backward-delete-char',   
+   'C-?'        => 'backward-delete-char',
    'C-a'        => 'beginning-of-line',
    'C-b'        => 'backward-char',
    'C-d'        => 'delete-char',
@@ -215,7 +215,7 @@ sub mark_output {
    'C-h'        => 'backward-delete-char',
    'C-k'        => 'kill-line',
    'C-l'        => 'refresh',
-   'C-m'        => 'accept-line',  
+   'C-m'        => 'accept-line',
    'C-n'        => 'next-history',
    'C-p'        => 'previous-history',
    'C-q'        => 'quoted-insert',
@@ -289,7 +289,7 @@ sub new {
     $self->{command}   = { %commandmap };
     $self->{bindings}  = { %bindmap };
 
-    $self->{intercept} = undef;
+    $self->{intercept} = [];
 
     $self->{prompt}    = [];
 
@@ -339,7 +339,7 @@ sub splitwin {
 
 sub start_curses {
     my($self) = @_;
-    
+
     # Work around a bug in certain curses implementations where raw() does
     # not appear to clear the "lnext" setting.
     ($STTY_LNEXT) = (`stty -a 2> /dev/null` =~ /lnext = (\S+);/);
@@ -363,7 +363,7 @@ sub start_curses {
 
     # How odd.  Jordan doesn't have idcok().
     eval { idcok(1); };
-       
+
     typeahead(-1);
     keypad(1);
 
@@ -382,7 +382,7 @@ sub stop_curses {
     my($self) = @_;
     endwin;
     #refresh;
-    system("stty lnext $STTY_LNEXT") if ($STTY_LNEXT);    
+    system("stty lnext $STTY_LNEXT") if ($STTY_LNEXT);
 }
 
 
@@ -444,9 +444,9 @@ sub run {
 	} else {
 	    local(*F);
 	    if (open (F, "resize -u|")) {
-	       while(<F>) { 
+	       while(<F>) {
 	       	  if (/COLUMNS=(\d+)/) { $ENV{COLUMNS} = $1; }
-	       	  if (/LINES=(\d+)/)   { $ENV{LINES}   = $1; }		  
+	       	  if (/LINES=(\d+)/)   { $ENV{LINES}   = $1; }
 	       }
 	       close(F);
 	    } else {
@@ -464,10 +464,15 @@ sub run {
     return unless defined($key);
     #print STDERR "key='$key'\n";
 
-    if ($self->{intercept} && $self->{command}->{$self->{intercept}}) {
-	my $rc = $self->command($self->{intercept}, $key);
-	warn "Intercept function returned \"$rc\"\n" if ($rc && $rc != 1);
-	return if ($rc);
+    # Note: the extra level of copy through an anonymous array is needed
+    # in case one of the intercept handlers does its own intercept_u
+    # intercept_r and thus changes $self->{intercept}.
+    foreach my $i (@{[ @{$self->{intercept}}]}) {
+        if ($self->{command}->{$i->{name}}) {
+            my $rc = $self->command($i->{name}, $key);
+            warn qq(Intercept $i->{name} returned "$rc"\n) if $rc && $rc != 1;
+            return if $rc;
+        }
     }
 
     my $cmd = $self->{bindings}->{$key};
@@ -611,7 +616,7 @@ sub command_u {
 
 sub bind {
     my($self, $key, $command) = @_;
-  
+
     if (defined($key) && defined($command)) {
         $self->{bindings}->{$key} = $command;
     } elsif (! defined($key)) {
@@ -619,7 +624,7 @@ sub bind {
         foreach my $key (sort keys %{$self->{bindings}}) {
             $self->print(sprintf("%-16s%s\n", $key,
                                  $self->{bindings}->{$key}));
-        }  
+        }
     } elsif ($self->{bindings}->{$key}) {
         $self->print("$key is bound to $self->{bindings}->{$key}\n");
     } elsif (length($key) == 1) {
@@ -631,20 +636,42 @@ sub bind {
     return 1;
 }
 
-
 sub intercept_r {
-    my($self, $name) = @_;
-    return if (defined($self->{intercept}) && $self->{intercept} ne $name);
-    $self->{intercept} = $name;
+    my $self = shift;
+    my $i = (@_ == 1) ? shift : {@_};
+
+    unless (defined($i->{name}) && defined($i->{order})) {
+        # This is not meant to be a deeply meaningful message to the end
+        # user, just a clue to the programmer that they don't quite
+        # have their intercept_r right yet.
+        $self->print("bad intercept handler registration\n");
+        return 0;
+    }
+
+    $self->{intercept} = [ sort { $a->{order} <=> $b->{order} }
+                           @{$self->{intercept}}, $i ];
+
     return 1;
 }
 
 
 sub intercept_u {
     my($self, $name) = @_;
-    return unless (defined($self->{intercept}));
-    return if ($name ne $self->{intercept});
-    $self->{intercept} = undef;
+    my $new = [];
+    foreach my $i (@{$self->{intercept}}) {
+        push(@{$new}, $i) unless $i->{name} eq $name;
+    }
+    if (@{$new} == @{$self->{intercept}}) {
+        # No handler was found, but this is normal because various callers
+        # do this to facilitate toggling state.  Silently return.
+        return 0;
+    } elsif (@{$new} != @{$self->{intercept}} - 1) {
+        # Programmer warning; not really for end users.
+        $self->print("intercept_u $name found multiple registrations\n");
+    }
+
+    $self->{intercept} = [ @{$new} ];
+
     return 1;
 }
 

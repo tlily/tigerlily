@@ -1,4 +1,4 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/ui.pl,v 1.30 2001/11/13 23:48:45 tale Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/ui.pl,v 1.31 2001/11/15 04:23:35 tale Exp $
 use strict;
 
 =head1 NAME
@@ -106,7 +106,7 @@ sub keyname_command {
 	return;
     }
 
-    if (!$ui->intercept_r("name-self")) {
+    if (!$ui->intercept_r(name => "name-self", order => 100)) {
         $ui->style("input_error");
 	$ui->print("(sorry; a keyboard intercept is already in place)\n");
         $ui->style("normal");
@@ -393,7 +393,7 @@ sub search_start {
     my ($ui, $dir) = @_;
     my $input = $ui->{input};
 
-    unless ($ui->intercept_r("input-search-mode")) {
+    unless ($ui->intercept_r(name => "input-search-mode", order => 100)) {
         # XXXDCL Perhaps there should be a different way to communicate this.
         # Or maybe still do the print, but with a different style.
         $ui->style("input_error");

@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/UI.pm,v 1.27 2001/01/26 03:01:48 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/UI.pm,v 1.28 2001/11/15 04:23:34 tale Exp $
 
 package TLily::UI;
 
@@ -393,15 +393,24 @@ on UIs which do not use the terminal.
 
 Resumes a suspended UI.
 
-=item intercept_r($command)
+=item intercept_r(name => $command, order => $order)
 
 Sets a named command to intercept all keys pressed.  When the command function
 is called for a key, if it returns 1, no further action will be taken
 for that key.  If it returns false, processing will continue as usual.
 
-Only one intercept function may be defined at a given time.  If a different
-command is already registered as the intercept function, intercept_r returns
-false.  Otherwise, it returns true.
+Multiple intercept function may be defined at a given time.  The order in
+which they are called is determined by the 'order' argument.  The various
+command which use key intercepting have the following 'order' values:
+
+    name-self           100
+    input-search-mode   100
+    paste-mode          900
+    leet-mode		950
+
+Observe that it is perfectly ok for more than one function to have the same
+order value.  You cannot get into name-self from input-search-mode and vice
+versa.
 
 =item intercept_u($command)
 
