@@ -87,14 +87,12 @@ extensions/keepalive.pl
 extensions/leet.pl
 extensions/log.pl
 extensions/mask.pl
-extensions/mechajosh-new.pl
 extensions/mechajosh.pl
 extensions/mirror.pl
 extensions/misc.pl
 extensions/multicore.pl
 extensions/namethatblurb.pl
 extensions/nymme.pl
-extensions/on-old.pl
 extensions/on.pl
 extensions/osxspeak.pl
 extensions/paste.pl
@@ -113,7 +111,6 @@ extensions/statedebug.pl
 extensions/status.pl
 extensions/stock.pl
 extensions/stripper.pl
-extensions/subclient.pl
 extensions/submit.pl
 extensions/todeath.pl
 extensions/ui.pl
