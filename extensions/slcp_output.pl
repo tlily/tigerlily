@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_output.pl,v 1.5 1999/05/05 01:28:39 steve Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_output.pl,v 1.6 1999/05/05 02:10:44 steve Exp $
 
 use strict;
 
@@ -54,8 +54,7 @@ sub public_fmt {
     my($ui, $e) = @_;
     my $ts = '';
 	my $blurb = $e->{server}->get_blurb(HANDLE => $e->{SHANDLE});
-	$blurb = " [$blurb]" if $blurb;
-
+	$blurb = ($blurb) ? " [$blurb]" : "";
     
     $ui->print("\n");
     
