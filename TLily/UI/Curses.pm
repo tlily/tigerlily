@@ -1,4 +1,4 @@
-package LC::UI::Curses::Proxy;
+package TLily::UI::Curses::Proxy;
 
 use strict;
 use vars qw($AUTOLOAD);
@@ -45,18 +45,18 @@ AUTOLOAD {
 }
 
 
-package LC::UI::Curses;
+package TLily::UI::Curses;
 
 use strict;
 use vars qw(@ISA %commandmap %bindmap);
 
-use LC::UI;
+use TLily::UI;
 use Curses;
-use LC::UI::Curses::Text;
-use LC::UI::Curses::StatusLine;
-use LC::UI::Curses::Input;
+use TLily::UI::Curses::Text;
+use TLily::UI::Curses::StatusLine;
+use TLily::UI::Curses::Input;
 
-@ISA = qw(LC::UI);
+@ISA = qw(TLily::UI);
 
 
 #
@@ -203,16 +203,16 @@ sub new {
 	$self->{input_maxlines} = $arg{input_maxlines};
 	start_curses($self);
 
-	$self->{text}->{main}->{status} = LC::UI::Curses::StatusLine->new
+	$self->{text}->{main}->{status} = TLily::UI::Curses::StatusLine->new
 	  (layout  => $self,
 	   color   => $self->{color});
 
-	$self->{text}->{main}->{text} = LC::UI::Curses::Text->new
+	$self->{text}->{main}->{text} = TLily::UI::Curses::Text->new
 	  (layout  => $self,
 	   color   => $self->{color},
 	   status  => $self->{text}->{main}->{status});
 
-	$self->{input} = LC::UI::Curses::Input->new
+	$self->{input} = TLily::UI::Curses::Input->new
 	  (layout  => $self,
 	   color   => $self->{color});
 
@@ -250,17 +250,17 @@ sub splitwin {
 	my($self, $name) = @_;
 
 	unless ($self->{text}->{$name}) {
-		$self->{text}->{$name}->{status} = LC::UI::Curses::StatusLine->new
+		$self->{text}->{$name}->{status} = TLily::UI::Curses::StatusLine->new
 		  ( layout => $self, color => $self->{color} );
 
-		$self->{text}->{$name}->{text} = LC::UI::Curses::Text->new
+		$self->{text}->{$name}->{text} = TLily::UI::Curses::Text->new
 		  ( layout => $self, color => $self->{color},
 		    status => $self->{text}->{$name}->{status} );
 
 		$self->layout();
 	}
 
-	return LC::UI::Curses::Proxy->new($self, $name);
+	return TLily::UI::Curses::Proxy->new($self, $name);
 }
 
 
@@ -390,19 +390,19 @@ sub resume {
 
 sub defstyle {
 	my($self, $style, @attrs) = @_;
-	LC::UI::Curses::Generic::defstyle($style, @attrs);
+	TLily::UI::Curses::Generic::defstyle($style, @attrs);
 }
 
 
 sub defcstyle {
 	my($self, $style, $fg, $bg, @attrs) = @_;
-	LC::UI::Curses::Generic::defcstyle($style, $fg, $bg, @attrs);
+	TLily::UI::Curses::Generic::defcstyle($style, $fg, $bg, @attrs);
 }
 
 
 sub clearstyle {
 	my($self) = @_;
-	LC::UI::Curses::Generic::clearstyle();
+	TLily::UI::Curses::Generic::clearstyle();
 }
 
 

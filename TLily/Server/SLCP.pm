@@ -1,15 +1,15 @@
-package LC::Server::SLCP;
+package TLily::Server::SLCP;
 
 use strict;
 use vars qw(@ISA %config);
 
 use Carp;
 
-use LC::Server;
-use LC::Extend;
-use LC::Config qw(%config);
+use TLily::Server;
+use TLily::Extend;
+use TLily::Config qw(%config);
 
-@ISA = qw(LC::Server);
+@ISA = qw(TLily::Server);
 
 sub new {
 	my($proto, %args) = @_;
@@ -20,7 +20,7 @@ sub new {
 	$args{ui_name}    = "main" unless exists($args{ui_name});
 
 	# Load in the parser.
-	LC::Extend::load("slcp");
+	TLily::Extend::load("slcp");
 
 	my $self = $class->SUPER::new(%args);
 
@@ -50,7 +50,7 @@ comma-separated list of their members.
 =cut
 
 sub expand_name {
-	unshift @_, LC::Server::name() if (@_ < 2);
+	unshift @_, TLily::Server::name() if (@_ < 2);
 	my($self, $name) = @_;
 	my $disc;
 
@@ -335,6 +335,19 @@ sub dumpstate {
             }
         }
     }
+}
+
+
+sub set_client_options {
+  my ($serv) = @_;
+
+  $serv->sendln("\#\$\# options +leaf-notify +leaf-cmd +connected");
+}
+
+sub set_client_name {
+  my ($serv) = @_;
+
+  $serv->sendln("\#\$\# client TigerLily $TLily::Version::TL_VERSION");
 }
 
 

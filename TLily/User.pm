@@ -1,14 +1,14 @@
-package LC::User;
+package TLily::User;
 
 use strict;
 use Carp;
 use Text::Abbrev;
 
-use LC::Global qw($event);
+use TLily::Global qw($event);
 
 =head1 NAME
 
-LC::User - User command manager.
+TLily::User - User command manager.
 
 =head1 DESCRIPTION
 
@@ -35,9 +35,9 @@ my %shelp;
 
 
 sub init {
-	LC::Registrar::class_r("command"    => \&command_u);
-	LC::Registrar::class_r("short_help" => \&command_u);
-	LC::Registrar::class_r("help"       => \&command_u);
+	TLily::Registrar::class_r("command"    => \&command_u);
+	TLily::Registrar::class_r("short_help" => \&command_u);
+	TLily::Registrar::class_r("help"       => \&command_u);
 
 	$event->event_r(type  => "user_input",
 			order => "during",
@@ -58,15 +58,15 @@ For a list of commands, try "%help commands".
 
 =item command_r($name, $sub)
 
-Registers a new %command.  %commands are tracked via LC::Registrar.
+Registers a new %command.  %commands are tracked via TLily::Registrar.
 
-  LC::User::command_r("quit" => sub { exit; });
+  TLily::User::command_r("quit" => sub { exit; });
 
 =cut
 
 sub command_r {
 	my($command, $sub) = @_;
-	LC::Registrar::add("command" => $command);
+	TLily::Registrar::add("command" => $command);
 	$commands{$command} = $sub;
 	%abbrevs = abbrev keys %commands;
 }
@@ -76,13 +76,13 @@ sub command_r {
 
 Deregisters an existing %command.
 
-  LC::User::command_u("quit");
+  TLily::User::command_u("quit");
 
 =cut
 
 sub command_u {
 	my($command) = @_;
-	LC::Registrar::remove("command" => $command);
+	TLily::Registrar::remove("command" => $command);
 	delete $commands{$command};
 	%abbrevs = abbrev keys %commands;
 }
@@ -92,15 +92,15 @@ sub command_u {
 
 Sets the short help for a command.  This is what is displayed by the
 command name in the "/help commands" listing.  Short help is tracked
-via LC::Registrar.
+via TLily::Registrar.
 
-    LC::User::shelp_r("help" => "Display help pages.");
+    TLily::User::shelp_r("help" => "Display help pages.");
 
 =cut
 
 sub shelp_r {
 	my($command, $help) = @_;
-	LC::Registrar::add("short_help" => $command);
+	TLily::Registrar::add("short_help" => $command);
 	$shelp{$command} = $help;
 }
 
@@ -109,28 +109,28 @@ sub shelp_r {
 
 Clears the short help for a command.
 
-    LC::User::shelp_u("help");
+    TLily::User::shelp_u("help");
 
 =cut
 
 sub shelp_u {
 	my($command) = @_;
-	LC::Registrar::remove("short_help" => $command);
+	TLily::Registrar::remove("short_help" => $command);
 	delete $shelp{$command};
 }
 
 
 =item help_r
 
-Sets a help page.  Help is tracked via LC::Registrar.
+Sets a help page.  Help is tracked via TLily::Registrar.
 
-    LC::User::shelp_r("lily" => $help_on_lily);
+    TLily::User::shelp_r("lily" => $help_on_lily);
 
 =cut
 
 sub help_r {
 	my($topic, $help) = @_;
-	LC::Registrar::add("help" => $topic);
+	TLily::Registrar::add("help" => $topic);
 	if (!ref($help)) {
 		# Eliminate all leading newlines, and enforce only one trailing
 		$help =~ s/^\n*//s; $help =~ s/\n*$/\n/s;
@@ -143,13 +143,13 @@ sub help_r {
 
 Clears a help page.
 
-    LC::User::shelp_r("lily" => $help_on_lily);
+    TLily::User::shelp_r("lily" => $help_on_lily);
 
 =cut
 
 sub help_u {
 	my($topic) = @_;
-	LC::Registrar::remove("help" => $topic);
+	TLily::Registrar::remove("help" => $topic);
 	delete $help{$topic};
 }
 

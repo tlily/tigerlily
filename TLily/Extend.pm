@@ -1,18 +1,18 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Extend.pm,v 1.3 1999/02/24 23:36:38 neild Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Extend.pm,v 1.4 1999/02/26 00:00:02 josh Exp $ 
 
 # initial version, 10/24/97, Josh Wilmes
 
 # Provide a secure environment for user extensions to TigerLily.  We use
 # an ExoSafe to provide strict control over what the extensions have access to.
 
-package LC::Extend;
+package TLily::Extend;
 use strict;
 use vars qw(%config);
 
-use LC::ExoSafe;
-use LC::Config qw(%config);
-use LC::Registrar;
-use LC::User;
+use TLily::ExoSafe;
+use TLily::Config qw(%config);
+use TLily::Registrar;
+use TLily::User;
 
 
 my %extensions = ();
@@ -55,7 +55,7 @@ sub load {
 	$ui->print("(loading \"$name\" from \"$filename\")\n")
 	  if ($ui && $verbose);
 
-	my $reg  = LC::Registrar->new($name)->push_default;
+	my $reg  = TLily::Registrar->new($name)->push_default;
 	my $safe = ExoSafe->new;
 
 	$safe->rdo($filename);
@@ -149,9 +149,9 @@ sub extension_cmd {
 
 
 sub cmd_init {
-	LC::User::command_r(extension => \&extension_cmd);
-	LC::User::shelp_r  (extension => "manage tlily extensions");
-	LC::User::help_r   (extension => "
+	TLily::User::command_r(extension => \&extension_cmd);
+	TLily::User::shelp_r  (extension => "manage tlily extensions");
+	TLily::User::help_r   (extension => "
 usage: %extension list
        %extension load <extension>
        %extension unload <extension>

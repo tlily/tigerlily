@@ -1,4 +1,4 @@
-package LC::Event::Core;
+package TLily::Event::Core;
 
 use strict;
 
@@ -45,11 +45,11 @@ sub run {
 
 
 
-package LC::Event;
+package TLily::Event;
 
 use strict;
 use Carp;
-use LC::Registrar;
+use TLily::Registrar;
 
 
 sub new {
@@ -73,11 +73,11 @@ sub new {
 	$self->{id}      = 1;
 
 	# Replacable event core.
-	$self->{core}    = LC::Event::Core->new;
+	$self->{core}    = TLily::Event::Core->new;
 
-	LC::Registrar::class_r(name_event => sub { $self->event_u(@_) });
-	LC::Registrar::class_r(io_event   => sub { $self->io_u(@_) });
-	LC::Registrar::class_r(time_event => sub { $self->time_u(@_) });
+	TLily::Registrar::class_r(name_event => sub { $self->event_u(@_) });
+	TLily::Registrar::class_r(io_event   => sub { $self->io_u(@_) });
+	TLily::Registrar::class_r(time_event => sub { $self->time_u(@_) });
 
 	bless $self, $class;
 }
@@ -111,8 +111,8 @@ sub event_r {
 	@{$self->{e_name}} = sort {$order{$a->{order}} <=> $order{$b->{order}}}
 	  (@{$self->{e_name}}, $h);
 
-	$h->{registrar} = LC::Registrar::default();
-	LC::Registrar::add("name_event", $h->{id});
+	$h->{registrar} = TLily::Registrar::default();
+	TLily::Registrar::add("name_event", $h->{id});
 	return $h->{id};
 }
 
@@ -122,7 +122,7 @@ sub event_u {
 	my($self, $id) = @_;
 	$id = $id->{id} if (ref $id);
 	@{$self->{e_name}} = grep { $_->{id} != $id } @{$self->{e_name}};
-	LC::Registrar::remove("name_event", $id);
+	TLily::Registrar::remove("name_event", $id);
 	return;
 }
 
@@ -152,8 +152,8 @@ sub io_r {
 
 	$self->{core}->io_r($n, $h->{mode});
 
-	$h->{registrar} = LC::Registrar::default();
-	LC::Registrar::add("io_event", $h->{id});
+	$h->{registrar} = TLily::Registrar::default();
+	TLily::Registrar::add("io_event", $h->{id});
 	return $h->{id};
 }
 
@@ -174,7 +174,7 @@ sub io_u {
 	}
 	@{$self->{e_io}} = @io;
 
-	LC::Registrar::remove("io_event", $id);
+	TLily::Registrar::remove("io_event", $id);
 	return;
 }
 
@@ -202,8 +202,8 @@ sub time_r {
 	@{$self->{e_time}} =
 	  sort { $a->{'time'} <=> $b->{'time'} } (@{$self->{e_time}}, $h);
 
-	$h->{registrar} = LC::Registrar::default();
-	LC::Registrar::add("time_event", $h->{id});
+	$h->{registrar} = TLily::Registrar::default();
+	TLily::Registrar::add("time_event", $h->{id});
 	return $h->{id};
 }
 
@@ -213,7 +213,7 @@ sub time_u {
 	my($self, $id) = @_;
 	$id = $id->{id} if (ref $id);
 	@{$self->{e_time}} = grep { $_->{id} != $id } @{$self->{e_time}};
-	LC::Registrar::remove("time_event", $id);
+	TLily::Registrar::remove("time_event", $id);
 	return;
 }
 

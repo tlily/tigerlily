@@ -1,10 +1,10 @@
-package LC::UI::Curses::Input;
+package TLily::UI::Curses::Input;
 
 use strict;
 use vars qw(@ISA);
-use LC::UI::Curses::Generic;
+use TLily::UI::Curses::Generic;
 
-@ISA = qw(LC::UI::Curses::Generic);
+@ISA = qw(TLily::UI::Curses::Generic);
 
 
 sub new {

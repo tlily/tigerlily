@@ -1,10 +1,10 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/expand.pl,v 1.5 1999/02/25 22:40:31 neild Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/expand.pl,v 1.6 1999/02/26 00:00:53 josh Exp $ 
 
 use strict;
 
-use LC::UI;
-use LC::Server::SLCP;
-use LC::Global qw($event);
+use TLily::UI;
+use TLily::Server::SLCP;
+use TLily::Global qw($event);
 
 
 my %expansions = ('sendgroup' => '',
@@ -44,7 +44,7 @@ sub exp_expand {
 		
 		my @dests = split(/,/, $fore);
 		foreach (@dests) {
-			my $full = LC::Server::SLCP::expand_name($_);
+			my $full = TLily::Server::SLCP::expand_name($_);
 			next unless ($full);
 			$_ = $full;
 			$_ =~ tr/ /_/;
@@ -73,7 +73,7 @@ sub exp_complete {
 		$full = $past_sends[0] . ';';
 	} elsif ($partial !~ /[\@\[\]\;\:\=\"\?\s]/) {
 		my($fore, $aft) = ($partial =~ m/^(.*,)?(.*)/);
-		$aft = LC::Server::SLCP::expand_name($aft);
+		$aft = TLily::Server::SLCP::expand_name($aft);
 		return unless $aft;
 		$full = $fore if (defined($fore));
 		$full .= $aft;
@@ -101,13 +101,13 @@ sub exp_complete {
 }
 
 
-LC::UI::command_r("intelligent-expand" => \&exp_expand);
-LC::UI::command_r("complete-send"      => \&exp_complete);
-LC::UI::bind(','   => "intelligent-expand");
-LC::UI::bind(':'   => "intelligent-expand");
-LC::UI::bind(';'   => "intelligent-expand");
-LC::UI::bind('='   => "intelligent-expand");
-LC::UI::bind('C-i' => "complete-send");
+TLily::UI::command_r("intelligent-expand" => \&exp_expand);
+TLily::UI::command_r("complete-send"      => \&exp_complete);
+TLily::UI::bind(','   => "intelligent-expand");
+TLily::UI::bind(':'   => "intelligent-expand");
+TLily::UI::bind(';'   => "intelligent-expand");
+TLily::UI::bind('='   => "intelligent-expand");
+TLily::UI::bind('C-i' => "complete-send");
 
 sub private_handler {
 	my($event,$handler) = @_;

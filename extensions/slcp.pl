@@ -1,10 +1,10 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/Attic/slcp.pl,v 1.6 1999/02/25 22:40:34 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/Attic/slcp.pl,v 1.7 1999/02/26 00:00:59 josh Exp $
 
 use strict;
 use vars qw(%config);
 
-use LC::Global qw($event);
-use LC::Config qw(%config);
+use TLily::Global qw($event);
+use TLily::Config qw(%config);
 
 =head1 NAME
 
@@ -83,15 +83,6 @@ my $SLCP_WARNING =
 now requires SLCP support to function properly.  Either upgrade your Lily \
 server to the latest version or use another (1.x) version of tlily.\n";
 
-
-sub set_client_options {
-	my($serv) = @_;
-	$serv->sendln('#$# options +leaf-notify +leaf-cmd +connected');
-	$serv->{OPTIONS_SET} = 1;
-	return;
-}
-
-
 # Take raw server output, and deal with it.
 sub parse_raw {
 	my($event, $handler) = @_;
@@ -134,11 +125,11 @@ sub parse_line {
 	chomp $line;
 
 	my $ui;
-	$ui = LC::UI::name($serv->{ui_name}) if ($serv->{ui_name});
+	$ui = TLily::UI::name($serv->{ui_name}) if ($serv->{ui_name});
 
 	#$ui->print("=", $line, "\n") if ($config{parser_debug});
 	#print STDERR "=", $line, "\n";
-	$ui->print("=", $line, "\n") if ($LC::Config::config{parser_debug});
+	$ui->print("=", $line, "\n") if ($TLily::Config::config{parser_debug});
 
 	my $cmdid;
 	my %event;
@@ -148,7 +139,6 @@ sub parse_line {
 	my $p;
 	foreach $p ($serv->{logged_in} ? @connect_prompts : @login_prompts) {
 		if ($line =~ /$p/) {
-			set_client_options($serv) if (!$serv->{OPTIONS_SET});
 			%event = (type => 'prompt',
 				  text => $line);
 			$event{password} = 1 if ($line =~ /password/);
@@ -368,7 +358,6 @@ sub load {
 			call => \&parse_raw);
 }
 
-
 sub SLCP_parse {
     my ($line) = @_;
     my %ret;
@@ -399,6 +388,5 @@ sub SLCP_parse {
 
     return %ret;
 }
-
 
 1;

@@ -1,9 +1,9 @@
-package LC::UI;
+package TLily::UI;
 
 use strict;
 use Carp;
 
-use LC::Registrar;
+use TLily::Registrar;
 
 # List of all UIs, indexed by name.
 my %ui;
@@ -129,7 +129,7 @@ sub command_r {
 		$ui->command_r($command, $func);
 	}
 
-	LC::Registrar::add("global_ui_command", $command);
+	TLily::Registrar::add("global_ui_command", $command);
 	return;
 }
 
@@ -146,7 +146,7 @@ sub command_u {
 		$ui->command_u($command);
 	}
 
-	LC::Registrar::remove("global_ui_command", $command);
+	TLily::Registrar::remove("global_ui_command", $command);
 	return;
 }
 
@@ -170,6 +170,6 @@ sub command {
 }
 
 
-LC::Registrar::class_r(global_ui_command => \&command_u);
+TLily::Registrar::class_r(global_ui_command => \&command_u);
 
 1;

@@ -1,8 +1,8 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/misc.pl,v 1.4 1999/02/24 23:58:09 neild Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/misc.pl,v 1.5 1999/02/26 00:00:55 josh Exp $ 
 
 use strict;
-use LC::Global qw($event);
-use LC::Version;
+use TLily::Global qw($event);
+use TLily::Version;
 
 
 #
@@ -37,14 +37,14 @@ sub bang_handler {
 	return;
 }
 
-LC::User::shelp_r('shell' => 'run shell command');
-LC::User::help_r('shell' => '
+TLily::User::shelp_r('shell' => 'run shell command');
+TLily::User::help_r('shell' => '
 Usage: %shell <command>
        ! <command>
 ');
 $event->event_r(type => 'user_input',
 		call => \&bang_handler);
-LC::User::command_r('shell' => \&shell_handler);
+TLily::User::command_r('shell' => \&shell_handler);
 
 
 #
@@ -74,9 +74,9 @@ sub eval_handler($) {
 	return;
 }
 
-LC::User::command_r('eval' => \&eval_handler);
-LC::User::shelp_r('eval' => 'run perl code');
-LC::User::help_r('eval' => '
+TLily::User::command_r('eval' => \&eval_handler);
+TLily::User::shelp_r('eval' => 'run perl code');
+TLily::User::help_r('eval' => '
 Usage: %eval [list] <code>
 
 Evaluates the given perl code.  The code is evaluated in a scalar context,
@@ -93,18 +93,18 @@ The results of the eval, if any, will be printed.
 
 sub version_handler {
 	my($ui, $args) = @_;
-	$ui->print("(Tigerlily version $LC::Version::TL_VERSION)\n");
+	$ui->print("(Tigerlily version $TLily::Version::TL_VERSION)\n");
 	#server_send("/display version\r\n");
 	return;
 }
 
-LC::User::shelp_r('version' => 'Display the Tigerlily and server versions');
-LC::User::help_r('version' => '
+TLily::User::shelp_r('version' => 'Display the Tigerlily and server versions');
+TLily::User::help_r('version' => '
 Usage: %version
 
 Displays the version of Tigerlily and the server.
 ');
-LC::User::command_r('version' => \&version_handler);
+TLily::User::command_r('version' => \&version_handler);
 
 
 #
@@ -118,8 +118,8 @@ sub echo_handler {
 	return;
 }
 
-LC::User::shelp_r('echo' => 'Echo text to the screen.');
-LC::User::help_r('echo' => '
+TLily::User::shelp_r('echo' => 'Echo text to the screen.');
+TLily::User::help_r('echo' => '
 Usage: %echo [-n] <text>
 ');
-LC::User::command_r('echo' => \&echo_handler);
+TLily::User::command_r('echo' => \&echo_handler);

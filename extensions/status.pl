@@ -1,14 +1,14 @@
 use strict;
 use vars qw(%config $event);
 
-use LC::UI;
-use LC::Server;
-use LC::Config qw(%config);
-use LC::Global qw($event);
+use TLily::UI;
+use TLily::Server;
+use TLily::Config qw(%config);
+use TLily::Global qw($event);
 
 
 sub set_clock {
-	my $ui = LC::UI::name("main");
+	my $ui = TLily::UI::name("main");
 
 	my @a = localtime;
 	if($config{clockdelta}) {
@@ -35,8 +35,8 @@ sub set_clock {
 
 
 sub set_serverstatus {
-	my $ui     = LC::UI::name("main");
-	my $server = LC::Server::name();
+	my $ui     = TLily::UI::name("main");
+	my $server = TLily::Server::name();
 	return unless ($server);
 
 	my $sname = $server->state(DATA => 1,
@@ -58,8 +58,8 @@ sub set_serverstatus {
 
 
 sub load {
-	my $ui = LC::UI::name("main");
-	my $server = LC::Server::name();
+	my $ui = TLily::UI::name("main");
+	my $server = TLily::Server::name();
 
 	$ui->define(nameblurb => 'left');
 	$ui->define(clock     => 'right');

@@ -1,4 +1,4 @@
-package LC::Client;
+package TLily::Client;
 
 use strict;
 

@@ -1,14 +1,14 @@
 use strict;
 
-use LC::UI;
-use LC::Global qw($event);
+use TLily::UI;
+use TLily::Global qw($event);
 
 my $sub;
 
 $sub = sub {
 	my($e, $h) = @_;
 
-	my $ui = LC::UI::name("main");
+	my $ui = TLily::UI::name("main");
 	$ui->print("Event: $e->{type}\n");
 	foreach (sort keys %$e) {
 		next if ($_ eq "type");

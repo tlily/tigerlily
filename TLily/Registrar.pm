@@ -1,4 +1,4 @@
-package LC::Registrar;
+package TLily::Registrar;
 
 use strict;
 

@@ -1,10 +1,10 @@
-package LC::UI::Curses::Text;
+package TLily::UI::Curses::Text;
 
 use strict;
 use vars qw(@ISA);
-use LC::UI::Curses::Generic;
+use TLily::UI::Curses::Generic;
 
-@ISA = qw(LC::UI::Curses::Generic);
+@ISA = qw(TLily::UI::Curses::Generic);
 
 
 sub max($$) { ($_[0] > $_[1]) ? $_[0] : $_[1] }

@@ -1,8 +1,8 @@
 use strict;
 
-use LC::Global qw($event);
-use LC::UI;
-use LC::Server::SLCP;
+use TLily::Global qw($event);
+use TLily::UI;
+use TLily::Server::SLCP;
 
 sub server_command {
 	my($ui, $arg) = @_;
@@ -13,12 +13,12 @@ sub server_command {
 	$port = 8888               unless defined($port);
 
 	my $server;
-	$server = LC::Server::SLCP->new(host    => $host,
+	$server = TLily::Server::SLCP->new(host    => $host,
 					port    => $port,
 					ui_name => $ui->name,
 					event   => $event);
 }
-LC::User::command_r(connect => \&server_command);
+TLily::User::command_r(connect => \&server_command);
 
 sub send_handler {
 	my($e, $h) = @_;
@@ -29,7 +29,7 @@ $event->event_r(type => 'user_send',
 
 sub to_server {
 	my($e, $h) = @_;
-	my $server = LC::Server::name();
+	my $server = TLily::Server::name();
 
 	if ($e->{text} =~ /^(\S*)([;:])(.*)/) {
 		$event->send(type   => 'user_send',

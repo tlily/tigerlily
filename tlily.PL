@@ -10,15 +10,15 @@ use strict;
 use vars qw($event);
 use lib qw(@@LIBMODDIR@@);
 
-use LC::Event;
-use LC::UI;
-use LC::UI::Curses;
-use LC::Server;
-use LC::Server::SLCP;
-use LC::User;
-use LC::Extend;
-use LC::Global qw($event);
-use LC::Version;
+use TLily::Event;
+use TLily::UI;
+use TLily::UI::Curses;
+use TLily::Server;
+use TLily::Server::SLCP;
+use TLily::User;
+use TLily::Extend;
+use TLily::Global qw($event);
+use TLily::Version;
 
 if ( -f 'tlily.PL' ) {
 	my @tstat = stat('tlily.PL');
@@ -29,8 +29,8 @@ if ( -f 'tlily.PL' ) {
 	}
 }
 
-$event = LC::Event->new();
-my $ui = LC::UI::Curses->new(name => 'main', event => $event);
+$event = TLily::Event->new();
+my $ui = TLily::UI::Curses->new(name => 'main', event => $event);
 
 # remove
 $ui->defstyle('status'          => 'reverse');
@@ -48,10 +48,10 @@ $ui->defcstyle('status' => 'yellow', 'blue', 'bold');
 
 show_banner();
     
-LC::User::init;
-LC::Extend::cmd_init;
+TLily::User::init;
+TLily::Extend::cmd_init;
 
-LC::User::command_r(quit => sub { exit; });
+TLily::User::command_r(quit => sub { exit; });
 
 $SIG{__WARN__} = \&sig_warn;
 sub sig_warn {
@@ -85,7 +85,7 @@ $ui->bind("C-c" => "interrupt");
 sub output_handler {
 	my($event, $handler) = @_;
 	if ($event->{ui_name}) {
-		my $ui = LC::UI::name($event->{ui_name});
+		my $ui = TLily::UI::name($event->{ui_name});
 
 		if ($event->{NOTIFY} && $event->{formatter}) {
 			$event->{formatter}->($ui, $event);
@@ -118,7 +118,7 @@ sub prompt_handler {
 	}
 
 	if ($event->{ui_name}) {
-		my $ui = LC::UI::name($event->{ui_name});
+		my $ui = TLily::UI::name($event->{ui_name});
 		$ui->prompt_for(prompt   => $event->{text},
 				password => $event->{password},
 		                call     => sub { $server->sendln($_[1]); });
@@ -133,10 +133,10 @@ $event->event_r(type  => "prompt",
 		order => "after",
 		call  => \&prompt_handler);
 
-LC::Extend::load("server", $ui, 1);
-LC::Extend::load("output", $ui, 1);
-LC::Extend::load("expand", $ui, 1);
-LC::Extend::load("status", $ui, 1);
+TLily::Extend::load("server", $ui, 1);
+TLily::Extend::load("output", $ui, 1);
+TLily::Extend::load("expand", $ui, 1);
+TLily::Extend::load("status", $ui, 1);
 
 while (1) {
 	eval { $event->loop; };
@@ -162,7 +162,7 @@ while (1) {
 sub show_banner() {
 	$ui->print(<<END
      ("`-/")_.-'"``-._ 
-      . . `; -._    )-;-,_`)          Tigerlily
+      . . `; -._    )-;-,_`)          Tigerlily $TLily::Version::TL_VERSION
      (v_,)'  _  )`-.\  ``-'          "Feel Free"
     _.- _..-_/ / ((.'
   ((,.-'   ((,/ 

@@ -1,4 +1,4 @@
-package LC::UI::Curses::Generic;
+package TLily::UI::Curses::Generic;
 
 use strict;
 use vars qw(%stylemap %cstylemap %cmap %cnamemap %cpairmap %keycodemap);

@@ -1,4 +1,4 @@
-package LC::Server;
+package TLily::Server;
 
 use strict;
 
@@ -6,18 +6,18 @@ use Carp;
 use IO::Socket;
 use Fcntl;
 
-use LC::Event;
-
+use TLily::Event;
+use TLily::Global qw($event);
 
 =head1 NAME
 
-LC::Server - Lily server objet
+TLily::Server - Lily server objet
 
 =head1 DESCRIPTION
 
 The Server module defines a class that represents a tcp connection of
 some form.  It includes I/O functions -- protocol specific functions
-go in subclasses (such as LC::Server::SLCP).
+go in subclasses (such as TLily::Server::SLCP).
 
 new() and connect() will call die() on failure, so be sure to catch
 exceptions if this matters to you!
@@ -34,11 +34,11 @@ my %server;
 
 =item new(%args)
 
-Creates a new LC::Server object.  Takes 'event', 'host', 'port', and
+Creates a new TLily::Server object.  Takes 'event', 'host', 'port', and
 'protocol' arguments.  The 'protocol' argument is used to determine the
 events generated for server data -- the event type will be "protocol_data".
 
-    $serv = LC::Server->new(event    => $event,
+    $serv = TLily::Server->new(event    => $event,
                             protocol => "slcp",
                             host     => "lily",
                             port     => 7777);
@@ -50,7 +50,7 @@ sub new {
 	my $class = ref($proto) || $proto;
 	my $self  = {};
 
-	my $ui = LC::UI::name($args{ui_name}) if ($args{ui_name});
+	my $ui = TLily::UI::name($args{ui_name}) if ($args{ui_name});
 
 	croak "required parameter \"event\" missing"
 	  unless (defined $args{event});
@@ -93,6 +93,31 @@ sub new {
 
 	$self->{event}->send(type   => 'server_connected',
 			     server => $self);
+	
+	# set the client name once we're %connected.
+	$self->{event}->event_r(type => "connected",
+				call => sub {
+				  my ($e,$h) = @_;
+				  
+				  return 0 unless ($e->{server} == $self);
+				  
+				  $self->set_client_name();
+				  $event->event_u($h->{Id});
+
+				  return 0;
+				});
+	
+	# set the client options at the first prompt.
+	$self->{event}->event_r(type => "prompt",
+				call => sub {
+				  my ($e,$h) = @_;
+				  return 0 unless ($e->{server} == $self);
+				  
+				  $self->set_client_options();
+				  $event->event_u($h->{Id});
+				
+				  return 0;
+				});
 
 	return $self;
 }

@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/ExoSafe.pm,v 1.1 1999/02/22 19:22:52 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/ExoSafe.pm,v 1.2 1999/02/26 00:00:01 josh Exp $
 package ExoSafe;
 
 use Carp;

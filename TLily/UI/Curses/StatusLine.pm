@@ -1,11 +1,11 @@
-package LC::UI::Curses::StatusLine;
+package TLily::UI::Curses::StatusLine;
 
 use strict;
 use vars qw(@ISA);
-use LC::UI::Curses::Generic;
+use TLily::UI::Curses::Generic;
 use Carp;
 
-@ISA = qw(LC::UI::Curses::Generic);
+@ISA = qw(TLily::UI::Curses::Generic);
 
 
 sub new {
