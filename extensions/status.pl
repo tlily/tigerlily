@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/status.pl,v 1.12 1999/05/05 03:08:54 steve Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/status.pl,v 1.13 1999/05/05 17:39:49 steve Exp $
 
 use strict;
 
@@ -70,21 +70,21 @@ sub load {
     
     if ($server) {
 	set_serverstatus();
-    } else {
-	event_r(type => 'userstate',
-  	       order => 'after',	
-		call => \&set_serverstatus);
-	
-	event_r(type => 'rename',
-  	       order => 'after',
-		call => \&set_serverstatus);
-	
-	event_r(type => 'blurb',
-  	       order => 'after',	
-		call => \&set_serverstatus);
-
-	event_r(type => 'connected',
-  	       order => 'after',	
-		call => \&set_serverstatus);
     }
+    
+    event_r(type => 'userstate',
+	    order => 'after',	
+	    call => \&set_serverstatus);
+    
+    event_r(type => 'rename',
+	    order => 'after',
+	    call => \&set_serverstatus);
+    
+    event_r(type => 'blurb',
+	    order => 'after',	
+	    call => \&set_serverstatus);
+    
+    event_r(type => 'connected',
+	    order => 'after',	
+	    call => \&set_serverstatus);
 }
