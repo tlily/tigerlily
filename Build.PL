@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/Attic/Build.PL,v 1.2 1999/02/25 23:59:54 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/Attic/Build.PL,v 1.3 1999/03/04 00:42:10 albert Exp $
 
 use Config;
 use Carp;
@@ -18,8 +18,23 @@ use subs qw(&install);
 # and make a build.cache file to save your preferences.
 
 # Find perl
-$PERL = $Config{'startperl'} ||
-        $Config{'perlpath'}? "#!".$Config{'perlpath'} : "#/usr/bin/perl";
+$PERL = $Config{'startperl'} ? $Config{'startperl'}     : 
+        $Config{'perlpath'}  ? "#!".$Config{'perlpath'} :
+                               "#/usr/bin/perl";
+
+$perl_exec = $Config{'perl'};
+# On broken systems like RPI's, locate perl in the user's path
+if(length $PERL > 32) {
+    my $P;
+    foreach $P (split(/:/,$ENV{PATH})) {
+	$PERL = "$P/$perl_exec";
+	last if -x $PERL;
+    }
+    $PERL = '#!'.$PERL;
+}
+
+# If the place is still broken, try the swiss army perl starter
+# FIXME: Insert chainsaw here
 
 getopts("ndhficp:");
 if($opt_h) {
@@ -39,6 +54,7 @@ if($opt_i) {
 }
 if($opt_c) {
     $current = 1;
+    $ignore = 1;
 }
 if($opt_p) {
     $prefix = $opt_p;
@@ -66,8 +82,9 @@ $extext='\.pl';
 @modfiles = &get_files($moddir, $modext);
 @extfiles = &get_files($extdir, $extext);
 
-foreach(@modsubdirs) {
-    push @modfiles, map {$_ = "UI/$_"} get_files("$moddir/$_", $modext)
+my $dir;
+foreach $dir (@modsubdirs) {
+    push @modfiles, map {$_ = "$dir/$_"} get_files("$moddir/$dir", $modext)
 }
 
 print join("\n", @modfiles), "\n" if $debug;
@@ -316,7 +333,7 @@ elsif($target eq 'announce') {
 elsif($target eq 'clean') {
     rmtree('buildtmp', 0, 0);
     unlink("tlily");
-    #unlink("lilybot");
+    unlink("lilybot");
     unlink("tlily-$VERSION.tar");
     unlink("tlily-$VERSION.tar.gz");
     unlink("build.cache");
@@ -444,8 +461,7 @@ Library directory:  $LIBDIR
 	return;
     }
     
-    #foreach $f (qw(tlily lilybot)) {
-    foreach $f (qw(tlily)) {
+    foreach $f (qw(tlily lilybot)) {
 	print "Writing $f\n";
 	if(-f $f) { unlink $f; }
 	
@@ -490,7 +506,7 @@ Usage: perl Build.PL [-n][-h][-i][tigerlily|install|uninstall|clean|
 	release:   Tag the release via CVS and make a .tar.gz for release
 	           (Developers only!)
 	announce:  Generate an annoucement mail and send it to
-	           tigerlily-announce\@einstein.to.  (Developers only!)
+	           tigerlily-announce\@einstein.org.  (Developers only!)
 
 	With no targets, will execute tigerlily target.
 );
@@ -543,7 +559,7 @@ to configure tlily for use in the current directory only.
 	if($inp) { $BINDIR=&tilde_expand($inp); }
 		
 	$LIBDIR=$PREFIX."/lib/tlily";
-	print "\nInstallation directory for the tlily support files?  (This is where the\ninternal LC library, the global extensions, and the global configuration\n";
+	print "\nInstallation directory for the tlily support files?  (This is where the\ninternal TLily library, the global extensions, and the global configuration\n";
 	$inp = &ask("file will be installed.)", $LIBDIR);
 	if($inp) { $LIBDIR=&tilde_expand($inp); }
 
@@ -559,7 +575,7 @@ to configure tlily for use in the current directory only.
 
 sub use_current_dir {
     print "\nUsing current directory.\n";
-    $PREFIX = Cwd::cwd;
+    $PREFIX = ".";
     print "Installation prefix is $PREFIX\n";
     $BINDIR = $PREFIX;
     print "Script location is $BINDIR\n";
@@ -779,7 +795,7 @@ sub do_announcement {
 	undef $cl;
 
 	my $msg = qq(From: "Tigerlily Developers" <tigerlily\@hitchhiker.org>
-To: "Tigerlily Announcement List" <tigerlily-announce\@einstein.to>
+To: "Tigerlily Announcement List" <tigerlily-announce\@einstein.org>
 Subject: Tigerlily $version is now available
 
 Hi All -
@@ -799,7 +815,7 @@ Share and Enjoy.
 The Tigerlily Developers
 Damien, Albert, Josh, Jon, Steve & Matt.
 ----------------------------------------------------------------------------
-To unsubscribe from this list, send email to <majordomo\@einstein.to> with
+To unsubscribe from this list, send email to <majordomo\@einstein.org> with
 the words "unsubscribe tigerlily-announce" in the body.
 );
 	my $abort_flag;
@@ -825,7 +841,7 @@ the words "unsubscribe tigerlily-announce" in the body.
     }
     else {
 	print "Don't forget to send an announcement of the new release\n",
-	    "to tigerlily-announce\@einstein.to.\n";
+	    "to tigerlily-announce\@einstein.org.\n";
     }
 }
 
