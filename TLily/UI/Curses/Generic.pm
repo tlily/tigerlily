@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Curses/Attic/Generic.pm,v 1.18 1999/05/08 16:54:32 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Curses/Attic/Generic.pm,v 1.19 2000/02/05 21:05:43 neild Exp $
 
 package TLily::UI::Curses::Generic;
 
@@ -68,7 +68,7 @@ my $active;
    &KEY_PPAGE       => 'pageup',
    &KEY_NPAGE       => 'pagedown',
    &KEY_BACKSPACE   => 'bs',
-   &KEY_DC          => 'bs',
+   &KEY_DC          => 'del',
    &KEY_HOME        => 'home',
    &KEY_END         => 'end',
    "\n"             => 'nl'
@@ -281,6 +281,9 @@ sub read_char {
     if ((ord($c) >= 128) && (ord($c) < 256)) {
 	$c = chr(ord($c)-128);
 	$meta = 1;
+    } elsif (ord($c) == 127) {
+	$c = '?';
+	$ctrl = 1;
     }
 
     if (defined $keycodemap{$c}) {
