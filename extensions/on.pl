@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/on.pl,v 1.5 2000/03/20 08:33:15 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/on.pl,v 1.6 2000/03/24 21:23:43 kazrak Exp $
 
 use strict;
 use Text::ParseWords qw(quotewords);
@@ -33,12 +33,12 @@ message body in the "public", "private", and "emote" events.)
           message.
 \$value    the value of the original event
 
-Alternatively, you may use "%attr <attribute> <value>" in "what to do" to
-set attributes on the event being matched.  Of particular interest are the
-"header_fmt", "sender_fmt", "dest_fmt", and "body_fmt" attributes, which
-control how sends are displayed.  (Note that these attributes take styles
-as arguments -- see %help style for more information.)
-   
+Alternatively, you may use "%attr <attribute> <value>" in "what to do"
+to set attributes on the event being matched.  Of particular interest
+are the "header_fmt", "sender_fmt", "dest_fmt", "body_fmt", and
+"slcp_fmt" attributes, which control how sends are displayed.  (Note
+that these attributes take styles as arguments -- see %help style for
+more information.)
 
 Examples:
 
@@ -46,6 +46,7 @@ Examples:
   %on emote to beener like "fluffs almo" "beener;auto-spurts feathers"
   %on emote to beener like "ping (.*)" "$1;ping!"
   %on public to news %attr dest_fmt significant
+  %on attach from SignificantOther %attr slcp_fmt significant
 ]);
 
 

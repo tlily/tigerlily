@@ -7,7 +7,7 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/tlily.PL,v 1.47 1999/12/11 03:20:59 albert Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/tlily.PL,v 1.48 2000/03/24 21:23:42 kazrak Exp $
 
 use strict;
 use Config;
@@ -203,7 +203,7 @@ sub output_handler {
 	    $ui->print($event->{text}, "\n");
 	    $ui->indent();
 	} elsif ($event->{NOTIFY} && $event->{slcp}) {
-	    $ui->style("slcp");
+	    $ui->style($event->{slcp_fmt} || "slcp");
 	    $ui->print($event->{text}, "\n");
 	    $ui->style("default");
 	} elsif ($event->{NOTIFY}) {
