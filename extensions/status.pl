@@ -115,6 +115,9 @@ sub load {
 	
 	TLily::Event::event_r(type => 'blurb',
 			      call => \&set_serverstatus);
+
+	TLily::Event::event_r(type => 'connected',
+			      call => \&set_serverstatus);
 	
 	TLily::Event::event_r(type => 'connected',
 			      call => \&init_bandwidth);
