@@ -1,4 +1,4 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/misc.pl,v 1.12 1999/03/19 08:17:03 josh Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/misc.pl,v 1.13 1999/03/22 05:31:05 neild Exp $ 
 
 use strict;
 use TLily::Version;
@@ -130,7 +130,7 @@ command_r('echo' => \&echo_handler);
 
 shelp_r(quit => 'Exit TigerLily');
 help_r('quit' => 'Usage: %quit');
-command_r(quit => sub { exit; });
+command_r(quit => sub { TLily::Event::keepalive(); exit; });
 
 
 # NOTE:  HIDESEND DOES NOT WORK.  WE DON'T CARE ENOUGH TO FIX IT AT PRESENT.
