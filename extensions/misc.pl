@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/misc.pl,v 1.15 1999/03/23 08:33:52 josh Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/misc.pl,v 1.16 1999/04/09 23:08:25 neild Exp $ 
 
 use strict;
 use TLily::Version;
@@ -126,12 +126,12 @@ Usage: %echo [-n] <text>
 command_r('echo' => \&echo_handler);
 
 #
-# %quit
+# %exit
 #
 
-shelp_r(quit => 'Exit TigerLily');
-help_r('quit' => 'Usage: %quit');
-command_r(quit => sub { TLily::Event::keepalive(); exit; });
+shelp_r('exit' => 'Exit TigerLily');
+help_r('exit' => 'Usage: %exit');
+command_r('exit' => sub { TLily::Event::keepalive(); exit; });
 
 
 # NOTE:  HIDESEND DOES NOT WORK.  WE DON'T CARE ENOUGH TO FIX IT AT PRESENT.
