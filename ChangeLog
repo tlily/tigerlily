@@ -1,4 +1,5 @@
 Version 2.1.1-post
+  * [extensions/stripper.pl] Strip leading spaces from input sent to server.
   * [extensions/source.pl] You can source memos now.
   * [extensions/url.pl] Add regex support to %url show; '%url show <regex>
     will now show the last URL matching the regex. [RBJ]
