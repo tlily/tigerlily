@@ -1,4 +1,4 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/pipes.pl,v 1.3 1999/10/02 17:46:56 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/pipes.pl,v 1.4 1999/10/03 18:15:51 josh Exp $
 #
 # Piped command processing.
 #
@@ -94,7 +94,7 @@ sub pipe_handler {
 sub and_handler {
     my($event, $handler) = @_;
     if ($event->{text} =~ /^\s*&\s*(.*?)\s*$/) {
-        pipe_handler($event->{server}, $event->{ui}, $1);
+        pipe_handler(TLily::Server::active(), $event->{ui}, $1);
         return 1;
     }
     return;
