@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/url.pl,v 1.13 2000/02/14 01:47:44 kazrak Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/url.pl,v 1.14 2000/02/14 02:12:27 tale Exp $
 
 #
 # URL handling
@@ -90,9 +90,9 @@ sub url_cmd {
 
     elsif ($arg eq "list" || $arg eq "") {
         my $count = $num || $config{url_list_count};
-	$count = 3 if ($count <= 0);
-	$count = @urls if ($count !~ /^\d+$/);
-	$count = @urls if ($count > @urls);
+        $count = @urls if $count =~ /^\s*all\s*/i;
+	$count = 3 if $count <= 0;
+	$count = @urls if $count > @urls;
 
         if (@urls == 0) {
 	    $ui->print("(no URLs captured this session)\n");
