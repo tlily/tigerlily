@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_output.pl,v 1.20 2001/01/26 03:02:21 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_output.pl,v 1.21 2001/07/23 04:12:59 mjr Exp $
 
 use strict;
 
@@ -22,6 +22,7 @@ that the parser module (slcp.pl) send into appopriate output for the user.
 sub private_fmt {
     my($ui, $e) = @_;
     my $ts = '';
+    my $Me =  $e->{server}->user_name();
     my $blurb = $e->{server}->get_blurb(HANDLE => $e->{SHANDLE});
 
     my $server_fmt = $e->{server_fmt} || "private_server";
@@ -39,12 +40,16 @@ sub private_fmt {
     $ui->indent($header_fmt => " >> ");
     $ui->prints($server_fmt => $servname)
       if (defined $servname);
-    $ui->prints($header_fmt => "${ts}Private message from ",
-                $sender_fmt => $e->{SOURCE});
-    $ui->prints($header_fmt => " [$blurb]")
-      if (defined $blurb && ($blurb ne ""));
-    if ($e->{RECIPS} =~ /,/) {
-        $ui->prints($header_fmt => ", to ",
+
+    $ui->prints($header_fmt => "${ts}Private message");
+    unless ($e->{SOURCE} eq $Me) {
+      $ui->prints($header_fmt => " from ",
+                  $sender_fmt => $e->{SOURCE});
+      $ui->prints($header_fmt => " [$blurb]")
+        if (defined $blurb && ($blurb ne ""));
+    }
+    if (($e->{RECIPS} =~ /,/) || ($e->{SOURCE} eq $Me)) {
+        $ui->prints($header_fmt => " to ",
                     $dest_fmt   => $e->{RECIPS});
     }
     $ui->prints($header_fmt => ":\n");

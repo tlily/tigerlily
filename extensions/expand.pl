@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/expand.pl,v 1.24 2001/04/09 22:22:05 neild Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/expand.pl,v 1.25 2001/07/23 04:12:59 mjr Exp $ 
 
 use strict;
 use TLily::UI;
@@ -171,11 +171,13 @@ TLily::UI::bind('C-i' => "complete-send");
 
 sub private_handler {
     my($event,$handler) = @_;
-    my $serv_name = $event->{server}->name();
-    $expansions{sender} = $event->{SOURCE} . "@" . $serv_name;
-    
+
     my $me = $event->{server}->user_name();
     return unless (defined $me);
+    
+    my $serv_name = $event->{server}->name();
+    $expansions{sender} = $event->{SOURCE} . "@" . $serv_name
+      unless ($event->{SOURCE} eq $me);
     
     my @group = split /, /, $event->{RECIPS};
     if (@group > 1) {
