@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Curses/Attic/Input.pm,v 1.20 2000/02/07 01:05:24 tale Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Curses/Attic/Input.pm,v 1.21 2000/02/13 20:16:04 tale Exp $
 
 package TLily::UI::Curses::Input;
 
@@ -15,6 +15,7 @@ use strict;
 use vars qw(@ISA);
 use Curses;
 use TLily::UI::Curses::Generic;
+use TLily::Config qw(%config);
 
 @ISA = qw(TLily::UI::Curses::Generic);
 
@@ -241,9 +242,8 @@ sub rationalize {
 # Return two character class regexps that will match or not match
 # (respectively) a word character.
 sub word_characters {
-    my $wordchars = ($TLily::Config::config{word_characters} ?
-                     $TLily::Config::config{word_characters} : "") .
-                       "A-Za-z0-9";
+    my $wordchars = ($config{word_characters} ? $config{word_characters} : "")
+                    . "A-Za-z0-9";
     return ("[$wordchars]", "[^$wordchars]");
 }
 
@@ -276,7 +276,7 @@ sub start_of_word {
 
 sub end_of_sentence {
     my($self) = @_;
-    my $spaces = $TLily::Config::config{doublespace_period} ? "  " : " ";
+    my $spaces = $config{doublespace_period} ? "  " : " ";
 
     if (substr($self->{text}, $self->{point}) =~
         /^(.*?[.!?][]\"')]*)($| $|\t|$spaces)/) {  # from Emacs
@@ -288,7 +288,7 @@ sub end_of_sentence {
 
 sub start_of_sentence {
     my($self) = @_;
-    my $spaces = $TLily::Config::config{doublespace_period} ? "  " : " ";
+    my $spaces = $config{doublespace_period} ? "  " : " ";
 
     if (substr($self->{text}, 0, $self->{point}) =~
         /^((.*[.!?][]\"')]*)($| $|\t|$spaces)[ \t]*)[^ \t]/) {
@@ -319,11 +319,13 @@ sub accept_line {
     $self->rationalize();
     $self->redraw();
 
-    if ($text ne "" && $text ne $self->{history}->[-1] && !$self->{'password'}) {
+    if ($text ne "" && $text ne $self->{history}->[-1] &&
+        !$self->{'password'}) {
 	$self->{history}->[-1] = $text;
 	push @{$self->{history}}, "";
-	$self->{history_pos} = $#{$self->{history}};
     }
+
+    $self->{history_pos} = $#{$self->{history}};
 
     return $text;
 }
@@ -339,10 +341,16 @@ following arguments:
 
 string - The string being searched for.
 
-dir    - What direction to search in buffer.  -1 (default) for backwards, 1 for
-forwards.
+dir    - What direction to search in buffer.
+         -1 (default) for backwards, 1 for forwards.
 
 reset  - Reset the saved position.
+
+next_match - whether this search should find the next occurrence, in
+         the same direction, for the string.
+
+switch_dir - whether this search is for the same string as the last
+         search, but going in the other direction.
 
 =back
 
@@ -353,22 +361,82 @@ sub search_history {
     my $self = shift;
     my %args = @_;
     my $string = $args{string};
+    my $case_fold = defined($config{case_fold_search}) ?
+                            $config{case_fold_search} : 1;
 
     # Reset the saved search position.
-    $self->{_search_pos} = $self->{history_pos} if (!defined($self->{_search_pos}) || $args{"reset"});
+    $self->{_search_pos} = $self->{history_pos}
+        if (!defined($self->{_search_pos}) || $args{"reset"});
 
     # If no string is passed, return.
-    return unless ($string);
+    return unless defined($string) && length($string) > 0;
+
+    # ASSERT().
+    die "switch_dir and next_match are mutually exclusive at "
+        if $args{switch_dir} && $args{next_match};
 
     # Normalize the direction; default to -1.
     my $dir = -1;
-    $dir = ($args{dir} >= 0)?1:-1 if (defined $args{dir});
+    $dir = ($args{dir} >= 0) ? 1 : -1 if defined $args{dir};
 
-    my $hist_idx = $self->{_search_pos} + $dir;
+    my $hist_idx = $self->{_search_pos};
+    my $length = length $self->{history}->[$hist_idx]
+        if defined $self->{history}->[$hist_idx];
+
+    # Prefix and suffix are used to block off parts of the line from
+    # being viewed.  They are necessary when looking at the current entry
+    # to either extend the search or change its direction. 
+    my ($prefix, $suffix);
+
+    if ($args{'next_match'}) {
+        # The next match can't include the first character (when going forward)
+        # or the last character (when going backward) of the current match.
+        # The prefix thus needs to be masked off when going forward, and
+        # the suffix masked when going backward.
+        $prefix = $dir == 1 ? $self->{point} : 0;
+        $suffix = $dir == 1 ? 0 : $length - length($string) - $self->{point}+1;
+
+    } elsif ($args{'switch_dir'}) {
+        # Switching directions should just move point to the other side
+        # of the existing match.  To ensure that another match is not found
+        # in text that has not yet been examined, the prefix and suffix must
+        # be masked.  (Consider:  "biz bang boom", and the reverse search for
+        # "b" is at the start of "boom".  Just making it a forward search
+        # without masking would first find the "b" in "biz".
+        $prefix = $dir == 1 ? $self->{point} : 0;
+        $suffix = $dir == 1 ? 0 : $length - $self->{point};
+
+    }
+
+    # Greedy is used to tell whether the perl "*" operator should be greedy
+    # or not; when looking for the last match on a line it should be, otherwise
+    # it should not be.
+    my $greedy = $dir == 1 ? "?" : "";
+    my $regexp;
 
     # Do the actual search.
     while (($hist_idx >= 0) && ($hist_idx <= $#{$self->{history}}) ) {
-        last if ($self->{history}->[$hist_idx] =~ /$string/);
+        $prefix = 0 unless defined $prefix;
+        $suffix = 0 unless defined $suffix;
+
+        $regexp = "^((.{$prefix})(.*$greedy))\Q$string\E.{$suffix,}\$";
+
+        if ((  $case_fold && $self->{history}->[$hist_idx] =~ /$regexp/i) ||
+            (! $case_fold && $self->{history}->[$hist_idx] =~ /$regexp/)) {
+
+            # The scope of $1 is local to this block, so its value needs
+            # to be saved here.  Set the cursor to the first character of the
+            # matched string for a reverse search, or the last character for a
+            # forward search.
+            $self->{point} = length($1);
+            $self->{point} += length($string) if $dir == 1;
+
+            last;
+        }
+
+        undef $prefix;
+        undef $suffix;
+
         $hist_idx += $dir;
     }
     return unless (($hist_idx >= 0) && ($hist_idx <= $#{$self->{history}}));
@@ -378,8 +446,6 @@ sub search_history {
 
     # Copy the text found to the current slot.
     $self->{text} = $self->{history}->[$hist_idx];
-    # And set the cursor to the first character of the matched string.
-    $self->{point} = index($self->{text}, $string);
 
     $self->update_style();
     $self->rationalize();
@@ -622,8 +688,6 @@ sub transpose_words {
     my($word1_start, $word2_start, $word2_end);
     my($point_in_word1, $point_in_word2);
 
-    # this should be configurable, so that someone could opt, for example,
-    # to have underscore be a word character.
     $self->{kill_reset} = 1;
 
     # First, identify where the cursor is with regard to surrounding words.

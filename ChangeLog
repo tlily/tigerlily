@@ -1,7 +1,26 @@
 Version 2.1.1-post
+  * [extensions/ui.pl, TLiLy/UI/Curses/Input.pm] Mucho hacking on the
+    search mechanism.  toggle-input-search-mode is now isearch-backward,
+    and isearch-forward was added.  Typing a key bound to backward-delete-char
+    while in input_search_mode will just erase the last character of the search
+    instead of terminating input_search_mode. C-r/C-s will look for the next
+    match in the same direction, or will switch directions.  If the
+    current search string is empty when C-r/C-s would cause a search
+    for the next match, the last search is recalled.   Typing C-g will
+    quit searching and return everything to the state it was in before
+    searching started.  C-l will refresh the screen without exiting.  Any
+    other special character exits input_search_mode, as was true before, but
+    now the history position is set based on where search stopped. Can now
+    search for the string "0"; could not before.  Case folded searching works,
+    configurable with $config{case_fold_search}. [DCL]
+  * [TLily/UI/Curses/Input.pm] Even when the input string is empty,
+    accept_line now resets history position to the end, like shells do. [DCL]
+  * [TLily/UI/Curses/Input.pm] Fixed a bug in search_history where the
+    search was done as regexp search but the setting of point was done
+    as a literal search. [DCL]
   * [extensions/ui.pl] Fixed bug in input_search_mode where the search
     string would not build on the current text region if more
-    characters matched.
+    characters matched. [DCL]
   * [TLily/Event.pm] Reordered the dispatching of events so that timed
     handlers are processed before named hanflers.  This fixes the problem
     of named events sent by timed handlers having to wait for the select

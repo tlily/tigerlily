@@ -1,4 +1,4 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/ui.pl,v 1.24 2000/02/12 00:37:37 tale Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/ui.pl,v 1.25 2000/02/13 20:16:04 tale Exp $ 
 use strict;
 
 =head1 NAME
@@ -241,13 +241,31 @@ See L<"%help isearch"|%help isearch> for details.
 
 =cut
 
+# XXXDCL should allow input context searching, at least the current
+# input context.
+
 my $isearch_help = qq{
 You can search your input buffer history (but not input contexts) for \
-a string.  After switching into search mode (default key is C-r), each \
-additional key will build a search string, and search backwards in your \
-input buffer for that string.  If a character is typed that would cause \
-the string not to be found, it is ignored, and tlily will beep.  Any \
-control characters will terminate search mode.
+a string.  After switching into search mode via isearch-backward or \
+isearch-forward (C-r and C-s, respectively), each additional key will \
+build a search string, and search backwards in your history buffer for that \
+string.  If a character is typed that would cause the string not to be found, \
+it is ignored, and tlily will beep.
+
+Typing C-r when already searching backward, or C-s when already searching \
+forward, will look for the next occurrence of the current search string. \
+Typing C-r while searching forward or C-s while searching backward will \
+change the direction of the search.  Typing C-r or C-s while there is no \
+search string will search for the string used by the last isearch.
+
+Typing C-g will restore your input buffer to its state prior to the start \
+of the search.  C-l (or any key bound to "refresh") will redraw the screen.
+
+Any other special characters will terminate search mode.
+
+The configuration variable case_fold_search, if non-zero, will cause \
+uppercase and lowercase letters to be matched equally.  Case folded \
+searching is enabled by default.
 };
 
 sub input_search_mode {
@@ -257,45 +275,155 @@ sub input_search_mode {
     die "key is null in input_search_mode at "
         unless defined($key) && $key ne "";
 
-    $key = "" if $key eq "C-r";
+    die "direction $ui->{_search_dir} is unknown at "
+        unless $ui->{_search_dir} =~ /^(fwd|rev)$/;
 
-    if (length($key) == 1) {
-        unless ($ui->{input}->search_history(string =>
-                                             $ui->{_search_text} . $key,
-                                             reset => 1)) {
+    my $next_match;
+    if ($ui->{bindings}->{$key} eq "isearch-backward") {
+        if ($ui->{_search_dir} eq 'rev') {
+            $next_match = 1;
+        } else {
+            $ui->{_search_dir} = 'rev';
+        }
+        $key = "";
+
+    } elsif ($ui->{bindings}->{$key} eq "isearch-forward") {
+        if ($ui->{_search_dir} eq 'fwd') {
+            $next_match = 1;
+        } else {
+            $ui->{_search_dir} = 'fwd';
+        }
+        $key = "";
+    }
+        
+    # If key is "", then it was originally C-r or C-s.
+    # Thus if the search is not being extended to the next match, it
+    # must be switching directions.  Also, if the C-r or C-s comes 
+    # while the search string is empty, set the search string to the last 
+    # searched string. 
+    my $switch_dir = 0;
+    if ($key eq "") {
+        $switch_dir = ! $next_match;
+        $ui->{_search_text} = $ui->{_search_last}
+            if $ui->{_search_text} eq "" && $next_match;
+    }
+            
+    my $input = $ui->{input};
+    my $dir = $ui->{_search_dir} eq 'fwd' ? 1 : -1;
+
+    if (length($key) <= 1) {
+        my $match = $input->search_history(string => $ui->{_search_text}.$key,
+                                           dir => $dir,
+                                           switch_dir => $switch_dir,
+                                           next_match => $next_match);
+        unless (length($match) > 0) {
             $ui->bell();
         } else {
             $ui->{_search_text} .= $key;
-            $ui->prompt("(rev-i-search)'$ui->{_search_text}':");
+            $ui->prompt("($ui->{_search_dir}-i-search)'$ui->{_search_text}':");
         }
         return 1;
+
     } else {
-        $ui->command("toggle-input-search-mode");
-        # if the key was C-r, return 1 so the key processing function
-        # does not continue.
-        return 1 if $key eq "";
+        if ($ui->{bindings}->{$key} eq 'backward-delete-char') {
+            return 1 if $ui->{_search_text} eq "";
+
+            chop($ui->{_search_text});
+
+            # If string is empty, go back to the save_excursion point,
+            # and reset the search position so the next character typed will
+            # start searching from where the original search started.
+            if ($ui->{_search_text} eq "") {
+                ($input->{text}, $input->{point}) = @{$ui->{save_excursion}};
+                $input->search_history(reset => 1);
+                $ui->prompt("($ui->{_search_dir}-i-search):");
+
+            } else {
+                # Find the first match for the shortened string, starting from
+                # where the original search started.
+                $input->search_history(string => $ui->{_search_text},
+                                       reset => 1,
+                                       dir => $dir);
+                $ui->prompt("($ui->{_search_dir}-i-search)'$ui->{_search_text}':");
+            }
+
+            return 1;
+
+        } elsif ($ui->{bindings}->{$key} eq 'refresh') {
+            $ui->command("refresh");
+            return 1;
+        }
+
+        # All other special keys terminate the search (regardless of whether
+        # they are really bound to a command).
+        search_stop($ui);
+
+        # C-g terminates the search and restores the state from when
+        # the search started.  Returns 1 so the key is not processed
+        # when the function is returned.  There is currently no keyboard-quit
+        # function, but there should be, and the existing C-g ("look") should
+        # be remapped to M-g or something else.  When keyboard-quit exists,
+        # paste-mode should probably use it too. XXDCL
+        if ($key eq 'C-g') {
+            ($input->{text}, $input->{point}) = @{$ui->{save_excursion}};
+            $ui->bell();
+
+            $input->update_style();
+            $input->rationalize();
+            $input->redraw();
+
+            return 1;
+
+        } else {
+            # Set the history position to the entry where the search stopped.
+            $input->{history_pos} = $input->{_search_pos};
+
+            # Save the search text for next time.
+            $ui->{_search_last} = $ui->{_search_text};
+        }
     }
     return;
 }
 
-sub toggle_input_search_mode {
-    my($ui) = @_;
+sub search_start {
+    my ($ui, $dir) = @_;
+
     $ui->{_search_text} = "";
-    $ui->{_search_idx} = $#{$ui->{input}->{history}};
-    if ($ui->intercept_u("input-search-mode")) {
-        $ui->prompt("");
-        $ui->{input}->search_history(reset => 1);
-    }
-    elsif ($ui->intercept_r("input-search-mode")) {
-        $ui->prompt("(rev-i-search):");
-    }
+    $ui->{_search_last} = "" unless defined $ui->{_search_last};
+    $ui->{_search_dir} = $dir;
+    $ui->{save_excursion} = [$ui->{input}->{text}, $ui->{input}->{point}];
+
+    $ui->{input}->search_history(reset => 1);
+
+    $ui->intercept_r("input-search-mode");
+    $ui->prompt("($dir-i-search):");
 }
 
-TLily::UI::command_r("toggle-input-search-mode" => \&toggle_input_search_mode);
+sub search_stop {
+    my ($ui) = @_;
+
+    $ui->intercept_u("input-search-mode");
+    $ui->prompt("");
+}
+
+sub isearch_forward {
+    my ($ui) = @_;
+
+    search_start($ui, "fwd");
+}
+
+sub isearch_backward {
+    my ($ui) = @_;
+
+    search_start($ui, "rev");
+}
+
+TLily::UI::command_r("isearch-forward" => \&isearch_forward);
+TLily::UI::command_r("isearch-backward" => \&isearch_backward);
 TLily::UI::command_r("input-search-mode" => \&input_search_mode);
-TLily::UI::bind("C-r" => "toggle-input-search-mode");
-shelp_r("isearch" => "Search your input buffer for a string.",
-        "concepts");
+TLily::UI::bind("C-r" => "isearch-backward");
+TLily::UI::bind("C-s" => "isearch-forward");
+shelp_r("isearch" => "Search your input buffer for a string.", "concepts");
 help_r("isearch" => $isearch_help);
 
 #
