@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Curses/Attic/Generic.pm,v 1.21 2001/01/26 03:01:54 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Curses/Attic/Generic.pm,v 1.22 2001/05/29 19:36:58 neild Exp $
 
 package TLily::UI::Curses::Generic;
 
@@ -195,14 +195,35 @@ sub parsestyle {
 }
 
 
+sub colorid {
+	my($col) = @_;
+
+	if (defined($cnamemap{$col})) {
+		return $cnamemap{$col}
+	} elsif ($col =~ /^gr[ae]y(\d+)$/) {
+		$col = $1 + 232;
+		return undef if ($col > 255);
+		return $col;
+	} elsif ($col =~ /^(\d+),(\d+),(\d+)$/) {
+		$col = (16 + $1 * 36 + $2 * 6 + $3);
+		return undef if ($col < 16 || $col > 231);
+		return $col;
+	} else {
+		return undef;
+	}
+}
+
+
 sub color_pair {
     my($fg, $bg) = @_;
     my $pair;
 
     return 0 unless (defined $fg && defined $bg);
 
-    $fg = defined($cnamemap{$fg}) ? $cnamemap{$fg} : COLOR_WHITE;
-    $bg = defined($cnamemap{$bg}) ? $cnamemap{$bg} : COLOR_BLACK;
+    $fg = colorid($fg);
+    $fg = COLOR_WHITE unless defined($fg);
+    $bg = colorid($bg);
+    $bg = COLOR_BLACK unless defined($bg);
 
     if (defined $cpairmap{"$fg $bg"}) {
 	$pair = $cpairmap{"$fg $bg"};
