@@ -1,5 +1,5 @@
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/autoreview.pl,v 1.3 1999/03/23 08:33:41 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/autoreview.pl,v 1.4 1999/04/09 23:50:32 neild Exp $
 
 use strict;
 
@@ -50,14 +50,14 @@ sub review_start {
 sub review {
     return unless (@to_review);
     my $target = shift @to_review;
+    $rev_interesting = 0;
+    $rev_start = undef;
     cmd_process("/review " . $target . " detach", \&review_handler);
 }
 
 sub review_handler {
     my($event) = @_;
     if ($event->{type} eq 'begincmd') {
-	$rev_interesting = 0;
-	$rev_start = undef;
     } elsif ($event->{type} eq 'endcmd') {
 	review();
     } elsif ($event->{text} =~ /^\(Beginning review of.*\)/) {
@@ -69,9 +69,9 @@ sub review_handler {
 	$event->{NOTIFY} = 0 unless ($rev_interesting);
     } elsif ($event->{text} =~ /^\(No events to review for .*\)/) {
 	$event->{NOTIFY} = 0;
-    } elsif ($event->{text} =~ /^ \# \*\*\*/) {
+    } elsif ($event->{text} =~ /^\# \*\*\*/) {
 	$event->{NOTIFY} = 0;
-    } elsif ($event->{text} =~ /^ \# \#\#\#/ && !$rev_interesting) {
+    } elsif ($event->{text} =~ /^\# \#\#\#/ && !$rev_interesting) {
 	$event->{NOTIFY} = 0;
 	$rev_start .= "\n" . $event->{text};
     } elsif (!$rev_interesting) {
