@@ -1,4 +1,6 @@
 Version 2.3-post
+  * [extensions/autohere.pl] Added autohere, which will automatically 
+    '/here' the user when they send a message.
   * [tlily.global] Set max_scrollback to 10000 by default. [DPN]
   * [extensions/on.pl] Changed %on behavior to be compatible with what
     it used to be: the default for the notify flag is now 'always'. [DPN]
