@@ -1,28 +1,37 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/on.pl,v 1.10 2000/07/12 17:13:43 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/on.pl,v 1.11 2000/12/14 01:15:40 neild Exp $
 
 use strict;
 use Text::ParseWords qw(quotewords);
 use TLily::Bot;
 
-# bugs:
 #
-# \n in the what to do section isn't working.
+# This is a rewrite of the old %on.pl for clarity and features.  Unfortunately,
+# one feature was lost in the rewrite: \n doesn't work in actions any more.
+# (Assuming it ever did; the old on.pl had a note that it might not work.)
 #
-# handling of the final field (what to do) is wonky.  RIght now, you pretty 
-#    much want to put it in quotes.  Ick.
 
-
-my $usage = "%on list\n   %on clear <id>\n   %on [<event> [from <source>] [to <dest>] [value|like <value>] <what to do>]";
+my $usage = "(/on list | clear <id> | <event> <action>)";
 
 command_r(on => \&on_cmd);
 shelp_r(on => "execute a command when a specific event occurs");
 help_r('on', qq[
-   $usage
+   %on list
+   %on clear <id>
+   %on [<event> [options...] <what to do>]
 
-(where <event> is any standard SLCP event, such as "public", "private", or 
-"emote".  <value> is the VALUE parameter to that SLCP event, which is the
-message body in the "public", "private", and "emote" events.)
+<event> is any standard tlily event.  A few useful events are:
+  public        - Public sends.
+  private       - Private sends.
+  emote         - Public sends to emote discussions.
+  server_change - The active server has changed.
+
+There are a number of options to limit the events acted upon.
+  from <source>  - Events from a given user or group.
+  to <target>    - Events sent to a given user or discussion.
+  value <string> - The VALUE field of the event is identical to <string>.
+  like <regexp>  - The VALUE field of the event matches the given pattern.
+  server <name>  - Events sent to a specific server.
 
 %on supports the following special characters in "what to do":
 
@@ -52,170 +61,310 @@ Examples:
   %on attach from JoshTest "%eval `banner wazzup?`"  
 ]);
 
+shelp_r('on_quiet' => 'Don\'t display %on notifications', 'variables');
 
 
 my @on_handlers;
 
+
+#
+# %on command handler
+# %on list
+# %on clear <id>
+#
 sub on_cmd {
-    my($ui, $args) = @_;
-    my %mask;
+    my($ui, $args, $startup) = @_;
 
-    $args =~ s/\\/\\\\/g;
+    eval {
+	my @args = quotewords('\s+', 0, $args);
+	die "usage" if (@args == 0 && $args =~ /\S/);
 
-    if ($args !~ /\S/ || $args =~ /^\s*list\s*$/) {
-	if (@on_handlers) {
+	#
+	# %on list
+	#
+	if (@args == 0 || $args[0] =~ /^list$/s) {
+	    die "usage" if (@args > 1);
+
+	    if (!@on_handlers) {
+		$ui->print("(no %on handlers are currently registered)\n");
+		return;
+	    }
+
 	    $ui->printf("%5.5s %-70.70s\n", "Id", "Description");
 	    $ui->printf("%5.5s %-70.70s\n", "-" x 5, "-" x 70);
 	    foreach (@on_handlers) {
-		$ui->printf("%5.5s %-70.70s\n", $_->[0], $_->[1]);
-	    }
-	} else {
-	    $ui->print("(no %on handlers are currently registered)\n");
-	}
-	return;
-    }
-
-    if ($args =~ /^\s*clear\s*(\d+)/) {
-	if (grep { $_->[0] == $1 } @on_handlers) {
-	    event_u($1);
-	    $ui->print("(%on handler id $1 removed)\n");
-	} else {
-	    $ui->print("(%on handler id $1 not found)\n");
-	}
+		my $mask = $_->[1];
+		my $desc = "TYPE $mask->{EVENT}";
 	
-	@on_handlers = grep { $_->[0] != $1 } @on_handlers;
-	return;
-    }
+		if (defined $mask->{SHANDLE}) {
+		    my %state =
+		      $mask->{SERVER}->state(HANDLE => $mask->{SHANDLE});
+		    $desc .= " FROM $state{NAME}";
+		}
+
+		$desc .= " FROM GROUP $mask->{SGROUP}" if
+		  defined($mask->{SGROUP});
+
+		if (defined $mask->{RHANDLE}) {
+		    my %state =
+		      $mask->{SERVER}->state(HANDLE => $mask->{RHANDLE});
+		    $desc .= " TO $state{NAME}";
+		}
+
+		$desc .= " TO GROUP $mask->{RGROUP}" if
+		  defined($mask->{RGROUP});
+
+		$desc .= " LIKE \"$mask->{LIKE}\""
+		  if defined($mask->{LIKE});
+
+		$desc .= " VALUE \"$mask->{VALUE}\""
+		  if defined($mask->{VALUE});
+
+		$ui->printf("%5.5s %-70.70s\n", $_->[0], $desc);
+		$ui->print("      " . join(" ", @{$mask->{ACTION}}) . "\n");
+	    }
+	    return;
+	}
 
 
-    my @args = quotewords('\s+',0,$args);
+	#
+	# %on clear <id>
+	#
+	if ($args[0] =~ /^clear$/) {
+	    die "usage" if (@args != 2);
 
-    if (@args < 2) {
-	$ui->print("Usage: $usage\n");
-	return;
-    }
+	    if (grep { $_->[0] == $args[1] } @on_handlers) {
+		event_u($args[1]);
+		$ui->print("(%on handler id $args[1] removed)\n");
+		@on_handlers = grep { $_->[0] != $args[1] } @on_handlers;
+	    } else {
+		$ui->print("(%on handler id $1 not found)\n");
+	    }
 
-    my $event_type = shift @args;
-    my $server = active_server();
+	    return;
+	}
 
-    while ($args[0] =~ /^(from|to|value|like)$/i) {
-	my $masktype = uc(shift @args);
-	my $maskval  = shift @args;
 
-	if ($masktype =~ /^(FROM|TO)$/) {
-	    my $name   = $server->expand_name($maskval);
-	    $name =~ s/^-//;
-	    my $handle = $server->{"NAME"}{lc($name)}{"HANDLE"};	
-	    if ($handle !~ /^\#\d+/) {
-		$ui->print("($maskval not found)\n");
+	#
+	# %on <type> [<mask> <value>] ... <action>
+	#
+	die "usage" if (@args < 2);
+
+	my %mask;
+	my $event_type = shift @args;
+
+	while (@args && $args[0] =~ /^(from|to|value|like|server)$/i) {
+	    my $masktype = uc(shift @args);
+	    my $maskval  = shift @args;
+	    $mask{$masktype} = $maskval;
+	}
+
+	# The following design requires that a connection exist to a given
+	# server in order to set actions relating to it.  This makes it
+	# impossible to set up actions prior to contacting the server.
+	my $server;
+	if (defined $mask{SERVER}) {
+	    $server = TLily::Server::find($mask{SERVER});
+	    if (!$server) {
+		$ui->print("(server \"$mask{SERVER}\" not found)\n");
 		return;
 	    }
-	    $maskval = $handle;
+	} else {
+	    $server = TLily::Server::active();
+	    if (!$server && ($mask{FROM} || $mask{TO})) {
+		$ui->print("(no server is active)\n");
+		return;
+	    }
+	}
+	$mask{SERVER} = $server;
+
+	for my $mask (qw(FROM TO)) {
+	    next unless defined($mask{$mask});
+
+	    my $char = ($mask eq "FROM") ? "S" : "R";
+
+	    # This is a hideous hack.  Perhaps expand_name() should be
+	    # changed to take an option indicating that groups are not
+	    # to be expanded?
+	    local $config{expand_group} = 0;
+
+	    # Look up the name in question.
+	    my $name = $server->expand_name($mask{$mask});
+	    if (!defined $name) {
+		$ui->print("($mask{$mask} not found)\n");
+		return;
+	    }
+	    $name =~ s/^-//;
+
+	    # Fetch the state associated with this name.
+	    my %state = $server->state(NAME => $mask{$mask});
+
+	    # Matched a group?
+	    if ($state{MEMBERS}) {
+		$mask{"${char}GROUP"} = $state{NAME};
+	    }
+	    # Matched a destination?
+	    elsif ($state{HANDLE}) {
+		$mask{"${char}HANDLE"} = $state{HANDLE};
+	    } else {
+		$ui->print("($mask{$mask} not found)\n");
+		return;
+	    }
+
+	    $mask{$mask} = $state{NAME};
 	}
 
-	$masktype = "SHANDLE" if ($masktype eq "FROM"); 
-	$masktype = "RHANDLE" if ($masktype eq "TO");
-	$mask{$masktype} = $maskval;
+	$mask{EVENT} = $event_type;
+	$mask{ACTION} = \@args;
+
+	# Print an accounting of what we're doing, unless this is being
+	# run out of a startup file.
+	if (!$startup) {
+	    my $str;
+
+	    $str  = "(on $event_type events";
+	    $str .= " from $mask{FROM}"       if defined($mask{SHANDLE});
+	    $str .= " from group $mask{FROM}" if defined($mask{SGROUP});
+	    $str .= " to $mask{TO}"           if defined($mask{RHANDLE});
+	    $str .= " to group $mask{TO}"     if defined($mask{RGROUP});
+	    $str .= " with a value like \"$mask{LIKE}\""
+	      if defined($mask{LIKE});
+	    $str .= " with a value of \"$mask{VALUE}\""
+	      if defined($mask{VALUE});
+	    $str .= ", I will run \"@args\")\n";
+
+	    $ui->print($str);
+	}
+
+	delete $mask{FROM};
+	delete $mask{TO};
+
+	# The %on handler runs in the 'after' phase, except for %attr actions.
+	my $order = ($args[0] =~ /^%attr$/i) ? "before" : "after";
+
+	my $handler = event_r(type  => $event_type,
+			      order => $order,
+			      call  => sub { on_evt_handler(@_, \%mask); });
+	push @on_handlers, [ $handler, \%mask ];
+    };
+
+    # Catch usage errors here.  Any other error is propagated.
+    if ($@) {
+	die if ($@ !~ /^usage/);
+	$ui->print("$usage\n");
     }
 
-    my $str;
-
-    $str = "(on " . $event_type . " events";
-    $str .= " from " .$server->{"HANDLE"}{$mask{"SHANDLE"}}{"NAME"} if $mask{"SHANDLE"};
-    $str .= " to " .$server->{"HANDLE"}{$mask{"RHANDLE"}}{"NAME"} if $mask{"RHANDLE"};
-    if ($mask{"LIKE"}) {
-	$str .= " with a value like \"" . $mask{"LIKE"} . "\"";
-    } elsif ($mask{"VALUE"}) {
-	$str .= " with a value of \"" . $mask{"VALUE"} . "\"";
-    }
-    $str .= ", I will run \"@args\")\n";
-
-    $ui->print($str);
-
-    my $order = "after";
-    my $attr;
-    if ($args[0] eq '%attr') {
-	shift @args;
-	$attr = shift @args;
-	$order = "before";
-    }
-
-    my $handler = event_r(type  => $event_type,
-                          order => $order,
- 			  call  => sub {
-			      my ($e,$h) = @_;
-			      my $match = 1;
-			      my ($m1,$m2,$m3,$m4,$m5,$m6,$m7,$m8,$m9);
-
-			      foreach (keys %mask) {
-				  if (/LIKE/) {
-				      if ($e->{"VALUE"} !~ /$mask{$_}/i) {
-					  $match = 0;
-				      } else {
-					  ($m1,$m2,$m3,$m4,$m5,$m6,$m7,$m8,$m9)
-					    = ($1,$2,$3,$4,$5,$6,$7,$8,$9);
-				      }
-				  } elsif (/RHANDLE/) {
-				      $match = 0;
-				      # RHANDLE is an arrayref.  Ugh.
-				      foreach (@{$e->{$_}}) {
-					  $match=1 if ($mask{"RHANDLE"} eq $_);
-				      }				      
-				  } elsif ($mask{$_} ne $e->{$_}) {
-				      $match = 0;
-				  }
-
-				  last if $match == 0;
-			      }
-
-			      my $sender = $server->expand_name($e->{SOURCE});
-			      $sender =~ s/^-//;
-			      $sender =~ s/ /_/g;
-
-			      if ($match) {
-				  my $cmd = "@args";
-
-				  $cmd =~ s/\$sender/$sender/g;
-				  $cmd =~ s/\$value/$e->{VALUE}/g;
-				  $cmd =~ s/\$1/$m1/g;
-				  $cmd =~ s/\$2/$m2/g;
-				  $cmd =~ s/\$3/$m3/g;
-				  $cmd =~ s/\$4/$m4/g;
-				  $cmd =~ s/\$5/$m5/g;
-				  $cmd =~ s/\$6/$m6/g;
-				  $cmd =~ s/\$7/$m7/g;
-				  $cmd =~ s/\$8/$m8/g;
-				  $cmd =~ s/\$9/$m9/g;
-
-				  if (defined $attr) {
-				      $e->{$attr} = $cmd;
-				  } else {
-				      # ignore events from me.
-				      if ($e->{"SHANDLE"} eq $e->{server}->user_handle) {
-					  return;				  
-				      }
-			      
-                                      if ($cmd =~ /^%eval (.*)/) {
-                                          $cmd = eval "$1;";
-                                          $cmd .= "ERROR: $@" if $@;
-                                          $cmd = "$sender;" .
-                                            TLily::Bot::wrap_lines($cmd);
-                                      }
-
-		 		      $ui->prints(on => "[%on] $cmd\n");
-				      
-                                      foreach (split /\\n/, $cmd) {
-                                          TLily::Event::send({type => 'user_input',
-                                                              ui   => $e->{ui},
-                                                              text => "$_\n"});
-                                      }
-                                  }
-			      }
-
-			      return(0);
-			  });
-    push @on_handlers, [ $handler, $args ];
+    return;
 }
+
+
+# Event handler to dispatch %on commands.
+sub on_evt_handler {
+    my($e, $h, $mask) = @_;
+    my $ui = $e->{ui} || ui_name();
+    my %vars;
+
+    # Server matches?
+    return if (!$e->{server} || $e->{server} != $mask->{SERVER});
+
+    # Regexp value match?
+    if (defined $mask->{LIKE}) {
+	return if ($e->{VALUE} !~ /$mask->{LIKE}/i);
+
+	my $i = 1;
+	for my $m ($1,$2,$3,$4,$5,$6,$7,$8,$9) {
+	    $vars{$i++} = $m;
+	}
+    }
+
+    # Literal value match?
+    if (defined $mask->{VALUE}) {
+	return if ($e->{VALUE} ne $mask->{VALUE});
+    }
+
+    # Sender match?
+    if (defined $mask->{SHANDLE}) {
+	return unless ($e->{SHANDLE} eq $mask->{SHANDLE});
+    }
+
+    # Sender group match?
+    if (defined $mask->{SGROUP}) {
+	my %state = $e->{server}->state(NAME => $mask->{SGROUP});
+	return unless ($state{MEMBERS});
+
+	my %from;
+	@from{split /,/, $state{MEMBERS}} = undef;
+	return unless exists($from{$e->{SHANDLE}});
+    }
+
+    # Destination match?
+    if (defined $mask->{RHANDLE}) {
+	return unless grep($_ eq $mask->{RHANDLE}, @{$e->{RHANDLE}});
+    }
+
+    # Destination group match?
+    if (defined $mask->{RGROUP}) {
+	my %state = $e->{server}->state(NAME => $mask->{RGROUP});
+	return unless ($state{MEMBERS});
+
+	my %to;
+	@to{split /,/, $state{MEMBERS}} = undef;
+	return unless grep(exists($to{$_}), @{$e->{RHANDLE}});
+    }
+
+    # Match successful.
+    $vars{sender} = $e->{server}->expand_name($e->{SOURCE});
+    $vars{sender} =~ s/^-//;
+    $vars{sender} =~ s/ /_/g;
+    $vars{value} = $e->{VALUE};
+
+    my @cmd = @{$mask->{ACTION}};
+    @cmd = map { ($_ =~ s/^\$//g) ? $vars{$_} : $_ } @cmd;
+
+    return unless @cmd;
+
+    if ($cmd[0] =~ /^%attr$/i) {
+	shift @cmd;
+	my $attr = shift @cmd;
+	$e->{$attr} = join(" ", @cmd);
+	return;
+    }
+
+    # Ignore events from myself, unless I specifically define them.
+    return if (!$mask->{SHANDLE} &&
+	       !$mask->{SGROUP} &&
+	       ($e->{SHANDLE} eq $e->{server}->user_handle));
+
+    if ($cmd[0] =~ /^%eval$/i) {
+	shift @cmd;
+	my $res = eval "@cmd";
+	$res .= "ERROR: $@" if $@;
+	$res = "$vars{sender};" . TLily::Bot::wrap_lines($res);
+	@cmd = ($res);
+    }
+
+    $ui->prints(on => "[%on] @cmd\n") unless $config{on_quiet};
+
+    TLily::Event::send({type => 'user_input',
+			ui   => $ui,
+			text => "@cmd\n"});
+
+    return 0;
+}
+
+
+sub on_disconnect {
+    my($e, $h) = @_;
+
+    my $ui = ui_name();
+    for my $on (@on_handlers) {
+	if ($on->[1]->{SERVER} == $e->{server}) {
+	    on_cmd($ui, "clear $on->[0]");
+	}
+    }
+}
+TLily::Event::event_r(type => 'server_disconnected',
+		      call => \&on_disconnect);
 
 sub unload {
     my $ui = ui_name();
@@ -223,5 +372,6 @@ sub unload {
 	on_cmd($ui, "clear $on_handlers[0]->[0]");
     }
 }
+
 
 1;
