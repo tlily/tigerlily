@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_parse.pl,v 1.16 1999/12/16 22:41:26 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_parse.pl,v 1.17 1999/12/27 02:06:09 mjr Exp $
 
 use strict;
 use vars qw(%config);
@@ -113,7 +113,7 @@ sub parse_line {
     $ui = ui_name($serv->{'ui_name'}) if ($serv->{'ui_name'});
     
     #print STDERR "=", $line, "\n";
-    $ui->print("=", $line, "\n") if ($TLily::Config::config{parser_debug});
+    $ui->print("=", $serv->name(), "=", $line, "\n") if ($TLily::Config::config{parser_debug});
     
     my %event;
     my $cmdid = "";
@@ -290,6 +290,16 @@ sub parse_line {
     
     
     # other %server messages ##############################################
+
+    # %server
+    if ($line =~ /^%server /) {
+	%event = SLCP_parse($line);
+
+        foreach my $name (keys %event) {
+	    $serv->state(DATA => 1, NAME => $name, VALUE => $event{$name});
+        }
+	return;
+    }
 
     # %prompt
     if ($line =~ /^%prompt2? (.*)/) {

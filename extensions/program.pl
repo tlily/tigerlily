@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/program.pl,v 1.14 1999/12/20 20:37:25 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/program.pl,v 1.15 1999/12/27 02:06:08 mjr Exp $
 
 $perms = undef;
 
@@ -350,6 +350,13 @@ sub verb_cmd {
         }
         $verb2_spec->[0] = $server;
 
+        # Make sure the two verb specs aren't identical.
+        if ($verb_spec->[0] eq $verb2_spec->[0] &&
+            $verb_spec->[1] eq $verb2_spec->[1] &&
+            $verb_spec->[2] eq $verb2_spec->[2]) {
+            $ui->print("(source and destination verbs are the same verb)\n");
+            return 0;
+        }
         verb_diff($cmd, $ui, $verb_spec, $verb2_spec) if ($cmd eq 'diff');
         verb_copy($cmd, $ui, $verb_spec, $verb2_spec) if ($cmd eq 'copy');
     } elsif ($cmd eq 'reedit') {
@@ -448,7 +455,6 @@ sub verb_copy {
                     call   => $sub);
 
 }
-
 sub verb_diff {
     my ($cmd, $ui, $verb1, $verb2) = @_;
 
@@ -476,7 +482,8 @@ sub verb_diff {
             }
 
             # Put the text into a buffer.
-            if ($args{server} == $server1) {
+            if ($args{server} eq $server1 &&
+                $args{target} eq $verb1->[1] . ":" . $verb2->[2]) {
                 $data[0] = $args{text};
             } else {
                 $data[1] = $args{text};
@@ -486,6 +493,7 @@ sub verb_diff {
             if (defined($data[0]) && defined($data[1])) {
                 my $diff = diff_text(@data);
 
+                $ui->print("(no differences found)\n") unless (@{$diff});
                 foreach (@{$diff}) { $ui->print($_) };
             }
         }

@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_output.pl,v 1.13 1999/12/20 17:56:10 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_output.pl,v 1.14 1999/12/27 02:06:09 mjr Exp $
 
 use strict;
 
@@ -34,12 +34,12 @@ sub private_fmt {
     $ui->prints(private_header => $servname)
       if (defined $servname);
     $ui->prints(private_header => "${ts}Private message from ",
-		private_sender => $e->{SOURCE});
+                private_sender => $e->{SOURCE});
     $ui->prints(private_header => " [$blurb]")
       if (defined $blurb && ($blurb ne ""));
     if ($e->{RECIPS} =~ /,/) {
-	$ui->prints(private_header => ", to ",
-		    private_dest   => $e->{RECIPS});
+        $ui->prints(private_header => ", to ",
+                    private_dest   => $e->{RECIPS});
     }
     $ui->prints(private_header => ":\n");
     
@@ -51,8 +51,8 @@ sub private_fmt {
     return;
 }
 event_r(type  => 'private',
-	order => 'before',
-	call  => sub { $_[0]->{formatter} = \&private_fmt; return });
+        order => 'before',
+        call  => sub { $_[0]->{formatter} = \&private_fmt; return });
 
 # Print public sends.
 sub public_fmt {
@@ -95,11 +95,14 @@ sub emote_fmt {
     my $ts = '';
     
     my $dest = $e->{RECIPS};
-    $dest .= "\@" . $e->{server}->name()
+    my $servname = "(" . $e->{server}->name() . ") "
       if (scalar(TLily::Server::find()) > 1);
+
 
     $ts = etimestamp ($e->{TIME}) if ($e->{STAMP} || $config{'stampemotes'});
     $ui->indent(emote_body   => "> ");
+    $ui->prints(emote_body => $servname)
+      if (defined $servname);
     $ui->prints(emote_body   => "(${ts}to ",
 		emote_dest   => $dest,
 		emote_body   => ") ",
@@ -119,6 +122,8 @@ event_r(type  => 'emote',
 # %U: source's pseudo and blurb
 # %u: source's pseudo
 # %V: VALUE
+# %v: VALUE, but insert the server name and timestamp as appropriate
+#     after the first occurance of '***' or '###'
 # %D: title of discussion whose name is in VALUE.
 # %R: RECIPS
 # %P: TARGETS
@@ -148,6 +153,10 @@ event_r(type  => 'emote',
 # C="val"; : use this message if SUBEVT is defined and equals val.
 # C: use this message if SUBEVT is defined.
 # c: use this message if SUBEVT is undefined.
+####
+# L<op>"val"; : where <op> is =, <, >, <=, or >=.  Use this
+#   message by matching the lily server version against "val",
+#   using <op>.
 ####
 
 # the first matching message is always used.
@@ -190,6 +199,7 @@ my @infomsg = (
     'create'     => 'U'    => '*** %S%T%u has created discussion %R "%D" ***',
     'destroy'    => 'DSU'   => '(you have destroyed discussion %R)',
     'destroy'    => 'DU'    => '*** %S%T%u has destroyed discussion %R ***',
+    'destroy'    => 'U'    => '*** %S%T%u has destroyed a discussion (server didn\'t say which) ***',
     'permit'     => 'DSMC="owner";' => '(You have accepted ownership of discussion %R)',
     'permit'     => 'DSTC="owner";' => '(You have offered %P ownership of discussion %R)',
     'permit'     => 'DSTC'  => '(You have given %P %E privileges to discussion %R)',
@@ -199,10 +209,16 @@ my @infomsg = (
     'permit'     => 'DTC'   => '*** %S%T%u has given %P %E privileges to discussion %R ***',
     'permit'     => 'DMc'   => '*** %S%T%u has permitted you to discussion %R ***',
     'permit'     => 'DTc'   => '*** %S%T%u has permitted %P to discussion %R ***',
-    'permit'     => 'DSUtc'  => '(%R is now public)',
-    'permit'     => 'DUtc'   => '*** %S%T%u has made discussion %R public ***',
+# The following two messages should only be used on 2.4 or later cores.
+# Earlier cores gave the same notify for [un]appoints as well as a discussion
+# going public/private.
+    'permit'     => 'DSUtcL>="2.4";'  => '(%R is now public)',
+    'permit'     => 'DUtcL>="2.4";'   => '*** %S%T%u has made discussion %R public ***',
     'permit'     => 'SDtC'  => '(%R is no longer moderated)',
     'permit'     => 'DtC'   => '*** %S%T%u has unmoderated discussion %R ***',
+# The older style /permit notify
+    'permit'     => 'DtcVL<="2.3";'   => '*** %S%T%u has permitted %O to discussion %R ***',
+    'permit'     => 'tcVL<="2.3";'   => '*** %S%T%u has permitted you to a discussion (server didn\'t say which) ***',
     'depermit'   => 'DSTC="owner";'  => '(You have rescinded your offer to %P for ownership of discussion %R)',
     'depermit'   => 'DSTC'  => '(You have removed %P\'s %E privileges on discussion %R)',
     'depermit'   => 'DMC="owner";' => '*** %S%T%u has rescinded their ownership offer of discussion %R ***',
@@ -210,18 +226,22 @@ my @infomsg = (
     'depermit'   => 'DTC'   => '*** %S%T%u has removed %P\'s %E privileges on discussion %R ***',
     'depermit'   => 'DMc'   => '*** %S%T%u has depermitted you from discussion %R ***',
     'depermit'   => 'DTc'   => '*** %S%T%u has depermitted %P from discussion %R ***',
-    'depermit'   => 'DSUtc'  => '(%R is now private)',
-    'depermit'   => 'DUtc'   => '*** %S%T%u has made discussion %R private ***',
+# The following two messages should only be used on 2.4 or later cores.
+# Earlier cores gave the same notify for [un]appoints as well as a discussion
+# going public/private.
+    'depermit'   => 'DSUtcL>="2.4";'  => '(%R is now private)',
+    'depermit'   => 'DUtcL>="2.4";'   => '*** %S%T%u has made discussion %R private ***',
     'depermit'   => 'DStC'  => '(%R is now moderated)',
     'depermit'   => 'DtC'   => '*** %S%T%u has moderated discussion %R ***',
-    'depermit'   => 'DV'    => '*** %S%T%O is now depermitted from %R ***',
+# The older style /depermit notify
+    'depermit'    => 'DtcVL<="2.3";'   => '*** %S%T%u has depermitted %O from discussion %R ***',
     'join'       => 'DSU'   => '(you have joined %R)',
     'join'       => 'DU'    => '*** %S%T%u is now a member of %R ***',
     'quit'       => 'DSU'   => '(you have quit %R)',
     'quit'       => 'DU'    => '*** %S%T%u is no longer a member of %R ***',
     'retitle'    => 'DSV'   => '(you have changed the title of %R to "%V")',
     'retitle'    => 'DV'    => '*** %S%T%u has changed the title of %R to "%V" ***',
-    'sysmsg'     => 'V'    => '%S%V',
+    'sysmsg'     => 'V'    => '%v',
     'pa'         => 'V'    => '** %S%TPublic address message from %U: %V **'
     # need to handle review, sysalert, pa, game, and consult.
 );
@@ -239,33 +259,43 @@ my $sub = sub {
     my $i = 0;
     my $found;
     while ($i < $#infomsg) {
-	my $type  = $infomsg[$i++];
-	my $flags = $infomsg[$i++];
-	my $msg   = $infomsg[$i++];
+        my $type  = $infomsg[$i++];
+        my $flags = $infomsg[$i++];
+        my $msg   = $infomsg[$i++];
         my %flags = ();
-	
-	next unless ($type eq $e->{type});
 
-        while ($flags =~ /\G([AEVUDSMTtCc])(?:="([^"]+)";)?/g) {
-            $flags{$1} = $2;
+        next unless ($type eq $e->{type});
+
+        while ($flags =~ /\G([AEVUDSMTtCcL])(?:([<>]?=)"([^"]+)";)?/g) {
+            if (defined($2) && defined($3)) {
+                $flags{$1} = [$2,$3];
+            } else {
+                $flags{$1} = undef;
+            }
         }
 
-	if (exists $flags{A}) {
-	    $found = $msg; last;
-	}
+        if (exists $flags{A}) {
+            $found = $msg; last;
+        }
 
-	if (exists $flags{S}) {
+        if (exists $flags{L}) {
+            my $version = $serv->state(DATA => 1, NAME => "version");
+            my $eval = "'$version' $flags{L}->[0] '$flags{L}->[1]'";
+            next unless eval($eval);
+        }
+
+        if (exists $flags{S}) {
             next if ($e->{'SOURCE'} ne $Me);
-	}
+        }
 
-	if (exists $flags{M}) {
+        if (exists $flags{M}) {
             my $targMe = 0;
             # FOO: Huh?
             for ($e->{'TARGETS'}) { $targMe = 1 if ($e->{'TARGETS'} eq $Me) };
             next unless $targMe;
-	} elsif (exists $flags{T}) {
+        } elsif (exists $flags{T}) {
             next unless (defined($e->{TARGETS}));
-	} elsif (exists $flags{t}) {
+        } elsif (exists $flags{t}) {
             next unless (!defined($e->{TARGETS}));
         }
 
@@ -287,45 +317,51 @@ my $sub = sub {
         if (exists $flags{D}) {
             next unless (defined($e->{RECIPS}));
         }
-	$found = $msg;
-	last;
+        $found = $msg;
+        last;
     }
     
     if ($found) {
         my $servname = $serv->name();
-	my $source = $e->{SOURCE};
-	$found =~ s/\%u/$source/g;
-	my $blurb = $serv->get_blurb(HANDLE => $e->{SHANDLE});
-	$source .= " [$blurb]" if (defined ($blurb) && ($blurb ne ""));
-	$found =~ s/\%U/$source/g;
+
+        # A hack for sysmsgs
+        if ($found =~ s/\%v/$e->{VALUE}/) {
+            $found =~ s/^### /### \%S\%T/;
+            $found =~ s/^\*\*\* /*** \%S\%T/;
+        }
+        my $source = $e->{SOURCE};
+        $found =~ s/\%u/$source/g;
+        my $blurb = $serv->get_blurb(HANDLE => $e->{SHANDLE});
+        $source .= " [$blurb]" if (defined ($blurb) && ($blurb ne ""));
+        $found =~ s/\%U/$source/g;
         my $ss = (scalar(TLily::Server::find()) > 1) ? "($servname) ": '';
-	$found =~ s/\%S/$ss/g;
-	$found =~ s/\%V/$e->{VALUE}/g;
-	$found =~ s/\%R/$e->{RECIPS}/g;
-	$found =~ s/\%E/$e->{SUBEVT}/g;
-	$found =~ s/\%P/$e->{TARGETS}/g;
-	my $ts = ($e->{STAMP}) ? timestamp($e->{TIME}) : '';
-	$found =~ s/\%T/$ts/g;
-	if ($found =~ m/\%O/) {
-	    my $target = $serv->get_name(HANDLE => $e->{VALUE});
-	    $found =~ s/\%O/$target/g;
-	}
-	if ($found =~ m/\%D/) {
-	    my $title = $serv->get_title(NAME => $e->{RECIPS});
-	    $found =~ s/\%D/$title/g;
-	}
-	if ($found =~ m/\%B/) {
-	    if (defined ($blurb) && ($blurb ne "")) {
-		$found =~ s/\%B/ with the blurb [$blurb]/g;
-	    } else {
-		$found =~ s/\%B//g;
-	    }
-	}
-	
-	$e->{text} = $found;
-	$e->{slcp} = 1;
+        $found =~ s/\%S/$ss/g;
+        $found =~ s/\%V/$e->{VALUE}/g;
+        $found =~ s/\%R/$e->{RECIPS}/g;
+        $found =~ s/\%E/$e->{SUBEVT}/g;
+        $found =~ s/\%P/$e->{TARGETS}/g;
+        my $ts = ($e->{STAMP}) ? timestamp($e->{TIME}) : '';
+        $found =~ s/\%T/$ts/g;
+        if ($found =~ m/\%O/) {
+            my $target = $serv->get_name(HANDLE => $e->{VALUE});
+            $found =~ s/\%O/$target/g;
+        }
+        if ($found =~ m/\%D/) {
+            my $title = $serv->get_title(NAME => $e->{RECIPS});
+            $found =~ s/\%D/$title/g;
+        }
+        if ($found =~ m/\%B/) {
+            if (defined ($blurb) && ($blurb ne "")) {
+                $found =~ s/\%B/ with the blurb [$blurb]/g;
+            } else {
+                $found =~ s/\%B//g;
+            }
+        }
+
+        $e->{text} = $found;
+        $e->{slcp} = 1;
     }
-    
+
     return;
 };
 
@@ -345,14 +381,14 @@ sub etimestamp {
     $hour = int($t / 60);
     $min  = $t % 60;
     if (defined($config{zonetype}) and ($config{zonetype} eq '12')) {
-	if ($hour >= 12) {
-	    $ampm = 'p';
-	    $hour -= 12 if $hour > 12;
-	} else {
-	    $ampm = 'a';
-		}
-	}
-	return sprintf("%02d:%02d%s - ", $hour, $min, $ampm);
+        if ($hour >= 12) {
+            $ampm = 'p';
+            $hour -= 12 if $hour > 12;
+        } else {
+            $ampm = 'a';
+        }
+    }
+    return sprintf("%02d:%02d%s - ", $hour, $min, $ampm);
 }
 
 sub timestamp {
@@ -367,12 +403,12 @@ sub timestamp {
     $hour = int($t / 60);
     $min  = $t % 60;
     if (defined($config{zonetype}) and ($config{zonetype} eq '12')) {
-	if ($hour >= 12) {
-	    $ampm = 'p';
-	    $hour -= 12 if $hour > 12;
-	} else {
-	    $ampm = 'a';
-		}
-	}
-	return sprintf("(%02d:%02d%s) ", $hour, $min, $ampm);
+        if ($hour >= 12) {
+            $ampm = 'p';
+            $hour -= 12 if $hour > 12;
+        } else {
+            $ampm = 'a';
+        }
+    }
+    return sprintf("(%02d:%02d%s) ", $hour, $min, $ampm);
 }

@@ -6,7 +6,7 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Server/Attic/SLCP.pm,v 1.31 1999/12/13 08:32:07 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Server/Attic/SLCP.pm,v 1.32 1999/12/27 02:06:08 mjr Exp $
 
 package TLily::Server::SLCP;
 
@@ -514,7 +514,7 @@ sub get_title {
 sub set_client_options {
   my ($serv) = @_;
 
-  $serv->sendln("\#\$\# options +prompt +prompt2 +leaf-notify +leaf-cmd +connected");
+  $serv->sendln("\#\$\# options +version +prompt +prompt2 +leaf-notify +leaf-cmd +connected");
 }
 
 
