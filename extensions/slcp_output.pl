@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_output.pl,v 1.7 1999/05/05 03:08:52 steve Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_output.pl,v 1.8 1999/05/05 17:14:15 steve Exp $
 
 use strict;
 
@@ -30,7 +30,8 @@ sub private_fmt {
     $ui->indent(private_header => " >> ");
     $ui->prints(private_header => "${ts}Private message from ",
 		private_sender => $e->{SOURCE});
-    $ui->prints(private_header => " [$blurb]") if defined $blurb;
+    $ui->prints(private_header => " [$blurb]")
+      if (defined $blurb && ($blurb ne ""));
     if ($e->{RECIPS} =~ /,/) {
 	$ui->prints(private_header => ", to ",
 		    private_dest   => $e->{RECIPS});
@@ -52,16 +53,17 @@ event_r(type  => 'private',
 sub public_fmt {
     my($ui, $e) = @_;
     my $ts = '';
-	my $blurb = $e->{server}->get_blurb(HANDLE => $e->{SHANDLE});
-	$blurb = ($blurb) ? " [$blurb]" : "";
+    my $blurb = $e->{server}->get_blurb(HANDLE => $e->{SHANDLE});
     
     $ui->print("\n");
     
     $ts = timestamp ($e->{TIME}) if ($e->{STAMP});
     $ui->indent(public_header => " -> ");
     $ui->prints(public_header => "${ts}From ",
-		public_sender => $e->{SOURCE},
-		public_header => "$blurb, to ",
+		public_sender => $e->{SOURCE});
+    $ui->prints(public_header => " [$blurb]")
+      if (defined $blurb && ($blurb ne ""));
+    $ui->prints(public_header => ", to ",
 		public_dest   => $e->{RECIPS},
 		public_header => ":\n");
     
@@ -234,7 +236,7 @@ my $sub = sub {
 	    $found =~ s/\%T/$title/g;
 	}
 	if ($found =~ m/\%B/) {
-	    if ($blurb) {
+	    if (defined ($blurb)) {
 		$found =~ s/\%B/ with the blurb [$blurb]/g;
 	    } else {
 		$found =~ s/\%B//g;
