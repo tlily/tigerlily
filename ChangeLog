@@ -1,3 +1,6 @@
+Version 2.0-post
+  * [TLily/Event.pm] Hopefully fixed the lost-handler bug.
+
 Version 2.0
   * Added %memo. [DPN]
   * Added GPL. [CWS, JDW]
