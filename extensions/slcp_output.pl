@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_output.pl,v 1.15 1999/12/27 17:24:28 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_output.pl,v 1.16 1999/12/28 21:59:05 kazrak Exp $
 
 use strict;
 
@@ -388,7 +388,7 @@ sub etimestamp {
             $ampm = 'a';
         }
     }
-    return sprintf("%02d:%02d%s - ", $hour, $min, $ampm);
+    return sprintf("%02d:%02d%s, ", $hour, $min, $ampm);
 }
 
 sub timestamp {
