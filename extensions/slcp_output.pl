@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_output.pl,v 1.17 1999/12/29 04:51:23 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_output.pl,v 1.18 2000/03/20 08:04:57 neild Exp $
 
 use strict;
 
@@ -23,6 +23,11 @@ sub private_fmt {
     my($ui, $e) = @_;
     my $ts = '';
     my $blurb = $e->{server}->get_blurb(HANDLE => $e->{SHANDLE});
+
+    my $header_fmt = $e->{header_fmt} || "private_header";
+    my $sender_fmt = $e->{sender_fmt} || "private_sender";
+    my $dest_fmt   = $e->{dest_fmt}   || "private_dest";
+    my $body_fmt   = $e->{body_fmt}   || "private_body";
     
     $ui->print("\n");
     
@@ -30,21 +35,21 @@ sub private_fmt {
       if (scalar(TLily::Server::find()) > 1);
 
     $ts = timestamp($e->{TIME}) if ($e->{STAMP});
-    $ui->indent(private_header => " >> ");
-    $ui->prints(private_header => $servname)
+    $ui->indent($header_fmt => " >> ");
+    $ui->prints($header_fmt => $servname)
       if (defined $servname);
-    $ui->prints(private_header => "${ts}Private message from ",
-                private_sender => $e->{SOURCE});
-    $ui->prints(private_header => " [$blurb]")
+    $ui->prints($header_fmt => "${ts}Private message from ",
+                $sender_fmt => $e->{SOURCE});
+    $ui->prints($header_fmt => " [$blurb]")
       if (defined $blurb && ($blurb ne ""));
     if ($e->{RECIPS} =~ /,/) {
-        $ui->prints(private_header => ", to ",
-                    private_dest   => $e->{RECIPS});
+        $ui->prints($header_fmt => ", to ",
+                    $dest_fmt   => $e->{RECIPS});
     }
-    $ui->prints(private_header => ":\n");
+    $ui->prints($header_fmt => ":\n");
     
-    $ui->indent(private_body => " - ");
-    $ui->prints(private_body => $e->{VALUE}."\n");
+    $ui->indent($body_fmt => " - ");
+    $ui->prints($body_fmt => $e->{VALUE}."\n");
     
     $ui->indent();
     $ui->style("default");
@@ -59,6 +64,11 @@ sub public_fmt {
     my($ui, $e) = @_;
     my $ts = '';
     my $blurb = $e->{server}->get_blurb(HANDLE => $e->{SHANDLE});
+
+    my $header_fmt = $e->{header_fmt} || "public_header";
+    my $sender_fmt = $e->{sender_fmt} || "public_sender";
+    my $dest_fmt   = $e->{dest_fmt}   || "public_dest";
+    my $body_fmt   = $e->{body_fmt}   || "public_body";
     
     $ui->print("\n");
     
@@ -66,19 +76,19 @@ sub public_fmt {
       if (scalar(TLily::Server::find()) > 1);
 
     $ts = timestamp ($e->{TIME}) if ($e->{STAMP});
-    $ui->indent(public_header => " -> ");
-    $ui->prints(public_header => $servname)
+    $ui->indent($header_fmt => " -> ");
+    $ui->prints($header_fmt => $servname)
       if (defined $servname);
-    $ui->prints(public_header => "${ts}From ",
-                public_sender => $e->{SOURCE});
-    $ui->prints(public_header => " [$blurb]")
+    $ui->prints($header_fmt => "${ts}From ",
+                $sender_fmt => $e->{SOURCE});
+    $ui->prints($header_fmt => " [$blurb]")
       if (defined $blurb && ($blurb ne ""));
-    $ui->prints(public_header => ", to ",
-                public_dest   => $e->{RECIPS},
-                public_header => ":\n");
+    $ui->prints($header_fmt => ", to ",
+                $dest_fmt   => $e->{RECIPS},
+                $header_fmt => ":\n");
     
-    $ui->indent(public_body   => " - ");
-    $ui->prints(public_body   => $e->{VALUE}."\n");
+    $ui->indent($body_fmt   => " - ");
+    $ui->prints($body_fmt   => $e->{VALUE}."\n");
 
     $ui->indent();
     $ui->style("default");
@@ -93,6 +103,10 @@ event_r(type  => 'public',
 sub emote_fmt {
     my($ui, $e) = @_;
     my $ts = '';
+
+    my $sender_fmt = $e->{sender_fmt} || "emote_sender";
+    my $dest_fmt   = $e->{dest_fmt}   || "emote_dest";
+    my $body_fmt   = $e->{body_fmt}   || "emote_body";
     
     my $dest = $e->{RECIPS};
     my $servname = "(" . $e->{server}->name() . ") "
@@ -100,14 +114,14 @@ sub emote_fmt {
 
 
     $ts = etimestamp ($e->{TIME}) if ($e->{STAMP} || $config{'stampemotes'});
-    $ui->indent(emote_body   => "> ");
-    $ui->prints(emote_body => $servname)
+    $ui->indent($body_fmt   => "> ");
+    $ui->prints($body_fmt => $servname)
       if (defined $servname);
-    $ui->prints(emote_body   => "(${ts}to ",
-                emote_dest   => $dest,
-                emote_body   => ") ",
-                emote_sender => $e->{SOURCE},
-                emote_body   => $e->{VALUE}."\n");
+    $ui->prints($body_fmt   => "(${ts}to ",
+                $dest_fmt   => $dest,
+                $body_fmt   => ") ",
+                $sender_fmt => $e->{SOURCE},
+                $body_fmt   => $e->{VALUE}."\n");
 
     $ui->indent();
     $ui->style("default");

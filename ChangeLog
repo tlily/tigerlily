@@ -1,4 +1,8 @@
 Version 2.1.1-post
+  * [extensions/slcp_output.pl] Changed the formatting of sends to allow
+    event attributes to modify presentation.  [DPN]
+  * [extensions/on.pl] Added the ability to set event attributes from a
+    %on handler.  [DPN]
   * [tlily.global, extensions/blurbless.pl] New extension.  If
     $config{enter_blurbless} is true, automatically bypass the "please
     enter a blurb" prompt with no blurb. [DCL]

@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/on.pl,v 1.2 2000/01/21 22:15:52 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/on.pl,v 1.3 2000/03/20 08:04:57 neild Exp $
 
 use strict;
 use Text::ParseWords qw(quotewords);
@@ -32,6 +32,12 @@ message body in the "public", "private", and "emote" events.)
 \$sender   for "public", "private", or "emote" events, the sender of the
           message.
 \$value    the value of the original event
+
+Alternatively, you may use "%attr <attribute> <value>" in "what to do" to
+set attributes on the event being matched.  Of particular interest are the
+"header_fmt", "sender_fmt", "dest_fmt", and "body_fmt" attributes, which
+control how sends are displayed.  (Note that these attributes take styles
+as arguments -- see %help style for more information.)
    
 
 Examples:
@@ -39,6 +45,7 @@ Examples:
   %on unidle from appleseed "appleseed;[autonag] Gimme my scsi card!"
   %on emote to beener like "fluffs almo" "beener;auto-spurts feathers"
   %on emote to beener like "ping (.*)" "$1;ping!"
+  %on public to news %attr dest_fmt significant
 ]);
 
 
@@ -126,11 +133,6 @@ sub on_cmd {
 			      my $match = 1;
 			      my ($m1,$m2,$m3,$m4,$m5,$m6,$m7,$m8,$m9);
 
-			      # ignore events from me.
-			      if ($e->{"SHANDLE"} eq $e->{server}->user_handle) {
-				  return;				  
-			      }
-			      
 			      foreach (keys %mask) {
 				  if (/LIKE/) {
 				      if ($e->{"VALUE"} !~ /$mask{$_}/i) {
@@ -153,8 +155,16 @@ sub on_cmd {
 			      }
 
 			      if ($match) {
-				  my $cmd = "@args";
+				  my $cmd;
+				  my $attr;
 				  my ($sender, $value);
+
+				  if ($args[0] eq '%attr') {
+				      shift @args;
+				      $attr = shift @args;
+				  }
+				  $cmd = "@args";
+
 				  $cmd =~ s/\$sender/$e->{SOURCE}/g;
 				  $cmd =~ s/\$value/$e->{VALUE}/g;
 				  $cmd =~ s/\$1/$m1/g;
@@ -167,12 +177,22 @@ sub on_cmd {
 				  $cmd =~ s/\$8/$m8/g;
 				  $cmd =~ s/\$9/$m9/g;
 
-				  foreach (split /\\n/, $cmd) {
-				      TLily::Event::send({type => 'user_input',
-							  ui   => $e->{ui},
-							  text => "$_\n"});
+				  if (defined $attr) {
+				      $ui->print("$attr => $cmd\n");
+				      $e->{$attr} = $cmd;
+				  } else {
+				      # ignore events from me.
+				      if ($e->{"SHANDLE"} eq $e->{server}->user_handle) {
+					  return;				  
+				      }
+			      
+				      foreach (split /\\n/, $cmd) {
+					  TLily::Event::send({type => 'user_input',
+							      ui   => $e->{ui},
+							      text => "$_\n"});
+				      }
 				  }
-			      }			      
+			      }
 
 			      return(0);
 			  });
