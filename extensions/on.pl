@@ -1,8 +1,9 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/on.pl,v 1.8 2000/05/02 01:39:11 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/on.pl,v 1.9 2000/05/07 00:38:18 josh Exp $
 
 use strict;
 use Text::ParseWords qw(quotewords);
+use TLily::Bot;
 
 # bugs:
 #

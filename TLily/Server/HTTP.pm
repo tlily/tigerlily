@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Server/Attic/HTTP.pm,v 1.2 1999/08/31 00:04:31 steve Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Server/Attic/HTTP.pm,v 1.3 2000/05/07 00:38:17 josh Exp $
 
 package TLily::Server::HTTP;
 
@@ -30,36 +30,36 @@ sub new {
       unless (defined $args{url});
 	
     if ($args{url} =~ m|^http://([^:]+)(?::(\d+))?(/[/\S]+)$|) {  # A full url
-		$args{port} = $2 if defined $2;
-		$args{url} = $3;
-		$args{host} = $1;
+	$args{port} = $2 if defined $2;
+	$args{url} = $3;
+	$args{host} = $1;
     }
     unless (defined $args{filename}) {
-		my @t = split m|/|, $args{url};
-		$args{filename} = pop @t;
-	}
-	
+	my @t = split m|/|, $args{url};
+	$args{filename} = pop @t;
+    }
+    
     TLily::Event::event_r (type => 'server_connected',
-						   call => \&send_url);
-	
+			   call => \&send_url);
+    
     my $self = $class->SUPER::new(%args);
-	
+    
     $self->{filename} = $args{filename};
     $self->{url} = $args{url};
-	
+    
     bless $self, $class;
 }
 
 sub send_url {
     my ($event, $handler) = @_;
-
+    
     my $ui = TLily::UI::name();
-
+    
     return unless exists ($event->{server}->{url});
-
+    
     $event->{server}->send("GET ", $event->{server}->{url},
 			   " HTTP/1.0\r\n\r\n");
-
+    
     return;
 }
 

@@ -21,7 +21,7 @@
 # cmd's whose only output is a %NOTIFY don't respond. (i.e. /here, /away, /bl)
 
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Bot.pm,v 1.5 1999/10/02 18:03:44 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Bot.pm,v 1.6 2000/05/07 00:38:17 josh Exp $
 
 package TLily::Bot;
 
@@ -37,8 +37,8 @@ my ($username,$password);
 my (%bot_handlers,$bhid);
 
 @ISA = qw(Exporter);
-@EXPORT_OK   =                 qw(&bot_r &bot_u);
-%EXPORT_TAGS = ( extension => [qw(&bot_r &bot_u)] );
+@EXPORT_OK   =                 qw(&bot_r &bot_u &response &wrap_lines);
+%EXPORT_TAGS = ( extension => [qw(&bot_r &bot_u &response &wrap_lines)] );
 
 
 =head1 NAME
@@ -353,7 +353,7 @@ sub standard_bot_command {
 
 
 sub response {
-    my ($event,$string)=@_;
+    my ($event,$string,$nowrap)=@_;
 
     my $respond_to = $event->{SOURCE};
     if ($event->{type} ne "private") {
@@ -361,7 +361,11 @@ sub response {
     }
     $respond_to=~ s/\s/_/g;
 
-    $string = "$respond_to;" . wrap_lines($string);
+    if ($nowrap) {
+        $string = "$respond_to;$string";
+    } else {
+        $string = "$respond_to;" . wrap_lines($string);
+    }
 
     print "(sending \"$string\" to server)\n";
 
