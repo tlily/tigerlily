@@ -4,10 +4,13 @@ CVS/
 \.BAK$
 \.old$
 \.OLD$
+\.swp$
 \~$
 Makefile
 Build.PL
 build.cache
 ^core$
 .cvsignore$
-tlily
+^tlily$
+^tlily.site$
+^foo$

@@ -14,6 +14,7 @@ TLily/ExoSafe.pm
 TLily/Extend.pm
 TLily/Registrar.pm
 TLily/Server.pm
+TLily/Server/HTTP.pm
 TLily/Server/SLCP.pm
 TLily/UI.pm
 TLily/UI/Curses.pm
@@ -22,6 +23,7 @@ TLily/UI/Curses/Input.pm
 TLily/UI/Curses/StatusLine.pm
 TLily/UI/Curses/Text.pm
 TLily/UI/ReadLine.pm
+TLily/UI/Util.pm
 TLily/User.pm
 TLily/Version.pm
 TODO
@@ -34,6 +36,7 @@ extensions/autoreview.pl
 extensions/bandwidth.pl
 extensions/biff.pl
 extensions/countdown.pl
+extensions/ctc.pl
 extensions/expand.pl
 extensions/gag.pl
 extensions/http_parse.pl
@@ -43,6 +46,7 @@ extensions/log.pl
 extensions/mirror.pl
 extensions/misc.pl
 extensions/paste.pl
+extensions/pipes.pl
 extensions/server.pl
 extensions/set.pl
 extensions/slcp_output.pl
@@ -62,3 +66,6 @@ extensions/view.pl
 extensions/vinfo.pl
 tlily.PL
 tlily.global
+tools/announcement
+tools/postrelease
+tools/prerelease

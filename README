@@ -6,8 +6,7 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/README,v 1.7 1999/03/24 00:55:39 albert Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/README,v 1.8 1999/04/11 22:16:34 albert Exp $
 
      ("`-/")_.-'"``-._ 
       . . `; -._    )-;-,_`)          TigerLily 2.x
@@ -23,14 +22,19 @@ TigerLily requires Perl 5.003 or greater.  You will also need
 Curses.pm or Term::Readline::Gnu. (from CPAN)
 
 To create a usable tlily executable, run the command:
-    perl Makefile.PL ; make
+    perl Makefile.PL -current ; make
 
-Run it with the command:
+To run it:
     ./tlily [options]
 
-There is NO install yet.  There is no release yet.
+To install tlily:
+    perl Makefile.PL ; make ; make install
 
-To see the full usage for Makefile.PL, run the command: (NOT YET)
+To make a release:(developers only!)
+    Make sure you don't have any non-committed files in your devel dir
+	perl Makefile.PL ; make release VERSION=<version>
+
+To see the full usage for Makefile.PL, run the command:
     perl Makefile.PL -h
 
 Colors
@@ -121,8 +125,8 @@ Here is a summary of the common configuration file(CF) options:
 
 %color_attrs
 %mono_attrs
-	Setting these variables in a cf will change the color settings
-	for the color and monochrome mode of an element.
+	Setting elements of these hashes in a cf will change the color
+	settings for the color and monochrome mode of an element.
 
 @slash
 	Setting this variable will change the list of /-commands that are
@@ -178,8 +182,8 @@ variables:
   export CVS_RSH=ssh
 
 Obviously, replace the `neild' with your own userid on einstein.org.  CVS_RSH
-need not necessarily be ssh, but this is likely to be the simplest method to
-use.
+need not necessarily be ssh, but this is likely to be the simplest and most
+secure method to use.
 
 The important CVS commands are:
   - cvs checkout tlily
