@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/expand.pl,v 1.22 2000/12/19 20:10:33 neild Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/expand.pl,v 1.23 2001/02/19 21:08:50 neild Exp $ 
 
 use strict;
 use TLily::UI;
@@ -107,30 +107,37 @@ sub exp_complete {
     my($ui, $command, $key) = @_;
     my($pos, $line) = $ui->get_input;
     
+    my $serv = active_server();
+    my $serv_name = $serv->name();
+
     my $partial = substr($line, 0, $pos);
     my $full;
     
     if ($pos == 0) {
 	return unless @past_sends;
 	$full = $past_sends[0] . ';';
-    } elsif ($partial !~ /[\@\[\]\;\:\=\"\?\s]/) {
+	$full =~ s/\@\Q$serv_name\E(?=[;:,])//g;
+    } elsif ($partial !~ /[\[\]\;\:\=\"\?\s]/) {
 	my($fore, $aft) = ($partial =~ m/^(.*,)?(.*)/);
 	$aft = mserv_expand_name($aft);
 	return unless $aft;
 	$full = $fore if (defined($fore));
 	$full .= $aft;
 	$full =~ tr/ /_/;
-    } elsif (substr($partial, 0, -1) !~ /[\@\[\]\;\:\=\"\?\s]/) {
+    } elsif (substr($partial, 0, -1) !~ /[\[\]\;\:\=\"\?\s]/) {
 	chop $partial;
 	return unless (@past_sends);
 	$full = $past_sends[0];
 	for (my $i = 0; $i < @past_sends; $i++) {
-	    if ($past_sends[$i] eq $partial) {
+	    my $past = $past_sends[$i];
+	    $past =~ s/\@\Q$serv_name\E(?=$|[;:,])//g;
+	    if ($past_sends[$i] eq $partial || $past eq $partial) {
 		$full = $past_sends[($i+1)%@past_sends];
 		last;
 	    }
 	}
 	$full .= ';';
+	$full =~ s/\@\Q$serv_name\E(?=[;:,])//g;
     }
     
     if ($full) {

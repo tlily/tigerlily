@@ -1,4 +1,6 @@
 Version 2.3
+  * [extensions/expand.pl] Fixed up tab-expansion to work with
+    multiserver names. [DPN]
   * [TLily/Server/SLCP.pm] Added 'save_crufty_renames' knob to preserve
     the old, broken behavior on renames.  This feature is intentionally
     undocumented. [DPN]
