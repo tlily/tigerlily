@@ -1,7 +1,9 @@
 Version 2.1.1-post
+  * [extensions/http_parse.pl] Merged changes from http2_parse back in [WJC]
+  * [extensions/http2_parse.pl] Deleted, merged back into http_parse [WJC]
   * [TLily/Server/HTTP.pm] bugfix + addition of callback, used by the 
     http2 "protocol" [WJC]
-  * [extensions/httpd2_parse.pl] Added another httpd parsing mechanism 
+  * [extensions/http2_parse.pl] Added another httpd parsing mechanism 
     that stores the web page in memory rather than dumping it to a file. [WJC]
   * [extensions/pinhead.pl] Updated tlily1.x print call [WJC]
   * [extensions/gag.pl] Updated tlily1.x print call [WJC]
