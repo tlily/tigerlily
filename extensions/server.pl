@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/server.pl,v 1.18 1999/04/27 18:13:09 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/server.pl,v 1.19 1999/06/19 19:42:51 neild Exp $
 
 use strict;
 
@@ -11,7 +11,18 @@ use TLily::Event;
 sub connect_command {
     my($ui, $arg) = @_;
     my(@argv) = split /\s+/, $arg;
+    my $auto_login = 1;
     TLily::Event::keepalive();
+
+    while ((@argv) && ($argv[0] =~ /^-/)) {
+	my $opt = shift @argv;
+	if ($opt eq "-nologin") {
+	    $auto_login = 0;
+	} else {
+	    $ui->print("(unknown switch \"$opt\")\n");
+	    return;
+	}
+    }
 
     my($host, $port, $user, $pass) = @argv;
 
@@ -36,13 +47,15 @@ sub connect_command {
     }
 
     # Pick out autologin information.
-    if ($config{server_info}) {
-	foreach my $i (@{$config{server_info}}) {
-	    if ($host eq $i->{host}) {
-		$port = $i->{port} if (!defined $port);
-		if ($port == $i->{port}) {
-		    ($user, $pass) = ($i->{user}, $i->{pass});
-		    last;
+    if ($auto_login) {
+	if ($config{server_info}) {
+	    foreach my $i (@{$config{server_info}}) {
+		if ($host eq $i->{host}) {
+		    $port = $i->{port} if (!defined $port);
+		    if ($port == $i->{port}) {
+			($user, $pass) = ($i->{user}, $i->{pass});
+			last;
+		    }
 		}
 	    }
 	}
