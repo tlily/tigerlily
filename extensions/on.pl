@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/on.pl,v 1.11 2000/12/14 01:15:40 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/on.pl,v 1.12 2000/12/22 01:20:22 neild Exp $
 
 use strict;
 use Text::ParseWords qw(quotewords);
@@ -95,6 +95,9 @@ sub on_cmd {
 	    foreach (@on_handlers) {
 		my $mask = $_->[1];
 		my $desc = "TYPE $mask->{EVENT}";
+
+		$desc .= " SERVER " . $mask->{SERVER}->name
+		  if defined($mask->{SERVER});
 	
 		if (defined $mask->{SHANDLE}) {
 		    my %state =
