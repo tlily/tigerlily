@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/Attic/Build.PL,v 1.5 1999/03/12 02:36:20 albert Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/Attic/Build.PL,v 1.6 1999/03/16 07:15:29 chris Exp $
 
 use Config;
 use Carp;
@@ -78,7 +78,7 @@ $moddir="TLily";
 $extdir="extensions";
 $modext='\.pm';
 $extext='\.pl';
-@modsubdirs = qw(UI);
+@modsubdirs = qw(UI Server);
 @uisubdirs = qw(Curses);
 @modfiles = &get_files($moddir, $modext);
 @extfiles = &get_files($extdir, $extext);
