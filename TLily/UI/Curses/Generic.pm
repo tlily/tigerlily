@@ -91,6 +91,21 @@ sub new {
 }
 
 
+sub configure {
+    my $self = shift;
+
+    while (@_) {
+	my $opt = shift;
+	my $val = shift;
+
+	if ($opt eq 'color') {
+	    $self->{stylemap} = ($val ? \%cstylemap : \%stylemap);
+	    $self->{W}->bkgdset(ord(' ') | $self->get_style_attr($self->{bg}));
+	}
+    }
+}
+
+
 sub size {
     my $self = shift;
 

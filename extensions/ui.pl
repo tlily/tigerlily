@@ -1,4 +1,4 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/ui.pl,v 1.9 1999/03/19 08:17:04 josh Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/ui.pl,v 1.10 1999/03/22 06:32:21 neild Exp $ 
 use strict;
 
 
@@ -96,8 +96,10 @@ help_r(keyname => $keyname_help);
 
 sub ui_command {
     my($ui, $args) = @_;
-    my $newui = TLily::UI::Curses->new(name => 'sub');
-    $newui->print("foo\n");
+    my($cmd, @args) = split /\s+/, $args;
+
+    #my $newui = TLily::UI::Curses->new(name => 'sub');
+    #$newui->print("foo\n");
 }
 #command_r(ui => \&ui_command);
 
@@ -167,7 +169,9 @@ sub style_command {
 	return;
     }
 
-    $ui->defstyle(@args);
+    my $style = shift @args;
+    $config{mono_attrs}->{$style} = \@args;
+    $ui->defstyle($style, @args);
     $ui->redraw();
     return;
 }
@@ -185,7 +189,9 @@ sub cstyle_command {
 	return;
     }
 
-    $ui->defcstyle(@args);
+    my $style = shift @args;
+    $config{color_attrs}->{$style} = \@args;
+    $ui->defcstyle($style, @args);
     $ui->redraw();
     return;
 }
@@ -218,6 +224,17 @@ TLily::Config::callback_r(Variable => '-ALL-',
 				  $ui->defstyle(${$ev{Key}}, @{${$ev{Value}}});
   			          $ui->redraw();
 			      }
+		          });
+
+
+TLily::Config::callback_r(Variable => 'mono',
+			  List => 'config',
+			  State => 'STORE',
+			  Call => sub {
+			      my($tr, %ev) = @_;
+			      my $ui = ui_name();
+			      $ui->configure(color => !$ {$ev{Value}});
+			      return;
 		          });
 
 

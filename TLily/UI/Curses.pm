@@ -63,6 +63,7 @@ package TLily::UI::Curses;
 use strict;
 use vars qw(@ISA %commandmap %bindmap);
 
+use Carp;
 use TLily::UI;
 use Curses;
 use TLily::UI::Curses::Text;
@@ -401,6 +402,41 @@ sub run {
 
     $self->{input}->position_cursor;
     doupdate;
+}
+
+
+sub configure {
+    my $self = shift;
+
+    if (@_ == 0) {
+	return (color          => $self->{color},
+		input_maxlines => $self->{input_maxlines});
+    }
+
+    while (@_) {
+	my $opt = shift;
+	my $val = shift;
+
+	if ($opt eq 'color') {
+	    return unless (has_colors());
+	    print STDERR "val=$val\n";
+	    $self->{color} = $val ? 1 : 0;
+	    $self->{input}->configure(color => $val);
+	    foreach my $tpair (values %{$self->{win}}) {
+		$tpair->{text}->configure(color => $val);
+		$tpair->{status}->configure(color => $val);
+	    }
+	    $self->redraw();
+	}
+
+	elsif ($opt eq 'input_maxlines') {
+	    # Handle this.
+	}
+
+	else {
+	    croak "Unknown UI option: $opt";
+	}
+    }
 }
 
 
