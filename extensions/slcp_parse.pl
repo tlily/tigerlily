@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_parse.pl,v 1.27 2001/01/26 04:31:23 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_parse.pl,v 1.28 2003/03/17 01:59:52 josh Exp $
 
 use strict;
 use vars qw(%config);
@@ -353,6 +353,12 @@ sub parse_line {
                   text => $line);
 	goto found;
     }
+    
+    # %pong
+    if ($line =~ /^%pong/) {
+	%event = (type => 'pong');
+	goto found;
+    }    
     
     # The options notification.
     if ($line =~ /%options\s+(.*?)\s*$/) {

@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/keepalive.pl,v 1.11 2002/01/22 15:20:30 coke Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/keepalive.pl,v 1.12 2003/03/17 01:59:52 josh Exp $
 #
 # keepalive -- periodically ping the server, just to verify our connection
 #              is still there.
@@ -37,23 +37,14 @@ sub keepalive {
         $timer{interval}  = $config{keepalive_interval};
     }
 
-    $ui->print("(keepalive $name)\n") if ($config{keepalive_debug});
+    $ui->print("(checking keepalive $name)\n") if ($config{keepalive_debug});
     if ($pinging{$name} == 1) {
 	$ui->print("(server $name not responding)\n");
 	$pinging{$name} = 2;
     } elsif ($pinging{$name} == 0) {
 	$pinging{$name} = 1;
-	$server->cmd_process("/why", sub {
-            my($event) = @_;
-            my $name = $event->{server}->name;
-            $event->{NOTIFY} = 0;
-            return unless ($event->{type} eq 'endcmd');
-            if ($pinging{$name} == 2) {
-                $ui->print("(server $name is responding again)\n");
-            }
-            $pinging{$name} = 0;
-            return;
-        });
+	$ui->print("(sending #\$# ping to $name)\n") if ($config{keepalive_debug});	
+	$server->sendln('#$# ping');
     }
 
     return 0;
@@ -73,3 +64,20 @@ $timer{call} = sub {
 };
 
 TLily::Event::time_r(\%timer);
+
+event_r(type => 'pong',
+	call => sub {
+            my($event) = @_;
+	    
+	    my $ui = ui_name();	    
+            my $name = $event->{server}->name;
+	    
+            $event->{NOTIFY} = 0;
+	    
+	    $ui->print("(received %pong from $name)\n") if ($config{keepalive_debug});	
+            if ($pinging{$name} == 2) {
+                $ui->print("(server $name is responding again)\n");
+            }
+            $pinging{$name} = 0;
+            return;
+        });
