@@ -1,10 +1,11 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/pipes.pl,v 1.7 2000/12/22 01:19:03 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/pipes.pl,v 1.8 2000/12/28 05:21:49 neild Exp $
 #
 # Piped command processing.
 #
 
 use strict;
 use Fcntl;
+use Symbol;
 
 my $counter = 0;
 sub pipe_handler {
@@ -55,7 +56,7 @@ sub pipe_handler {
 	close(FD);
     }
 
-    my $fd = "pipes--fd--" . $counter;
+    my $fd = gensym;
     my $rc = open($fd, $run);
     if ($rc == 0) {
 	my $l = $@; $l =~ s/(\\<)/\\$1/g;
