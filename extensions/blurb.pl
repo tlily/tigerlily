@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/blurb.pl,v 1.1 2000/11/22 14:43:36 coke Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/blurb.pl,v 1.2 2000/11/22 14:53:30 coke Exp $
 
 use strict;
 
@@ -14,7 +14,7 @@ and the total of 38 is what's allowed to satisfy those lame old telnet
 clients. 
 
 The extension will use a variety of techniques to try to cut your blurb
-down to size, and give you an error if its efforts are... fruitless.");
+down to size, and failing those, will lop off the end of your blurb.");
 
 sub unload {
 ## Nothing to do here right now.
@@ -68,8 +68,11 @@ sub blurb_cmd {
         goto DONE if (check_blurb($blurb));
 
 	FAIL:
-	$ui->print("(your compressed blurb is is " . abs($max - length($psuedo) - length($blurb)) . " chars too long)\n");
-	return;
+
+	$blurb = substr($blurb,0,($max-length($psuedo)));
+
+	#$ui->print("(your compressed blurb is is " . abs($max - length($psuedo) - length($blurb)) . " chars too long)\n");
+	#return;
 	
    	DONE:
 	TLily::Server->active()->cmd_process("/blurb [" . $blurb . "]", sub {
