@@ -1,4 +1,4 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/misc.pl,v 1.8 1999/02/26 22:45:38 josh Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/misc.pl,v 1.9 1999/03/02 00:59:44 neild Exp $ 
 
 use strict;
 use TLily::Version;
@@ -113,7 +113,7 @@ command_r('version' => \&version_handler);
 
 # %echo handler
 sub echo_handler {
-    my($cmd, $ui, $text) = @_;
+    my($ui, $text) = @_;
     $ui->print($text, "\n");
     return;
 }
