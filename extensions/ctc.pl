@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/ctc.pl,v 1.3 1999/04/11 02:44:32 steve Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/ctc.pl,v 1.4 1999/04/11 02:46:28 steve Exp $
 
 use Net::Domain qw(hostfqdn);
 use Socket qw(inet_ntoa inet_aton);
@@ -201,7 +201,7 @@ sub file_done {
 sub load {
     $hostaddr = inet_ntoa(inet_aton(hostfqdn()));
 
-    $http = TLily::Daemon::HTTP->new();
+#    $http = TLily::Daemon::HTTP->new();
 
     event_r (type => 'http_filedone',
 	     call => \&file_done);
