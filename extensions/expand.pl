@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/expand.pl,v 1.18 2000/09/09 06:07:26 mjr Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/expand.pl,v 1.19 2000/12/12 19:49:18 neild Exp $ 
 
 use strict;
 use TLily::UI;
@@ -28,6 +28,26 @@ my %expansions = ('sendgroup' => '',
 my @past_sends = ();
 
 my $last_send;
+
+sub mserv_expand_name {
+    my($name) = @_;
+
+    # First, try to expand the name on the current server.
+    my $active  = TLily::Server::active();
+    my @exps = $active->expand_name($name);
+    return $exps[0] if (@exps == 1);
+    return undef if (@exps > 1);
+
+    # Next, try the other servers.
+    my @servers = TLily::Server::find();
+    for my $server (@servers) {
+	next if ($server == $active);
+	my $exp = $server->expand_name($name);
+	return $exp."@".$server->name() if defined($exp);
+    }
+
+    return undef;
+}
 
 sub exp_expand {
     my($ui, $command, $key) = @_;
@@ -59,7 +79,7 @@ sub exp_expand {
 	
 	my @dests = split(/,/, $fore);
 	foreach (@dests) {
-	    my $full = TLily::Server::SLCP::expand_name($_);
+	    my $full = mserv_expand_name($_);
 	    next unless ($full);
 	    $_ = $full;
 	    $_ =~ tr/ /_/;
@@ -88,7 +108,7 @@ sub exp_complete {
 	$full = $past_sends[0] . ';';
     } elsif ($partial !~ /[\@\[\]\;\:\=\"\?\s]/) {
 	my($fore, $aft) = ($partial =~ m/^(.*,)?(.*)/);
-	$aft = TLily::Server::SLCP::expand_name($aft);
+	$aft = mserv_expand_name($aft);
 	return unless $aft;
 	$full = $fore if (defined($fore));
 	$full .= $aft;
@@ -141,23 +161,23 @@ sub private_handler {
     return;
 }
 event_r(type => 'private',
-		      call => \&private_handler);
+	call => \&private_handler);
 
 sub user_send_handler {
     my($event, $handler) = @_;
     my $dlist = join(",", @{$event->{RECIPS}});
     
     $expansions{recips} = $dlist;
-	$last_send = $event->{text};
+    $last_send = $event->{text};
     
     @past_sends = grep { $_ ne $dlist } @past_sends;
     unshift @past_sends, $dlist;
     pop @past_sends if (@past_sends > 5);
 
-	return;
+    return;
 }
 event_r(type => 'user_send',
-		      call => \&user_send_handler);
+	call => \&user_send_handler);
 
 sub rename_handler {
 	my ($event, $handler) = @_;
@@ -169,7 +189,7 @@ sub rename_handler {
 }
 
 event_r(type => 'rename',
-		call => \&rename_handler);
+	call => \&rename_handler);
 
 sub oops_cmd {
 	my ($ui, $args) = @_;
