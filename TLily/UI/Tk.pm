@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/Tk.pm,v 1.11 2002/05/20 14:54:35 coke Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/Tk.pm,v 1.12 2002/05/21 13:06:14 coke Exp $
 
 package TLily::UI::Tk;
 
@@ -258,9 +258,11 @@ sub new {
        -takefocus    => 0,
        -setgrid      => 1,
        -insertontime => 0,
+       -wrap         => "word",
        -state        => "disabled")->pack(-fill => "both", -expand => 1);
     
     $self->{text} = $self->{stext}->Subwidget("rotext");
+
 
     $self->{status} = $self->{toplevel}->Frame(-bg => $color{blue});
     
@@ -293,7 +295,7 @@ sub new {
        -height	      => 1,
        -width	      => 80,
        -takefocus     => 1,
-       -wrap	      => "char",
+       -wrap	      => "word",
        -insertofftime => 0,)->pack(-side => "right",
 				   -fill => 'x',
 				   -expand => 0,
