@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Curses/Attic/Input.pm,v 1.18 2000/02/05 21:10:22 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Curses/Attic/Input.pm,v 1.19 2000/02/05 21:13:52 neild Exp $
 
 package TLily::UI::Curses::Input;
 
@@ -560,7 +560,25 @@ sub transpose_chars {
 	$self->{W}->addch($y, $x, substr($self->{text}, $c, 1));
     }
 
-    $self->{W}->noutrefresh();
+    $self->rationalize();
+}
+
+sub capitalize_word {
+    my($self) = @_;
+
+    substr($self->{text}, $self->{point}) =~
+        s/^([^a-z0-9]*)([0-9]*)([a-z]?)([a-z]*)/$1$2\u$3\L$4/i;
+
+    $self->{point} += length($1 . $2);
+
+    for (my $i = 0; $i < length ($3 . $4); $i++) {
+        my($y, $x) = $self->find_coords($self->{point});
+
+        $self->char_style($self->{point});
+        $self->{W}->addch($y, $x, substr($self->{text}, $self->{point}++, 1));
+    }
+
+    $self->rationalize();
 }
 
 

@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/Curses.pm,v 1.36 2000/02/05 21:05:42 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/Curses.pm,v 1.37 2000/02/05 21:13:51 neild Exp $
 
 package TLily::UI::Curses::Proxy;
 
@@ -167,6 +167,7 @@ sub accept_line {
    'end-of-line'          => sub { $_[0]->{input}->end_of_line(); },
    'delete-char'          => sub { $_[0]->{input}->del(); },
    'backward-delete-char' => sub { $_[0]->{input}->bs(); },
+   'capitalize-word'      => sub { $_[0]->{input}->capitalize_word(); },
    'transpose-chars'      => sub { $_[0]->{input}->transpose_chars(); },
    'kill-line'            => sub { $_[0]->{input}->kill_line(); },
    'backward-kill-line'   => sub { $_[0]->{input}->backward_kill_line(); },
@@ -215,6 +216,7 @@ sub accept_line {
    'M-v'        => 'page-up',
    'pagedown'   => 'page-down',
    'C-v'        => 'page-down',
+   'M-c'        => 'capitalize-word',
    'M-,'        => 'line-up',
    'M-.'        => 'line-down',
    'M-<'        => 'scroll-to-top',
