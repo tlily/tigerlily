@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/User.pm,v 1.27 1999/12/20 17:52:29 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/User.pm,v 1.28 2000/02/11 23:56:12 tale Exp $
 
 package TLily::User;
 
@@ -312,13 +312,12 @@ sub input_handler {
     return unless ($e->{text} =~ /^\s*([%\/])(\w+)\s*(.*?)\s*$/);
     my $command = $abbrevs{lc($2)};
 
-    return unless defined($command);
-    return if ($1 ne "%" && !TLily::Config::ask($command));
-
-    unless ($command) {
+    unless (length($command) > 0) {
 	$e->{ui}->print("(The \"$2\" command is unknown.)\n");
 	return 1;
     }
+
+    return if ($1 ne "%" && !TLily::Config::ask($command));
 
     #$commands{$command}->($e->{ui}, $3, $command);
     $commands{$command}->($e->{ui}, $3);
