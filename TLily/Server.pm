@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Server.pm,v 1.23 1999/11/19 06:07:19 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Server.pm,v 1.24 1999/12/14 05:30:34 mjr Exp $
 
 package TLily::Server;
 
@@ -174,7 +174,7 @@ sub terminate {
 
     foreach (@{$self->{names}}) { delete $server{$_} }; #DONE
     @server = grep { $_ ne $self } @server;
-    $active_server = $server[0] if ($active_server == $self);
+    activate($server[0]) if ($active_server == $self);
 
     TLily::Event::io_u($self->{io_id});
     

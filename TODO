@@ -3,7 +3,6 @@ To Do
 
   when the last open server connection is closed, provide a exit/reconnect
       option. (integrate with smartexit feature)
-  helper.pl
   multiserver, multiui
   irc mode/ TLily::Server::SubClient
   thread extension?

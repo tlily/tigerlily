@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/status.pl,v 1.18 1999/10/03 18:25:58 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/status.pl,v 1.19 1999/12/14 05:30:34 mjr Exp $
 
 use strict;
 
@@ -32,7 +32,11 @@ sub set_clock {
 sub set_serverstatus {
     my $ui     = ui_name("main");
     my $server = active_server();
-    return 2 unless ($server);
+    unless ($server) {
+        $ui->set(connected => "-- NOT CONNECTED --");
+        return;
+    }
+    $ui->set(connected => undef);
 
     my $sname = $server->state(DATA => 1,
 			       NAME => "NAME");
@@ -63,6 +67,7 @@ sub load {
     $ui->define(clock     => 'right');
     $ui->define(state     => 'right');
     $ui->define(server    => 'right');
+    $ui->define(connected => 'override');
     
     my $sec = (localtime)[0];
     set_clock();
@@ -72,6 +77,8 @@ sub load {
     
     if ($server) {
 	set_serverstatus();
+    } else {
+        $ui->set(connected => "-- NOT CONNECTED --");
     }
     
     event_r(type => 'userstate',
