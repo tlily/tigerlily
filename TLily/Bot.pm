@@ -8,8 +8,7 @@
 #
 
 # BUGS:
-# Login procedure needs work.  (often fails repeatedly, should be able to read 
-#   login/pw from afile or cmdline)
+# Login procedure needs work.  (should be able to read login/pw from a file or cmdline)
 # globals really should be toned down. (move them into the registry sstuff)
 # need to catch failure of the timed keepalive and re-login.
 #
@@ -22,7 +21,7 @@
 # cmd's whose only output is a %NOTIFY don't respond. (i.e. /here, /away, /bl)
 
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Bot.pm,v 1.2 1999/09/23 02:34:22 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Bot.pm,v 1.3 1999/10/02 02:59:15 josh Exp $
 
 package TLily::Bot;
 
@@ -126,17 +125,24 @@ sub init {
 		return 1;
 	    });
 
-    # "keepalive" so we notice if we get disconnected.
-    TLily::Event::time_r(interval => 120,
-			 call => sub { 
-			     cmd_process("/display time", sub {
+    event_r(type  => 'connected',
+	    order => 'after',
+	    call  => sub {
+		my($event, $handler) = @_;
+
+		# "keepalive" so we notice if we get disconnected.
+		TLily::Event::time_r(interval => 120,
+				     call => sub { 
+					     $event->{server}->cmd_process("/display time", sub {
 					     my ($e) = @_;
 					     # hide it from the user.
 					     $e->{ui_name} = undef;
 					 });
+					 return 1;
 			     
 			 } );
-
+		return 1;
+	    });
 
     # load extension pointed to by $config{'bot'}.
     my $ui = TLily::UI::name();
