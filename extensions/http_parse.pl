@@ -1,7 +1,3 @@
-# -*- Perl -*-
-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/http_parse.pl,v 1.7 1999/08/31 00:04:34 steve Exp $
-
 use strict;
 
 use TLily::Daemon::HTTP;
@@ -168,23 +164,28 @@ sub save_file {
     }
     
     return if $$st->{_nomorewrite};
-    
-    unless (defined $$st->{_filehandle}) {
-		local *FH;
-		
-		unless (open FH, ">$filename") {
-			my $ui = TLily::UI::name();
-			$ui->print ("(Unable to save file $filename: $!)\n");
-			$event->{server}->terminate() if $event->{server};
-			$event->{daemon}->close() if $event->{daemon};
-			return;
-		}
-		$$st->{_filehandle} = *FH;
+
+    if (!defined $event->{server}->{callback}) {    
+
+        unless (defined $$st->{_filehandle}) {
+            local *FH;
+            unless (open FH, ">$filename") {
+                my $ui = TLily::UI::name();
+                $ui->print ("(Unable to save file $filename: $!)\n");
+                $event->{server}->terminate() if $event->{server};
+                $event->{daemon}->close() if $event->{daemon};
+                return;
+            }
+            $$st->{_filehandle} = *FH;
+        } 
+    	syswrite ($$st->{_filehandle}, $event->{data}, length($event->{data}));
+    } else {
+        $event->{server}->{_content} .= $event->{data};	
     }
-    
-    syswrite ($$st->{_filehandle}, $event->{data}, length($event->{data}));
+
     $$st->{_byteswritten} += length($event->{data});
-	
+
+
     if ((defined ($$st->{"Content-Length"})) &&
 		($$st->{_byteswritten} >= $$st->{"Content-Length"})) {
 		$$st->{_nomorewrite} = 1;
@@ -196,12 +197,19 @@ sub save_file {
 
 sub cleanup {
     my ($event, $handler) = @_;
-	
-    close ($event->{server}->{_state}->{_filehandle})
-      if defined $event->{server}->{_state}->{_filehandle};
-    
-    close ($event->{daemon}->{_state}->{_filehandle})
+
+    if (!defined $event->{server}->{callback}) {    
+        close ($event->{server}->{_state}->{_filehandle})
+          if defined $event->{server}->{_state}->{_filehandle};
+    }
+      close ($event->{daemon}->{_state}->{_filehandle})
       if defined $event->{daemon}->{_state}->{_filehandle};
+
+
+    if (defined $event->{server}->{callback}) {    
+       &{$event->{server}->{callback}}($event->{server});
+    }    
+
     return;
 }
 
