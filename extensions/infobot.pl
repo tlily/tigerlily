@@ -60,8 +60,8 @@ event_r(type => 'emote',
 
 	    if ($message =~ /^ . o O \((.*)\)$/) {
 		$message = $1;
-	    } elsif ($message =~ /^ says, \"(.*)\"$/) {		
-		$message = $1;
+	    } elsif ($message =~ /^ (asks|says), \"(.*)\"$/) {		
+		$message = $2;
 	    } else {
 	        $message = "$sender$message";	
             }
