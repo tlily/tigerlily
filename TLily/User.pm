@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/User.pm,v 1.21 1999/04/22 15:15:24 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/User.pm,v 1.22 1999/05/05 01:54:16 steve Exp $
 
 package TLily::User;
 
@@ -250,6 +250,7 @@ sub input_handler {
     return unless ($e->{text} =~ /^\s*([%\/])(\w+)\s*(.*?)\s*$/);
     my $command = $abbrevs{lc($2)};
 
+    return unless defined($command);
     return if ($1 ne "%" && !grep($_ eq $command, @{$config{slash}}));
 
     unless ($command) {
