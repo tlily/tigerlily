@@ -366,6 +366,7 @@ sub scroll {
     return if ($scroll == 0);
 
     $self->{idx_anchor} += $scroll;
+    $self->{idx_unseen} = max($self->{idx_unseen}, $self->{idx_anchor} + 1);
     $self->set_pager();
 
     if ($scroll >= $self->{lines} || $scroll <= -$self->{lines}) {
@@ -387,6 +388,26 @@ sub scroll {
 sub scroll_page {
     my($self, $scroll) = @_;
     $self->scroll($scroll * $self->{lines});
+}
+
+
+# Scroll the window to the top of the text.
+sub scroll_top {
+    my($self) = @_;
+    $self->{idx_anchor} = min($self->{lines}-1, $#{$self->{indexes}});
+    $self->set_pager();
+    $self->redraw();
+    return;
+}
+
+
+# Scroll the window to the bottom of the text.
+sub scroll_bottom {
+    my($self) = @_;
+    $self->{idx_anchor} = $#{$self->{indexes}};
+    $self->set_pager();
+    $self->redraw();
+    return;
 }
 
 

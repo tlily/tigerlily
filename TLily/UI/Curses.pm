@@ -150,6 +150,8 @@ sub accept_line {
    'page-down'            => sub { $_[0]->{text}->{main}->{text}->scroll_page(1); },
    'line-up'              => sub { $_[0]->{text}->{main}->{text}->scroll(-1); },
    'line-down'            => sub { $_[0]->{text}->{main}->{text}->scroll(1); },
+   'scroll-to-top'        => sub { $_[0]->{text}->{main}->{text}->scroll_top(); },
+   'scroll-to-bottom'     => sub { $_[0]->{text}->{main}->{text}->scroll_bottom(); },
    'refresh'              => sub { $_[0]->redraw(); },
    'suspend'              => sub { kill 'TSTP', $$; },
   );
@@ -186,8 +188,8 @@ sub accept_line {
    'C-v'        => 'page-down',
    'M-['        => 'line-up',
    'M-]'        => 'line-down',
-   'M-<'        => 'scroll-top',
-   'M->'        => 'scroll-bottom',
+   'M-<'        => 'scroll-to-top',
+   'M->'        => 'scroll-to-bottom',
    'C-l'        => 'refresh',
    'C-z'        => 'suspend',
   );
@@ -273,12 +275,10 @@ sub start_curses {
     initscr;
 
     $self->{color} = 0;
-    if ($self->{want_color}) {
-	$self->{color} = has_colors();
-    }
-    if ($self->{color}) {
-	my $rc = start_color() if ($self->{color});
-	$self->{color} = 0 if ($rc && $rc == ERR);
+    if ($self->{want_color} && has_colors()) {
+	my $rc = start_color();
+	eval { use_default_colors(); };
+	$self->{color} = ($rc == OK);
     }
 
     noecho();

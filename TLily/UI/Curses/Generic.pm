@@ -1,7 +1,7 @@
 package TLily::UI::Curses::Generic;
 
 use strict;
-use vars qw(%stylemap %cstylemap %cmap %cnamemap %cpairmap %keycodemap);
+use vars qw(%stylemap %cstylemap %cnamemap %snamemap %cpairmap %keycodemap);
 use Curses;
 
 
@@ -15,6 +15,8 @@ my @widgets = ();
 # The cnamemap hash maps English color names to Curses colors.
 %cnamemap   =
   (
+   '-'              => -1,
+   mask             => -1,
    black            => COLOR_BLACK,
    red              => COLOR_RED,
    green            => COLOR_GREEN,
@@ -25,9 +27,23 @@ my @widgets = ();
    white            => COLOR_WHITE,
   );
 
+# The snamemap hash maps English style names to Curses styles.
+%snamemap   =
+  (
+   '-'             => A_NORMAL,
+   'normal'        => A_NORMAL,
+   'standout'      => A_STANDOUT,
+   'underline'     => A_UNDERLINE,
+   'reverse'       => A_REVERSE,
+   'blink'         => A_BLINK,
+   'dim'           => A_DIM,
+   'bold'          => A_BOLD,
+   'altcharset'    => A_ALTCHARSET,
+  );
+
 # The cpairmap hash maps color pairs in the format "fg bg" to color pair
 # IDs.  (fg and bg are Curses color IDs.)
-%cpairmap   = ();
+%cpairmap   = (COLOR_WHITE . " " . COLOR_BLACK => 0);
 
 # The keycodemap hash maps Curses keycodes to English names.
 %keycodemap =
@@ -112,25 +128,7 @@ sub req_size {
 
 sub parsestyle {
     my $style = 0;
-    foreach my $attr (@_) {
-	if ($attr eq 'normal') {
-	    $style |= A_NORMAL;
-	} elsif ($attr eq 'standout') {
-	    $style |= A_STANDOUT;
-	} elsif ($attr eq 'underline') {
-	    $style |= A_UNDERLINE;
-	} elsif ($attr eq 'reverse') {
-	    $style |= A_REVERSE;
-	} elsif ($attr eq 'blink') {
-	    $style |= A_BLINK;
-	} elsif ($attr eq 'dim') {
-	    $style |= A_DIM;
-	} elsif ($attr eq 'bold') {
-	    $style |= A_BOLD;
-	} elsif ($attr eq 'altcharset') {
-	    $style |= A_ALTCHARSET;
-	}
-    }
+    foreach (@_) { $style |= $snamemap{$_} if $snamemap{$_} };
     return $style;
 }
 
@@ -141,13 +139,13 @@ sub color_pair {
 
     return 0 unless (defined $fg && defined $bg);
 
-    $fg = defined($cnamemap{$fg}) ? $cnamemap{$fg} : $cmap{default}->[0];
-    $bg = defined($cnamemap{$bg}) ? $cnamemap{$bg} : $cmap{default}->[1];
+    $fg = defined($cnamemap{$fg}) ? $cnamemap{$fg} : COLOR_WHITE;
+    $bg = defined($cnamemap{$bg}) ? $cnamemap{$bg} : COLOR_BLACK;
 
     if (defined $cpairmap{"$fg $bg"}) {
 	$pair = $cpairmap{"$fg $bg"};
     } else {
-	$pair = scalar(keys %cpairmap)+1;
+	$pair = scalar(keys %cpairmap);
 	my $rc = init_pair($pair, $fg, $bg);
 	return COLOR_PAIR(0) if ($rc == ERR);
 	$cpairmap{"$fg $bg"} = $pair;
