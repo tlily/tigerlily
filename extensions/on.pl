@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/on.pl,v 1.9 2000/05/07 00:38:18 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/on.pl,v 1.10 2000/07/12 17:13:43 josh Exp $
 
 use strict;
 use Text::ParseWords qw(quotewords);
@@ -13,15 +13,12 @@ use TLily::Bot;
 #    much want to put it in quotes.  Ick.
 
 
-my $usage = "%on [<event> [from <source>] [to <dest>] [value|like <value>] <what to do>]";
+my $usage = "%on list\n   %on clear <id>\n   %on [<event> [from <source>] [to <dest>] [value|like <value>] <what to do>]";
 
 command_r(on => \&on_cmd);
 shelp_r(on => "execute a command when a specific event occurs");
 help_r('on', qq[
-%on
-%on list
-%on clear <id>
-$usage
+   $usage
 
 (where <event> is any standard SLCP event, such as "public", "private", or 
 "emote".  <value> is the VALUE parameter to that SLCP event, which is the
@@ -65,7 +62,7 @@ sub on_cmd {
 
     $args =~ s/\\/\\\\/g;
 
-    if ($args !~ /\S/) {
+    if ($args !~ /\S/ || $args =~ /^\s*list\s*$/) {
 	if (@on_handlers) {
 	    $ui->printf("%5.5s %-70.70s\n", "Id", "Description");
 	    $ui->printf("%5.5s %-70.70s\n", "-" x 5, "-" x 70);
