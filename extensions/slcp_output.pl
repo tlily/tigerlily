@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_output.pl,v 1.16 1999/12/28 21:59:05 kazrak Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_output.pl,v 1.17 1999/12/29 04:51:23 josh Exp $
 
 use strict;
 
@@ -132,6 +132,7 @@ event_r(type  => 'emote',
 # %S: '(servername)', if connected to more than one, empty otherwise.
 # %B: if SOURCE has a blurb " with the blurb [blurb]", else "".
 # %E: SUBEVT
+# %p: source's pronoun
 #
 # leading characters (up to first space) define behavior as follows:
 #### Catch all: mutually exclusive with all other flags
@@ -177,8 +178,8 @@ my @infomsg = (
     'rename'     => 'V'    => '*** %S%T%u is now named %V ***',
     'blurb'      => 'SE'   => '(your blurb has been turned off)',
     'blurb'      => 'SV'   => '(your blurb has been set to [%V])',
-    'blurb'      => 'V'    => '*** %S%T%u has changed their blurb to [%V] ***',
-    'blurb'      => 'E'    => '*** %S%T%u has turned their blurb off ***',
+    'blurb'      => 'V'    => '*** %S%T%u has changed %p blurb to [%V] ***',
+    'blurb'      => 'E'    => '*** %S%T%u has turned %p blurb off ***',
     'info'       => 'DSE'  => '(you have cleared the info for %R)',
     'info'       => 'DS'   => '(you have changed the info for %R)',
     'info'       => 'SE'   => '(your info has been cleared)',
@@ -187,10 +188,10 @@ my @infomsg = (
     'info'       => 'SV'   => '(your info has been changed)',
     'info'       => 'ED'   => '*** %S%T%u has cleared the info for discussion %R ***',
     'info'       => 'D'    => '*** %S%T%u has changed the info for discussion %R ***',
-    'info'       => 'E'    => '*** %S%T%u has cleared their info ***',
-    'info'       => 'U'    => '*** %S%T%u has changed their info ***',
+    'info'       => 'E'    => '*** %S%T%u has cleared %p info ***',
+    'info'       => 'U'    => '*** %S%T%u has changed %p info ***',
 # For compatibility with older cores:
-    'info'       => 'V'    => '*** %S%T%u has changed their info ***',
+    'info'       => 'V'    => '*** %S%T%u has changed %p info ***',
     'ignore'     => 'tcE'  => '*** %S%T%u is no longer ignoring you ***',
     'ignore'     => 'A'    => '*** %S%T%u is now ignoring you %V ***',
     'unignore'   => 'A'    => '*** %S%T%u is no longer ignoring you ***',
@@ -221,7 +222,7 @@ my @infomsg = (
     'permit'     => 'tcVL<="2.3";'   => '*** %S%T%u has permitted you to a discussion (server didn\'t say which) ***',
     'depermit'   => 'DSTC="owner";'  => '(You have rescinded your offer to %P for ownership of discussion %R)',
     'depermit'   => 'DSTC'  => '(You have removed %P\'s %E privileges on discussion %R)',
-    'depermit'   => 'DMC="owner";' => '*** %S%T%u has rescinded their ownership offer of discussion %R ***',
+    'depermit'   => 'DMC="owner";' => '*** %S%T%u has rescinded %p ownership offer of discussion %R ***',
     'depermit'   => 'DMC'   => '*** %S%T%u has removed your %E privileges on discussion %R ***',
     'depermit'   => 'DTC'   => '*** %S%T%u has removed %P\'s %E privileges on discussion %R ***',
     'depermit'   => 'DMc'   => '*** %S%T%u has depermitted you from discussion %R ***',
@@ -350,6 +351,10 @@ my $sub = sub {
             my $title = $serv->get_title(NAME => $e->{RECIPS});
             $found =~ s/\%D/$title/g;
         }
+        if ($found =~ m/\%p/) {
+            my $pronoun = $serv->get_pronoun(HANDLE => $e->{SHANDLE});
+            $found =~ s/\%p/$pronoun/g;
+   	}		
         if ($found =~ m/\%B/) {
             if (defined ($blurb) && ($blurb ne "")) {
                 $found =~ s/\%B/ with the blurb [$blurb]/g;

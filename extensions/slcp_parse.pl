@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_parse.pl,v 1.17 1999/12/27 02:06:09 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_parse.pl,v 1.18 1999/12/29 04:51:23 josh Exp $
 
 use strict;
 use vars qw(%config);
@@ -29,6 +29,7 @@ $keep{USER} = {HANDLE   => 1,
                LOGIN    => 1,
 	       NAME     => 1,
 	       BLURB    => 1,
+	       PRONOUN  => 1,
 	       STATE    => 1};
 $keep{DISC} = {HANDLE   => 1, 
                CREATION => 1,

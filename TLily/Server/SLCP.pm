@@ -6,7 +6,7 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Server/Attic/SLCP.pm,v 1.33 1999/12/27 21:11:19 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Server/Attic/SLCP.pm,v 1.34 1999/12/29 04:51:23 josh Exp $
 
 package TLily::Server::SLCP;
 
@@ -505,6 +505,18 @@ sub get_title {
     
     my %rec = $self->state(%args);
     return $rec{TITLE};
+}
+
+
+=item get_pronoun()
+
+=cut
+
+sub get_pronoun {
+    my ($self,%args) = @_;
+    
+    my %rec = $self->state(%args);
+    return $rec{PRONOUN} || "their";
 }
 
 
