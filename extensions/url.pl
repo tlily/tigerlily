@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/url.pl,v 1.12 2000/02/08 01:44:42 tale Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/url.pl,v 1.13 2000/02/14 01:47:44 kazrak Exp $
 
 #
 # URL handling
@@ -90,8 +90,8 @@ sub url_cmd {
 
     elsif ($arg eq "list" || $arg eq "") {
         my $count = $num || $config{url_list_count};
-	$count = @urls if ($count !~ /^\d+$/);
 	$count = 3 if ($count <= 0);
+	$count = @urls if ($count !~ /^\d+$/);
 	$count = @urls if ($count > @urls);
 
         if (@urls == 0) {
