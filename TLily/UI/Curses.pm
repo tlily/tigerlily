@@ -1,48 +1,54 @@
 package TLily::UI::Curses::Proxy;
 
 use strict;
-use vars qw($AUTOLOAD); #) cperl mode is getting confused.
+use vars qw($AUTOLOAD @ISA); #) cperl mode is getting confused.
 use Curses;
 use Carp;
 
+@ISA = qw(TLily::UI);
+
 sub new {
-    my($proto, $ui, $win) = @_;
-    my $class = ref($proto) || $proto;
-    my $self  = [$ui, $win];
+    my($proto, $ui, $name) = @_;
+    my $class       = ref($proto) || $proto;
+    my $self        = $class->SUPER::new('name' => $name);
+    $self->{ui}     = $ui;
+    $self->{text}   = $ui->{win}->{$name}->{text};
+    $self->{status} = $ui->{win}->{$name}->{status};
+    $self->{input}  = $ui->{input};
     bless($self, $class);
-    return $self;
 }
 
 sub style {
-    my($self, $style) = @_;
-    $self->[0]->{text}->{$self->[1]}->{text}->style($style);
+    my $self = shift;
+    $self->{text}->style(@_);
 }
 
 
 sub indent {
     my $self = shift;
-    $self->[0]->{text}->{$self->[1]}->{text}->indent(@_);
+    $self->{text}->indent(@_);
 }
 
 
 sub print {
     my $self = shift;
     $self->SUPER::print(@_);
-    $self->[0]->{text}->{$self->[1]}->{text}->print(join('', @_));
-    $self->[0]->{input}->position_cursor();
+    $self->{text}->print(@_);
+    $self->{input}->position_cursor();
     doupdate();
 };
 
+
 sub seen {
-    my($self) = @_;
-    $self->[0]->{text}->{$self->[1]}->{text}->seen();
+    my $self = shift;
+    $self->{text}->seen(@_);
 }
 
 
 AUTOLOAD {
     my $self = shift;
     $AUTOLOAD =~ s/.*:://;
-    $self->[0]->$AUTOLOAD(@_);
+    $self->{ui}->$AUTOLOAD(@_);
 }
 
 
@@ -82,7 +88,7 @@ BEGIN {
 sub accept_line {
     my($ui) = @_;
     my $text = $ui->{input}->accept_line();
-    $ui->{text}->{main}->{text}->seen();
+    $ui->{text}->seen();
 
     if (@{$ui->{prompt}} > 0) {
 	my $args = shift @{$ui->{prompt}};
@@ -110,7 +116,7 @@ sub accept_line {
 	}
     }
 
-    elsif ($text eq "" && $ui->{text}->{main}->{text}->lines_remaining()) {
+    elsif ($text eq "" && $ui->{text}->lines_remaining()) {
 	$ui->command("page-down");
     }
 
@@ -147,13 +153,13 @@ sub accept_line {
    'kill-word'            => sub { $_[0]->{input}->kill_word(); },
    'backward-kill-word'   => sub { $_[0]->{input}->backward_kill_word(); },
    'yank'                 => sub { $_[0]->{input}->yank(); },
-   'page-up'              => sub { $_[0]->{text}->{main}->{text}->scroll_page(-1); },
-   'page-down'            => sub { $_[0]->{text}->{main}->{text}->scroll_page(1); },
-   'line-up'              => sub { $_[0]->{text}->{main}->{text}->scroll(-1); },
-   'line-down'            => sub { $_[0]->{text}->{main}->{text}->scroll(1); },
-   'scroll-to-top'        => sub { $_[0]->{text}->{main}->{text}->scroll_top(); },
-   'scroll-to-bottom'     => sub { $_[0]->{text}->{main}->{text}->scroll_bottom(); },
-   'refresh'              => sub { $_[0]->redraw(); },
+   'page-up'              => sub { $_[0]->{text}->scroll_page(-1); },
+   'page-down'            => sub { $_[0]->{text}->scroll_page(1); },
+   'line-up'              => sub { $_[0]->{text}->scroll(-1); },
+   'line-down'            => sub { $_[0]->{text}->scroll(1); },
+   'scroll-to-top'        => sub { $_[0]->{text}->scroll_top(); },
+   'scroll-to-bottom'     => sub { $_[0]->{text}->scroll_bottom(); },
+   'refresh'              => sub { $_[0]->{input}->{W}->clearok(1); $_[0]->redraw(); },
    'suspend'              => sub { TLily::Event::keepalive(); kill 'TSTP', $$; },
   );
 
@@ -196,26 +202,31 @@ sub accept_line {
   );
 
 
+my $base_curses;
 sub new {
     my $proto = shift;
+    my %arg   = @_;
+
+    return $base_curses->splitwin($arg{name}) if ($base_curses);
+
     my $class = ref($proto) || $proto;
     my $self  = $class->SUPER::new(@_);
-    my %arg   = @_;
     bless($self, $class);
 
     $self->{want_color} = (defined($arg{color}) ? $arg{color} : 1);
     $self->{input_maxlines} = $arg{input_maxlines};
     start_curses($self);
 
-    $self->{text}->{main}->{status} = TLily::UI::Curses::StatusLine->new
+    $self->{status} = TLily::UI::Curses::StatusLine->new
       (layout  => $self,
        color   => $self->{color});
+    $self->{win}->{$arg{name}}->{status} = $self->{status};
 
-    $self->{text}->{main}->{text} = TLily::UI::Curses::Text->new
+    $self->{text} = TLily::UI::Curses::Text->new
       (layout  => $self,
        color   => $self->{color},
-       buffer_size => 2048,
-       status  => $self->{text}->{main}->{status});
+       status  => $self->{status});
+    $self->{win}->{$arg{name}}->{text} = $self->{text};
 
     $self->{input} = TLily::UI::Curses::Input->new
       (layout  => $self,
@@ -236,6 +247,7 @@ sub new {
 
     $self->inherit_global_bindings();
 
+    $base_curses = $self;
     return $self;
 }
 
@@ -257,13 +269,12 @@ sub splitwin {
     my($self, $name) = @_;
 
     unless ($self->{text}->{$name}) {
-	$self->{text}->{$name}->{status} = TLily::UI::Curses::StatusLine->new
+	$self->{win}->{$name}->{status} = TLily::UI::Curses::StatusLine->new
 	  ( layout => $self, color => $self->{color} );
 
-	$self->{text}->{$name}->{text} = TLily::UI::Curses::Text->new
+	$self->{win}->{$name}->{text} = TLily::UI::Curses::Text->new
 	  ( layout => $self, color => $self->{color},
-       buffer_size => 2048,
-	    status => $self->{text}->{$name}->{status} );
+	    status => $self->{win}->{$name}->{status} );
 
 	$self->layout();
     }
@@ -312,7 +323,7 @@ sub DESTROY {
 sub layout {
     my($self) = @_;
 
-    my $tcount = scalar(keys %{$self->{text}});
+    my $tcount = scalar(keys %{$self->{win}});
 
     # Calculate the max height the input line is allowed to grow to.
     my $imax = $self->{input_imax} || ($LINES - (2 * $tcount));
@@ -327,7 +338,7 @@ sub layout {
     my $trem   = ($LINES - $ilines) % $tcount;
     my $y      = 0;
 
-    foreach my $tpair (values %{$self->{text}}) {
+    foreach my $tpair (values %{$self->{win}}) {
 	my $l = $tlines;
 	if ($trem) { $l++; $trem--; }
 
@@ -422,20 +433,20 @@ sub clearstyle {
 
 sub style {
     my($self, $style) = @_;
-    $self->{text}->{main}->{text}->style($style);
+    $self->{text}->style($style);
 }
 
 
 sub indent {
     my $self = shift;
-    $self->{text}->{main}->{text}->indent(@_);
+    $self->{text}->indent(@_);
 }
 
 
 sub print {
     my $self = shift;
     $self->SUPER::print(@_);
-    $self->{text}->{main}->{text}->print(join('', @_));
+    $self->{text}->print(join('', @_));
     $self->{input}->position_cursor();
     doupdate();
 };
@@ -444,7 +455,7 @@ sub print {
 sub redraw {
     my($self) = @_;
 
-    foreach my $tpair (values %{$self->{text}}) {
+    foreach my $tpair (values %{$self->{win}}) {
 	$tpair->{text}->redraw();
 	$tpair->{status}->redraw();
     }
@@ -515,7 +526,7 @@ sub prompt {
 
 sub define {
     my($self, $name, $pos) = @_;
-    $self->{text}->{main}->{status}->define($name, $pos);
+    $self->{status}->define($name, $pos);
     $self->{input}->position_cursor();
     doupdate;
 }
@@ -523,7 +534,7 @@ sub define {
 
 sub set {
     my($self, $name, $val) = @_;
-    $self->{text}->{main}->{status}->set($name, $val);
+    $self->{status}->set($name, $val);
     $self->{input}->position_cursor();
     doupdate;
 }
