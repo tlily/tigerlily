@@ -6,7 +6,7 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Server/Attic/SLCP.pm,v 1.30 1999/11/19 06:07:19 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Server/Attic/SLCP.pm,v 1.31 1999/12/13 08:32:07 mjr Exp $
 
 package TLily::Server::SLCP;
 
@@ -553,7 +553,7 @@ sub fetch {
     my $uiname;
     $uiname    = $ui->name() if ($ui);
 
-    my @data;
+    my @data = ();
     my $sub = sub {
         my($event) = @_;
         $event->{NOTIFY} = 0;
@@ -562,6 +562,12 @@ sub fetch {
             if ($type =~ /memo|info/) {
                   push @data, substr($event->{text},2)
                       if ($event->{text} =~ /^\* /);
+            } elsif ($type =~ /help/) {
+                # Remove the ?sethelp line the server returns
+                return if ($event->{text} =~ /^\?sethelp/ && !@data);
+                # Remove the terminal "."
+                return if ($event->{text} =~ /^\.$/);
+                push @data, $event->{text};
             } else {
                 push @data, $event->{text};
             }
@@ -586,6 +592,9 @@ sub fetch {
     } elsif ($type eq "verb") {
         $ui->print("(fetching verb $target from server $servername)\n") if ($ui);
         $server->cmd_process("\@list $target", $sub);
+    } elsif ($type eq "help") {
+        $ui->print("(fetching help $target $name from server $servername)\n") if ($ui);
+        $server->cmd_process("?gethelp $target $name", $sub);
     }
 
     return;
@@ -619,6 +628,9 @@ sub store {
         my $size = @$text;
         my $t = $target;  $t = "" if ($target eq "me");
         $server->sendln("\#\$\# export_file info $size $t");
+
+        push @{$server->{_export_queue}},
+          { uiname => $uiname, text => $text, type => $type };
     }
     elsif ($type eq "memo") {
         my $size = 0;
@@ -626,14 +638,34 @@ sub store {
         my $t = $target;  $t = "" if ($target eq "me");
         my $lines = @$text;
         $server->sendln("\#\$\# export_file memo $size $lines $name $t");
+
+        push @{$server->{_export_queue}},
+          { uiname => $uiname, text => $text, type => $type };
     }
     elsif ($type eq "verb") {
     }
+    elsif ($type eq "help") {
+        my $target = defined($args{target}) ? $args{target} : "lily";
+        my $success = 0;
+        my $sub = sub {
+            my ($event) = @_;
+            # $event->{NOTIFY} = 0;
+            if ($event->{'type'} eq 'begincmd') {
+                foreach (@$text) { next if /^\.$/; $server->sendln($_); }
+                $server->sendln(".");
+                return;
+            } elsif ($event->{type} eq 'endcmd' && !$success) {
+	        $args{ui}->print("(Store of help \"$target $name\" failed)\n") if ($args{ui});
+                return;
+            } else {
+                $success++ if ($event->{text} =~ /\(help for \"$name\" in index \"$target\" has been changed\)$/);
+            }
+            return;
+        };
+        $server->cmd_process("?sethelp $target $name", $sub);
+    }
     elsif ($type eq "config") {
     }
-
-    push @{$server->{_export_queue}},
-      { uiname => $uiname, text => $text, type => $type };
 
     return;
 }
