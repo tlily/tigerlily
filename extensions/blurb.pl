@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/blurb.pl,v 1.7 2000/12/12 18:50:33 coke Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/blurb.pl,v 1.8 2000/12/14 14:51:11 coke Exp $
 
 use strict;
 
@@ -32,10 +32,10 @@ my %abbr = (
 	qr/and/i => "&",
 );
 
-my %abbr_must = (
-	qr/fuck/i => "f***",
-	qr/shit/i => "sh*t",
-);
+#my %abbr_must = (
+	#qr/fuck/i => "f***",
+	#qr/shit/i => "sh*t",
+#);
 
 sub unload {
 	## Nothing to do here right now.
@@ -76,9 +76,9 @@ sub blurb_cmd {
 
 	#Handle any -required- substitutions. (swear filter)
 
-	foreach my $re (keys %abbr_must) {
-		$blurb =~s /$re/$abbr_must{$re}/g;
-	}
+	#foreach my $re (keys %abbr_must) {
+		#$blurb =~s /$re/$abbr_must{$re}/g;
+	#}
 
 	## strip off exterior braces/quotes.
 
