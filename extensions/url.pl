@@ -124,13 +124,15 @@ sub url_cmd {
 	    $cmd .= " '$url'";
  	}
 	if ($^O =~ /MSWin32/) {
-	    # There's no good way on Win32 to quote URLs in a
-	    # bulletproof fashion in the shell that I've found, but
-	    # for now we'll handle the single case of escaping
-	    # ampersands.  This is not a complete fix, though.
-	    $url=~s/\&/"\&"/g;  # Isn't Windows COOL!?! (Isn't CPerl-mode?)
+	    # Escape % so that the shell doesn't try to interpolate %foo% as
+            # an environment variable substitution
+    	    $url=~s/\%/"\%"/g;  # Isn't Windows COOL!?! (Isn't CPerl-mode?)
 
-            system("start", $url);
+	    # If the first parameter to the 'start' command begins with a
+            # quote, it's assumed to be a window title, so we need to fake
+            # a blank window title and then give the URL as the second
+            # parameter.
+            system('start', '""', '"'.$url.'"');
 
 	} elsif ($config{browser_textmode}) {
 	    TLily::Event::keepalive();
