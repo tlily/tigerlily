@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/url.pl,v 1.7 1999/04/09 22:48:36 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/url.pl,v 1.8 1999/06/10 18:35:30 neild Exp $
 
 #
 # URL handling
@@ -93,7 +93,7 @@ sub url_cmd {
 
         $ui->print("| URLs captured this session:\n");
         foreach (($#urls-$count+1)..$#urls) {
- 	    $ui->print(sprintf("| %2d) $urls[$_]\n",$_+1));
+ 	    $ui->print(sprintf("| %2d) %s\n",$_+1, $urls[$_]));
         }    
 	return;
     }
