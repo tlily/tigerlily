@@ -6,7 +6,7 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/README,v 1.14 2001/03/07 15:47:34 coke Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/README,v 1.15 2003/11/03 19:16:14 coke Exp $
 
      ("`-/")_.-'"``-._ 
       . . `; -._    )-;-,_`)          TigerLily 2.x
@@ -25,8 +25,14 @@ You can run tlily directly from the source directory, by running
 "perl tlily.PL".
 
 If you run Makefile.PL with "perl Makefile.PL", you will generate a
-single-file version of tlily, named "tlily.plx".  This may be installed
+single-file version of tlily, named "tlily.plx".  This may be copied
 wherever you wish.
+
+To do a "real" install:
+
+perl Makefile.PL
+make
+make install
 
 
 Colors
