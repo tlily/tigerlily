@@ -2,13 +2,17 @@ use strict;
 
 my $last_inc;
 sub spellcheck_input {
-    my($ui, $command, $key) = @_;
-
-    my ($point, $text) = $ui->get_input();
+    my($text) = @_;
 
     my ($dest,$sep,$message) = ($text =~ /^([^\s;:]*)([;:])(.*)/);
 
-    $last_inc = 0 if (length($message) <= 1);
+    my @f;
+    if ($text =~ /[;:]/) {
+	push @f, length("$dest$sep"), "input_window";
+    } else {
+	push @f, length($text), "input_window";
+	return @f;
+    }
 
     # strip off any partial words at the end.
     $message =~ s/\S+\s*$//g;
@@ -20,20 +24,23 @@ sub spellcheck_input {
     $m =~ s/\S+\'\S+//g;
 
     my $word;
-    my $inc;
     foreach $word (split /\W/, $m) {
 	if (!spelled_correctly($word)) {
-	    $message =~ s/\b$word\b/_${word}_/g;
-	    $inc++; 
+	    $message =~ s/\b$word\b/\0${word}\0/g;
 	}
     }
 
-    $last_inc = 0 if ($inc == 0);
-    $ui->print("($message)\n") if ($inc != $last_inc);
+    my $style = "input_window";
+    foreach (split /\0/,$message) {
+	push @f, length($_), $style;
+        if ($style eq "input_window") {
+	    $style = "input_error";
+	} else { 
+	    $style = "input_window";
+	}
+    }
 
-    $last_inc = $inc;
-    
-    return;
+    return @f;
 }
 
 my %look_cache;
@@ -79,17 +86,20 @@ sub spellcheck_cmd {
     my($ui, $command) = @_;
 
     if ($command =~ /on/i) {
-	$ui->intercept_r("spellcheck-input");
+	TLily::UI::istyle_fn_r(\&spellcheck_input);
 	$ui->print("(spellcheck enabled)\n");
     } else {
-	$ui->intercept_u("spellcheck-input");
+	TLily::UI::istyle_fn_u(\&spellcheck_input);
 	$ui->print("(spellcheck disabled)\n");
     }
 }
 
 
 sub load {    
-    TLily::UI::command_r("spellcheck-input"        => \&spellcheck_input);
+    my $ui = TLily::UI::name();
+    $ui->defstyle(input_error  => 'reverse');
+    $ui->defcstyle(input_error => 'red', 'black', 'normal');
+
     command_r("spellcheck" => \&spellcheck_cmd);
 
     foreach (qw(i a about an and are as at by for from in is of on or
