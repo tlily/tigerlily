@@ -153,7 +153,7 @@ sub accept_line {
    'scroll-to-top'        => sub { $_[0]->{text}->{main}->{text}->scroll_top(); },
    'scroll-to-bottom'     => sub { $_[0]->{text}->{main}->{text}->scroll_bottom(); },
    'refresh'              => sub { $_[0]->redraw(); },
-   'suspend'              => sub { kill 'TSTP', $$; },
+   'suspend'              => sub { TLily::Event::keepalive(); kill 'TSTP', $$; },
   );
 
 # The default set of keybindings.
