@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Curses/Attic/Text.pm,v 1.20 2000/02/15 00:01:09 tale Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Curses/Attic/Text.pm,v 1.21 2000/04/02 09:23:57 josh Exp $
 
 package TLily::UI::Curses::Text;
 
@@ -185,6 +185,29 @@ sub draw_line {
 				  $start, $line->[$i+1]));
 	$start += $line->[$i+1];
     }
+}
+
+# dumps out the review buffer to a file :)
+sub dump_to_file {
+    my ($self, $filename) = @_;
+
+    local(*FILE);
+    open(FILE, ">$filename") ||
+       $self->print("(Unable to open $filename for writing: $!)\n");
+
+    my $count = 0;
+    foreach my $line ($self->fetch_lines()) {
+        my $start = $line->[0];   
+        for (my $i = 3; $i < @$line; $i+=2) {
+            print FILE (substr($self->{text}, $start, $line->[$i+1]));
+            $start += $line->[$i+1];
+        }        
+        print FILE "\n";	
+	$count++;
+    }
+    
+    close(FILE);  
+    return $count;
 }
 
 

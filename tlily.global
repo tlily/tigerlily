@@ -8,7 +8,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/Attic/tlily.global,v 1.41 2000/02/15 01:54:58 tale Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/Attic/tlily.global,v 1.42 2000/04/02 09:23:55 josh Exp $
 
 # Global defaults for tlily
 # PLEASE DO NOT EDIT EXCEPT FOR DEVELOPMENT!
@@ -17,7 +17,7 @@
 @load = qw(server slcp_parse slcp_output slcp_state ui expand status
 	   after alias autologin autoreply countdown gag info misc paste pipes
 	   set startup source spellcheck submit url view vinfo log http_parse
-	   ctc on blurbless);
+	   ctc on blurbless dumpscrollback);
 
 if ($^O =~ /cygwin/) {
      @load = grep { $_ !~ /ctc|spellcheck|submit/ } @load;

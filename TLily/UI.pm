@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/UI.pm,v 1.25 2000/02/10 17:34:22 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/UI.pm,v 1.26 2000/04/02 09:23:56 josh Exp $
 
 package TLily::UI;
 
@@ -425,6 +425,11 @@ Sets the current contents of the input line.
 =item bell()
 
 Sounds a bell.
+
+=item dump_to_file($filename)
+
+Dump out the current scrollback buffer to a file.  Return the number of lines
+written out.
 
 =back
 

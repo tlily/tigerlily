@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/Curses.pm,v 1.44 2000/02/18 20:26:06 tale Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/Curses.pm,v 1.45 2000/04/02 09:23:56 josh Exp $
 
 package TLily::UI::Curses::Proxy;
 
@@ -715,6 +715,11 @@ sub istyle_fn_u {
 sub bell {
     my($self) = @_;
     beep();
+}
+
+sub dump_to_file {
+    my $self = shift;
+    $self->{text}->dump_to_file(@_);
 }
 
 1;

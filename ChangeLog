@@ -1,4 +1,6 @@
 Version 2.1.1-post
+  * [UI] Added %dumpscrollback, which lets you dump the scrollback buffer to 
+    a file. [JDW]
   * [tlily.PL, extensions/on.pl] Changed the formatting of SLCP sends to
     allow event attributes to modify presentation.  [RBJ]
   * [extensions/slcp_output.pl] Changed the formatting of sends to allow
