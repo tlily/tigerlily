@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/User.pm,v 1.32 2000/09/09 18:22:44 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/User.pm,v 1.33 2000/12/14 01:17:37 neild Exp $
 
 package TLily::User;
 
@@ -324,7 +324,7 @@ sub input_handler {
     return if ($char ne "%" && !TLily::Config::ask($command));
 
     #$commands{$command}->($e->{ui}, $3, $command);
-    $commands{$command}->($e->{ui}, $3);
+    $commands{$command}->($e->{ui}, $3, $e->{startup});
     return 1;
 }
 
