@@ -29,8 +29,9 @@ sub server_command {
 		return;
 	}
 
-	$event->event_r(type => "user_input",
-			call => \&to_server);
+	$event->event_r(type  => "user_input",
+			order => "after",
+			call  => \&to_server);
 }
 
 $user->command_r(server => \&server_command);

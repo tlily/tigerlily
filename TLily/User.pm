@@ -45,7 +45,7 @@ sub new {
 	$self->{shelp}    = {};
 
 	$self->{event}->event_r(type  => "user_input",
-				order => "after",
+				order => "during",
 				obj   => $self,
 				call  => \&input_handler);
 
