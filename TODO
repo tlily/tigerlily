@@ -9,20 +9,16 @@ Before 2.0 release:
   based on the ones we've already finished.
 
   helper.pl     (waiting for coke's patches)
-  hidesend.pl   (medium)
   pipes.pl      (medium)
-  view.pl       (medium)
   program.pl    (medium)
   ctc.pl/httpd.pl/Httpd.pm  (steve is working on this)
   
-  The following need to be tested!:
-  Paging.  (Part of ui.pl.)
-  autoreply.pl
-
   Bugs:
     log.pl - doesn't do indenting/wrapping right.  damien will move the 
              wrapping/indenting code out of Curses.pm and into the UI.
-    
+
+    hidesend (misc.pl) - Doesn't seem to work for me.. why?
+
 Later:
   multiserver, multiui
   irc mode/ TLily::Server::SubClient

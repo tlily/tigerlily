@@ -1,4 +1,4 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/misc.pl,v 1.9 1999/03/02 00:59:44 neild Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/misc.pl,v 1.10 1999/03/19 01:29:47 josh Exp $ 
 
 use strict;
 use TLily::Version;
@@ -123,3 +123,17 @@ help_r('echo' => '
 Usage: %echo [-n] <text>
 ');
 command_r('echo' => \&echo_handler);
+
+
+# This will hide your own sends if the hidesend option is turned on.
+# %set hidesend 1
+# %set hidesend 0
+#
+event_r(type => 'user_input',
+	call => sub {
+	    my($e, $h) = @_;
+	    $e->{NOTIFY} = 0 if ($config{hidesend} && 
+				 $e->{text} =~ /^\S*[;:]/);
+	    
+	    return 0;
+	});
