@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/info.pl,v 1.21 2000/05/10 04:41:20 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/info.pl,v 1.22 2000/07/18 18:14:50 mjr Exp $
 
 use strict;
 
@@ -374,13 +374,14 @@ command_r('export' => \&export_cmd);
 	       
 shelp_r("info", "Improved /info functions");
 help_r("info", "
-%info set  [discussion]      - Loads your editor and allows you to set your 
-                               /info
-%info edit [discussion|user] - Allows you to edit or view (in your editor)
-                               your /info, or that of a discussion or user.
-			       (a handy way to save out someone's /info to 
-			        a file or to edit a /info)
-%info clear [discussion]     - Allows you to clear a /info.
+%info set  [\<discussion\>]
+   - Loads your editor and allows you to set your /info
+%info edit [\<discussion\>|\<user\>]
+   - Allows you to edit or view (in your editor) your /info, or that of a
+     discussion or user.  (a handy way to save out someone's /info to a
+     file or to edit a /info)
+%info clear [\<discussion\>]
+   - Allows you to clear a /info.
 
 Note: You can set your editor via \%set editor, or the VISUAL and EDITOR
       environment variables.
@@ -389,20 +390,27 @@ Note: You can set your editor via \%set editor, or the VISUAL and EDITOR
 
 shelp_r("export", "Export a file to /info");
 help_r("export", "
-%export \<filnename\> [discussion] - Allows you to set a /info to the contents of 
-                               a file
+%export \<filename\> [\<discussion\>]
+   - Allows you to set a /info to the contents of a file.
+%export memo \<filename\> [\<discussion\>] \<memoname\>
+   - Allows you to set a memo to the contents of a file.  If a discussion
+     name is supplied, will set the memo on that discusion, otherwise, it
+     will export to your personal memo pad.
 ");
 
 shelp_r("memo", "Improved /memo functions");
 help_r("memo", "
-%memo [disc|user] name      - View a memo \"name\" on your memo pad, or that
-                              of a discussion or another user.
-%memo set [disc] name       - Allows you to set a memo \"name\" on your memo
-                              pad, or a discussion's memo pad.
-%memo edit [disc|user] name - Edit or view (in your editor) one of your memos,
-                              or that of a discussion or another user (you can
-                              only view those of users, of course).
-%memo clear [disc] name     - Erase a memo.
+%memo [\<disc\>|\<user\>] name
+   - View a memo \"name\" on your memo pad, or that of a discussion or another
+     user.
+%memo set [\<disc\>] name
+   - Allows you to set a memo \"name\" on your memo pad, or a discussion's
+     memo pad.
+%memo edit [\<disc\>|\<user\>] name
+   - Edit or view (in your editor) one of your memos, or that of a discussion
+     or another user (you can only view those of users, of course).
+%memo clear [\<disc\>] name
+   - Erase a memo.
 
 Note: You can set your editor via \%set editor, or the VISUAL and EDITOR
       environment variables.
