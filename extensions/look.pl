@@ -1,12 +1,12 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/Attic/look.pl,v 1.1 1999/03/01 07:02:25 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/Attic/look.pl,v 1.2 1999/03/02 19:51:57 neild Exp $
 #
 # "look" tlily extension
 #
 
-sub spellcheck($$$) {
+sub spellcheck {
     my($ui, $command, $key) = @_;
     my($pos, $line) = $ui->get_input;
-    my $ui_cols = 80;
+    my $ui_cols = 79;
 
     # First get the portion of the line from the beginning to the
     # character just before the cursor.
@@ -28,19 +28,18 @@ sub spellcheck($$$) {
     if (@res == 0) {
 	$ui->print("(\"$word\" not found in dictionary)\n");
     } elsif (@res == 1) {
-	$ui->print("(\"$word\" is spelled correctly)\n");	
+	$ui->print("(\"$word\" is spelled correctly)\n");
     } else {
-
 	$ui->print("(The following possible words were found:)\n");
 
 	my $clen = 0;
 	foreach (@res) { $clen = length $_ if (length $_ > $clen); }
 	$clen += 2;
-	
+
 	my $cols = int($ui_cols / $clen);
 	my $rows = int(@res / $cols);
 	$rows++ if (@res % $cols);
-	
+
 	$rows = 5 if ($rows > 5);
 
 	my $i;
@@ -49,7 +48,7 @@ sub spellcheck($$$) {
 			      map{$res[$i+$rows*$_]} 0..$cols));
 	    $ui->print("\n");
 	}
-	
+
 	if (@res > $rows * $cols) {
 	    $ui->print("(" . (@res - ($rows * $cols)) . " more entries follow)\n");
 	}
