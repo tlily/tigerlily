@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/FoiledAgain/Attic/Curses.pm,v 1.1 2003/02/13 15:11:09 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/FoiledAgain/Attic/Curses.pm,v 1.2 2003/02/14 01:15:13 josh Exp $
 
 package TLily::FoiledAgain::Curses;
 
@@ -85,7 +85,7 @@ my %snamemap   =
 my %cpairmap   = ("-1 -1" => 0);
 
 
-my %crud;  # broken stuff, duh.  need to get rid of this.
+my %crud = (want_color => 1);  # broken stuff, duh.  need to get rid of this.
 
 sub start {
     # Work around a bug in certain curses implementations where raw() does

@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/TextWindow/Attic/Generic.pm,v 1.2 2003/02/13 19:27:14 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/TextWindow/Attic/Generic.pm,v 1.3 2003/02/14 01:15:14 josh Exp $
 
 package TLily::UI::TextWindow::Generic;
 
@@ -126,9 +126,9 @@ sub defstyle {
     shift if (ref $_[0]);
     my($style, @attrs) = @_;
 
-    foreach my $w (@widgets) {
-        $w->{F}->defstyle(@_);
+    TLily::FoiledAgain::defstyle(@_);
 
+    foreach my $w (@widgets) {
 	if ($w->{bg} eq $style) {
             $w->{F}->clear_background($style);
 	}
@@ -140,9 +140,9 @@ sub defcstyle {
     shift if (ref $_[0]);
     my($style, $fg, $bg, @attrs) = @_;
 
+    TLily::FoiledAgain::defcstyle(@_);
+
     foreach my $w (@widgets) {
-        $w->{F}->defcstyle(@_);
-	
 	if ($w->{bg} eq $style) {
             $w->{F}->clear_background($style);
 	}

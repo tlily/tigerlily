@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/FoiledAgain.pm,v 1.2 2003/02/13 19:27:14 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/FoiledAgain.pm,v 1.3 2003/02/14 01:15:13 josh Exp $
 
 package TLily::FoiledAgain;
 
@@ -69,6 +69,12 @@ Copy the current contents of the virtual screen described by any windows
 (see below) to the real screen.  The cursor should be left at the location of
 the point (in the last window?)
 
+=item reset_styles()
+
+=item defstyle($style, @attrs)
+
+=utem defcstyle($style, $fg, $bg, @attrs)
+
 =head2 OBJECT (WINDOW) METHODS
 
 In addition to the above class methods, this is also an object representing
@@ -89,12 +95,6 @@ Clean up the window.
 =item clear_background($style)
 
 Clear the window and set its background to $style.
-
-=item reset_styles()
-
-=item defstyle($style, @attrs)
-
-=utem defcstyle($style, $fg, $bg, @attrs)
 
 =item set_style($style)
 
@@ -141,31 +141,24 @@ sub screen_width     { dispatch_classmethod(screen_width     => @_); }
 sub screen_height    { dispatch_classmethod(screen_height    => @_); }
 sub update_screen    { dispatch_classmethod(update_screen    => @_); }
 sub bell             { dispatch_classmethod(bell             => @_); }
+sub reset_styles     { dispatch_classmethod(reset_styles     => @_); }
+sub defstyle         { dispatch_classmethod(defstyle         => @_); }
+sub defcstyle        { dispatch_classmethod(defcstyle        => @_); }
 
-
-sub new {           
-    my $proto = shift;
-    my $class = ref($proto) || $proto;
-
-    my $object = dispatch_classmethod(new => @_);
-}
-
-sub destroy { NOTIMPLEMENTED(@_); }
-sub clear { NOTIMPLEMENTED(@_); }
+sub new              { shift; new $UI_CLASS(@_); }
+sub destroy          { NOTIMPLEMENTED(@_); }
+sub clear            { NOTIMPLEMENTED(@_); }
 sub clear_background { NOTIMPLEMENTED(@_); }
-sub reset_styles { NOTIMPLEMENTED(@_); }
-sub defstyle { NOTIMPLEMENTED(@_); }
-sub defcstyle { NOTIMPLEMENTED(@_); }
-sub set_style { NOTIMPLEMENTED(@_); }
-sub clear_line { NOTIMPLEMENTED(@_); }
-sub move_point { NOTIMPLEMENTED(@_); }
-sub addstr_at_point { NOTIMPLEMENTED(@_); }
-sub addstr { NOTIMPLEMENTED(@_); }
-sub insch { NOTIMPLEMENTED(@_); }
-sub delch_at_point { NOTIMPLEMENTED(@_); }
-sub scroll { NOTIMPLEMENTED(@_); }
-sub commit { NOTIMPLEMENTED(@_); }
-sub read_char { NOTIMPLEMENTED(@_); }
+sub set_style        { NOTIMPLEMENTED(@_); }
+sub clear_line       { NOTIMPLEMENTED(@_); }
+sub move_point       { NOTIMPLEMENTED(@_); }
+sub addstr_at_point  { NOTIMPLEMENTED(@_); }
+sub addstr           { NOTIMPLEMENTED(@_); }
+sub insch            { NOTIMPLEMENTED(@_); }
+sub delch_at_point   { NOTIMPLEMENTED(@_); }
+sub scroll           { NOTIMPLEMENTED(@_); }
+sub commit           { NOTIMPLEMENTED(@_); }
+sub read_char        { NOTIMPLEMENTED(@_); }
 
 
 sub dispatch_classmethod {
@@ -180,7 +173,8 @@ sub dispatch_classmethod {
         close(F);
     }
 
-    $UI_CLASS->$method(@_);
+    no strict 'refs';
+    &{"${UI_CLASS}::${method}"}(@_);
 }
 
 sub NOTIMPLEMENTED { 
