@@ -1,0 +1,270 @@
+#!/usr/bin/perl -w
+#    TigerLily:  A client for the lily CMC, written in Perl.
+#    Copyright (C) 1999-2001  The TigerLily Team, <tigerlily@tlily.org>
+#                                http://www.tlily.org/tigerlily/
+#
+#  This program is free software; you can redistribute it and/or modify it
+#  under the terms of the GNU General Public License version 2, as published
+#  by the Free Software Foundation; see the included file COPYING.
+#
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/tools/build_tlily,v 1.1 2003/10/19 00:06:43 josh Exp $
+
+use strict;
+use Config;
+use Symbol;
+
+#
+# Parse options.
+#
+
+sub usage {
+    print STDERR "Usage: $0 <file to build> TL_LIBDIR=<path> TL_ETCDIR=<path>\n";
+    exit 1;
+}
+
+my $file_to_build = shift @ARGV;
+  
+my %opts;
+for my $opt (@ARGV) {
+    if ($opt =~ /^([^=]+)=(.*)/) {
+        $opts{$1} = $2;
+    } else {
+        foreach (qw(TL_LIBDIR TL_ETCDIR)) {
+            usage() unless exists $opts{$_};
+        }
+    }
+}
+
+my $TL_LIBDIR    = $opts{'TL_LIBDIR'};
+my $TL_ETCDIR    = $opts{'TL_ETCDIR'};
+my $TL_EXTDIR    = "$opts{TL_LIBDIR}/extensions";
+my $TL_LIBMODDIR = $opts{'TL_LIBDIR'};
+
+
+#
+# EAGAIN is nigh-impossible to determine on many systems.  Give it a try.
+#
+
+my $fallback_EAGAIN = `$^X tools/find_eagain`;
+if ($fallback_EAGAIN =~ /^OK/) {
+    print STDERR "Skipping hardcoded EAGAIN...\n";
+    undef $fallback_EAGAIN;
+} elsif ($fallback_EAGAIN =~ /^FAILED/) {
+    print STDERR "Warning: Cannot determine value for EAGAIN.\n";
+    undef $fallback_EAGAIN;
+} elsif ($fallback_EAGAIN =~ /^(\d+)/) {
+    print STDERR "Warning: Hardcoding EAGAIN as $1.\n";
+    $fallback_EAGAIN = $1;
+}
+$fallback_EAGAIN ||= "undef";    
+
+
+if ($file_to_build eq "tlily") {
+    my $outfile = "tlily";
+    open(TLILY, ">$outfile") or die "Can't write $outfile: $!\n";
+    print TLILY get_script_header();
+    open (F, "<tlily.PL") || die "Can't read tlily.PL: $!\n";
+    while (<F>) { print TLILY; }
+    close (F);
+    close TLILY;
+    chmod(0777, $outfile);
+    
+    print "tlily executable built as \"$outfile\".\n";
+    exit(0);
+}
+
+my %added;
+if ($file_to_build =~ /tlily\.(.*)\.plx/) {
+    my $moduleset = $1;
+
+    # Override some settings.
+    $TL_EXTDIR = "//INTERNAL/extensions";
+    $TL_LIBDIR = "//INTERNAL/lib";
+    $TL_LIBMODDIR = "//INTERNAL";
+    
+    my $outfile = "tlily.${moduleset}.plx";
+    open(TLILY, ">$outfile") or die "Can't write $outfile: $!\n";
+    print TLILY get_script_header();
+    print TLILY get_tlily_plx($moduleset);
+    close TLILY;
+    chmod(0777, $outfile);
+
+    print "Single-file executable built as \"$outfile\".\n";
+    exit(0);    
+}
+
+die "Unrecognized file '$file_to_build'\n";
+
+
+sub get_tlily_plx {
+    my ($moduleset) = @_;
+   
+    # Override some settings.
+    $TL_EXTDIR = "//INTERNAL/extensions";
+    $TL_LIBDIR = "//INTERNAL/lib";
+    $TL_LIBMODDIR = "//INTERNAL";
+
+    my $script = get_script_header();
+
+    my @modules = qw(
+        TLily::ExoSafe
+        TLily::Config
+        TLily::Registrar
+        TLily::Event
+        TLily::Utils
+        TLily::User
+        TLily::Version
+        TLily::UI::Util
+        TLily::UI
+        TLily::FoiledAgain
+        TLily::UI::TextWindow::Generic
+        TLily::UI::TextWindow::Input
+        TLily::UI::TextWindow::StatusLine
+        TLily::UI::TextWindow::Text
+        TLily::UI::TextWindow
+        TLily::Extend
+        TLily::Server
+        TLily::Server::SLCP
+        TLily::Server::HTTP
+        TLily::Daemon
+        TLily::Daemon::Connection
+        TLily::Daemon::HTTP
+        TLily::Bot
+    );
+
+    if ($moduleset eq "curses") {
+        push @modules, qw(
+            TLily::UI::Curses::Generic TLily::UI::Curses::Input
+            TLily::UI::Curses::StatusLine TLily::UI::Curses::Text
+            TLily::UI::Curses TLily::FoiledAgain::Curses
+        );
+    } elsif ($moduleset eq "win32") {   
+        push @modules, qw(TLily::FoiledAgain::Win32);
+    } elsif ($moduleset eq "tk") {
+        push (@modules, qw(TLily::UI::Tk::Event TLily::UI::Tk));
+    }
+
+    for my $module (@modules) {
+        $added{$module} = 1;
+
+        my $file = $module . ".pm";
+        $file =~ s|::|/|g;
+        
+        $script .= "{\n";
+        $script .= embedperl($file);
+        $script .= "}\n";
+    }
+    
+    $script .= "{\n";
+    $script .= "package main;\n";
+    $script .= embedperl("tlily", 1);
+    $script .= "}\n";
+    
+    $script .= "__END__\n";
+
+    for my $f (<extensions/*.pl>) {
+        #next unless ($f =~ /^extensions\/(.*\.pl$/);
+        #my $name = $1;
+            
+        $script .= "#### EMBEDDED \"$f\"\n";
+        $script .= embedperl($f);
+        $script .= "#### END\n";
+    }
+        
+    $script .= "#### EMBEDDED \"lib/tlily.global\"\n";
+    $script .= embedperl("tlily.global");
+    $script .= "#### END\n";
+        
+    return $script;
+}
+
+
+    
+sub embedperl {
+    my($file) = @_;
+
+    my $fh = gensym;
+    open($fh, $file) or die "$file: $!\n";
+
+    my $script = "#line 0 $file\n";
+
+    my $inpod = 0;
+    while (<$fh>) {
+        if (/^__(?:END|DATA)__/) {
+            last;
+        }
+        if ($inpod) {
+            if (/^=cut/) {
+                $inpod = 0;
+            }
+        } else {
+            if (/^=/) {
+                $inpod = 1;
+            } elsif (/^use\s+(TLily::[^\s;\(]+)(.*)/) {
+                print "$file depends on $1\n" unless $added{$1};
+                $script .= "BEGIN { import $1$2 }\n";
+            } elsif (/^\@(?:ISA|EXPORT|EXPORT_OK|EXPORT_TAGS)\s*=/) {
+                $script .= "BEGIN {\n    $_}\n";
+            } else {
+                $script .= $_;
+            }
+        }
+    }
+
+    return $script;
+}
+    
+    
+    
+sub get_script_header {
+
+    my $PERL = $Config{'startperl'} ? $Config{'startperl'}     : 
+               $Config{'perlpath'}  ? "#!".$Config{'perlpath'} :
+                                      "#/usr/bin/perl";
+    my $script = <<END
+$PERL
+
+##########################################################################
+##########################################################################
+###
+### Tigerlily:  A client for the lily CMC, written in Perl.
+### Copyright (C) 1999-2001  The TigerLily Team, <tigerlily\@tlily.org>
+###                             http://www.tlily.org/tigerlily/
+###
+### This program is free software; you can redistribute it and/or modify it
+### under the terms of the GNU General Public License version 2, as published
+### by the Free Software Foundation; see the included file COPYING.
+###
+##########################################################################
+##########################################################################
+
+
+##########################################################################
+### Configuration section
+###
+
+# Tigerlily will look for the "tlily.site" file in this directory.
+\$::TL_ETCDIR = "$TL_ETCDIR";
+
+# Tigerlily will load extensions from this directory.
+\$::TL_EXTDIR = "$TL_EXTDIR";
+
+# Tigerlily library directory.
+\$::TL_LIBDIR = "$TL_LIBDIR";
+
+# Tigerlily modules directory.
+\$::TL_LIBMODDIR = "$TL_LIBMODDIR";
+      
+# Fallback value for EAGAIN, if it cannot be determined by other means.
+\$::fallback_EAGAIN = $fallback_EAGAIN;
+
+###
+### End of user-configurable data.  Do not edit below this line.
+##########################################################################
+
+END
+  ;
+
+    return $script;
+}
+    
