@@ -1,4 +1,6 @@
 Version 2.0-post
+  * [TLily/Server/SLCP.pm] Added mutli-server aware cmd_process.  May
+    eventually remove TLily/Command.pm [MJR]
   * [extensions/slcp_parse.pl] TLily looked for %SLCP-SYNC anywhere
     in a line, not just at the beginning.  Fixed.  [MJR]
   * Extended TLily::Server::SLCP::fetch() to also fetch verbs, and

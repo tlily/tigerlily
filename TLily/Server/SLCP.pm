@@ -6,7 +6,7 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Server/Attic/SLCP.pm,v 1.25 1999/09/21 05:01:49 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Server/Attic/SLCP.pm,v 1.26 1999/09/24 07:50:03 mjr Exp $
 
 package TLily::Server::SLCP;
 
@@ -23,6 +23,56 @@ use TLily::UI;
 
 @ISA = qw(TLily::Server);
 
+my $cmd_handlers_init = 0;
+
+sub init () {
+    return if ($cmd_handlers_init);
+    $cmd_handlers_init = 1;
+
+    # The order of these handlers is important!
+    TLily::Event::event_r(type => 'begincmd',
+            call => sub {
+                my($e) = @_;
+                my $server = $e->{server};
+                my $cmd = $e->{command};
+                my $id = $e->{cmdid};
+
+                if (defined $server->{pending_cmds}{$cmd}) {
+                    $server->{active_cmds}{$id} = $server->{pending_cmds}{$cmd};
+                    delete $server->{pending_cmds}{$cmd};
+                }
+                return 0;
+            });
+
+    TLily::Event::event_r(type => 'all',
+            call => sub {
+                my($e) = @_;
+                my $server = $e->{server};
+                my $id = $e->{cmdid};
+
+                return 0 if ($e->{type} eq 'endcmd');
+                return 0 unless ($id);
+                my $f = $server->{active_cmds}{$id};
+                &$f($e) if (defined $f);
+                return 0;
+            });
+
+    TLily::Event::event_r(type => 'endcmd',
+            call => sub {
+                my($e) = @_;
+                my $server = $e->{server};
+                my $id = $e->{cmdid};
+
+                if (defined $server->{active_cmds}{$id}) {
+                    my $f = $server->{active_cmds}{$id};
+                    &$f($e) if (defined $f);
+                    delete $server->{active_cmds}{$id};
+                }
+                return 0;
+            });
+}
+
+
 sub new {
     my($proto, %args) = @_;
     my $class = ref($proto) || $proto;
@@ -37,8 +87,14 @@ sub new {
     $self->{NAME}     = {};
     $self->{DATA}     = {};
 
+    $self->{active_cmds} = {};
+    $self->{pending_cmds} = {};
+
     $self->{user}     = $args{user};
     $self->{password} = $args{password};
+
+    # Initialize the command processing handlers
+    init();
 
     # set the client name once we're %connected.
     my $sub = sub {
@@ -95,6 +151,12 @@ sub command {
     return 1;
 }
 
+sub cmd_process {
+    my($self, $c, $f) = @_;
+    $self->{pending_cmds}{$c} = $f;
+    $self->sendln($c);
+
+}
 
 =item expand_name()
 
@@ -440,15 +502,16 @@ sub fetch {
         return;
     };
 
+    my $servername = $server->{DATA}{NAME};
     if ($type eq "info") {
-        $ui->print("(fetching info from server)\n") if ($ui);
-        TLily::Command::cmd_process("/info $target", $sub);
+        $ui->print("(fetching info for $target from server $servername)\n") if ($ui);
+        $server->cmd_process("/info $target", $sub);
     } elsif ($type eq "memo") {
-        $ui->print("(fetching memo from server)\n") if ($ui);
-        TLily::Command::cmd_process("/memo $target $name", $sub);
+        $ui->print("(fetching memo $name on $target from server $servername)\n") if ($ui);
+        $server->cmd_process("/memo $target $name", $sub);
     } elsif ($type eq "verb") {
-        $ui->print("(fetching verb from server)\n") if ($ui);
-        TLily::Command::cmd_process("\@list $target", $sub);
+        $ui->print("(fetching verb $target from server $servername)\n") if ($ui);
+        $server->cmd_process("\@list $target", $sub);
     }
 
     return;

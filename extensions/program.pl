@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/program.pl,v 1.7 1999/09/20 06:48:55 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/program.pl,v 1.8 1999/09/24 07:50:06 mjr Exp $
 
 $perms = undef;
 
@@ -43,6 +43,31 @@ sub edit_text {
     unlink($tmpfile);
 
     return 1;
+}
+
+sub do_diff {
+  my ( $a, $b ) = @_;
+  local(*FH);
+  my $diff = [];
+
+  my $tmpfile_a = "/tmp/tlily-diff-a.$$";
+  my $tmpfile_b = "/tmp/tlily-diff-b.$$";
+  open FH, ">$tmpfile_a";
+  foreach (@{$a}) { print FH "$_\n" };
+  close FH;
+
+  open FH, ">$tmpfile_b";
+  foreach (@{$b}) { print FH "$_\n" };
+  close FH;
+
+  open FH, "diff $tmpfile_a $tmpfile_b |";
+  @{$diff} = <FH>;
+  close FH;
+
+  unlink $tmpfile_a;
+  unlink $tmpfile_b;
+
+  return $diff;
 }
 
 sub verb_set(%) {
@@ -101,7 +126,7 @@ sub verb_showlist {
     $server->sendln("\@show $obj:$verb") if ($cmd eq 'show');
   } else {
     my @lines = ();
-    cmd_process("\@show $obj", sub {
+    $server->cmd_process("\@show $obj", sub {
         my($event) = @_;
         $event->{NOTIFY} = 0;
         if ($event->{type} eq 'endcmd') {
@@ -189,7 +214,6 @@ sub prop_show {
 
   # If $prop is defined, we were given a specific property to look at.  Do so.
   if (defined($prop)) {
-    $ui->print("(\@show $obj.$prop)\n");
     $server->sendln("\@show $obj.$prop");
   } else {
     # We need to list the properties on the object.  We will fire off
@@ -312,23 +336,32 @@ sub obj_cmd {
 }
 
 sub prop_cmd {
-  my $ui = shift;
-  my ($cmd,@args) = split /\s+/, "@_";
-  my $prop_spec = shift @args;
+    my $ui = shift;
+    my ($cmd,@args) = split /\s+/, "@_";
+    my ($prop_spec, $prop_val) = shift @args;
 
-  # Do a minimal check of the prop spec here.
-  unless ($prop_spec =~ /([^\.]+)(?:\.(.+))?/) {
-    $ui->print("Usage: %prop cmd (object).(verb)\n");
+    $ui->print("$cmd $prop_spec $prop_val\n");
+    # Do a minimal check of the prop spec here.
+    if ($prop_spec =~ /([^\.]+)(?:\.(.+))?/) {
+        my $obj = $1;
+        my $prop = $2;
+
+        if ($cmd =~ /^show(?:all)?$/) {
+            prop_show($cmd, $ui, $obj, $prop);
+        } elsif ($cmd =~ /^set$/) {
+            if (defined($prop) && defined($prop_val)) {
+                $server->sendln("\@eval $obj:$prop = $prop_val");
+            } else {
+                $ui->print("Usage: %prop set object.verb moo-value\n");
+            }
+        } else {
+            $ui->print("(unknown %prop command)\n");
+        }
+    } else {
+        $ui->print("Usage: %prop set object.verb moo-value\n") if ($cmd eq 'set');
+        $ui->print("Usage: %prop show[all] object.verb\n") if ($cmd ne 'set');
+    }
     return 0;
-  }
-  my $obj = $1;
-  my $prop = $2;
-
-  if ($cmd =~ /^show(?:all)?$/) {
-    prop_show($cmd, $ui, $obj, $prop);
-  } else {
-    $ui->print("(unknown %prop command)\n");
-  }
 }
 
 sub verb_cmd {
@@ -340,7 +373,7 @@ sub verb_cmd {
 
   # Do a minimal check of the verb spec here.
   unless ($verb_spec =~ /([^:]+)(?::(.+))?/) {
-    $ui->print("Usage: %verb cmd (object):(verb)\n");
+    $ui->print("Usage: %verb cmd object:verb\n");
     return 0;
   }
   my $obj = $1;
@@ -391,6 +424,47 @@ sub verb_cmd {
                    type   => "verb",
                    target => $verb_spec,
                    call   => $sub);
+
+  } elsif ($cmd eq 'diff') {
+    my $subcon = sub {
+      my @data = ();
+      return sub {
+        my(%args) = @_;
+
+        if (($args{text}[0] =~ /^That object does not define that verb\.$/) ||
+            ($args{text}[0] =~ /^Invalid object \'.*\'\.$/)) {
+          # Encountered an error.
+          $args{ui}->print($args{server} . ": " . $args{text}[0] . "\n");
+          return;
+        } elsif ($args{text}[0] =~/^That verb has not been programmed\.$/) {
+          # Verb exists, but there's no code for it yet.
+          # We'll provide a comment saying so as the verb code.
+          @{$args{text}} = ("/* This verb $verb_spec has not yet been written. */");
+        }
+
+        # Do diff
+        push @data, $args{text};
+        if (scalar(@data) == 2) {
+          my $diff = do_diff(@data);
+
+          foreach (@{$diff}) { $ui->print($_) };
+        }
+      }
+    };
+
+    my $sub = &$subcon;
+    @servers = server_name();
+   
+    $ui->print("Diffing verb $verb_spec on " . $servers[0]{DATA}{NAME} . " against " . $servers[1]->{DATA}{NAME} . ":\n");
+    $servers[0]->fetch(ui     => $ui,
+                       type   => "verb",
+                       target => $verb_spec,
+                       call   => $sub);
+
+    $servers[1]->fetch(ui     => $ui,
+                       type   => "verb",
+                       target => $verb_spec,
+                       call   => $sub);
 
   } else {
     $ui->print("(unknown %verb command)\n");
