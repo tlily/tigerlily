@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/info.pl,v 1.8 1999/04/14 01:37:12 albert Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/info.pl,v 1.9 1999/04/21 19:05:05 neild Exp $
 
 use strict;
 
@@ -125,6 +125,11 @@ sub memo_cmd {
     }
 
     if ($cmd eq 'set') {
+	if ($name =~ /^\d+$/) {
+	    $ui->print("(memo name is a number)\n");
+	    return;
+	}
+
 	my @text;
 	edit_text($ui, \@text) or return;
 	$server->store(ui     => $ui,
@@ -134,6 +139,11 @@ sub memo_cmd {
 		       text   => \@text);
     }
     elsif ($cmd eq 'edit') {
+	if ($name =~ /^\d+$/) {
+	    $ui->print("(you can only edit memos by name)\n");
+	    return;
+	}
+
 	my $sub = sub {
 	    my(%args) = @_;
 	    edit_text($args{ui}, $args{text}) or return;
