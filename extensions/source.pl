@@ -1,27 +1,57 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/source.pl,v 1.4 2000/02/08 01:45:21 tale Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/source.pl,v 1.5 2000/12/12 02:17:19 coke Exp $
 
 use strict;
 
-sub do_source($) {
-    my ($ui,$fname) = @_;
-    my $i;
-    local(*FH);
+sub do_source {
+    my ($ui,@args) = @_;
+  
+    my @args = split(' ',$args[0]);
+    if (scalar(@args) == 1) {
+
+	my $fname=$args[0];
+        my $i;
+        local(*FH);
     
-    return if $fname eq "";
+        return if $fname eq "";
     
-    my $rc = open (FH, "<$fname");
-    unless ($rc) {
-	$ui->print("($fname not found)\n");
+        my $rc = open (FH, "<$fname");
+        unless ($rc) {
+	    $ui->print("($fname not found)\n");
+	    return;
+        }
+    
+        $ui->print("(sourcing $fname)\n");
+    
+        my @data = <FH>;
+    	close FH;
+    	process_source(@data);
 	return;
+    } elsif ($args[0] eq "memo") {
+        my $server = TLily::Server->active();
+	my %args;
+       	$args{type} = "memo";
+        $args{ui} = $ui;
+	$args{name} = $args[-1];
+        $args{call} = sub { my %event=@_; process_source(@{$event{text}});};
+	if (scalar(@args) == 3 ) {
+	    $args{target} = $args[1];
+        } elsif (scalar(@args) != 2) {
+            goto FAIL;
+        }
+	$server->fetch(%args);
+        return;
     }
-    
-    $ui->print("(sourcing $fname)\n");
-    
-    my @data = <FH>;
+    FAIL:
+    $ui->print("(Bad usage. Try %help source)\n");
+    return;
+}   
+
+sub process_source {
+    my(@data) = @_;
     my $size = @data;
-    $ui->print("$size lines\n");
-    close FH;
+    my $ui = TLily::UI->name("main");
+    $ui->print("($size lines)\n");
     
     my $l;
     foreach $l (@data) {
@@ -32,13 +62,13 @@ sub do_source($) {
 			    text => $l});
     }
     return;
-}   
+}
 	      
 command_r('source' => \&do_source);
 shelp_r("source", "Evaluate a file as if entered by the user");
 help_r("source", "
 %source [file] - Play the file to the client as if it was typed by the user.
-
+%source memo [disc] tagname - Ditto, for memos.
 ");
 
 1;
