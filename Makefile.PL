@@ -1,13 +1,13 @@
 #!/usr/bin/perl
 #    TigerLily:  A client for the lily CMC, written in Perl.
-#    Copyright (C) 1999  The TigerLily Team, <tigerlily@einstein.org>
+#    Copyright (C) 1999-2003  The TigerLily Team, <tigerlily@einstein.org>
 #                                http://www.hitchhiker.org/tigerlily/
 #
 #  This program is free software; you can redistribute it and/or modify it
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/Makefile.PL,v 1.21 2003/11/04 02:12:39 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/Makefile.PL,v 1.22 2003/11/04 02:57:07 mjr Exp $
 
 use strict;
 use Config;
