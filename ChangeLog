@@ -1,4 +1,9 @@
 Version 2.3-post
+  * [extensions/on.pl] Changed %on behavior to be compatible with what
+    it used to be: the default for the notify flag is now 'always'. [DPN]
+  * [extensions/namethatblurb.pl] Added the amazingly silly namethatblurb
+    extension, which prints the appropriate blurb when it sees "<name>'s
+    blurb" in a send. [DPN]
   * [extensions/on.pl]  Added new flag to %on: 'notify (yes|no|always)',
     which marks whether %on should trigger based on the event's notify
     status (must be on, must be off, doesn't matter). [RBJ]
