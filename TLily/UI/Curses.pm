@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/Curses.pm,v 1.40 2000/02/13 21:09:05 tale Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/Curses.pm,v 1.41 2000/02/14 18:18:04 tale Exp $
 
 package TLily::UI::Curses::Proxy;
 
@@ -151,11 +151,19 @@ sub accept_line {
     }
 }
 
+sub mark_output {
+    my ($ui) = @_;
+
+    $ui->style("mark_output");
+    $ui->print(' ' x ($COLS - 1) . "\n");
+    $ui->style("normal");
+}
 
 # The default set of mappings from command names to functions.
 %commandmap = 
   (
    'accept-line'          => \&accept_line,
+   'mark-output'          => \&mark_output,
    'previous-history'     => sub { $_[0]->{input}->previous_history(); },
    'next-history'         => sub { $_[0]->{input}->next_history(); },
    'insert-self'          => sub { $_[0]->{input}->addchar($_[2]) },
@@ -225,6 +233,7 @@ sub accept_line {
    'M-e'        => 'forward-sentence',
    'M-f'        => 'forward-word',
    'M-l'        => 'down-case-word',
+   'M-m'        => 'mark-output',
    'M-t'        => 'transpose-words',
    'M-u'        => 'up-case-word',
    'M-v'        => 'page-up',

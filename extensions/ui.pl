@@ -1,4 +1,4 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/ui.pl,v 1.26 2000/02/14 03:34:42 tale Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/ui.pl,v 1.27 2000/02/14 18:18:04 tale Exp $ 
 use strict;
 
 =head1 NAME
@@ -545,6 +545,7 @@ emote_sender    The name of the sender of an emote message
 review          (Currently unused)
 slcp            SLCP status messages, indicating a user state change
 user_input      User input lines shown in the output window.
+mark_output     Line printed by the mark-output (default key: M-m) command
 yellow          Used for the tlily logo
 green           Used for the tlily logo
 bwhite          Used for the tlily logo

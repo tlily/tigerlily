@@ -1,4 +1,7 @@
 Version 2.1.1-post
+  * [tlily.global, TLily/UI/Curses.pm, extensions/ui.pl] New function,
+    mark_output, by default bound to M-m.  Used to print a blank line to the
+    screen, so you can mark where you have read up to.
   * [extensions/ui.pl, TLiLy/UI/Curses/Input.pm] Include the current input
     line in an isearch.   Save the prefix string before searching.
     Also fixed a bug where the entered line was being appended to history
