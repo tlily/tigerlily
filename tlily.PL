@@ -7,7 +7,7 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/tlily.PL,v 1.45 1999/10/03 00:33:02 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/tlily.PL,v 1.46 1999/10/23 06:15:52 josh Exp $
 
 use strict;
 use Config;
@@ -64,7 +64,9 @@ my $PREFIX = '.';
 
     my $file = 'tlily';
     print "Writing $file\n";
-    if(-f $file) { unlink $file; }
+
+
+if(-f $file) { unlink $file; }
 	
     local(*OFH);
     open(OFH, ">$file") or die "Cannot open $file: $!\n";
@@ -97,6 +99,13 @@ require 5.00307;
 $TL_ETCDIR = "@@ETCDIR@@";
 $TL_LIBDIR = "@@LIBDIR@@";
 $TL_EXTDIR = "@@LIBEXTDIR@@";
+$TL_TMPDIR = "/tmp";
+if ($^O =~ /cygwin/) {
+    $TL_TMPDIR = $ENV{TEMP} || 'C:\WINDOWS\TEMP';
+    $TL_TMPDIR =~ s/^.://g;
+    $TL_TMPDIR =~ s/\\/\//g;
+    $ENV{EDITOR} ||= "NOTEPAD.EXE";
+}
 
 $fallback_EAGAIN = @@EAGAIN@@;
 
@@ -123,17 +132,20 @@ use TLily::Extend;
 use TLily::Version;
 use TLily::Utils;
 
-eval { require "errno.ph"; EAGAIN(); };
-if ($@) { 
-    print "WARNING: Unable to load errno.ph successfully.\n";
+if ($^O =~ /cygwin/) {
     $EAGAIN = $::fallback_EAGAIN;
-    die "No fallback value for EAGAIN defined!  Unable to continue.\n" 
-       unless $EAGAIN;       
-    print "         Using EAGAIN=$EAGAIN\n";
 } else {
-    $EAGAIN = EAGAIN()
-};
-
+    eval { require "errno.ph"; EAGAIN(); };
+    if ($@) { 
+       print "WARNING: Unable to load errno.ph successfully.\n";
+       $EAGAIN = $::fallback_EAGAIN;
+       die "No fallback value for EAGAIN defined!  Unable to continue.\n" 
+          unless $EAGAIN;       
+       print "         Using EAGAIN=$EAGAIN\n";
+    } else {
+       $EAGAIN = EAGAIN()
+    };
+}
 TLily::Config::init();
 TLily::Event::init();
 

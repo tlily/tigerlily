@@ -8,7 +8,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/Attic/tlily.global,v 1.29 1999/10/06 17:05:02 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/Attic/tlily.global,v 1.30 1999/10/23 06:15:54 josh Exp $
 
 # Global defaults for tlily
 # PLEASE DO NOT EDIT EXCEPT FOR DEVELOPMENT!
@@ -18,6 +18,10 @@
 	   after alias autologin autoreply countdown gag info misc paste pipes
 	   set startup source spellcheck submit url view vinfo log http_parse
 	   ctc on);
+
+if ($^O =~ /cygwin/) {
+     @load = grep { $_ !~ /ctc|spellcheck|submit/ } @load;
+}
 
 @slash = (undef);
 @prefer = (undef);
@@ -99,7 +103,8 @@ $server='lily.acm.rpi.edu';
 $port=7777;
 $mono=0;
 $pager=1;
-$editor = $ENV{VISUAL} || $ENV{EDITOR} || 'vi';
+
+$editor ||= $ENV{VISUAL} || $ENV{EDITOR} || 'vi';
 
 #$browser_textmode=1;
 #$browser="lynx";

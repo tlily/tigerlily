@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/program.pl,v 1.12 1999/10/03 00:33:09 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/program.pl,v 1.13 1999/10/23 06:16:02 josh Exp $
 
 $perms = undef;
 
@@ -9,7 +9,7 @@ sub verb_set(%) {
   my $edit=$args{'edit'};
   my $ui = $args{'ui'};
 
-  my $tmpfile = "/tmp/tlily.$$";
+  my $tmpfile = "$::TL_TMPDIR/tlily.$$";
 
   my $server = $verb_spec->[0];
   my $verb_str = $server->name() . "::" . join(":", @{$verb_spec}[1..2]);

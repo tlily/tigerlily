@@ -17,7 +17,6 @@ TLily/Registrar.pm
 TLily/Server.pm
 TLily/Server/HTTP.pm
 TLily/Server/SLCP.pm
-TLily/Server/SubClient.pm
 TLily/UI.pm
 TLily/UI/Curses.pm
 TLily/UI/Curses/Generic.pm
@@ -64,17 +63,15 @@ extensions/startup.pl
 extensions/statedebug.pl
 extensions/status.pl
 extensions/stock.pl
-extensions/subclient.pl
 extensions/submit.pl
 extensions/ui.pl
 extensions/uitest.pl
 extensions/url.pl
 extensions/view.pl
 extensions/vinfo.pl
-pm_to_blib
 tlily.PL
 tlily.global
 tools/announcement
 tools/postrelease
 tools/prerelease
-
+tools/make_win32_release

@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/view.pl,v 1.3 1999/10/03 18:26:00 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/view.pl,v 1.4 1999/10/23 06:16:05 josh Exp $
 
 use strict;
 
@@ -7,7 +7,7 @@ sub view_display {
     my($ui,$lref) = @_;
     local(*FH);
 
-    my $tmpfile = "/tmp/tlily.$$";
+    my $tmpfile = "$::TL_TMPDIR/tlily.$$";
 
     unlink($tmpfile);
 

@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/User.pm,v 1.23 1999/05/15 03:58:29 albert Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/User.pm,v 1.24 1999/10/23 06:15:58 josh Exp $
 
 package TLily::User;
 
@@ -100,20 +100,26 @@ For a list of configuration variables, try "%help variables".
 If you\'re interested in tlily\'s guts, try "%help internals".
 ');
     
-    my $f;
-    foreach $f (glob("$::TL_LIBDIR/TLily/*.pm")) {
-	my ($module) = ($f =~ /\/([^\/]*)$/);
+    opendir(DIR, "$::TL_LIBDIR/TLily") ||
+        warn "Can't opendir $::TL_LIBDIR/TLily: $!\n";
+    my @pmfiles = grep(/\.pm$/, readdir(DIR));
+    closedir(DIR);
+
+    my $module;   
+    foreach $module (@pmfiles) {
 	local(*F);
-	open(F,"<$f");
+	open(F,"<$::TL_LIBDIR/TLily/$module") ||
+	   warn "Can't open $::TL_LIBDIR/TLily/$module: $!\n";
+	   
 	my $namehead=0;
 	while(<F>) {
 	    if (/=head1 NAME/) { $namehead = 1; next }
 	    if (/=head1/) { $namehead = 0; last; }
 	    next unless $namehead;
 	    next if (/^\s*$/);
-	    my ($desc) = /-\s*(.*)\s*$/; 
+	    my ($desc) = /-\s*(.*)\s*$/;
 	    shelp_r($module => $desc, "internals");
-	    help_r($module => "POD:$f");
+	    help_r($module => "POD:$module");
 	    last;
 	}
     }

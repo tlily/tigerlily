@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Event.pm,v 1.26 1999/10/02 02:45:06 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Event.pm,v 1.27 1999/10/23 06:15:56 josh Exp $
 
 package TLily::Event::Core;
 
@@ -444,7 +444,11 @@ sub invoke {
     my $rc;
     eval {
 	local $SIG{ALRM} = sub { die "event timeout\n"; };
-	alarm(5);
+	if ($^O =~ /cygwin/) {
+	    alarm(60);
+	} else {
+   	    alarm(5);
+	}
 	$rc = $h->{call}->(@_);
 	alarm(0);
     };

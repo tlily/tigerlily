@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/submit.pl,v 1.4 1999/10/03 18:25:59 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/submit.pl,v 1.5 1999/10/23 06:16:04 josh Exp $
 
 use TLily::Version;
 use strict;
@@ -62,7 +62,7 @@ sub edit_report(%) {
     my $form = $template;
     my $ui = $args{'ui'};
     
-    my $tmpfile = "/tmp/tlily.submit.$$";
+    my $tmpfile = "$::TL_TMPDIR/tlily.submit.$$";
     
     if ($args{'recover'}) {
 	$ui->print("(Recalling saved report)\n");

@@ -7,7 +7,7 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Utils.pm,v 1.3 1999/10/03 00:33:06 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Utils.pm,v 1.4 1999/10/23 06:15:59 josh Exp $
 package TLily::Utils;
 
 use strict;
@@ -53,7 +53,7 @@ sub edit_text {
     my($ui, $text) = @_;
 
     local(*FH);
-    my $tmpfile = "/tmp/tlily.$$";
+    my $tmpfile = "$::TL_TMPDIR/tlily.$$";
     my $mtime = 0;
 
     unlink($tmpfile);
@@ -66,8 +66,17 @@ sub edit_text {
 
     $ui->suspend;
     TLily::Event::keepalive();
-    system($config{editor}, $tmpfile);
-    TLily::Event::keepalive(5);
+    
+    if ($^O =~ /cygwin/) {
+         my $tmpfile2 = "C:$tmpfile";
+        $tmpfile2 =~ s/\//\\/g;
+        system($config{editor}, $tmpfile2);
+        TLily::Event::keepalive(60);
+    } else {
+        system($config{editor}, $tmpfile);
+        TLily::Event::keepalive(5);
+    }
+
     $ui->resume;
 
     my $rc = open(FH, "<$tmpfile");
@@ -75,16 +84,23 @@ sub edit_text {
         $ui->print("(edit buffer file not found)\n");
         return;
     }  
-
-    if ((stat FH)[10] == $mtime) {
+     
+    if ($^O =~ /cygwin/) {
+	# blah!
+    } elsif ((stat FH)[10] == $mtime) {
         close FH;
         unlink($tmpfile);
         $ui->print("(file unchanged)\n");
         return;
     }  
-
+    
     @{$text} = <FH>;
-    chomp(@{$text});
+    if ($^O =~ /cygwin/) {
+        local($/ = "\r\n");
+    	chomp(@{$text});
+    } else {
+	chomp(@{$text});
+    }
     close FH;
     unlink($tmpfile);
 
@@ -97,8 +113,8 @@ sub diff_text {
   local(*FH);
   my $diff = [];
 
-  my $tmpfile_a = "/tmp/tlily-diff-a.$$";
-  my $tmpfile_b = "/tmp/tlily-diff-b.$$";
+  my $tmpfile_a = "$::TL_TMPDIR/tlily-diff-a.$$";
+  my $tmpfile_b = "$::TL_TMPDIR/tlily-diff-b.$$";
   open FH, ">$tmpfile_a";
   foreach (@{$a}) { print FH "$_\n" };
   close FH;

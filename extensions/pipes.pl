@@ -1,4 +1,4 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/pipes.pl,v 1.5 1999/10/03 18:25:53 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/pipes.pl,v 1.6 1999/10/23 06:16:01 josh Exp $
 #
 # Piped command processing.
 #
@@ -43,7 +43,7 @@ sub pipe_handler {
 	return 1;
     }
 
-    my $tmpfile = "/tmp/tlily-out-" . $counter++ . "-" . $$;
+    my $tmpfile = "$::TL_TMPDIR/tlily-out-" . $counter++ . "-" . $$;
 
     if ($mode != 3) {
 	$run .= "> $tmpfile";

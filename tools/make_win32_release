@@ -1,0 +1,34 @@
+#!/bin/sh 
+
+# Used as follows  (ON A UNIX BOX!):
+#
+# First, extract the previous win32 release into ../tigerlily. 
+# Then, invoke this script from the tlily directory (one above this one)
+# This will install tlily into that directory, replacing the old version.
+#
+# It will automatically generate a new version string for Version.pm.
+#
+# Just zip up the resulting distribution and have people install it in 
+# C:\tigerlily.
+#
+
+make clean
+perl Makefile.PL -p /tigerlily
+make
+
+ts=`date +%y%m%d`
+perl -p -i -e "s/-post//;" blib/lib/TLily/Version.pm                   
+perl -p -i -e "s/\';/-win32-$ts\';/;" blib/lib/TLily/Version.pm                   
+
+grep VERSION blib/lib/TLily/Version.pm
+
+cp Makefile Makefile.win32
+tldir=`sh -c "cd ../tigerlily; pwd"`
+
+perl -p -i -e "s@/tigerlily@$tldir@g" Makefile.win32
+
+rm -rf ../tigerlily/lib/tlily
+rm -rf ../tigerlily/etc
+rm -f  ../tigerlily/bin/tlily*
+
+make -f Makefile.win32 install
