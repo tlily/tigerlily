@@ -77,7 +77,7 @@ sub new {
     my $self  = {};
 
     bless $self, $class;
-    
+
     my $ui = TLily::UI::name($args{ui_name}) if ($args{ui_name});
 
     croak "required parameter \"host\" missing"
@@ -366,6 +366,19 @@ my $crlf = chr(13).chr(10);
 sub sendln {
     my $self = shift;
     $self->send(@_, $crlf);
+}
+
+
+=item send_message($recips, $separator, $message)
+
+Send a message (a user send) to the server.   $recips is comma-separated.
+
+=cut
+
+sub send_message {
+    my ($self, $recips, $separator, $message) = @_;
+
+    $self->sendln($recips, $separator, $message);
 }
 
 
