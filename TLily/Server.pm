@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Server.pm,v 1.20 1999/09/25 18:30:23 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Server.pm,v 1.21 1999/10/02 02:45:08 mjr Exp $
 
 package TLily::Server;
 
@@ -82,7 +82,10 @@ sub new {
 	$name .= "#$i";
     }
 
-    $self->{name}      = $name;
+    $self->{name}      = $name; # Deprecated; use $self->{names}
+    # NOTE: If you add other names, make _sure_ that those names aren't
+    # already taken by other server objects, otherwise bad stuff will happen.
+    @{$self->{names}}  = ($name);
     $self->{host}      = $args{host};
     $self->{port}      = $args{port};
     $self->{ui_name}   = $args{ui_name};
@@ -126,7 +129,11 @@ Add the server object to the list of available servers.
 
 sub add_server {
     my ($self) = @_;
-    $server{$self->{name}} = $self;
+    # Potential problem if one of the names here conflicts with
+    # one already taken.  So don't call this from anywhere but new().
+    foreach (@{$self->{names}}) {
+        $server{$_} = $self;
+    }
     push @server, $self;
 }
 
@@ -161,7 +168,7 @@ sub terminate {
     close($self->{sock}) if ($self->{sock});
     $self->{sock} = undef;
 
-    $server{$self->{name}} = undef;
+    foreach (@{$self->{names}}) { delete $server{$_} }; #DONE
     @server = grep { $_ ne $self } @server;
     $active_server = $server[0] if ($active_server == $self);
 
@@ -188,24 +195,58 @@ sub ui_name {
 
 =item name()
 
-In a list context, returns all existing servers.
+If given an arguement, will attempt to add that name as an alias for
+this server.  It returns 1 if it was successful, 0 otherwise.
 
-In a scalar context, returns the server with the given name, or the
-currently active server if no argument is given.
+If no argument is given, in a scalar context it will return the primary
+(canonical) name for the server, while in a list context it will return
+the list of names of the server.
 
 =cut
 
 sub name {
-    return @server if (wantarray);
-    shift if (@_ > 1);
-    my($a) = @_;
-    if (!defined $a) {
-	return $active_server;
-    } elsif (ref($a)) {
-	return $a->{"name"};
+    my($self, $name) = @_;
+
+    if (defined($name)) {
+        return 0 if (defined($server{$name}));
+        $server{$name} = $self;
+        push @{$self->{names}}, $name;
+        return 1;
     } else {
-	return $server{$a};
+        return $self->{names}[0] if (!wantarray);
+        return @{$self->{names}};
     }
+}
+
+=item active()
+
+If called as a function with no arguments, returns the currently active
+server.
+
+If called as a function with a server ref argument, or as a method of a
+server ref, returns a boolean indicating whether that server is the
+currently active one.
+
+=cut
+
+sub active {
+    return($_[0] == $active_server) if (ref($_[0]));
+    return $active_server;
+}
+
+=item find()
+
+Given a string, will look for that string in the server names hash, and,
+if it finds a server object, will return the ref; will return undef
+otherwise.
+
+Given no arguments, will return the list of servers currently open.
+
+=cut
+
+sub find {
+    return $server{$_[0]} if defined($_[0]);
+    return @server;
 }
 
 
@@ -261,8 +302,6 @@ Behaves exactly like send(), but sends a crlf pair at the end of the line.
 my $crlf = chr(13).chr(10);
 sub sendln {
     my $self = shift;
-    # \r\n is non-portable.  Fix, please.
-    #$self->send(@_, "\r\n");
     $self->send(@_, $crlf);
 }
 

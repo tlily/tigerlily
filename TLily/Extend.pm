@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Extend.pm,v 1.12 1999/09/25 18:30:22 mjr Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Extend.pm,v 1.13 1999/10/02 02:45:07 mjr Exp $ 
 
 package TLily::Extend;
 use strict;
@@ -23,7 +23,7 @@ use TLily::Utils qw(&edit_text &diff_text);
 
 my %extensions = ();
 my @share=qw(%config &help_r &shelp_r &command_r &event_r &event_u &cmd_process
-	     &ui_name &server_name &edit_text &diff_text);
+	     &ui_name &edit_text &diff_text);
 
 
 =head1 NAME
@@ -238,10 +238,6 @@ sub extension_cmd {
 # Convenience functions for the extensions
 sub ui_name {
     TLily::UI::name(@_);
-}
-
-sub server_name {
-    TLily::Server::name(@_);
 }
 
 1;

@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/status.pl,v 1.16 1999/09/25 18:30:32 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/status.pl,v 1.17 1999/10/02 02:45:27 mjr Exp $
 
 use strict;
 
@@ -31,7 +31,7 @@ sub set_clock {
 
 sub set_serverstatus {
     my $ui     = ui_name("main");
-    my $server = server_name();
+    my $server = TLily::Server::active();
     return 2 unless ($server);
 
     my $sname = $server->state(DATA => 1,
@@ -57,7 +57,7 @@ sub set_serverstatus {
 
 sub load {
     my $ui = ui_name("main");
-    my $server = server_name();
+    my $server = TLily::Server::active();
     
     $ui->define(nameblurb => 'left');
     $ui->define(clock     => 'right');

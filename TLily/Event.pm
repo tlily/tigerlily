@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Event.pm,v 1.25 1999/09/25 18:30:20 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Event.pm,v 1.26 1999/10/02 02:45:06 mjr Exp $
 
 package TLily::Event::Core;
 
@@ -287,6 +287,8 @@ sub io_r {
     # has been closed, the fileno goes away.
     $h->{'fileno'} = $n;
     
+    $h->{'type'} = "IO";
+
     $h->{id} = $next_id++;
     push @e_io, $h;
     
@@ -365,6 +367,8 @@ sub time_r {
     elsif (!defined($h->{'time'})) {
 	croak "Handler registered without \"after\", \"time\", or \"interval\".";
     }
+
+    $h->{'type'} = "TIMED";
     
     $h->{id} = $next_id++;
     @e_time = sort { $a->{'time'} <=> $b->{'time'} } (@e_time, $h);
@@ -452,7 +456,7 @@ sub invoke {
 =item loop_once()
 
 =cut
-use Data::Dumper;
+#use Data::Dumper;
 sub loop_once {
     # Named events.
   EVENT:
@@ -463,7 +467,7 @@ sub loop_once {
 		my $rc = invoke($h, $e, $h);
 		if (defined($rc) && ($rc != 0) && ($rc != 1)) {
 		    warn "Event handler returned $rc.";
-                    warn Dumper($h);
+#                    warn Dumper($h);
 		}
 		next EVENT if ($rc);
 	    }

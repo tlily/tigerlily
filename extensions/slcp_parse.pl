@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_parse.pl,v 1.11 1999/09/20 00:19:48 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_parse.pl,v 1.12 1999/10/02 02:45:23 mjr Exp $
 
 use strict;
 use vars qw(%config);
@@ -349,6 +349,7 @@ sub parse_line {
     if ($line =~ /^Welcome to lily.*?at (.*?)\s*$/) {
 	$serv->state(DATA => 1, NAME => "NAME", VALUE => $1);
 	# Set servername to $1.
+        $serv->name($1);
     }
     
     # something completely unknown ########################################

@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/program.pl,v 1.10 1999/09/25 18:30:29 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/program.pl,v 1.11 1999/10/02 02:45:21 mjr Exp $
 
 $perms = undef;
 
@@ -50,39 +50,42 @@ sub verb_set(%) {
 }
 
 sub verb_showlist {
-  my ($cmd, $ui, $obj, $verb) = @_;
+    my ($cmd, $ui, $verb_spec) = @_;
 
-  unless (defined($obj)) {
-    $ui->print("Usage: %verb $cmd object[:verb]\n");
-    return 0;
-  }
+    my $server = $verb_spec->[0] || TLily::Server::active();
+    my ($obj, $verb) = @verb_spec->[1..2];
 
-  if (defined($verb)) {
-    $server->sendln("\@list $obj:$verb") if ($cmd eq 'list');
-    $server->sendln("\@show $obj:$verb") if ($cmd eq 'show');
-  } else {
-    my @lines = ();
-    $server->cmd_process("\@show $obj", sub {
-        my($event) = @_;
-        $event->{NOTIFY} = 0;
-        if ($event->{type} eq 'endcmd') {
-          my $objRef = parse_show_obj(@lines);
-          if (scalar(@{$objRef->{verbdefs}}) > 0) {
-            $ui->print(join("\n", @{columnize_list(@{$objRef->{verbdefs}})},""));
-          } else {
-            $ui->print("(No verbs defined on $obj)\n");
-          }
-        } elsif ( $event->{type} ne 'begincmd' ) {
-          my $l = $event->{text};
-          if ( $l =~ /^Can\'t find anything named \'$obj\'\./ ) {
-            $event->{NOTIFY} = 1;
-            return 1;
-          }
-          push @lines, $l;
-        }
+    unless (defined($obj)) {
+        $ui->print("Usage: %verb $cmd [server::]object[:verb]\n");
         return 0;
-    });
-  }
+    }
+
+    if (defined($verb)) {
+        $server->sendln("\@list $obj:$verb") if ($cmd eq 'list');
+        $server->sendln("\@show $obj:$verb") if ($cmd eq 'show');
+    } else {
+        my @lines = ();
+        $server->cmd_process("\@show $obj", sub {
+            my($event) = @_;
+            $event->{NOTIFY} = 0;
+            if ($event->{type} eq 'endcmd') {
+                my $objRef = parse_show_obj(@lines);
+                if (scalar(@{$objRef->{verbdefs}}) > 0) {
+                    $ui->print(join("\n", @{columnize_list(@{$objRef->{verbdefs}})},""));
+                } else {
+                    $ui->print("(No verbs defined on $obj)\n");
+                }
+            } elsif ( $event->{type} ne 'begincmd' ) {
+                my $l = $event->{text};
+                if ( $l =~ /^Can\'t find anything named \'$obj\'\./ ) {
+                    $event->{NOTIFY} = 1;
+                    return 1;
+                }
+                push @lines, $l;
+            }
+            return 0;
+        });
+    }
 }
 
 sub obj_show {
@@ -276,7 +279,6 @@ sub prop_cmd {
     my ($cmd,@args) = split /\s+/, "@_";
     my ($prop_spec, $prop_val) = shift @args;
 
-    $ui->print("$cmd $prop_spec $prop_val\n");
     # Do a minimal check of the prop spec here.
     if ($prop_spec =~ /([^\.]+)(?:\.(.+))?/) {
         my $obj = $1;
@@ -301,112 +303,136 @@ sub prop_cmd {
 }
 
 sub verb_cmd {
-  my $ui = shift;
-  my ($cmd,@args) = split /\s+/, "@_";
-  my $verb_spec = shift @args;
+    my $ui = shift;
+    my ($cmd,@args) = split /\s+/, "@_";
+    my $verb_spec = shift @args;
+    my $verb = [];
 
-  local $server = server_name();
+    local $server = TLily::Server::active();
 
-  # Do a minimal check of the verb spec here.
-  unless ($verb_spec =~ /([^:]+)(?::(.+))?/) {
-    $ui->print("Usage: %verb cmd object:verb\n");
-    return 0;
-  }
-  my $obj = $1;
-  my $verb = $2;
+    # Do a minimal check of the verb spec here.
+    goto verb_cmd_usage
+      unless ($verb_spec =~ /^(?:(.+)::)?(\#\-?\d+|\$[^:]+)(?::(.+))?$/);
 
-  if ($cmd eq 'show') {
-    verb_showlist($cmd, $ui, $obj, $verb);
-  } elsif ($cmd eq 'list') {
-    verb_showlist($cmd, $ui, $obj, $verb);
-  } elsif ($cmd eq 'reedit') {
-    my $escaped_verbspec = $verb_spec;
-    $escaped_verbspec =~ s|/|,|g;
-    my $deadfile = $ENV{HOME}."/.lily/tlily/dead.verb.$escaped_verbspec";
-    local *DF;
-    my $rc = open(DF, "$deadfile");
-    if (!$rc) {
-      $ui->print("(Unable to recall verb: $!)\n");
+    $ui->print("(srv = $1, obj = $2, verb = $3)\n");
+    @{$verb} = ($1, $2, $3);
+    $ui->print("(srv = $verb->[0], obj = $verb->[1], verb = $verb->[2])\n");
+
+    if ($cmd eq 'show' || $cmd eq 'list') {
+        verb_showlist($cmd, $ui, $verb);
+    } elsif ($cmd eq 'diff') {
+        my $verb2_spec = shift @args;
+        my $verb2 = [];
+
+        goto verb_cmd_usage
+          unless ($verb2_spec =~ /^(?:(.+)::)?(\#\-?\d+|\$[^:]+)(?::(.+))?$/);
+      
+        @{$verb2} = ($1, $2, $3);
+#      $ui->print("(dstsrv = $verb2->[0], dstobj = $verb2->[1], dstverb = $verb2->[2])\n");
+        verb_diff($cmd, $ui, $verb, $verb2);
+    } elsif ($cmd eq 'reedit') {
+        my $escaped_verbspec = $verb_spec;
+        $escaped_verbspec =~ s|/|,|g;
+        my $deadfile = $ENV{HOME}."/.lily/tlily/dead.verb.$escaped_verbspec";
+        local *DF;
+        my $rc = open(DF, "$deadfile");
+        if (!$rc) {
+            $ui->print("(Unable to recall verb: $!)\n");
+        } else {
+            my $lines = [];
+            @{$lines} = <DF>;
+            close DF;
+
+            verb_set(verb_spec => $verb_spec,
+                     data      => $lines,
+                     edit      => 1,
+                     ui        => $ui);
+        }
+    } elsif ($cmd eq 'edit') {
+        my $sub = sub {
+            my(%args) = @_;
+
+            if (($args{text}[0] =~ /^That object does not define that verb\.$/) ||
+              ($args{text}[0] =~ /^Invalid object \'.*\'\.$/)) {
+                # Encountered an error.
+                $args{ui}->print($args{text}[0] . "\n");
+                return;
+            } elsif ($args{text}[0] =~/^That verb has not been programmed\.$/) {
+                # Verb exists, but there's no code for it yet.
+                # We'll provide a comment saying so as the verb code.
+                @{$args{text}} = ("/* This verb $verb_spec has not yet been written. */");
+            }
+
+            verb_set(verb_spec => $verb_spec,
+                     data      => $args{text},
+                     edit      => 1,
+                     ui        => $args{ui});
+        };
+
+        $server->fetch(ui     => $ui,
+                       type   => "verb",
+                       target => $verb_spec,
+                       call   => $sub);
+
     } else {
-      my $lines = [];
-      @{$lines} = <DF>;
-      close DF;
-
-      verb_set(verb_spec=>$verb_spec,
-               data=>$lines,
-               edit=>1,
-               ui=>$ui);
+verb_cmd_usage:
+        $ui->print("Usage: %verb show|list [server::]object[:verb]\n");
+        $ui->print("       %verb [re]edit [server::]object:verb\n");
+        $ui->print("       %verb diff [server::]object:verb [server::]object:verb\n");
     }
-  } elsif ($cmd eq 'edit') {
-    my $sub = sub {
-        my(%args) = @_;
+    return 0;
+}
 
-        if (($args{text}[0] =~ /^That object does not define that verb\.$/) ||
-            ($args{text}[0] =~ /^Invalid object \'.*\'\.$/)) {
-          # Encountered an error.
-          $args{ui}->print($args{text}[0] . "\n");
-          return;
-        } elsif ($args{text}[0] =~/^That verb has not been programmed\.$/) {
-          # Verb exists, but there's no code for it yet.
-          # We'll provide a comment saying so as the verb code.
-          @{$args{text}} = ("/* This verb $verb_spec has not yet been written. */");
-        }
+sub verb_diff {
+    my ($cmd, $ui, $verb1, $verb2) = @_;
 
-        verb_set(verb_spec=>$verb_spec,
-                 data=>$args{text},
-                 edit=>1,
-                 ui=>$args{ui});
-    };
+    my $server1 = TLily::Server::find($verb1->[0]);
+    my $server2 = TLily::Server::find($verb2->[0]);
 
-    $server->fetch(ui     => $ui,
-                   type   => "verb",
-                   target => $verb_spec,
-                   call   => $sub);
-
-  } elsif ($cmd eq 'diff') {
     my $subcon = sub {
-      my @data = ();
-      return sub {
-        my(%args) = @_;
+        my @data = ();
+        return sub {
+            my(%args) = @_;
 
-        if (($args{text}[0] =~ /^That object does not define that verb\.$/) ||
-            ($args{text}[0] =~ /^Invalid object \'.*\'\.$/)) {
-          # Encountered an error.
-          $args{ui}->print($args{server} . ": " . $args{text}[0] . "\n");
-          return;
-        } elsif ($args{text}[0] =~/^That verb has not been programmed\.$/) {
-          # Verb exists, but there's no code for it yet.
-          # We'll provide a comment saying so as the verb code.
-          @{$args{text}} = ("/* This verb $verb_spec has not yet been written. */");
+            if (($args{text}[0] =~ /^That object does not define that verb\.$/) || ($args{text}[0] =~ /^Invalid object \'.*\'\.$/)) {
+                # Encountered an error.
+                $args{ui}->print($args{server} . ": " . $args{text}[0] . "\n");
+                return;
+            } elsif ($args{text}[0] =~/^That verb has not been programmed\.$/) {
+                # Verb exists, but there's no code for it yet.
+                # We'll provide a comment saying so as the verb code.
+                @{$args{text}} = ("/* This verb $verb_spec has not yet been written. */");
+            }
+
+            # Do diff
+            if ($args{server} == $server1) {
+                $data[0] = $args{text};
+            } elsif ($args{server} == $server2) {
+                $data[1] = $args{text};
+            } else {
+               warn("verb_diff() got back data from unexpected server!");
+            }
+            if (defined($data[0]) && defined($data[1])) {
+                my $diff = diff_text(@data);
+
+                foreach (@{$diff}) { $ui->print($_) };
+            }
         }
-
-        # Do diff
-        push @data, $args{text};
-        if (scalar(@data) == 2) {
-          my $diff = diff_text(@data);
-
-          foreach (@{$diff}) { $ui->print($_) };
-        }
-      }
     };
 
     my $sub = &$subcon;
-    @servers = server_name();
    
-    $ui->print("Diffing verb $verb_spec on " . $servers[0]{DATA}{NAME} . " against " . $servers[1]->{DATA}{NAME} . ":\n");
-    $servers[0]->fetch(ui     => $ui,
-                       type   => "verb",
-                       target => $verb_spec,
-                       call   => $sub);
+    $ui->print("(Diffing verb ", $verb1->[0], "::", $verb1->[1], ":", $verb1->[2], " against ", $verb2->[0], "::", $verb2->[1], ":", $verb2->[2], ")\n");
+    $server1->fetch(ui     => $ui,
+                    type   => "verb",
+                    target => $verb1->[1] . ':' . $verb1->[2],
+                    call   => $sub);
 
-    $servers[1]->fetch(ui     => $ui,
-                       type   => "verb",
-                       target => $verb_spec,
-                       call   => $sub);
+    $server2->fetch(ui     => $ui,
+                    type   => "verb",
+                    target => $verb2->[1] . ':' . $verb2->[2],
+                    call   => $sub);
 
-  } else {
-    $ui->print("(unknown %verb command)\n");
-  }
 }
 
 # This is a bit nasty.
@@ -420,7 +446,7 @@ sub verb_cmd {
 # that, and if we encounter that without encountering the %user_type
 # line, we know we don't have any privs, and we unload the extension.
 
-$server = server_name();
+$server = TLily::Server::active();
 $ui = ui_name();
 
 $id = event_r(type => 'text', order => 'before',

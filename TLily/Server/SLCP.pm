@@ -6,7 +6,7 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Server/Attic/SLCP.pm,v 1.28 1999/09/25 18:30:25 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Server/Attic/SLCP.pm,v 1.29 1999/10/02 02:45:11 mjr Exp $
 
 package TLily::Server::SLCP;
 
@@ -170,7 +170,8 @@ sub command {
 
 =item cmd_process()
 
-Store a file on the server.
+Execute a lily command on a lily server, and process the output
+through a passed-in callback.
 Args:
     --  lily command to execute
     --  callback to process the output of the command
@@ -182,7 +183,7 @@ events.
 
 Example:
 
-    my $server = server_name(); # get current active server
+    my $server = TLily::Server::active(); # get current active server
 
     my $count = 0;
 
@@ -231,7 +232,7 @@ comma-separated list of their members.
 =cut
 
 sub expand_name {
-    unshift @_, scalar(TLily::Server::name()) if (@_ < 2);
+    unshift @_, scalar(TLily::Server::active()) if (@_ < 2);
     my($self, $name) = @_;
     my $disc;
 

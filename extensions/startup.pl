@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/startup.pl,v 1.7 1999/07/02 08:06:24 albert Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/startup.pl,v 1.8 1999/10/02 02:45:25 mjr Exp $
 
 use strict;
 
@@ -33,7 +33,7 @@ sub startup_handler ($$) {
     }
 
     # Run server-side startup memo
-    my $server = server_name();
+    my $server = TLily::Server::active();
     my $sub = sub {
 	my(%args) = @_;
         

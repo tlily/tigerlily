@@ -3,13 +3,15 @@ To Do
 
   when the last open server connection is closed, provide a exit/reconnect
       option. (integrate with smartexit feature)
-  helper.pl/program.pl
+  helper.pl
   multiserver, multiui
   irc mode/ TLily::Server::SubClient
   thread extension?
      after [;:], if you press some key, have it insert [xxx], where xxx
      is a scrollable list of threads seen in the discussion?
   lilyBot support
-  I want to rewrite TLily::Command.  It needs to make more sense, I think.
+  TLily::Command has been merged into TLily::Server::SLCP.  Still need to
+    convert all remaining items using the old cmd_process to the new one.
+    And eventually remove TLily/Command.pm
   I need to add passive mode to the %ctc support.    
 

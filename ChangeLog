@@ -1,4 +1,8 @@
 Version 2.0-post
+  * [various] Added more of the multiserver stuff, especially the addition
+    of TLily::Server::find() and TLily::Server::active(), and the complete
+    change in behavior of TLily::Server::name().  Also moved columnize_list
+    into TLily::Utils.  Major hacking on program.pl.
   * [TLily/Utils.pm] New file to hold common functions, like edit_text
     and diff_text. [MJR]
   * [TLily/Server/SLCP.pm] Added mutli-server aware cmd_process.  May

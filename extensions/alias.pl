@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/alias.pl,v 1.4 1999/03/23 08:33:38 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/alias.pl,v 1.5 1999/10/02 02:45:14 mjr Exp $
 
 use strict;
 
@@ -61,7 +61,7 @@ sub alias_cmd {
 
 sub aliaser {
     my($e, $h) = @_;
-    my $server = server_name();
+    my $server = TLily::Server::active();
     
     if ($e->{text} =~ /^%(\S+)\s*(.*)/) {	
 	my $newstr = $alias{$1};

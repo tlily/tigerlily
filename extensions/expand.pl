@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/expand.pl,v 1.15 1999/04/18 19:55:58 josh Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/expand.pl,v 1.16 1999/10/02 02:45:16 mjr Exp $ 
 
 use strict;
 
@@ -159,7 +159,7 @@ event_r(type => 'rename',
 
 sub oops_cmd {
 	my ($ui, $args) = @_;
-	my $serv = TLily::Server::name();
+	my $serv = TLily::Server::active();
 
 	my (@dests) = split (/,/, $args);
 	foreach (@dests) {
@@ -197,7 +197,7 @@ sub oops_cmd {
 
 sub also_cmd {
 	my ($ui, $args) = @_;
-	my $serv = TLily::Server::name();
+	my $serv = TLily::Server::active();
 
 	my (@dests) = split (/,/, $args);
 	foreach (@dests) {

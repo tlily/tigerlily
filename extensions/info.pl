@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/info.pl,v 1.12 1999/09/25 18:30:28 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/info.pl,v 1.13 1999/10/02 02:45:18 mjr Exp $
 
 use strict;
 
@@ -42,7 +42,7 @@ event_r(type => 'export',
 sub info_cmd {
     my($ui, $args) = @_;
     my ($cmd,$disc) = split /\s+/, $args;
-    my $server = server_name();
+    my $server = TLily::Server::active();
 
     if ($cmd eq 'set') {
 	my @text;
@@ -72,7 +72,7 @@ sub info_cmd {
 sub memo_cmd {
     my($ui, $args) = @_;
     my($cmd,@args) = split /\s+/, $args;
-    my $server = server_name();
+    my $server = TLily::Server::active();
 
     my($target, $name);
     if (@args == 1) {
@@ -172,7 +172,7 @@ sub export_cmd {
     chomp(@text);
     close(FH);
 
-    my $server = server_name();
+    my $server = TLily::Server::active();
     $server->store(ui     => $ui,
 		   type   => $type,
 		   target => $target,

@@ -7,7 +7,7 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Command.pm,v 1.4 1999/03/23 08:04:59 albert Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Command.pm,v 1.5 1999/10/02 02:45:05 mjr Exp $
 package TLily::Command;
 
 use strict;
@@ -67,7 +67,7 @@ sub init () {
 sub cmd_process ($$) {
     my($c, $f) = @_;
     $pending_commands{$c} = $f;
-    my $server = TLily::Server::name();
+    my $server = TLily::Server::active();
     $server->sendln($c);
 }
 
