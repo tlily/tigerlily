@@ -25,8 +25,12 @@ sub new {
 
 sub name {
 	shift if (@_ > 1);
-	my($name) = @_;
-	return $ui{$name} || $ui{"main"};
+	my($a) = @_;
+	if (ref($a)) {
+		return $a->{"name"};
+	} else {
+		return $ui{$a} || $ui{"main"};
+	}
 }
 
 
@@ -110,5 +114,6 @@ sub bind {
 sub command {
 	my($self, $command, $key, $line, $pos) = @_;
 }
+
 
 1;

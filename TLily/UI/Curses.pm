@@ -446,4 +446,10 @@ sub set_input {
 	return $self->{input}->set(@_);
 }
 
+
+sub bell {
+	my($self) = @_;
+	beep();
+}
+
 1;

@@ -5,29 +5,8 @@ use LC::Global qw($event);
 
 my $sub;
 
-my %nodef =
-  (
-   text => 1,
-   slcp_data => 1,
-   user_input => 1,
-   server_connected => 1,
-   begincmd => 1,
-   endcmd => 1,
-  );
-
 $sub = sub {
 	my($e, $h) = @_;
-	my $ui = LC::UI::name("main");
-	$ui->print($e->{text}, "\n");
-	return;
-};
-$event->event_r(type => 'text',
-		call => $sub);
-
-$sub = sub {
-	my($e, $h) = @_;
-
-	return if ($nodef{$e->{type}});
 
 	my $ui = LC::UI::name("main");
 	$ui->print("Event: $e->{type}\n");
@@ -46,9 +25,61 @@ $sub = sub {
 	$ui->print("\n");
 	return;
 };
-$event->event_r(type => 'all',
-		call => $sub);
+#$event->event_r(type => 'all', call => $sub);
 
+
+sub private_fmt {
+	my($ui, $e) = @_;
+
+	$ui->print("\n");
+
+	$ui->indent(" >> ");
+	$ui->print("Private message from ", $e->{SOURCE});
+	$ui->print(", to ", $e->{RECIPS}) if ($e->{RECIPS} =~ /,/);
+	$ui->print(":\n");
+
+	$ui->indent(" - ");
+	$ui->print($e->{VALUE}, "\n");
+	$ui->indent("");
+
+	return;
+};
+$event->event_r(type  => 'private',
+		order => 'before',
+		call  => sub { $_[0]->{formatter} = \&private_fmt; return });
+
+sub public_fmt {
+	my($ui, $e) = @_;
+
+	$ui->print("\n");
+
+	$ui->indent(" -> ");
+	$ui->print("From ", $e->{SOURCE});
+	$ui->print(", to ", $e->{RECIPS});
+	$ui->print(":\n");
+
+	$ui->indent(" - ");
+	$ui->print($e->{VALUE}, "\n");
+	$ui->indent("");
+
+	return;
+};
+$event->event_r(type  => 'public',
+		order => 'before',
+		call  => sub { $_[0]->{formatter} = \&public_fmt; return });
+
+sub emote_fmt {
+	my($ui, $e) = @_;
+
+	$ui->indent("> ");
+	$ui->print("(to ", $e->{RECIPS}, ") ", $e->{SOURCE}, $e->{VALUE},"\n");
+	$ui->indent("");
+
+	return;
+};
+$event->event_r(type  => 'emote',
+		order => 'before',
+		call  => sub { $_[0]->{formatter} = \&emote_fmt; return });
 
 
 # %U: source's pseudo and blurb
@@ -118,8 +149,8 @@ $sub = sub {
 	my $serv = $e->{server};
 	return unless ($serv);
 
-	#return 0 if (! $e->{ToUser});
-	my $ui = LC::UI::name("main");
+	# optimization?
+	#return unless ($e->{NOTIFY});
 
 	my $Me =  $serv->user_name;
 
@@ -155,7 +186,7 @@ $sub = sub {
 	if ($found) {
 		my $source = $e->{SOURCE};
 		$found =~ s/\%u/$source/g;
-		my $blurb = $serv->get_blurb(HANDLE => $e->{HANDLE});
+		my $blurb = $serv->get_blurb(HANDLE => $e->{SHANDLE});
 		$source .= " [$blurb]" if $blurb;
 		$found =~ s/\%U/$source/g;
 		$found =~ s/\%V/$e->{VALUE}/g;
@@ -169,11 +200,12 @@ $sub = sub {
 			$found =~ s/\%T/$title/g;
 		}
 
-		$ui->print("SLCP: ", $found, "\n");
+		$e->{text} = "SLCP: $found";
 	}
 
 	return;
 };
-$event->event_r(type => 'all',
-		call => $sub);
+$event->event_r(type  => 'all',
+		order => 'before',
+		call  => $sub);
 

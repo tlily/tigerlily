@@ -23,10 +23,10 @@ sub new {
 	# Style information is stored in an array.  This array contains
 	# a list of { text position, style } entries.  These entries are
 	# not stored as subarrays for memory efficiency.  The last entry
-	# in this array is the size of the text buffer.  (This makes
-	# a couple operations simpler to implement.)
-	$self->{styles}      = [ 0, "default", 0 ];
-	$self->{indents}     = [ 0, "default", "", 0];
+	# in this array MUST be larger than the size of the text buffer.
+	# (It is used as a guard when searching the array.)
+	$self->{styles}      = [ 0, "default", 1 ];
+	$self->{indents}     = [ 0, "default", "", 1];
 
 	# Lines may be indexed by line number through 'indexes' (the
 	# offset into the text buffer for the start of each line).
@@ -163,7 +163,7 @@ sub binary_index_search {
 		#print STDERR " min=$min max=$max pos=$pos idx=$idx\n";
 		if ($aref->[$idx] > $offset) {
 			$max = $pos;
-		} elsif ($aref->[$idx+$sz] < $offset) {
+		} elsif ($aref->[$idx+$sz] <= $offset) {
 			$min = $pos;
 		} else {
 			#print STDERR " => $idx\n";
@@ -175,6 +175,7 @@ sub binary_index_search {
 
 sub fetch_lines {
 	my($self, $offset, $count) = @_;
+	#print STDERR "*** fetch_lines @_ ***\n";
 
 	my $st_idx = binary_index_search($self->{styles}, $offset, 2);
 	my $in_idx = binary_index_search($self->{indents}, $offset, 3);
@@ -247,8 +248,8 @@ sub print {
 	my($self, $text) = @_;
 
 	$self->{text} .= $text;
-	$self->{styles}->[-1]  = length($self->{text});
-	$self->{indents}->[-1] = length($self->{text});
+	$self->{styles}->[-1]  = length($self->{text}) + 1;
+	$self->{indents}->[-1] = length($self->{text}) + 1;
 
 	my @lines = $self->fetch_lines($self->{indexes}->[-1]);
 	for (my $i = 1; $i < @lines; $i++) {
@@ -332,19 +333,29 @@ sub scroll {
 
 sub style {
 	my($self, $style) = @_;
-	push @{$self->{styles}}, $style, length($self->{text});
+
+	if ($self->{styles}->[-3] == length($self->{text})) {
+		pop @{$self->{styles}};
+		pop @{$self->{styles}};
+	}
+	$self->{styles}->[-1] = length($self->{text});
+
+	push @{$self->{styles}}, $style, length($self->{text})+1;
 }
 
 
 sub indent {
-	my($self) = @_;
-	my($style, $str);
-	if (@_ == 2) {
-		push @{$self->{indents}}, "default", $_[1];
-	} else {
-		push @{$self->{indents}}, $_[1], $_[2];
+	my $self  = shift;
+	my $style = (@_ > 1) ? shift : "default";
+	my $str   = (@_)     ? shift : "";
+
+	if ($self->{indents}->[-4] == length($self->{text})) {
+		pop @{$self->{indents}};
+		pop @{$self->{indents}};
 	}
-	push @{$self->{indents}}, length($self->{text});
+	$self->{indents}->[-1] = length($self->{text});
+
+	push @{$self->{indents}}, $style, $str, length($self->{text})+1;
 }
 
 

@@ -1,4 +1,4 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/Attic/slcp.pl,v 1.1 1999/02/24 01:12:14 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/Attic/slcp.pl,v 1.2 1999/02/24 08:04:06 neild Exp $
 
 use strict;
 
@@ -25,13 +25,45 @@ the SLCP protocol.
 =cut
 
 my %keep;
-%{$keep{USER}} = (HANDLE => 1,
-		  NAME => 'rename',
-		  BLURB => 'blurb',
-		  STATE => 1);
-%{$keep{DISC}} = (HANDLE => 1, 
-		  NAME => 1,
-		  TITLE => 'retitle');
+$keep{USER} = {HANDLE => 1,
+	       NAME   => 1,
+	       BLURB  => 1,
+	       STATE  => 1};
+$keep{DISC} = {HANDLE => 1, 
+	       NAME   => 1,
+	       TITLE  => 1};
+
+my %events =
+  (
+   'connect'     => undef,
+   disconnect    => undef,
+   attach        => undef,
+   detach        => undef,
+   here          => undef,
+   away          => undef,
+   'rename'      => 'NAME',
+   blurb         => 'BLURB',
+   info          => undef,
+   ignore        => undef,
+   unignore      => undef,
+   unidle        => undef,
+   public        => undef,
+   private       => undef,
+   create        => undef,
+   destroy       => undef,
+   permit        => undef,
+   depermit      => undef,
+   'join'        => undef,
+   quit          => undef,
+   retitle       => 'TITLE',
+   review        => undef,
+   sysmsg        => undef,
+   sysalert      => undef,
+   emote         => undef,
+   pa            => undef,
+   game          => undef,
+   consult       => undef,
+  );
 
 my @login_prompts   = ('.*\(Y\/n\)\s*$',  # ' (Emacs parser hack)
 		       '^--> ',
@@ -100,12 +132,8 @@ sub parse_line {
 	my $ui;
 	$ui = LC::UI::name($serv->{ui_name}) if ($serv->{ui_name});
 
-	my $cmdid = undef;
-	my $review = undef;
-
-	my $hidden;
-
-	my %event = ();
+	my $cmdid;
+	my %event;
 
 	# prompts #############################################################
 
@@ -113,7 +141,6 @@ sub parse_line {
 	foreach $p ($serv->{logged_in} ? @connect_prompts : @login_prompts) {
 		if ($line =~ /$p/) {
 			set_client_options($serv) if (!$serv->{OPTIONS_SET});
-			$ui->prompt($line) if ($ui);
 			%event = (type => 'prompt',
 				  text => $line);
 			goto found;
@@ -130,7 +157,7 @@ sub parse_line {
 
 	# %g
 	if ($line =~ s/^%g//) {
-		$serv->{SIGNAL} = 1;
+		$serv->{BELL} = 1;
 	}
 
 
@@ -169,54 +196,74 @@ sub parse_line {
 	if ($line =~ /^%DATA /) {
 		my %args = SLCP_parse($line);
 
+		# Sanity check: do we know all these events?
+		if ($args{NAME} eq "events") {
+			my $e;
+			foreach $e (split /,/, $args{VALUE}) {
+				if (!exists($events{lc($e)})) {
+					warn "Unknown event type: \"$e\".\n";
+				}
+			}
+		}
+
 		$serv->state(DATA => 1, %args);
 
 		# Debugging. :>
 		return if ($serv->{logged_in});
-		%event = (type => 'text',
-			  text => $line);
+		%event = (type   => 'text',
+			  NOTIFY => 1,
+			  text   => $line);
 		goto found;
 	}
 
 	# SLCP %NOTIFY messages.  We pretty much just push these through to 
 	# tlily's internal event system.
 	if ($line =~ /^%NOTIFY /) {
-		my %args = SLCP_parse($line);
-
-		$serv->{SIGNAL} = 1 if ($args{BELL});
-		$hidden = 1 if (!$args{NOTIFY});
+		%event = SLCP_parse($line);
 
 		# SLCP bug?!
-		if ($args{EVENT} =~ /emote|public|private/) {
-			$hidden = 0;
+		# Fixed, I think.  -DN
+		#if ($event{EVENT} =~ /emote|public|private/) {
+		#	$event{NOTIFY} = 1;
+		#}
+
+		$event{SHANDLE} = $event{SOURCE};
+		$event{SOURCE}  = $serv->get_name(HANDLE => $event{SOURCE});
+
+		if ($event{RECIPS}) {
+			$event{RHANDLE} = [ split /,/, $event{RECIPS} ];
+			$event{RECIPS}  =
+			  join(", ",
+			       map { $serv->get_name(HANDLE => $_) }
+			       @{$event{RHANDLE}});
 		}
 
-		$args{HANDLE} = $args{SOURCE};
-		$args{SOURCE} =~ s(([^,]+))($serv->get_name(HANDLE => $1))ge;
-		$args{SOURCE} =~ s/,/, /g;
+		# Um.  Undef?  Don't set it at all?
+		$event{VALUE} = undef if $event{EMPTY};
 
-		if ($args{RECIPS}) {
-			$args{RECIPS} =~
-			  s(([^,]+))($serv->get_name(HANDLE => $1))ge;
-			$args{RECIPS} =~ s/,/, /g if ($args{RECIPS});
+		# Update the state database, if necessary.
+		my $param = $events{$event{EVENT}};
+		if ($param) {
+			$serv->state(HANDLE => $event{SHANDLE},
+				     $param => $event{VALUE});
 		}
 
-		$args{VALUE} = undef if $args{EMPTY};
+		if (exists($events{$event{EVENT}})) {
+			$event{type} = $event{EVENT};
+		} else {
+			$event{type}  = "slcp_unknown";
+		}
 
-		delete $args{EMPTY};
-		delete $args{BELL};
-		delete $args{NOTIFY};
-		delete $args{TIME};
-
-#		delete $args{TIME};
-#		delete $args{STAMP};
-		delete $args{COMMAND};
-
-		$event{type} = $args{EVENT};
-		@event{keys %args} = @args{keys %args};
-
+		# This will only be used if no formatter rewrites the text.
+		$event{text}  = "(notify: $event{SOURCE}";
+		$event{text} .= " -> $event{RECIPS}"       if ($event{RECIPS});
+		$event{text} .= ": $event{EVENT}";
+		$event{text} .= " = \"$event{VALUE}\""     if ($event{VALUE});
+		$event{text} .= ")";
+	
 		if ($event{SOURCE} eq $serv->user_name) { 
 			$event{isuser} = 1;
+			$event{NOTIFY} = 1; # SLCP bug.
 		}
 
 		goto found;
@@ -228,7 +275,6 @@ sub parse_line {
 	# %begin (command leafing)
 	if ($line =~ /^%begin \[(\d+)\] (.*)/) {
 		$cmdid = $1;
-		$hidden = 1;
 		%event = (type    => 'begincmd',
 			  command => $2);
 		goto found;
@@ -237,7 +283,6 @@ sub parse_line {
 	# %end, all cores.
 	if ($line =~ /^%end \[(\d+)\]/) {
 		$cmdid = $1;
-		$hidden = 1;
 		%event = (type => 'endcmd');
 		goto found;
 	}
@@ -245,7 +290,6 @@ sub parse_line {
 	# %connected
 	if ($line =~ /^%connected/) {
 		$serv->{logged_in} = 1;
-		$hidden = 1;
 		%event = (type => 'connected',
 			  text => $line);
 		goto found;
@@ -253,17 +297,16 @@ sub parse_line {
 
 	# %export_file
 	if ($line =~ /^%export_file (\w+)/) {
-		$hidden = 1;
 		%event = (type => 'export',
 			  response => $1);
 		goto found;
 	}
 
-	# The options notification.  (OK, not a %command...but it fits here.)
-	if ($line =~ /^\[Your options are/ ||
-	    $line =~ /^%options/) {
-		$hidden = 1;
-		%event = (Type => 'options');
+	# The options notification.
+	if ($line =~ /^%options\s+(.*?)\s*$/) {
+		my @o = split /\s+/, $1;
+		%event = (type    => 'options',
+			  options => \@o);
 
 		goto found if $serv->{SLCP_OK};
 
@@ -274,36 +317,13 @@ sub parse_line {
 		} else {
 			$serv->{SLCP_OK} = 1;
 		}
+
 		goto found;
 	}
 
 	# check for old cores
 	if  ($line =~ /type \/HELP for an introduction/) {
 		warn $SLCP_WARNING unless $serv->{SLCP_OK};
-	}
-
-	if ($line =~ /^%/) {
-		%event = (type => 'servercmd');
-		goto found;
-	}
-
-
-	# /review #############################################################
-
-	if (($line =~ /^\#\s*$/) ||
-	    ($line =~ /^\# [\>\-\*\(]/) ||
-	    ($line =~ /^\# \\\</) ||
-	    ($line =~ /^\# \#\#\#/)) {
-
-		if ((substr($line, 2, 1) eq '*') ||
-		    ((substr($line, 2, 1) eq '>') &&
-		     (substr($line, 2, 2) ne '>>'))) {
-			$line = substr($line, 2);
-			$review = '# ';
-		} else {
-			$line = substr($line, 1);
-			$review = '#';
-		}
 	}
 
 	# login stuff #########################################################
@@ -315,27 +335,19 @@ sub parse_line {
 
 	# something completely unknown ########################################
 
-	%event = (type => 'text',
-		  text => $line);
+	%event = (type   => 'text',
+		  NOTIFY => 1,
+		  text   => $line);
 
 	# An event has been parsed.
       found:
-	if ($review) {
-		$line = '<review>' . $review . '</review>' . $line;
-		$event{RevType} = $event{Type};
-		$event{Type} = 'review';
-		$event{WrapChar} = '# ' . ($event{WrapChar} || '');
-	}
+	$event{BELL}    = 1 if ($serv->{BELL});
+	$event{COMMAND} = $cmdid if ($cmdid);
+	$event{server}  = $serv;
+	$event{ui_name} = $serv->{ui_name};
 
-	#$event{ToUser} = 1 unless ($hidden);
-	$event{signal} = 'default' if ($serv->{SIGNAL});
-	$event{id}     = $cmdid;
-	$event{text}   = $line;
-	$event{server} = $serv;
+	$serv->{BELL} = undef;
 
-	$serv->{SIGNAL} = undef;
-
-	$event{type} ||= "foo";
 	$event->send(\%event);
 	return;
 }
@@ -344,7 +356,6 @@ sub parse_line {
 sub load {
 	$event->event_r(type => 'slcp_data',
 			call => \&parse_raw);
-
 }
 
 

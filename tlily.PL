@@ -1,4 +1,4 @@
-#!/site/tools/gnu/bin/perl -w
+#!/usr/bin/perl -w
 
 require 5.00307;
 
@@ -70,6 +70,32 @@ sub sigint {
 }
 $ui->command_r("interrupt", \&sigint);
 $ui->bind("C-C" => "interrupt");
+
+sub output_handler {
+	my($event, $handler) = @_;
+	if ($event->{ui_name}) {
+		my $ui = LC::UI::name($event->{ui_name});
+
+		if ($event->{NOTIFY} && $event->{formatter}) {
+			$event->{formatter}->($ui, $event);
+		} elsif ($event->{NOTIFY} && $event->{indent}) {
+			$ui->indent($event->{indent});
+			$ui->print($event->{text}, "\n");
+			$ui->indent();
+		} elsif ($event->{NOTIFY}) {
+			$ui->print($event->{text}, "\n");
+		}
+
+		if ($event->{BEEP}) {
+			$ui->bell();
+		}
+	}
+
+	return;
+}
+$event->event_r(type  => "all",
+		order => "after",
+		call  => \&output_handler);
 
 show_banner();
     

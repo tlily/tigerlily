@@ -53,10 +53,11 @@ sub new {
 	croak "required parameter \"port\" missing"
 	  unless (defined $args{port});
 
-	$self->{event} = $args{event};
-	$self->{host}  = $args{host};
-	$self->{port}  = $args{port};
-	$self->{proto} = defined($args{protocol}) ? $args{protocol} : "server";
+	$self->{event}   = $args{event};
+	$self->{host}    = $args{host};
+	$self->{port}    = $args{port};
+	$self->{ui_name} = $args{ui_name};
+	$self->{proto}   = defined($args{protocol}) ? $args{protocol}:"server";
 
 	$self->{sock} = IO::Socket::INET->new(PeerAddr => $self->{host},
 					      PeerPort => $self->{port},

@@ -3,6 +3,8 @@ package LC::Server::SLCP;
 use strict;
 use vars qw(@ISA);
 
+use Carp;
+
 use LC::Server;
 use LC::Extend;
 
@@ -15,6 +17,7 @@ sub new {
 
 	$args{port}     ||= 7777;
 	$args{protocol}   = "slcp";
+	$args{ui_name}    = "main" unless exists($args{ui_name});
 
 	# Load in the parser.
 	LC::Extend::load("slcp");
@@ -23,6 +26,7 @@ sub new {
 
 	$self->{HANDLE} = {};
 	$self->{NAME}   = {};
+	$self->{DATA}   = {};
 
 	bless $self, $class;
 }
@@ -43,8 +47,7 @@ sub user_name () {
 	return unless (defined $hdl);
 
 	my %rec = $self->state(HANDLE => $hdl);
-	return $rec{NAME} if ($rec{NAME} =~ /\S/);
-	return $hdl;
+	return defined($rec{NAME}) ? $rec{NAME} : $hdl;
 }
 
 
@@ -114,8 +117,10 @@ sub state {
 		return $self->{DATA}{$args{NAME}};
 	} 
 
-	# OK, the rest of this function refers to the normal records, which are 
-	# indexed by HANDLE and NAME.
+	# OK, the rest of this function refers to the normal records, which
+	# are indexed by HANDLE and NAME.
+
+	carp "bad state call"  unless ($args{HANDLE} || $args{NAME});
 
 	# figure out if the user is querying or insert/updating.
 	my $query = 1;

@@ -20,9 +20,10 @@ sub server_command {
 	my($host, $port) = @argv;
 	#my $server;
 	eval {
-		$server = LC::Server::SLCP->new(host  => $host,
-						port  => $port,
-						event => $event);
+		$server = LC::Server::SLCP->new(host    => $host,
+						port    => $port,
+						ui_name => $ui->name,
+						event   => $event);
 	};
 	unless ($server) {
 		$ui->print($@);
