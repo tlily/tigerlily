@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/FoiledAgain/Attic/Win32.pm,v 1.7 2003/02/14 02:15:06 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/FoiledAgain/Attic/Win32.pm,v 1.8 2003/02/14 03:36:18 josh Exp $
 
 package TLily::FoiledAgain::Win32;
 
@@ -142,12 +142,11 @@ sub update_screen {
 
         # copy the windows' data into place on the main screen.
         my $rect = $window->{buffer}->ReadRect(0, 0, $width, $height);
-
-        defined($SCREEN->WriteRect($rect, 
+        defined($SCREEN->WriteRect($rect,
                                    $window->{begin_x},
                                    $window->{begin_y}, 
                                    $window->{begin_x} + $width,
-                                   $window->{begin_y} + $height)) ||
+                                   $window->{begin_y} + $height - 1)) ||
             die "Error in WriteRect";
     }
 
