@@ -1,4 +1,4 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/Attic/slcp.pl,v 1.10 1999/02/26 22:45:43 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/Attic/slcp.pl,v 1.11 1999/02/27 00:21:59 josh Exp $
 
 use strict;
 use vars qw(%config);
@@ -126,11 +126,9 @@ sub parse_line {
     my $ui;
     $ui = ui_name($serv->{ui_name}) if ($serv->{ui_name});
     
-    #$ui->print("=", $line, "\n") if ($config{parser_debug});
     #print STDERR "=", $line, "\n";
     $ui->print("=", $line, "\n") if ($TLily::Config::config{parser_debug});
     
-    my $cmdid;
     my %event;
     
     # prompts #############################################################
@@ -147,11 +145,6 @@ sub parse_line {
     
     
     # prefixes ############################################################
-    
-    # %command, all cores.
-    if ($line =~ s/^%command \[(\d+)\] //) {
-	$cmdid = $1;
-    }
     
     # %g
     if ($line =~ s/^%g//) {
@@ -272,16 +265,24 @@ sub parse_line {
     
     # %begin (command leafing)
     if ($line =~ /^%begin \[(\d+)\] (.*)/) {
-	$cmdid = $1;
 	%event = (type    => 'begincmd',
+		  cmdid   => $1,
 		  command => $2);
+	goto found;
+    }
+
+    # %command, all cores.
+    if ($line =~ /^%command \[(\d+)\] (.*)/) {
+	%event = (type  => 'cmd',
+		  cmdid => $1);
+	$line = $2;
 	goto found;
     }
     
     # %end, all cores.
     if ($line =~ /^%end \[(\d+)\]/) {
-	$cmdid = $1;
-	%event = (type => 'endcmd');
+	%event = (type => 'endcmd',
+		  cmdid => $1);
 	goto found;
     }
     
@@ -341,12 +342,11 @@ sub parse_line {
     # An event has been parsed.
   found:
     $event{BELL}    = 1 if ($serv->{BELL});
-    $event{COMMAND} = $cmdid if ($cmdid);
     $event{server}  = $serv;
     $event{ui_name} = $serv->{ui_name};
     
     $serv->{BELL} = undef;
-    
+
     TLily::Event::send(\%event);
     return;
 }

@@ -18,6 +18,7 @@ use TLily::Server::SLCP;
 use TLily::User;
 use TLily::Extend;
 use TLily::Version;
+use TLily::Command;
 
 if ( -f 'tlily.PL' ) {
 	my @tstat = stat('tlily.PL');
@@ -30,6 +31,7 @@ if ( -f 'tlily.PL' ) {
 
 TLily::Config::init();
 TLily::Event::init();
+TLily::Command::init();
 my $ui = TLily::UI::Curses->new(name => 'main');
 
 # remove

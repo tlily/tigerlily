@@ -1,4 +1,4 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Extend.pm,v 1.6 1999/02/26 22:45:25 josh Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Extend.pm,v 1.7 1999/02/27 00:21:56 josh Exp $ 
 
 # initial version, 10/24/97, Josh Wilmes
 
@@ -14,9 +14,10 @@ use TLily::Config qw(%config);
 use TLily::Registrar;
 use TLily::User  qw(&help_r &shelp_r &command_r);
 use TLily::Event qw(&event_r &event_u);
+use TLily::Command qw(&cmd_process);
 
 my %extensions = ();
-my @share=qw(%config &help_r &shelp_r &command_r &event_r &event_u
+my @share=qw(%config &help_r &shelp_r &command_r &event_r &event_u &cmd_process
 	     &ui_name &server_name);
 
 sub load {
