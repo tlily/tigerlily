@@ -8,7 +8,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/Attic/tlily.global,v 1.46 2001/03/05 08:32:31 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/Attic/tlily.global,v 1.47 2001/03/20 01:05:09 neild Exp $
 
 # Global defaults for tlily
 # PLEASE DO NOT EDIT EXCEPT FOR DEVELOPMENT!
@@ -113,7 +113,7 @@ if ($^O =~ /(cygwin|MSWin32)/) {
    'slcp'            => [qw(normal)],
    'user_input'      => [qw(normal)],
   );
-$server='lily.acm.rpi.edu';
+$server='rpi.lily.org';
 $port=7777;
 $mono=0;
 $pager=1;
