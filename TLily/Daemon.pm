@@ -8,7 +8,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Daemon.pm,v 1.5 1999/04/03 05:05:57 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Daemon.pm,v 1.6 1999/04/06 17:32:01 steve Exp $
 
 package TLily::Daemon;
 
@@ -67,7 +67,7 @@ sub new {
     # Get a name for this server
     # This is stolen (cut-n-pasted) from Server.pm
     my $name = $args{name};
-    $name = "$args{port}" if (!defined($name));
+    $name = "listen:$args{port}" if (!defined($name));
     if ($daemon{$name}) {
 	my $i = 2;
 	while ($daemon{$name."#$i"}) { $i++; }
@@ -93,12 +93,12 @@ sub new {
     
     $self->{sock} = *SOCK;
     
-    if (!(setsockopt(SOCK, SOL_SOCKET, SO_REUSEADDR, pack("l", 1)))) {
+    if (!(setsockopt($self->{sock}, SOL_SOCKET, SO_REUSEADDR, pack("l", 1)))) {
 	warn "setsockopt: $!";
 	close $self->{sock};
 	return undef;
     }
-    if (!(bind(SOCK, sockaddr_in($self->{port}, INADDR_ANY)))) {
+    if (!(bind($self->{sock}, sockaddr_in($self->{port}, INADDR_ANY)))) {
 #	warn "bind: $!";
 	close $self->{sock};
 	return undef;
@@ -108,7 +108,7 @@ sub new {
 	close $self->{sock};
 	return undef;
     }
-    if (!(listen(SOCK, $self->{queuelen}))) {
+    if (!(listen($self->{sock}, $self->{queuelen}))) {
 	warn "listen: $!";
 	close $self->{sock};
 	return undef;
@@ -145,7 +145,7 @@ sub terminate {
     TLily::Event::io_u($self->{io_id});
     
     foreach my $cxn ($self->{connected}) {
-	$cxn->close();
+	$cxn->close() if defined $cxn;
     }
     $self->{connected} = undef;
     

@@ -7,7 +7,7 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Daemon/Attic/HTTP.pm,v 1.4 1999/04/03 05:06:08 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Daemon/Attic/HTTP.pm,v 1.5 1999/04/06 17:32:02 steve Exp $
 
 package TLily::Daemon::HTTP::Connection;
 
@@ -173,6 +173,8 @@ sub new {
     my $self = $class->SUPER::new(%args);
     
     return undef unless defined($self);
+
+    $inst = $self;
     
     TLily::Registrar::class_r('web_file' => \&file_u);
     
@@ -220,6 +222,7 @@ sub file_r {
     TLily::Registrar::add("web_file", $args{alias});
     
     $files{$args{alias}} = $args{file};
+    return $inst->{port};
 }
 
 =item file_u($alias)
@@ -270,6 +273,11 @@ sub date {
     
     return sprintf ("${dayofweek}, %02d $month $year %02d:%02d:%02d GMT",
 		    $mday, $hour, $min, $sec);
+}
+
+sub DESTROY {
+    $inst->SUPER::DESTROY();
+    $inst = undef;
 }
 
 1;

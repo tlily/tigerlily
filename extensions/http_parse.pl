@@ -1,6 +1,6 @@
 # -*- Perl -*-
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/http_parse.pl,v 1.3 1999/03/23 08:33:47 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/http_parse.pl,v 1.4 1999/04/06 17:32:04 steve Exp $
 
 use strict;
 
@@ -122,4 +122,5 @@ sub load {
     while (!(defined($daemon)) && ($port < 31340)) {
 	$daemon = TLily::Daemon::HTTP->new (port => ++$port);
     }
+    warn ("Unable to bind to a port!") unless $daemon;
 }
