@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/startup.pl,v 1.13 2000/12/14 00:46:28 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/startup.pl,v 1.14 2000/12/14 01:24:16 neild Exp $
 
 use strict;
 
@@ -9,6 +9,7 @@ event_r(type  => 'connected',
 
 sub startup_handler ($$) {
     my($event,$handler) = @_;
+    return if ($event->{startup_files_run}); # Don't loop!
     my $ui = ui_name();
 
     if(-f $ENV{HOME}."/.lily/tlily/Startup") {
@@ -41,8 +42,9 @@ sub startup_handler ($$) {
 	if(!$args{text}) {
 	    $args{ui}->print("Error opening *tlilyStartup: $!\n");
 	    TLily::Event::send(%$event,
-                               type => 'connected',
-			       ui   => $args{ui});
+                               type              => 'connected',
+			       startup_files_run => 1,
+			       ui                => $args{ui});
 	    return 0;
 	}
         {   my $f;
@@ -53,8 +55,9 @@ sub startup_handler ($$) {
 		    "(If you want to install one, ",
 		    "call it tlilyStartup or *tlilyStartup)\n");
 		TLily::Event::send(%$event,
-				   type => 'connected',
-				   ui   => $args{ui});
+				   type              => 'connected',
+				   startup_files_run => 1,
+				   ui                => $args{ui});
 		return 0;
 	    }
         }
@@ -68,8 +71,9 @@ sub startup_handler ($$) {
 				text    => "$_\n"});
 	}
 	TLily::Event::send(%$event,
-			   type => 'connected',
-			   ui   => $args{ui});
+			   type              => 'connected',
+			   startup_files_run => 1,
+			   ui                => $args{ui});
 	return 0;
     };
 
@@ -81,8 +85,9 @@ sub startup_handler ($$) {
 		       call   => $sub);
     } else {
 	TLily::Event::send(%$event,
-			   type => 'connected',
-			   ui   => $ui);
+			   type              => 'connected',
+			   startup_files_run => 1,
+			   ui                => $ui);
         return 0;
     }
 
