@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/Tk.pm,v 1.9 2001/11/10 02:36:32 albert Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/Tk.pm,v 1.10 2002/05/20 14:31:18 coke Exp $
 
 package TLily::UI::Tk;
 
@@ -226,7 +226,7 @@ sub new {
     $self->{cols}     = 80;
 
     $self->{menubar} = $self->{toplevel}->Frame()->pack(-fill => 'x',
-							-expand => 1);
+							-expand => 0);
     $self->{menu_file} = $self->{menubar}->Menubutton
       (-text      => "File",
        -underline => 0,
@@ -253,7 +253,7 @@ sub new {
        -takefocus    => 0,
        -setgrid      => 1,
        -insertontime => 0,
-       -state        => "disabled")->pack(-fill => "both", -expand => "both");
+       -state        => "disabled")->pack(-fill => "both", -expand => 1);
     
     $self->{text} = $self->{stext}->Subwidget("rotext");
 
@@ -266,7 +266,8 @@ sub new {
        -font         => $font{normal},
        -justify      => "left")->pack(-side   => "left",
 				      -expand => 1,
-				      -ipady => 0,
+				      -fill => "x",
+				      -ipady  => 0,
 				      -anchor => 'nw');
 
     $self->{status_right} = $self->{status}->Label
@@ -276,6 +277,7 @@ sub new {
        -font         => $font{normal},
        -justify      => "right",)->pack(-side => "left",
 					-expand => 1,
+				      -fill => "x",
 					-ipady => 0,
 					-anchor => 'ne');
     
@@ -289,7 +291,7 @@ sub new {
        -wrap	      => "char",
        -insertofftime => 0,)->pack(-side => "right",
 				   -fill => 'x',
-				   -expand => "x",
+				   -expand => 0,
 				   -anchor => "s");
 
     $self->{entry}->pack(-pady   => 0,
@@ -297,16 +299,16 @@ sub new {
 			 -padx   => 0,
 			 -ipadx  => 0,
 			 -fill   => 'x',
-			 -expand => 'x',
+			 -expand => 0,
 			 -side   => "bottom",
 			 -anchor => "s");
-    
+   
     $self->{status}->pack(-pady   => 0,
 			  -ipady  => 0,
 			  -padx   => 0,
 			  -ipadx  => 0,
 			  -fill   => 'x',
-			  -expand => 'x',
+			  -expand => 0,
 			  -side   => "bottom",
 			  -anchor => "s");
     
@@ -576,7 +578,7 @@ sub prompt_for {
 				 }
 				 $self->{input}->pack(-side   => "right",
 						      -fill   => 'x',
-						      -expand => "x",
+						      -expand => 1,
 						      -anchor => "s");
 				 $self->{input}->focus();
 			     }]);
