@@ -68,7 +68,6 @@ your ~/.emacs file:
 (setq cperl-indent-level 4) 
 
 -------------------------------------------------------------------------------
-
 4) Prototypes
 
 Perl permits you to define functions with prototypes (for example, sub
@@ -82,6 +81,7 @@ of what they are for and why you want them.  If you think you want
 prototypes on all your functions, you are probably wrong.
 
 See perlsub(1) for more information on prototypes.
+
 -------------------------------------------------------------------------------
 5) Help text
 
@@ -109,6 +109,15 @@ newlines from the start and end of your help text, so feel free to add some
 if it makes things look nicer for you.  (Again, see above.)
 
 -------------------------------------------------------------------------------
-6) Other
+6) Object data
+
+UI and server objects are hashrefs.  Occasionally, an extension author may
+want to stick a bit of private data into one of these objects.  This is
+permitted.  Extension-private hash keys should begin with "_", and care
+must be taken for different extensions to not accidentally use the same
+key.
+
+-------------------------------------------------------------------------------
+7) Other
 
 There's plenty of room for more stuff in here.. Go for it :)
