@@ -46,7 +46,7 @@ sub state_cmd {
 
     $ui->print("Desired index: \"$dindex\", key: \"$dkey\"\n");
 
-    foreach $index (sort keys %{$server}) {
+    foreach $index (qw(DATA HANDLE NAME)) {
         if ($dindex && ($index ne $dindex)) { next; }
         $ui->print("$index:\n");
         if (! ref($server->{$index})) {
