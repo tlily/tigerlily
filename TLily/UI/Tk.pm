@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/Tk.pm,v 1.4 1999/12/21 03:10:06 albert Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/Tk.pm,v 1.5 2000/02/13 20:24:47 tale Exp $
 
 package TLily::UI::Tk;
 
@@ -929,7 +929,7 @@ sub search_history {
     my $self = shift;
     my $string = shift;
     my $dir = shift || -1;
-    my $dir = ($dir >= 0)?1:-1;
+    $dir = ($dir >= 0)?1:-1;
 
     return unless ($string);
     my $hist_idx = $self->{history_pos};
