@@ -87,7 +87,7 @@ sub accept_line {
 	my $args = shift @{$ui->{prompt}};
 	if (defined $args->{prompt}) {
 	    $ui->prompt("");
-	    $ui->print($args->{prompt}, " ");
+	    $ui->print($args->{prompt});
 	}
 
 	if ($args->{password}) {
