@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/url.pl,v 1.5 1999/03/23 23:58:19 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/url.pl,v 1.6 1999/03/23 23:59:53 neild Exp $
 
 #
 # URL handling
@@ -30,7 +30,7 @@ sub url_cmd {
     $arg = "show" if ($arg eq "view");
     
     if ($arg eq "clear") {
-       ui->print("(cleared URL list)\n");
+       $ui->print("(cleared URL list)\n");
        @urls=();
        return;
     }
