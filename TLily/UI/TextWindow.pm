@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/TextWindow.pm,v 1.5 2003/02/28 01:48:46 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/TextWindow.pm,v 1.6 2003/04/15 22:22:49 tale Exp $
 
 package TLily::UI::TextWindow::Proxy;
 
@@ -140,7 +140,7 @@ sub mark_output {
 
     my $clock = $ui->{status}->{var}->{clock} || "";
 
-    my $center = ($ui->{F}->screen_width() - length($clock)) / 2;
+    my $center = (TLily::FoiledAgain::screen_width() - length($clock)) / 2;
 
     $ui->style("mark_output");
     $ui->print(' ' x $center . $clock . ' ' x $center . "\n");
