@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/on.pl,v 1.13 2001/12/06 15:42:08 kazrak Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/on.pl,v 1.14 2001/12/13 18:45:06 neild Exp $
 
 use strict;
 use Text::ParseWords qw(quotewords);
@@ -100,7 +100,7 @@ sub on_cmd {
 
 		$desc .= " SERVER " . $mask->{SERVER}->name
 		  if defined($mask->{SERVER});
-	
+
 		if (defined $mask->{SHANDLE}) {
 		    my %state =
 		      $mask->{SERVER}->state(HANDLE => $mask->{SHANDLE});
@@ -241,6 +241,8 @@ sub on_cmd {
 		    $str .= " not" if $mask{NOTIFY} eq 'no';
 		    $str .= " notified";
 		}
+	    } else {
+		$mask{NOTIFY} = "always";
 	    }
 
 	    $str .= " with a value like \"$mask{LIKE}\""
