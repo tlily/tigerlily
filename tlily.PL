@@ -7,7 +7,7 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/tlily.PL,v 1.59 2003/02/26 03:32:14 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/tlily.PL,v 1.60 2003/02/26 03:57:49 josh Exp $
 
 require 5.00307;
 use strict;
@@ -221,14 +221,9 @@ while (1) {
 sub load_ui {
     my %available;
 
-    if ($^O eq "MSWin32") {
-        $config{UI} ||= "TextWindow";    
-    } else {
-        $config{UI} ||= "Curses";
-    }
+    $config{UI} ||= "TextWindow";    
 
     if ($::TL_LIBDIR =~ m|^//INTERNAL|) {
-	#return TLily::UI::Curses->new(name => 'main');
 
 	my $ui = eval "TLily::UI::$config{UI}->new(name => 'main');";
 	if ($@) {
@@ -251,12 +246,12 @@ sub load_ui {
 	}
     }
 
-    # nope?  ok, fall back to Curses.
+    # nope?  ok, fall back to TextWindow.
     if (! $available{$config{UI}}) {
 	print "UI \"$config{UI}\" was not found.\n";
 	print "Press ENTER to try the default UI, or Control-C to quit.\n";
 	<STDIN>;
-	$config{UI}="Curses";
+	$config{UI}="TextWindow";
     }
 
     # OK, load the UI..
