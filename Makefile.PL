@@ -7,7 +7,7 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/Makefile.PL,v 1.14 2001/11/10 07:33:07 tale Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/Makefile.PL,v 1.15 2001/11/11 19:27:54 tale Exp $
 
 use strict;
 use Config;
@@ -128,10 +128,6 @@ my @modules =
      TLily::Registrar
      TLily::Event
      TLily::UI::Util
-     TLily::UI::Curses::Generic
-     TLily::UI::Curses::Input
-     TLily::UI::Curses::StatusLine
-     TLily::UI::Curses::Text
      TLily::UI
      TLily::Utils
      TLily::User
@@ -144,11 +140,42 @@ my @modules =
      TLily::Daemon::Connection
      TLily::Daemon::HTTP
      TLily::Bot
-     TLily::UI::Curses
     );
 
-push (@modules, qw(TLily::UI::Tk::Event TLily::UI::Tk))
-    if eval { require Tk; };
+my ($ui_curses, $ui_tk);
+$ui_curses = eval { require Curses; };
+$ui_tk = eval { require Tk; };
+
+unless ($ui_curses || $ui_tk) {
+    die qq(
+*** Perl support for neither Curses nor Tk was found, so no user interface
+*** could be included.  Please install Bundle::Curses or Bundle::Tk and then
+*** rerun Makefile.PL.
+
+);
+}
+
+if ($ui_curses) {
+    push (@modules, qw(TLily::UI::Curses::Generic TLily::UI::Curses::Input
+     		       TLily::UI::Curses::StatusLine TLily::UI::Curses::Text
+		       TLily::UI::Curses));
+} else {
+    warn qq(
+*** Perl Curses support was not found, so Curses UI support was not included.
+*** If you install Bundle::Tk, rerun Makefile.PL to include the Curses UI.
+
+);
+}
+
+if ($ui_tk) {
+    push (@modules, qw(TLily::UI::Tk::Event TLily::UI::Tk))
+} else {
+    warn qq(
+*** Perl Tk support was not found, so Tk UI support was not included.
+*** If you install Bundle::Tk, rerun Makefile.PL to include the Tk UI.
+
+);
+}
 
 my %added;
 
