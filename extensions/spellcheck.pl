@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/spellcheck.pl,v 1.22 2000/12/14 21:53:23 tale Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/spellcheck.pl,v 1.23 2001/03/13 05:11:14 josh Exp $
 
 use strict;
 use IPC::Open2;
@@ -229,7 +229,7 @@ sub init_ispell {
     close I_READ;
     my $pid = open2(\*I_READ, \*I_WRITE, 'ispell', '-a') or return undef;
     my $banner = <I_READ>;
-    $banner =~ /^\@/ or die "Couldn't sync with ispell";
+    $banner =~ /^\@/ or return 0; # "Couldn't sync with ispell"
     return $pid;
 }
 
