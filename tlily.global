@@ -1,0 +1,81 @@
+# -*- Perl -*-
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/Attic/tlily.global,v 1.1 1999/02/26 00:02:14 josh Exp $
+# Global defaults for tlily
+# PLEASE DO NOT EDIT EXCEPT FOR DEVELOPMENT!
+# EDIT YOUR SITE CONFIG FILE INSTEAD!
+# Begin defaults
+@load = qw(after autologin autoreply expand gag help info irc log look misc 
+           pager pipes parse run_command set startup terminal url view vinfo
+	   zone);
+@slash = (undef);
+@prefer = (undef);
+$terminal = "LC::CTerminal";
+%color_attrs = ( 'sender' => ['bold'],
+		'dest' => ['bold'],
+		'b' => ['bold'],
+		'status_line' => ['fg:yellow',  'bg:blue',  'bold'],
+		'input_line'  => ['fg:white',   'bg:black'],
+		'text_window' => ['fg:white',   'bg:black', 'normal'],
+		'privhdr'     => ['fg:green',   'bg:black'],
+		'privmsg'     => ['fg:green',   'bg:black'],
+		'pubhdr'      => ['fg:cyan',    'bg:black'],
+		'pubmsg'      => ['fg:white',   'bg:black'],
+		'emote'       => ['fg:cyan',    'bg:black'],
+		'review'      => ['fg:magenta', 'bg:black'],
+		'usersend'    => ['fg:red',     'bg:black'],
+		'subc'        => ['fg:blue',    'bg:black'],
+		'whiteblue'   => ['fg:white',   'bg:blue'],
+		'greenblue'   => ['fg:green',   'bg:blue',   'bold'],
+		'yellow'      => ['fg:yellow',  'bg:black',  'bold'],
+		'green'       => ['fg:green',   'bg:black',  'bold'],
+		'notify'      => ['fg:yellow',  'bg:black',  'normal']
+		);
+
+%mono_attrs = ('sender'      => ['bold'],
+	       'dest'        => ['bold'],
+	       'b'           => ['bold'],
+	       'status_line' => ['reverse']);
+$server='lily.acm.rpi.edu';
+$port=7777;
+$mono=0;
+$pager=1;
+$options_after_connect=1;
+$editor = $ENV{VISUAL} || $ENV{EDITOR} || 'vi';
+
+#$browser_textmode=1;
+#$browser="lynx";
+$browser_textmode=0;
+$browser="netscape -remote 'openURL(%URL%)'";
+$clocktype=24;
+$clockdelta=0;
+
+# Httpd settings
+# Time for the httpd to remain active after the last file has been
+# deregistered.
+$httpdtimeout=300;
+
+# If 0, then don't print httpd debug messages.
+$debughttpd=0;
+
+# End defaults
+
+# Examples FOR YOUR SITE AND/OR USER CONFIG FILES! PLEASE DO NOT PUT THESE HERE
+#@load = ('-expand', 'hack', '-log');
+
+#%color_attrs = ('pubhdr' => 'bg:black fg:red bold reverse');
+#%mono_attrs = ('_default_' => ['bg:white', 'fg:black'],
+#	 'privdhr' => ['reverse']);
+
+#@slash = ('-info', 'oops', 'also');
+
+# $clockdelta: set how many minutes you are away from your client.
+# Default is for no adjustment.
+#$clockdelta = -180; # US/Pacific (Albert) vs US/Eastern (grace.acm.rpi.edu)
+
+# Extension-specific: set how many minutes you are away from the server.
+# Default is for no adjustment.
+#$zonedelta = -180; # US/Pacific (Albert) vs US/Eastern (RPI).
+
+# For the 'autoreview' extension: Sets which discussions to /review at
+# connect-time.
+#@autoreview = ('computer', 'lily-dev');

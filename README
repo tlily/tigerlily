@@ -1,0 +1,203 @@
+TigerLily
+=========
+
+Installing
+----------
+TigerLily requires Perl 5.003 or greater.  You will also need
+Curses.pm. (from CPAN)
+
+To create a usable tlily executable, run the command:
+   perl Build.PL
+To see the full usage for Build.PL, run the command:
+   perl Build.PL -h
+
+Colors
+------
+
+Color preferences are specified in the config files(See 'Configuration'
+below).  To change a color, set that color preference in your site or
+user configuration files.  Color preferences are in %color_attrs, and
+monochrome preferences are in %mono_attrs.
+
+Example:  To make the header on private messages red on white instead of
+green on black, add the following to your config file:
+
+    %color_attrs = ('pubhdr' => [ 'fg:red', 'bg:white' ]);
+
+
+/-command Overrides
+-------------------
+
+Tigerlily includes 3 client-side fixes/enhancements for existing lily
+commmands, implemented by intercepting the command before it is sent
+to the server:
+
+/info		Enhanced so that /info set and /info edit bring up your
+		editor for you to change your info.
+
+/oops		Fixed so as to reset your sendlist correctly for ;-expansion
+
+/also		Fixed so as to append the /also'ed people to your sendlist
+		for ;-expansion.
+
+To allow any of these overrides, put the command without the / in the
+@slash variable in your site or user configuration files.
+
+Example: To enable the /info override, add the following to your 
+	 user or site config files:
+
+@slash = ('info');
+
+To disallow an override, put the command without the / and with a leading
+'-' in the @slash variable in your site or user configuration files.
+
+Example: To disable the /also override, add the following to your 
+	 user or site config files:
+
+@slash = ('-also');
+
+Being concious not to override the existing behavior of lily commands, the
+current default is to not override any /-commands.
+
+There are those among the developers that want to change this default,
+though, and so this default may change.
+
+
+Configuration (Needs expanding)
+-------------
+
+TigerLily now has 4 levels of customization:
+    Level    Default File Location
+             Description
+    -----    ---------------------
+    Global   /usr/local/lib/tlily/tlily.cf
+             Default settings for all features; please no not edit except
+             when developing to add defaults for new settings.
+    Site     /usr/local/etc/tlily.cf
+             Site-specific settings to augment or override the global
+             settings.  System Administrators wishing to change the
+             default settings for their users should edit this file.
+    User     ~/.lily/tlily/tlily.cf
+             User-specific settings to override the global and site
+             settings.
+    Command  <no file>
+             Many(not all) configuration options can be overridden at the
+             command line.
+
+Here is a summary of the common configuration file(CF) options:
+
+@load
+	Setting this variable in a CF will change the list of
+	extensions to load.  An extension preceeded by a - will
+	cause that extension to not be loaded.  
+	    # Example:
+	    @load = ('a', 'b', '-c', 'd', '-e');
+	    # In addition to the current extension list, extensions a, b,
+	    # and d will be loaded, and extensions c and e will not be loaded.
+	The default extension list is in the global CF, and can be
+	changed using this method in the site and/or user CFs.
+
+$terminal
+        This variable controls the default terminal implementation to use.
+        Valid settings are 'LC::CTerminal' and 'LC::TTerminal'.
+
+%color_attrs
+%mono_attrs
+	Setting these variables in a cf will change the color settings
+	for the color and monochrome mode of an element.
+	    # Example:
+	    %color_attrs = ('pubhdr' =>  ['bg:blue', 'fg:red', 'bold'],
+	                    'privmsg' => ['fg:cyan', 'bg:green']);
+	    # Make all public message headers red on blue and bold, and
+	    # make all private messages green on cyan.  The color attributes
+	    # for other elements will be unchanged.
+	    %mono_attrs = ('pubmsg' => ['reverse'],
+			   'statusline' => ['bold']);
+            # Make all public messages be in reverse video (black on white),
+            # and make the statusline be normal(white on black) with the text
+            # in bold.  The monochrome attributes for other elements will be
+            # unchanged.
+
+@slash
+	Setting this variable will change the list of /-commands that are
+	allowed to be intercepted by tlily and other extensions in order
+	to add functionality to an existing command.  Any extension wanting
+	to intercept a /-command must honor their desired command's
+	existence/non-existence in this list.  Adding a /-command to this
+	list will not necessarily enable interception of the /-command;
+	the extension that wants to intercept it must be loaded also.
+	    # Example:
+	    @slash = ('-info', 'also', 'oops');
+	    # In addition to the slash list from previous CF levels,
+	    # allow /also and /oops to be intercepted, but do not
+	    # allow /info to be overridden.
+	By default, no slash commands will be allowed to be intercepted.  This
+	can be overridden in the site and/or user CFs using this method.
+
+$emote_oops
+        If set, this specifies an oops string to use for emote discussions.
+        The standard lily /oops will still be used for connect discs.  Note
+        that this only effects %oops -- you will need to add oops to @slash
+        to change /oops.
+
+@prefer
+        This variable contains a list of destinations to "prefer" when
+        doing autoexpansion.  If a partial destination is a prefix to
+        an element in this list, it will always be expanded to it.
+        Examples:
+          @prefer = ('-security');
+          The "security" discussion exists, as does the user "Secret Agent".
+          "sec" will expand to "-security".
+
+          @prefer = ('damien_clone');
+          The users "damien" and "damien clone" both exist.
+          "dam" will expand to "damien_clone".  "damien" exactly matches
+          a user, and will not expand.
+	
+Extensions can each have options to configure them; see the documentation
+for the specific module to see what options can be set.
+
+
+CVS access
+----------
+The TigerLily sources are stored in a CVS repository.  Anyone working on
+TigerLily development can get access by contacting Damien (neild@acm.rpi.edu)
+or Albert (albert@acm.rpi.edu).
+
+The repository is currently located on einstein.to.
+
+To access the repository remotely, you will need to set two environment
+variables:
+  export CVSROOT=:ext:neild@einstein.to:/usr/src/cvs
+  export CVS_RSH=ssh
+
+Obviously, replace the `neild' with your own userid on einstein.to.  CVS_RSH
+need not necessarily be ssh, but this is likely to be the simplest method to
+use.
+
+The important CVS commands are:
+  - cvs checkout tlily
+    This will grab a copy of the current source tree, and place it in a
+    new directory named `tlily'.  No locking is implied by this operation;
+    you may delete the checked out tree without ill effect.
+
+All other CVS commands accept a list of files as an argument; in the absence
+of this list, they operate on the current directory.
+
+  - cvs update
+    Compares a checked out tree to the current sources, merging down any
+    changed files from the repository.  Changes you make will not be added
+    to the repository until you do a cvs commit.
+
+  - cvs add
+    Registers a new file into the repository.  The file will be visible to
+    others after you cvs commit.
+
+  - cvs remove
+    Removes a file from the repository.  The file will disappear to others
+    after you cvs commit.
+
+  - cvs commit
+    Checks in all changes in the current tree.
+
+Read the CVS manpages for more detailed information.
