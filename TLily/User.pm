@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/User.pm,v 1.30 2000/03/10 07:31:09 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/User.pm,v 1.31 2000/09/09 06:22:38 mjr Exp $
 
 package TLily::User;
 
@@ -149,8 +149,10 @@ sub rebuild_file_help_idx {
     my $module;   
     my $count = 0;
     foreach $module (@files) {
-        local(*F);
         next if ($module =~ /^\./);
+        next unless ($module =~ /\.pm$|\.pl$|\.pod$/);
+
+        local(*F);
         my $file = "$dir/$module";
         if ( -f "$file" ) {
             open(F,"<$file") ||
