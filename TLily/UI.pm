@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/UI.pm,v 1.19 1999/04/09 22:48:19 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/UI.pm,v 1.20 1999/04/21 01:13:28 neild Exp $
 
 package TLily::UI;
 
@@ -201,7 +201,7 @@ will be prefixed with this string.
 =cut
 
 sub indent {
-    my($self, $indent) = @_;
+    my($self, $style, $indent) = @_;
     $self->{log_indent} = defined($indent) ? $indent : "";
 }
 
