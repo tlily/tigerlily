@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Extend.pm,v 1.21 2001/01/26 04:27:35 mjr Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Extend.pm,v 1.22 2001/07/31 19:55:40 neild Exp $ 
 
 package TLily::Extend;
 use strict;
@@ -230,6 +230,18 @@ sub extension_cmd {
 	$ui->print("(Loaded extensions: ");
 	$ui->print(join(" ", sort keys %extensions));
 	$ui->print(")\n");
+    } elsif ($cmd eq 'stats') {
+	my $ext;
+	@argv = sort keys %extensions unless @argv;
+	foreach $ext (@argv) {
+	    next unless $extensions{$ext};
+	    my %stats = $extensions{$ext}->{reg}->stats;
+	    my $stat;
+	    $ui->print("Extension $ext:\n");
+	    for $stat (sort keys %stats) {
+		$ui->print("  $stat: $stats{$stat}\n");
+	    }
+	}
     } else {
 	$ui->print
 	  ("(unknown %extension command: see %help extension)\n");

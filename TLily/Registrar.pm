@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Registrar.pm,v 1.9 2001/01/26 03:01:48 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Registrar.pm,v 1.10 2001/07/31 19:55:40 neild Exp $
 
 package TLily::Registrar;
 
@@ -44,6 +44,9 @@ my %classes;
 
 # The stack of default registrars.  The currently active one is $default[-1].
 my @default;
+
+# Indicates if allocations should be tracked.
+my $tracking = 1;
 
 
 =item Registrar->new()
@@ -138,6 +141,8 @@ Records a resource allocation.
 =cut
 
 sub add {
+    return unless $tracking;
+
     my $self;
     $self = shift if (@_ > 2);
     $self = ref($self) ? $self : $default[-1];
@@ -181,6 +186,38 @@ sub unwind {
 	    $classes{$class}->($data);
 	}
     }
+}
+
+=item $reg->stats()
+
+Returns some registration statistics as a flattened hash, mapping resource
+classes to usage counts.
+
+=cut
+
+sub stats {
+    my $self = shift;
+    $self = ref($self) ? $self : $default[-1];
+    return unless $self;
+
+    my %r;
+    while (my($class, $data) = each %$self) {
+	$r{$class} = @$data;
+    }
+
+    return %r;
+}
+
+=item TLily::Registrar::tracking($on)
+
+Enables or disables resource tracking.
+
+=cut
+
+sub tracking {
+    my $on = shift;
+    $on = shift if ref($on);
+    $tracking = $on ? 1 : undef;
 }
 
 =head1 EXAMPLE

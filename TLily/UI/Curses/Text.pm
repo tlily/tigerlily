@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Curses/Attic/Text.pm,v 1.24 2001/02/12 19:18:09 kazrak Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Curses/Attic/Text.pm,v 1.25 2001/07/31 19:55:40 neild Exp $
 
 package TLily::UI::Curses::Text;
 
@@ -17,6 +17,7 @@ use Curses;
 use TLily::UI::Util qw(next_line);
 use TLily::UI::Curses::Generic;
 use TLily::Event;
+use TLily::Registrar;
 use TLily::Config qw(%config);
 
 @ISA = qw(TLily::UI::Curses::Generic);
@@ -132,8 +133,10 @@ sub set_pager {
 sub set_pager_on_idle {
     my($self) = @_;
     return if ($self->{pager_on_idle});
+    TLily::Registrar::tracking(0);
     $self->{pager_on_idle} = TLily::Event::idle_r(obj => $self,
 						  call => \&set_pager);
+    TLily::Registrar::tracking(1);
     return;
 }
 
