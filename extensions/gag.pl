@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/gag.pl,v 1.6 2000/03/10 07:31:09 mjr Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/gag.pl,v 1.7 2000/10/26 20:20:33 coke Exp $ 
 
 use strict;
 
@@ -85,13 +85,13 @@ sub gag_command_handler {
 
     my $name = TLily::Server::SLCP::expand_name($args[0]);
     if ((!defined $name) || ($name =~ /^-/)) {
-	ui_output("(could find no match to \"$args[0]\")");
+	$ui->print("(could find no match to \"$args[0]\")\n");
 	return;
     }
 
     my %state = $server->state(NAME => $name);
     if (!$state{HANDLE}) {
-	ui_output("(could find no match to \"$args[0]\")");
+	ui->print("(could find no match to \"$args[0]\")\n");
 	return;
     }
 

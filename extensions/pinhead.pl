@@ -29,13 +29,13 @@ sub pinhead_command_handler {
 
     my $name = TLily::Server::SLCP::expand_name($args[0]);
     if ((!defined $name) || ($name =~ /^-/)) {
-	ui_output("(could find no match to \"$args[0]\")");
+	$ui->print("(could find no match to \"$args[0]\")\n");
 	return;
     }
 
     my %state = $server->state(NAME => $name);
     if (!$state{HANDLE}) {
-	ui_output("(could find no match to \"$args[0]\")");
+	$ui->print("(could find no match to \"$args[0]\")\n");
 	return;
     }
 
