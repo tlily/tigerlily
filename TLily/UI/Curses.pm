@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/Curses.pm,v 1.59 2002/10/26 00:12:09 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/Curses.pm,v 1.60 2003/06/25 18:23:48 neild Exp $
 
 package TLily::UI::Curses::Proxy;
 
@@ -233,6 +233,8 @@ sub close_window {
    'mark-output'          => \&mark_output,
    'previous-history'     => sub { $_[0]->{input}->previous_history(); },
    'next-history'         => sub { $_[0]->{input}->next_history(); },
+   'intelligent-previous' => sub { $_[0]->{input}->intelligent_previous(); },
+   'intelligent-next'     => sub { $_[0]->{input}->intelligent_next(); },
    'insert-self'          => sub { $_[0]->{input}->addchar($_[2]) },
    'forward-char'         => sub { $_[0]->{input}->forward_char(); },
    'backward-char'        => sub { $_[0]->{input}->backward_char(); },

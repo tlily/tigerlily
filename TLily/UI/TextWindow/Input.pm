@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/TextWindow/Attic/Input.pm,v 1.1 2003/02/13 15:11:10 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/TextWindow/Attic/Input.pm,v 1.2 2003/06/25 18:23:49 neild Exp $
 
 package TLily::UI::TextWindow::Input;
 
@@ -333,6 +333,32 @@ sub accept_line {
     $self->{history_pos} = $#{$self->{history}};
 
     return $text;
+}
+
+# Go up one line, or back one history entry.
+sub intelligent_previous {
+    my($self) = @_;
+
+    if ($self->{point} >= $self->{cols}) {
+	$self->{point} -= $self->{cols};
+	$self->rationalize();
+	$self->{kill_reset} = 1;
+    } else {
+	$self->previous_history();
+    }
+}
+
+# Go down one line, or forward one history entry.
+sub intelligent_next {
+    my($self) = @_;
+
+    if (length($self->{text}) - $self->{point} >= $self->{cols}) {
+	$self->{point} += $self->{cols};
+	$self->rationalize();
+	$self->{kill_reset} = 1;
+    } else {
+	$self->next_history();
+    }
 }
 
 # Save the current history entry and replace it with the current text.

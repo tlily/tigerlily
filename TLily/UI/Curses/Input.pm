@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Curses/Attic/Input.pm,v 1.28 2003/04/21 21:47:50 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Curses/Attic/Input.pm,v 1.29 2003/06/25 18:23:48 neild Exp $
 
 package TLily::UI::Curses::Input;
 
@@ -339,6 +339,32 @@ sub accept_line {
     return $text;
 }
 
+# Go up one line, or back one history entry.
+sub intelligent_previous {
+    my($self) = @_;
+
+    if ($self->{point} >= $self->{cols}) {
+	$self->{point} -= $self->{cols};
+	$self->rationalize();
+	$self->{kill_reset} = 1;
+    } else {
+	$self->previous_history();
+    }
+}
+
+# Go down one line, or forward one history entry.
+sub intelligent_next {
+    my($self) = @_;
+
+    if (length($self->{text}) - $self->{point} >= $self->{cols}) {
+	$self->{point} += $self->{cols};
+	$self->rationalize();
+	$self->{kill_reset} = 1;
+    } else {
+	$self->next_history();
+    }
+}
+
 # Save the current history entry and replace it with the current text.
 # It will be restored after accept_line runs.
 sub save_history_excursion {
@@ -353,7 +379,7 @@ sub save_history_excursion {
             $self->{saved_history}->{$self->{history_pos}} =
               $self->{history}->[$self->{history_pos}];
         }
-    
+
         # Set the current history entry to the current input buffer.
         $self->{history}->[$self->{history_pos}] = $self->{text};
     }

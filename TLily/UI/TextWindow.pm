@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/TextWindow.pm,v 1.6 2003/04/15 22:22:49 tale Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/TextWindow.pm,v 1.7 2003/06/25 18:23:48 neild Exp $
 
 package TLily::UI::TextWindow::Proxy;
 
@@ -215,6 +215,8 @@ sub close_window {
    'mark-output'          => \&mark_output,
    'previous-history'     => sub { $_[0]->{input}->previous_history(); },
    'next-history'         => sub { $_[0]->{input}->next_history(); },
+   'intelligent-previous' => sub { $_[0]->{input}->intelligent_previous(); },
+   'intelligent-next'     => sub { $_[0]->{input}->intelligent_next(); },
    'insert-self'          => sub { $_[0]->{input}->addchar($_[2]) },
    'forward-char'         => sub { $_[0]->{input}->forward_char(); },
    'backward-char'        => sub { $_[0]->{input}->backward_char(); },
