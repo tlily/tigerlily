@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/server.pl,v 1.23 1999/12/11 21:40:49 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/server.pl,v 1.24 1999/12/20 17:52:30 mjr Exp $
 
 use strict;
 
@@ -7,6 +7,21 @@ use TLily::UI;
 use TLily::Server::SLCP;
 use TLily::Event;
 
+=head1 NAME
+
+server.pl - Server interface commands
+
+=head1 DESCRIPTION
+
+This extension contains commands for interfacing with servers.
+
+=head1 COMMANDS
+
+=over 10
+
+=item %connect
+
+=cut
 
 sub connect_command {
     my($ui, $arg) = @_;
@@ -80,6 +95,10 @@ Create a new connection to a server.
 ");
 
 
+=item %close
+
+=cut
+
 sub close_command {
     my($ui, $arg) = @_;
     my(@argv) = split /\s+/, $arg;
@@ -103,6 +122,10 @@ Usage: %close
 Close the connection to the current server.
 ");
 
+
+=item next-server
+
+=cut
 
 sub next_server {
     my($ui, $command, $key) = @_;
@@ -144,6 +167,10 @@ sub to_server {
 
     if (! $server) {
 	# we aren't connected to a server
+        if ($e->{text} == "" && $config{smartexit}) {
+            TLily::Event::keepalive();
+            exit;
+        }
 	return 1;
     }
 

@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/User.pm,v 1.26 1999/12/18 20:33:06 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/User.pm,v 1.27 1999/12/20 17:52:29 mjr Exp $
 
 package TLily::User;
 
@@ -102,6 +102,7 @@ Tigerlily is a client for the lily CMC, written entirely in 100% pure Perl.
 For general information on how to use tlily, try "%help concepts".
 For a list of commands, try "%help commands".
 For a list of configuration variables, try "%help variables".
+For a list of available extensions, try "%help extensions".
 If you\'re interested in tlily\'s guts, try "%help internals".
 ');
     

@@ -3,7 +3,7 @@ To Do
 
  -  when the last open server connection is closed, provide a exit/reconnect
       option. (integrate with smartexit feature)
- -  multiserver, multiui
+ -  multiserver, multiui [in progress]
  -  irc mode/ TLily::Server::SubClient
  -  thread extension?
      after [;:], if you press some key, have it insert [xxx], where xxx
@@ -11,5 +11,6 @@ To Do
  -  lilyBot support
  -  Need to add passive mode to the %ctc support.    
  -  Fix all occurances of outdated refs to einstein.org.
- -  Perhaps a method of procuring help for an extension file, regardless
-    if it's load?
+ -  Add POD docs to all extensions and modules.
+ -  Make repeated C-r's search for same pattern further back in the
+    input history.

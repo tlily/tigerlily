@@ -1,4 +1,4 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/ui.pl,v 1.18 1999/12/18 20:33:06 mjr Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/ui.pl,v 1.19 1999/12/20 17:52:30 mjr Exp $ 
 use strict;
 
 =head1 NAME
@@ -245,8 +245,9 @@ control characters will terminate search mode.
 
 sub input_search_mode {
     my($ui, $command, $key) = @_;
-    if (length($key) == 1) {
-        unless ($ui->{input}->search_history($ui->{_search_text} . $key)) {
+    $key = "" if ($key eq "C-r");
+    if (length($key) <= 1) {
+        unless ($ui->{input}->search_history(string => $ui->{_search_text} . $key)) {
             $ui->bell();
         } else {
             $ui->{_search_text} .= $key;
@@ -265,6 +266,7 @@ sub toggle_input_search_mode {
     $ui->{_search_idx} = $#{$ui->{input}->{history}};
     if ($ui->intercept_u("input-search-mode")) {
         $ui->prompt("");
+        $ui->{input}->search_history(reset => 1);
     }
     elsif ($ui->intercept_r("input-search-mode")) {
         $ui->prompt("(rev-i-search):");

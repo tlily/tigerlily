@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Curses/Attic/Input.pm,v 1.16 1999/12/16 22:41:26 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Curses/Attic/Input.pm,v 1.17 1999/12/20 17:52:29 mjr Exp $
 
 package TLily::UI::Curses::Input;
 
@@ -22,6 +22,19 @@ use TLily::UI::Curses::Generic;
 sub max($$) { ($_[0] > $_[1]) ? $_[0] : $_[1] }
 sub min($$) { ($_[0] < $_[1]) ? $_[0] : $_[1] }
 
+=head1 NAME
+
+TLily::UI::Curses::Input - Curses input window
+
+=head1 DESCRIPTION
+
+=head1 FUNCTIONS
+
+=over 10
+
+=item TLily::UI::Curses::Input->new()
+
+=cut
 
 sub new {
     my $proto = shift;
@@ -63,6 +76,11 @@ sub new {
     bless($self, $class);
 }
 
+
+
+=item password()
+
+=cut
 
 # Set password mode on/off.  The contents of the input line are not drawn
 # when in password mode.
@@ -173,7 +191,6 @@ sub drawlines {
 sub redraw {
     my($self) = @_;
 
-    #print STDERR "redraw\n";
     $self->{W}->erase();
     $self->drawlines(0, $self->{lines});
     $self->{W}->noutrefresh();
@@ -274,29 +291,64 @@ sub accept_line {
     return $text;
 }
 
+=item search_history()
+
+Executes a search through the input buffer for a given string, in a given
+direction.  The search will start at the last position it reached during
+a previous call, unless the saved position is reset.  It takes the
+following arguments:
+
+=over
+
+string - The string being searched for.
+
+dir    - What direction to search in buffer.  -1 (default) for backwards, 1 for
+forwards.
+
+reset  - Reset the saved position.
+
+=back
+
+=cut
+
 # Search through the history for a given string
 sub search_history {
     my $self = shift;
-    my $string = shift;
-    my $dir = shift || -1;
-    my $dir = ($dir >= 0)?1:-1;
+    my %args = @_;
+    my $string = $args{string};
 
+    # Reset the saved search position.
+    $self->{_search_pos} = $self->{history_pos} if (!defined($self->{_search_pos}) || $args{reset});
+
+    # If no string is passed, return.
     return unless ($string);
-    my $hist_idx = $self->{history_pos};
 
+    # Normalize the direction; default to -1.
+    my $dir = -1;
+    $dir = ($args{dir} >= 0)?1:-1 if (defined $args{dir});
+
+    my $hist_idx = $self->{_search_pos} + $dir;
+
+    # Do the actual search.
     while (($hist_idx >= 0) && ($hist_idx <= $#{$self->{history}}) ) {
         last if ($self->{history}->[$hist_idx] =~ /$string/);
         $hist_idx += $dir;
     }
     return unless (($hist_idx >= 0) && ($hist_idx <= $#{$self->{history}}));
 
+    # Save the current position in the history for the next search.
     $self->{_search_pos} = $hist_idx;
+
+    # Copy the text found to the current slot.
     $self->{text} = $self->{history}->[$hist_idx];
+    # And set the cursor to the first character of the matched string.
     $self->{point} = index($self->{text}, $string);
+
     $self->update_style();
     $self->rationalize();
     $self->redraw();
 
+    # Return the text found to the caller.
     return $self->{text};
 }
 

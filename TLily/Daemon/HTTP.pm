@@ -7,7 +7,7 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Daemon/Attic/HTTP.pm,v 1.7 1999/08/31 00:04:29 steve Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Daemon/Attic/HTTP.pm,v 1.8 1999/12/20 17:52:29 mjr Exp $
 
 package TLily::Daemon::HTTP::Connection;
 
@@ -147,6 +147,7 @@ Currently, only one instance of this class is allowed, but extensions don't
 need to care about that.
 
 =head1 FUNCTIONS
+
 =over 10
 
 =cut
