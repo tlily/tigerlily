@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/TextWindow.pm,v 1.3 2003/02/17 21:54:04 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/TextWindow.pm,v 1.4 2003/02/26 03:43:29 josh Exp $
 
 package TLily::UI::TextWindow::Proxy;
 
@@ -378,9 +378,18 @@ sub new {
 
     $self->layout();
 
-    TLily::Event::io_r(handle => \*STDIN,
-		       mode   => 'r',
-		       call   => sub { $self->run; });
+    # xxx this should be moved into foiledagain land.
+    if ($^O eq 'MSWin32') {
+        # unforunately, this doesn't actually work- i believe time_r is
+        # technically limited to integer second intervals.  But at least this
+	# way we don't chew CPU.
+        TLily::Event::time_r(call     => sub { $self->run; },
+	                     interval => 0.05);
+    } else {
+        TLily::Event::io_r(handle => \*STDIN,
+                           mode   => 'r',
+		           call   => sub { $self->run; });
+    }
 
     $self->inherit_global_bindings();
 
