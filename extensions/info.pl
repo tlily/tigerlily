@@ -1,43 +1,7 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/info.pl,v 1.18 1999/12/27 21:14:15 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/info.pl,v 1.19 2000/01/02 10:36:17 mjr Exp $
 
 use strict;
-
-sub export_handler {
-    my($event, $handler) = @_;
-
-    my $ex = shift @{$event->{server}->{_export_queue}};
-    return unless $ex;
-
-    my $ui;
-    $ui = ui_name($ex->{ui_name}) if (defined $ex->{ui_name});
-
-    if ($event->{response} eq 'OKAY') {
-	foreach my $l (@{$ex->{text}}) {
-	    $event->{server}->sendln($l);
-	}
-    } else {
-	return unless $ui;
-
-	my $deadfile = $ENV{HOME}."/.lily/tlily/dead.".$ex->{type};
-	local *DF;
-	my $rc = open(DF, ">$deadfile");
-	if (!$rc) {
-	    $ui->print("(export refused, edits lost!)\n");
-	    return;
-	}
-
-	foreach my $l (@{$ex->{text}}) {
-	    print DF $l, "\n";
-	}
-	$ui->print("(export refused, info saved to $deadfile)\n");
-    }
-
-    return;
-}
-event_r(type => 'export',
-	call => \&export_handler);
-
 
 sub info_cmd {
     my($ui, $args) = @_;
@@ -63,6 +27,19 @@ sub info_cmd {
 		       type   => "info",
 		       target => $disc,
 		       call   => $sub);
+    }
+    elsif ($cmd eq 'edit') {
+        # Attempt to recall deadfile
+        my $text = get_deadfile("help", $server, "$disc");
+        if (!defined($text)) {
+            $ui->print("(Unable to recall dead info for \"$disc\": $!)\n");
+        } else {
+	    edit_text($ui, $text) or return;
+            $server->store(ui     => $ui,
+                           type   => "info",
+                           target => $disc,
+                           text   => $text);
+        }
     }
     else {
 	$server->sendln("/info $args");
@@ -91,23 +68,11 @@ sub helper_cmd {
 		       text   => \@text);
     }
     elsif ($cmd eq 'reedit') {
-        # First generate the name of the file we think the dead help would
-        # be stored in.  Be sure to translate any '/' chars into ',' chars.
-        my $escaped_name = $server->name() . "::$target:$name";
-        $escaped_name =~ s|/|,|g;
-        my $deadfile = $ENV{HOME}."/.lily/tlily/dead.help.$escaped_name";
-
-        # Now attempt to open and snarf in the file.
-        my $text = [];
-        local *DF;
-        my $rc = open(DF, "$deadfile");
-        if (!$rc) {
-            $ui->print("(Unable to recall help from $escaped_name: $!)\n");
+        # Attempt to recall deadfile
+        my $text = get_deadfile("help", $server, "$target:$name");
+        if (!defined($text)) {
+            $ui->print("(Unable to recall dead help for \"$target:$name\": $!)\n");
         } else {
-            my $text = [];
-            @{$text} = <DF>;
-            close DF;
-
 	    edit_text($ui, $text) or return;
 	    $server->store(ui     => $ui,
 		           type   => "help",
@@ -195,6 +160,20 @@ sub memo_cmd {
 		       target => $target,
 		       name   => $name,
 		       call   => $sub);
+    }
+    elsif ($cmd eq 'reedit') {
+        # Attempt to recall deadfile
+        my $text = get_deadfile("help", $server, "$target:$name");
+        if (!defined($text)) {
+            $ui->print("(Unable to recall dead memo \"$target:$name\": $!)\n");
+        } else {
+            edit_text($ui, $text) or return;
+            $server->store(ui     => $ui,
+                           type   => "memo",
+                           target => $target,
+                           name   => $name,
+                           text   => $text);
+        }
     }
     else {
 	$server->sendln("/memo $args");

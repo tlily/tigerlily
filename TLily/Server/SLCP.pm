@@ -6,7 +6,7 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Server/Attic/SLCP.pm,v 1.34 1999/12/29 04:51:23 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Server/Attic/SLCP.pm,v 1.35 2000/01/02 10:36:17 mjr Exp $
 
 package TLily::Server::SLCP;
 
@@ -20,7 +20,7 @@ use TLily::Server;
 use TLily::Extend;
 use TLily::Config qw(%config);
 use TLily::UI;
-use TLily::Utils qw(&dead_file);
+use TLily::Utils qw(&save_deadfile &get_deadfile);
 
 @ISA = qw(TLily::Server);
 
@@ -88,6 +88,42 @@ sub init () {
                 }
                 return 0;
             });
+
+    TLily::Event::event_r(type => 'export',
+                          call => sub {
+        my($event, $handler) = @_;
+
+        my $ex = shift @{$event->{server}->{_export_queue}};
+        return 0 unless $ex;
+
+        my $ui;
+        $ui = ui_name($ex->{ui_name}) if (defined $ex->{ui_name});
+
+        if ($event->{response} eq 'OKAY') {
+            foreach my $l (@{$ex->{text}}) {
+                $event->{server}->sendln($l);
+            }
+        } else {
+            $ui->print("(Unable to set $ex->{type} \"$ex->{name}\")\n");
+            unless (save_deadfile($ex->{type}, $event->{server}, $ex->{name}, $ex->{text})) {
+	        $ui->print("(Unable to save \"$ex->{name}\"; changes lost)\n");
+            }
+        }
+
+        return 1;
+    });
+
+#    TLily::Event::event_r(type => 'import',
+#                          call => sub {
+#        my($event, $handler) = @_;
+#
+#        my $ex = shift @{$event->{server}->{_export_queue}};
+#        return 0 unless $ex;
+#
+#        my $ui;
+#        $ui = ui_name($ex->{ui_name}) if (defined $ex->{ui_name});
+#
+#    });
 }
 
 
@@ -121,6 +157,7 @@ sub new {
 	return 0 unless ($e->{server} == $self);
 
 	$self->set_client_name();
+	$self->get_user_perms();
 	TLily::Event::event_u($h->{id});
 
 	return 0;
@@ -519,6 +556,41 @@ sub get_pronoun {
     return $rec{PRONOUN} || "their";
 }
 
+=item get_user_perms()
+
+=cut
+
+sub get_user_perms {
+    my ($serv) = @_;
+
+    my $id = TLily::Event::event_r(type => 'text', order => 'before',
+                     call => sub {
+                         my($event,$handler) = @_;
+                         if ($event->{text} =~ /%user_type ([pah]+)/) {
+                             $event->{NOTIFY} = 0;
+                             $serv->state(DATA => 1,
+                                          NAME => 'perms',
+                                          VALUE => $1);
+                             TLily::Event::event_u($handler);
+                         }
+                         return 1;
+                     }
+             );
+
+    TLily::Event::event_r(type => 'options',
+            call => sub {
+                my($event,$handler) = @_;
+                if (grep(/usertype/, @{$event->{options}})) {
+                    $event->{NOTIFY} = 0;
+                    TLily::Event::event_u($handler);
+                    TLily::Event::event_u($id);
+                }
+                return 1;
+            }
+    );
+
+    $serv->sendln("\#\$\# options +usertype");
+}
 
 =item set_client_options()
 
@@ -540,6 +612,7 @@ sub set_client_name {
 
   $serv->sendln("\#\$\# client TigerLily $TLily::Version::VERSION");
 }
+
 
 =item fetch()
 
@@ -604,10 +677,16 @@ sub fetch {
         $server->cmd_process("/memo $target $name", $sub);
     } elsif ($type eq "verb") {
         $ui->print("(fetching verb $target from server $servername)\n") if ($ui);
-        $server->cmd_process("\@list $target", $sub);
+        $server->cmd_process("\@list $target:$name", $sub);
     } elsif ($type eq "help") {
         $ui->print("(fetching help $target $name from server $servername)\n") if ($ui);
         $server->cmd_process("?gethelp $target $name", $sub);
+    }
+    elsif ($type eq "config") {
+#        $server->sendln("\#\$\# import_file config $name");
+
+#        push @{$server->{_import_queue}},
+#          { uiname => $uiname, call => $call, type => $type, name => $name };
     }
 
     return;
@@ -643,7 +722,7 @@ sub store {
         $server->sendln("\#\$\# export_file info $size $t");
 
         push @{$server->{_export_queue}},
-          { uiname => $uiname, text => $text, type => $type };
+          { uiname => $uiname, text => $text, type => $type, name => $target };
     }
     elsif ($type eq "memo") {
         my $size = 0;
@@ -653,16 +732,48 @@ sub store {
         $server->sendln("\#\$\# export_file memo $size $lines $name $t");
 
         push @{$server->{_export_queue}},
-          { uiname => $uiname, text => $text, type => $type };
+          { uiname => $uiname, text => $text, type => $type, name => $target.$name };
+    }
+    elsif ($type eq "config") {
+        my $size = @$text;
+        $server->sendln("\#\$\# export_file config $size $name");
+
+        push @{$server->{_export_queue}},
+          { uiname => $uiname, text => $text, type => $type, name => $name };
     }
     elsif ($type eq "verb") {
+        # If the server detected an error, try to save the verb to a dead file.
+        # This can not be done with a cmd_process, unfortunately, because
+        # @program is a hard-coded MOO function.  There is no leaf-cmd enabled
+        # way of programming verbs at this time.  There is also some wisdom
+        # to not relying on command leafing in this instance: if leafing
+        # was broken, you wouldn't be able to program verbs!
+        TLily::Event::event_r(type => 'text', order => 'after', call => sub {
+            my($event,$handler) = @_;
+            if ($event->{text} =~ /^Verb (not )?programmed\./) {
+                TLily::Event::event_u($handler);
+
+                if ($1) {
+                    $args{ui}->print("(Unable to program \"$target:$name\")\n") if ($args{ui});
+                    unless (save_deadfile($type, $server, "$target:$name", $text)) {
+	                $args{ui}->print("(Unable to save \"$target:$name\"; changes lost)\n") if ($args{ui});
+                    }
+                }
+            }
+            return 0;
+        });
+
+	$args{ui}->print("(Programming \"$target:$name\"\n") if ($args{ui});
+        $server->sendln("\@program $target:$name");
+        foreach (@{$text}) { chomp; $server->sendln($_) }
+        $server->sendln(".");
     }
     elsif ($type eq "help") {
         my $target = defined($args{target}) ? $args{target} : "lily";
 
         if (@$text > 24) {
 	    $args{ui}->print("(Help \"$target $name\" is too long (max 24 lines), saving to deadfile)\n") if ($args{ui});
-            unless (dead_file($type, $server, "$target:$name", $text)) {
+            unless (save_deadfile($type, $server, "$target:$name", $text)) {
 	        $args{ui}->print("(Unable to save \"$target $name\"; changes lost)\n") if ($args{ui});
             }
             return;
@@ -678,15 +789,16 @@ sub store {
                 return;
             } elsif ($event->{type} eq 'endcmd' && !$success) {
 	        $args{ui}->print("(Store of help \"$target $name\" failed)\n") if ($args{ui});
+                unless (save_deadfile($type, $server, "$target:$name", $text)) {
+	            $args{ui}->print("(Unable to save \"$target $name\"; changes lost)\n") if ($args{ui});
+                }
                 return;
             } else {
-                $success++ if ($event->{text} =~ /\(help for \"$name\" in index \"$target\" has been changed\)$/);
+                $success++ if ($event->{text} =~ /\(help for \"$name\" in index \"$target\" has been (?:changed|added)\)$/);
             }
             return;
         };
         $server->cmd_process("?sethelp $target $name", $sub);
-    }
-    elsif ($type eq "config") {
     }
 
     return;

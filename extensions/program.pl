@@ -1,56 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/program.pl,v 1.15 1999/12/27 02:06:08 mjr Exp $
-
-$perms = undef;
-
-sub verb_set(%) {
-  my %args=@_;
-  my $verb_spec=$args{'verb_spec'};
-  my $edit=$args{'edit'};
-  my $ui = $args{'ui'};
-
-  my $tmpfile = "$::TL_TMPDIR/tlily.$$";
-
-  my $server = $verb_spec->[0];
-  my $verb_str = $server->name() . "::" . join(":", @{$verb_spec}[1..2]);
-
-  if ($edit) {
-    edit_text($ui, $args{'data'}) or return;
-  }
-
-  # If the server detected an error, try to save the verb to a dead file.
-  my $id = event_r(type => 'text', order => 'after',
-          call => sub {
-              my($event,$handler) = @_;
-              my $escaped_verbstr = $verb_str;
-              $escaped_verbstr =~ s|/|,|g;
-              my $deadfile = $ENV{HOME}."/.lily/tlily/dead.verb.$escaped_verbstr";
-              if ($event->{text} =~ /^Verb (not )?programmed\./) {
-                event_u($handler);
-
-                unlink($deadfile);
-                if ($1) {
-                  local *DF;
-                  my $rc = open(DF, ">$deadfile");
-                  if (!$rc) {
-                      $ui->print("(Unable to save verb: $!)\n");
-                      return 0;
-                  }
-
-                  foreach my $l (@{$args{'data'}}) {
-                      print DF $l, "\n";
-                  }
-                  $ui->print("(Saved verb to dead.verb.$escaped_verbstr)\n");
-                }
-                unlink($tmpfile);
-              }
-              return 0;
-          }
-        );
-  $server->sendln("\@program " . join(":", @{$verb_spec}[1..2]));
-  foreach (@{$args{'data'}}) { chomp; $server->sendln($_) }
-  $server->sendln(".");
-}
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/program.pl,v 1.16 2000/01/02 10:36:17 mjr Exp $
 
 sub verb_showlist {
     my ($cmd, $ui, $verb_spec) = @_;
@@ -295,7 +244,7 @@ sub prop_cmd {
                 $server->sendln("\@eval " . join(".", @{$prop_spec}[1..2])
                                 . " = $prop_val");
             } else {
-                $ui->print("Usage: %prop set object.verb moo-value\n");
+                $ui->print("Usage: %prop set object.prop moo-value\n");
             }
         } else {
             $ui->print("(unknown %prop command)\n");
@@ -360,28 +309,24 @@ sub verb_cmd {
         verb_diff($cmd, $ui, $verb_spec, $verb2_spec) if ($cmd eq 'diff');
         verb_copy($cmd, $ui, $verb_spec, $verb2_spec) if ($cmd eq 'copy');
     } elsif ($cmd eq 'reedit') {
-        # First generate the name of the file we think the dead verb would
-        # be stored in.  Besure to translate the '/' chars into ',' chars.
-        my $escaped_verbstr =
-          $server->name() . "::" . join(":", @{$verb_spec}[1..2]);
-        $escaped_verbstr =~ s|/|,|g;
-        my $deadfile = $ENV{HOME}."/.lily/tlily/dead.verb.$escaped_verbstr";
+        my $verbstr = join(":", @{$verb_spec}[1..2]);
 
-        # Now attempt to open and snarf in the file.
-        local *DF;
-        my $rc = open(DF, "$deadfile");
-        if (!$rc) {
-            $ui->print("(Unable to recall verb from $escaped_verbstr: $!)\n");
+        # Attempt to recall deadfile
+        my $text = get_deadfile("help", $server, "$verbstr");
+        if (!defined($text)) {
+            $ui->print("(Unable to recall dead verb \"$verbstr\": $!)\n");
         } else {
-            my $lines = [];
-            @{$lines} = <DF>;
-            close DF;
-
             # Got the file, fire up the editor.
-            verb_set(verb_spec => $verb_spec,
-                     data      => $lines,
-                     edit      => 1,
-                     ui        => $ui);
+            map { s|^\s*"(.*)";\s*$|/\*$1\*/|; $_; } @$text;
+            edit_text($ui, $text) or return;
+            map { s|^\s*/\*(.*)\*/\s*$|"$1";|; $_; } @$text;
+
+            # Done editing, save.
+            $server->store(ui     => $ui,
+                           type   => "verb",
+                           target => $verb_spec->[1],
+                           name   => $verb_spec->[2],
+                           text   => $text);
         }
     } elsif ($cmd eq 'edit') {
         # Set up the callback that will check for errors and fire up the
@@ -397,19 +342,21 @@ sub verb_cmd {
             } elsif ($args{text}[0] =~/^That verb has not been programmed\.$/) {
                 # Verb exists, but there's no code for it yet.
                 # We'll provide a comment saying so as the verb code.
-                @{$args{text}} = ("/* This verb $verb_str has not yet been written. */");
+                @{$args{text}} =
+                    ("/* This verb $verb_str has not yet been written. */");
             }
 
-            verb_set(verb_spec => $verb_spec,
-                     data      => $args{text},
-                     edit      => 1,
-                     ui        => $args{ui});
+            map { s|^\s*"(.*)";\s*$|/\*$1\*/|; } @{$args{'text'}};
+            edit_text($ui, $args{'text'}) or return;
+            map { s|^\s*/\*(.*)\*/\s*$|"$1";|; } @{$args{'text'}};
+            $server->store(%args);
         };
 
         # Now try to fetch the verb.
         $server->fetch(ui     => $ui,
                        type   => "verb",
-                       target => join(":", @{$verb_spec}[1..2]),
+                       target => $verb_spec->[1],
+                       name   => $verb_spec->[2],
                        call   => $sub);
 
     } else {
@@ -442,19 +389,20 @@ sub verb_copy {
             @{$args{text}} = ();
         }
 
-        verb_set(verb_spec => $verb2,
-                 data      => $args{text},
-                 edit      => 0,
-                 ui        => $ui);
+        $server2->store(%args, 
+                        target => $verb2->[1],
+                        name   => $verb2->[2]);
     };
 
     $ui->print("(Copying verb ", scalar $verb1->[0]->name, "::", $verb1->[1], ":", $verb1->[2], " to ", scalar $verb2->[0]->name, "::", $verb2->[1], ":", $verb2->[2], ")\n");
     $server1->fetch(ui     => $ui,
                     type   => "verb",
-                    target => $verb1->[1] . ':' . $verb1->[2],
+                    target => $verb1->[1],
+                    name   => $verb1->[2],
                     call   => $sub);
 
 }
+
 sub verb_diff {
     my ($cmd, $ui, $verb1, $verb2) = @_;
 
@@ -476,9 +424,8 @@ sub verb_diff {
                 return;
             } elsif ($args{text}[0] =~/^That verb has not been programmed\.$/) {
                 # Verb exists, but there's no code for it yet.
-                # We'll provide a comment saying so as the verb code.
-                @{$args{text}} =
-                  ("/* This verb $verb_spec has not yet been written. */");
+                # We'll blank out the error message.
+                @{$args{text}} = "";
             }
 
             # Put the text into a buffer.
@@ -513,52 +460,6 @@ sub verb_diff {
                     call   => $sub);
 
 }
-
-# This is a bit nasty.
-# We want to figure out whether the user loading this module has
-# programmer privs on the server.
-# We will be sending an oob command "#$# options +usertype" to get
-# the server to tell us what permissions we have.  Unfortunately,
-# if you have no special permissions, the server doesn't give you
-# an explicit NACK.  Fortunately, it _does_ send an %options line
-# immediately afterwards, so also register a handler to look for
-# that, and if we encounter that without encountering the %user_type
-# line, we know we don't have any privs, and we unload the extension.
-
-# FOO:  This is not multiserver compliant; it should check the permissions
-# on all servers.  Maybe it shouldn't unload itself anymore?
-
-$server = TLily::Server::active();
-$ui = ui_name();
-
-$id = event_r(type => 'text', order => 'before',
-              call => sub {
-                  my($event,$handler) = @_;
-                  if ($event->{text} =~ /%user_type ([pah]+)/) {
-                    $event->{NOTIFY} = 0;
-                    $perms = $1;
-                    event_u($handler);
-                  }
-                  return 1;
-              }
-      );
-
-event_r(type => 'options',
-        call => sub {
-            my($event,$handler) = @_;
-            event_u($handler);
-            event_u($id);
-            if (grep(/usertype/, @{$event->{options}})) {
-              if (!defined($perms) || $perms !~ /p/) {
-                $ui->print("You do not have programmer permissions on this server.\n");
-                TLily::Extend::unload("program",$ui,0);
-              }
-            }
-            return 1;
-        }
-);
-
-$server->sendln("\#\$\# options +usertype");
 
 command_r('verb', \&verb_cmd);
 command_r('prop', \&prop_cmd);

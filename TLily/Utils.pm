@@ -7,7 +7,7 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Utils.pm,v 1.7 1999/12/27 21:11:19 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Utils.pm,v 1.8 2000/01/02 10:36:17 mjr Exp $
 package TLily::Utils;
 
 use strict;
@@ -17,7 +17,7 @@ use TLily::Config;
 use vars qw(@ISA @EXPORT_OK);
 @ISA = qw(Exporter);
 
-@EXPORT_OK = qw(&max &min &edit_text &diff_text &columnize_list &dead_file);
+@EXPORT_OK = qw(&max &min &edit_text &diff_text &columnize_list &save_deadfile &get_deadfile);
 
 # These are handy in a couple of places.
 sub max($$) { ($_[0] > $_[1]) ? $_[0] : $_[1] }
@@ -145,19 +145,16 @@ sub diff_text {
 
 }
 
-sub dead_file {
+sub save_deadfile {
     my($type, $server, $name, $text) = @_;
 
     my $escaped_name = $server->name() . "::$name";
     $escaped_name =~ s|/|,|g;
-    my $deadfile = $ENV{HOME}."/.lily/tlily/dead.$type.$escaped_name
-";
+    my $deadfile = $ENV{HOME}."/.lily/tlily/dead.$type.$escaped_name";
     unlink($deadfile);
+
     local *DF;
-    my $rc = open(DF, ">$deadfile");
-    if (!$rc) {
-        return 0;
-    }
+    open(DF, ">$deadfile") || return undef;
 
     foreach my $l (@{$text}) {
         print DF $l, "\n";
@@ -166,4 +163,23 @@ sub dead_file {
 
     return 1;
 }
+
+sub get_deadfile {
+    my($type, $server, $name) = @_;
+
+    my $escaped_name = $server->name() . "::$name";
+    $escaped_name =~ s|/|,|g;
+    my $deadfile = $ENV{HOME}."/.lily/tlily/dead.$type.$escaped_name";
+
+    local *DF;
+    open(DF, "$deadfile") || return undef;
+
+    my $text;
+    @{$text} = <DF>;
+    close DF;
+    unlink($deadfile);
+
+    return $text;
+}
+
 1;

@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_parse.pl,v 1.18 1999/12/29 04:51:23 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_parse.pl,v 1.19 2000/01/02 10:36:17 mjr Exp $
 
 use strict;
 use vars qw(%config);
@@ -336,37 +336,51 @@ sub parse_line {
     # %export_file
     if ($line =~ /^%export_file (\w+)/) {
 	%event = (type => 'export',
-		  response => $1);
+		  response => $1,
+                  NOTIFY => 1,
+                  text => $line);
+	goto found;
+    }
+    
+    # %import_file
+    if ($line =~ /^%import_file/) {
+	%event = (type => 'import',
+		  response => $1,
+                  NOTIFY => 1,
+                  text => $line);
 	goto found;
     }
     
     # The options notification.
-    if (! $serv->{SEEN_OPTIONS} and $line =~ /%options\s+(.*?)\s*$/) {
-        $serv->{SEEN_OPTIONS}=1;       
+    if ($line =~ /%options\s+(.*?)\s*$/) {
     
 	my @o = split /\s+/, $1;
 	%event = (type    => 'options',
-		  options => \@o);
+		  options => \@o,
+                  text => $line);
 	
-	# flush out any pending send data at this point.  We queue the initial
-	# sends from the user for a bit so that the options negotiation can
-	# happen properly.       
-        foreach (@{$serv->{send_buffer}}) {
-            $serv->sendln($_);
+        if (! $serv->{SEEN_OPTIONS}) {
+            $serv->{SEEN_OPTIONS}=1;       
+            # flush out any pending send data at this point.  We queue the
+            # initial sends from the user for a bit so that the options
+            # negotiation can happen properly.       
+            foreach (@{$serv->{send_buffer}}) {
+                $serv->sendln($_);
+            }
+            undef $serv->{send_buffer};
+    
+            goto found if $serv->{SLCP_OK};
+
+            if (! ($line =~ /\+leaf-notify/ &&
+                   $line =~ /\+leaf-cmd/ &&
+                   $line =~ /\+connected/) ) {
+                warn $SLCP_WARNING . "[Error Code -1]\n";
+            } else {
+                $serv->{SLCP_OK} = 1;
+            }
         }
-	undef $serv->{send_buffer};
-		
-	goto found if $serv->{SLCP_OK};
-	
-	if (! ($line =~ /\+leaf-notify/ &&
-	       $line =~ /\+leaf-cmd/ &&
-	       $line =~ /\+connected/) ) {
-	    warn $SLCP_WARNING . "[Error Code -1]\n";
-	} else {
-	    $serv->{SLCP_OK} = 1;
-	}
-	
-	goto found;
+
+        goto found;
     }
     
     # check for old cores

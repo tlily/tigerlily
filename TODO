@@ -12,5 +12,3 @@ To Do
  -  Need to add passive mode to the %ctc support.    
  -  Fix all occurances of outdated refs to einstein.org.
  -  Add POD docs to all extensions and modules.
- -  Make repeated C-r's search for same pattern further back in the
-    input history.

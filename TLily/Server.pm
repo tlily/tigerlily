@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Server.pm,v 1.24 1999/12/14 05:30:34 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Server.pm,v 1.25 2000/01/02 10:36:17 mjr Exp $
 
 package TLily::Server;
 
@@ -78,7 +78,7 @@ sub new {
 
     if (!defined($name)) {
         $name = "$args{host}";
-        $name =~ s/^([^\.]+).*$/\1/;
+        $name =~ s/^([^\.]+).*$/$1/;
     }
     if ($server{$name}) {
 	my $i = 2;
