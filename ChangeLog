@@ -1,4 +1,6 @@
 Version 2.3-post
+  * [extensions/gag.pl] Add '%gag topic <foo>', which will gag based on the
+    content of sends instead of the sender.
   * [TLily/UI/Curses.pm,TLily/UI/Curses/StatusLine.pm,TLily/UI/Curses/Text.pm,
      extensions/ui.pl] Allow the text window to be split into multiple
      subwindows. [BEW]

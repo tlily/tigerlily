@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/gag.pl,v 1.8 2001/01/04 20:46:26 coke Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/gag.pl,v 1.9 2002/07/24 17:57:39 kazrak Exp $ 
 
 use strict;
 
@@ -23,6 +23,7 @@ from a given user with onomatopoeic mrffls.
 =cut
 
 my %gagged;
+my %gagtopics;
 
 # Original by Nathan Torkington, massaged by Jeffrey Friedl
 # Taken from perl FAQ by Brad Jones (brad@kazrak.com)
@@ -75,12 +76,31 @@ sub gag_command_handler {
 		       join(', ', sort values(%gagged)),
 		       ")\n" );
 	}
+	if (scalar(keys(%gagtopics)) == 0) {
+	    $ui->print("(no topics are being gagged)\n");
+	} else {
+            $ui->print("(gagged topics: ",
+                       join(', ', sort values(%gagtopics)), ")\n" );
+        }
 	return;
     }
 
-    if (@args != 1) {
-	$ui->print("(%gag name; type %help for help)\n");
+    if (@args > 2 and @args[0] ne 'topic') {
+	$ui->print("(%gag <name> or %gag topic <topic>; type %help for help)\n");
 	return;
+    }
+
+    # Gag topics.
+    if (@args == 2) {
+        my $topic = $args[1];
+        if (defined($gagtopics{$topic})) {
+	    delete $gagtopics{$topic};
+	    $ui->print("(Topic $topic is no longer gagged.)\n");
+        } else {
+	    $gagtopics{$topic} = $topic;
+	    $ui->print("(Topic $topic is now gagged.)\n");
+        }
+        return;
     }
 
     my $tmp = $config{expand_group};
@@ -117,7 +137,12 @@ sub gag_command_handler {
 
 sub gagger {
     my($event, $handler) = @_;
-    return unless (defined $gagged{$event->{SHANDLE}});
+    my $gagthis = 0;
+    for my $key (keys %gagtopics) {
+        $gagthis = 1 if ($event->{VALUE} =~ /\b$key\b/i);
+    }
+    $gagthis = 1 if defined $gagged{$event->{SHANDLE}};
+    return unless ($gagthis);
     $event->{VALUE} =~ s/\b(\w)\b/preserve_case($1, "m")/ge;
     $event->{VALUE} =~ s/\b(\w\w)\b/preserve_case($1, "mm")/ge;
     $event->{VALUE} =~ s/\b(\w\w\w)\b/preserve_case($1, "mrm")/ge;
