@@ -6,7 +6,7 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/README,v 1.13 2001/01/26 03:01:44 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/README,v 1.14 2001/03/07 15:47:34 coke Exp $
 
      ("`-/")_.-'"``-._ 
       . . `; -._    )-;-,_`)          TigerLily 2.x
@@ -109,7 +109,21 @@ TigerLily now has 4 levels of customization:
              Many(not all) configuration options can be overridden at the
              command line.
 
-Here is a summary of the common configuration file (CF) options:
+The format for these .cf files is
+
+[$@%]<config_var> = <value> ;
+
+So, to set your browser to lynx, you'd add the following lines to 
+~/.lily/tlily/tlily.cf:
+
+$browser=lynx;
+$browser_textmode=1;
+
+Note that in an interactive session, this would be accomplished with:
+
+%set browser lynx
+
+Here is a summary of some common configuration file (CF) options:
 
 @load
 	Setting this variable in a CF will change the list of
