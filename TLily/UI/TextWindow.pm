@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/TextWindow.pm,v 1.2 2003/02/14 02:11:43 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/TextWindow.pm,v 1.3 2003/02/17 21:54:04 josh Exp $
 
 package TLily::UI::TextWindow::Proxy;
 
@@ -802,7 +802,7 @@ sub istyle_fn_u {
 sub bell {
     my($self) = @_;
 
-    TLily::FoiledAgain::beep();
+    TLily::FoiledAgain::bell();
 }
 
 sub dump_to_file {
