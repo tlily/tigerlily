@@ -1,4 +1,4 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/expand.pl,v 1.11 1999/03/02 21:28:43 steve Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/expand.pl,v 1.12 1999/03/15 22:59:39 steve Exp $ 
 
 use strict;
 
@@ -144,6 +144,18 @@ sub user_send_handler {
 event_r(type => 'user_send',
 		      call => \&user_send_handler);
 
+sub rename_handler {
+	my ($event, $handler) = @_;
+
+	foreach my $k (keys %expansions) {
+		$expansions{$k} =~ s/$event->{SOURCE}/$event->{VALUE}/;
+	}
+	return;
+}
+
+event_r(type => 'rename',
+		call => \&rename_handler);
+
 sub oops_cmd {
 	my ($ui, $args) = @_;
 	my $serv = TLily::Server::name();
@@ -152,7 +164,7 @@ sub oops_cmd {
 	foreach (@dests) {
 		my $full = TLily::Server::SLCP::expand_name($_);
 		next unless $full;
-		$full =~ s/ /_/;
+		$full =~ tr/ /_/;
 		$_ = $full;
 	}
 	
@@ -189,7 +201,7 @@ sub also_cmd {
 	my (@dests) = split (/,/, $args);
 	foreach (@dests) {
 		my $full = TLily::Server::SLCP::expand_name($_);
-		$full =~ s/ /_/;
+		$full =~ tr/ /_/;
 		$_ = $full;
 	}
 	$expansions{recips} = join (",", $expansions{recips}, @dests);
