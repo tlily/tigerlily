@@ -1,4 +1,8 @@
 Version 2.1.1-post
+  * [TLily/Event.pm] Reordered the dispatching of events so that timed
+    handlers are processed before named hanflers.  This fixes the problem
+    of named events sent by timed handlers having to wait for the select
+    loop to timeout. [CWS]
   * [TLily/Extend.pm] In load(), when testing to see if the argument
     is an existing file, insist that a "/" be present in the name, to
     prevent from accidentally loading a file from the directory that

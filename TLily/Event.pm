@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Event.pm,v 1.29 2000/02/07 05:28:03 tale Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Event.pm,v 1.30 2000/02/11 20:45:14 albert Exp $
 
 package TLily::Event::Core;
 
@@ -490,25 +490,6 @@ sub invoke {
 #use Data::Dumper;
 sub loop_once {
     print STDERR ": TLily::Event::loop_once\n" if $config{ui_debug};
-    # Named events.
-  EVENT:
-    while (my $e = shift @queue) {
-	foreach my $h (@e_name) {
-	    next if $e_name_remove{$h->{id}};
-	    if ($e->{type} eq $h->{type} or $h->{type} eq 'all') {
-		my $rc = invoke($h, $e, $h);
-		if (defined($rc) && ($rc != 0) && ($rc != 1)) {
-		    warn "Event handler returned $rc.";
-#                    warn Dumper($h);
-		}
-		next EVENT if ($rc);
-	    }
-	}
-    }
-    if(%e_name_remove) {
-	@e_name = grep { !$e_name_remove{$_->{id}} } @e_name;
-	%e_name_remove = ();
-    }
     
     # Timed events.
     # This is a tad ugly -- rewrite if you're feeling bored. -DN
@@ -536,6 +517,26 @@ sub loop_once {
 	@e_time = sort { $a->{'time'} <=> $b->{'time'} } @e_time;
     }
     
+    # Named events.
+  EVENT:
+    while (my $e = shift @queue) {
+	foreach my $h (@e_name) {
+	    next if $e_name_remove{$h->{id}};
+	    if ($e->{type} eq $h->{type} or $h->{type} eq 'all') {
+		my $rc = invoke($h, $e, $h);
+		if (defined($rc) && ($rc != 0) && ($rc != 1)) {
+		    warn "Event handler returned $rc.";
+#                    warn Dumper($h);
+		}
+		next EVENT if ($rc);
+	    }
+	}
+    }
+    if(%e_name_remove) {
+	@e_name = grep { !$e_name_remove{$_->{id}} } @e_name;
+	%e_name_remove = ();
+    }
+
     my $timeout;
     if (@e_idle) {
 	$timeout = 0;
