@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Server.pm,v 1.31 2001/11/14 02:58:51 tale Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Server.pm,v 1.32 2002/03/12 08:49:24 neild Exp $
 
 package TLily::Server;
 
@@ -152,6 +152,12 @@ sub add_server {
     push @server, $self;
 }
 
+sub remove_server {
+    my($self) = @_;
+    foreach (@{$self->{names}}) { delete $server{$_} };
+    return;
+}
+
 
 # internal utility function
 sub contact {
@@ -161,8 +167,7 @@ sub contact {
     local *SOCK;
 
     $port = getservbyname($port, 'tcp') if ($port =~ /\D/);
-    croak "No port" unless $port;
-
+    croak "No port" unless $port; 
     $iaddr = inet_aton($serv);
     die "No such host or address\n" unless defined($iaddr);
 
