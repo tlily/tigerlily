@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/blurb.pl,v 1.5 2000/11/22 16:35:56 coke Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/blurb.pl,v 1.6 2000/11/22 16:42:57 coke Exp $
 
 use strict;
 
@@ -62,6 +62,13 @@ sub blurb_cmd {
 	my $modified = 0;
 	my @words;
 	my $failed=1;
+
+	if ($blurb eq "off") {
+		TLily::Server->active()->cmd_process("/blurb off", sub {
+			# I don't see how to get the output of the cmd back...
+		});
+		return;
+	}
 
 	## strip off exterior braces/quotes.
 
