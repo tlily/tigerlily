@@ -1,4 +1,5 @@
 Version 2.3
+  * [TLily/Server.pm] Fixed error reporting on failed server connect.  [DPN]
   * [extension/after.pl] PR # 844 [WJC]
   * [extensions/set.pl] Added config var help [WJC]
   * [extensions/expand.pl] Fixed up tab-expansion to work with
