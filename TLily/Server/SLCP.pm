@@ -6,7 +6,7 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Server/Attic/SLCP.pm,v 1.43 2001/11/12 04:39:37 tale Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Server/Attic/SLCP.pm,v 1.44 2002/08/15 17:48:11 neild Exp $
 
 package TLily::Server::SLCP;
 
@@ -304,7 +304,7 @@ sub expand_name {
     }
 
     # Check for a group match.
-    if ($self->{NAME}->{$name}->{MEMBERS}) {
+    if (!$disc && $self->{NAME}->{$name}->{MEMBERS}) {
     	if ($config{expand_group}) {
 	    return join ',', map { $self->get_name(HANDLE => $_) }
  	                         split /,/,$self->{NAME}->{$name}->{MEMBERS};
