@@ -1,10 +1,10 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/Attic/tlily.global,v 1.4 1999/02/27 00:58:53 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/Attic/tlily.global,v 1.5 1999/02/27 21:01:26 josh Exp $
 # Global defaults for tlily
 # PLEASE DO NOT EDIT EXCEPT FOR DEVELOPMENT!
 # EDIT YOUR SITE CONFIG FILE INSTEAD!
 # Begin defaults
-@load = qw(server output expand status state
+@load = qw(server output expand status state ui
 	   after misc info paste);
 #	   after autologin autoreply gag help irc log look misc pager
 #	   pipes run_command set startup terminal url view vinfo zone);
