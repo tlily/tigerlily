@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/Tk.pm,v 1.13 2002/08/27 01:28:48 coke Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/Tk.pm,v 1.14 2003/06/23 23:05:41 albert Exp $
 
 package TLily::UI::Tk;
 
@@ -41,7 +41,7 @@ my %commandmap =
    'beginning-of-line'    => ['SetCursor', '1.0'],
    'end-of-line'          => ['SetCursor', 'end-1char'],
    'delete-char'          => ['Delete'],
-   'backward-delete-char' => ['Backspace'],
+   'backward-delete-char' => ['deleteBefore'],
    'transpose-chars'      => ['Transpose'],
 
    # replacing the default behavior with sub{1} caused the default
@@ -77,7 +77,7 @@ my %bindmap =
    'Down'	       => 'next-history',
    'Delete'	       => 'delete-char',
    'Return'	       => 'accept-line',
-   'Backspace'	       => 'backward-delete-char',
+   'BackSpace'	       => 'backward-delete-char',
    'Prior'	       => 'page-up',
    'Next'	       => 'page-down',
    'Control-a'	       => 'beginning-of-line',
@@ -112,7 +112,7 @@ my %remap =
    nl	     => "Return",
    pageup    => "Prior",
    pagedown  => "Next",
-   bs	     => "Backspace",
+   bs	     => "BackSpace",
    del	     => "Delete",
    up	     => "Up",
    down	     => "Down",
