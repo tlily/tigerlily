@@ -68,6 +68,7 @@ sub timestamp {
             $ampm = 'p';
             $hour -= 12 if $hour > 12;
         } else {
+	    $hour = 12 if $hour == 0;
             $ampm = 'a';
         }
     }
