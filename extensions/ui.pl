@@ -1,4 +1,4 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/ui.pl,v 1.16 1999/12/15 12:12:07 mjr Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/ui.pl,v 1.17 1999/12/16 22:41:26 mjr Exp $ 
 use strict;
 
 
@@ -195,9 +195,12 @@ help_r("icontext" => $icontext_help);
 sub input_search_mode {
     my($ui, $command, $key) = @_;
     if (length($key) == 1) {
-        $ui->{_search_text} .= $key;
-        $ui->{input}->search_history($ui->{_search_text});
-        $ui->prompt("(rev-i-search)'$ui->{_search_text}':");
+        unless ($ui->{input}->search_history($ui->{_search_text} . $key)) {
+            $ui->bell();
+        } else {
+            $ui->{_search_text} .= $key;
+            $ui->prompt("(rev-i-search)'$ui->{_search_text}':");
+        }
         return 1;
     } else {
         $ui->command("toggle-input-search-mode");

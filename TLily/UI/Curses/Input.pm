@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Curses/Attic/Input.pm,v 1.15 1999/12/15 12:12:07 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Curses/Attic/Input.pm,v 1.16 1999/12/16 22:41:26 mjr Exp $
 
 package TLily::UI::Curses::Input;
 
@@ -290,12 +290,14 @@ sub search_history {
     }
     return unless (($hist_idx >= 0) && ($hist_idx <= $#{$self->{history}}));
 
-    $self->{history_pos} = $hist_idx;
+    $self->{_search_pos} = $hist_idx;
     $self->{text} = $self->{history}->[$hist_idx];
     $self->{point} = index($self->{text}, $string);
     $self->update_style();
     $self->rationalize();
     $self->redraw();
+
+    return $self->{text};
 }
 
 # Move back one entry in the history.

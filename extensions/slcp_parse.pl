@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_parse.pl,v 1.15 1999/12/06 08:00:48 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_parse.pl,v 1.16 1999/12/16 22:41:26 mjr Exp $
 
 use strict;
 use vars qw(%config);
@@ -395,6 +395,7 @@ sub parse_line {
 sub load {
     event_r(type => 'slcp_data',
 			  call => \&parse_raw);
+
 }
 
 sub SLCP_parse {
@@ -425,5 +426,12 @@ sub SLCP_parse {
     
     return %ret;
 }
+
+shelp_r('parser_debug' => 'Debug the SLCP parser', 'variables');
+help_r('parser_debug' => '
+Setting this to true causes the SLCP parser to output the raw protocol
+from the lily server.  Setting to 0 turns this off.
+');
+
 
 1;

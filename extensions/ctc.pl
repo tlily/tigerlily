@@ -1,7 +1,10 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/ctc.pl,v 1.10 1999/10/03 18:25:46 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/ctc.pl,v 1.11 1999/12/16 22:41:26 mjr Exp $
 
-use Net::Domain qw(hostfqdn);
+eval 'use Net::Domain qw(hostfqdn);';
+if ($@) {
+  die "ctc.pl requires Net::Domain to be installed.\n";
+}
 use Socket qw(inet_ntoa inet_aton);
 use TLily::Daemon::HTTP;
 use TLily::Server::HTTP;

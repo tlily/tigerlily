@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/User.pm,v 1.24 1999/10/23 06:15:58 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/User.pm,v 1.25 1999/12/16 22:41:26 mjr Exp $
 
 package TLily::User;
 
@@ -167,12 +167,14 @@ sub command_u {
 
 =item shelp_r
 
-Sets the short help for a command.  This is what is displayed by the
-command name in the "/help commands" listing.  Short help is tracked
-via TLily::Registrar.
+Registers a short help page for a topic.  This will be displayed when
+the user requests a help index listing, such as "%help commands".  It
+takes a topic, the short description, and an optional index specification.
+If the index is not specified, "commands" is assumed.
+Short help pages are tracked via TLily::Registrar.
 
     TLily::User::shelp_r("help" => "Display help pages.");
-    TLily::User::shelp_r("help" => "Display help pages.", "internals");
+    TLily::User::shelp_r("paste" => "Pasting multi-line text.", "concepts");
 
 =cut
 
@@ -189,7 +191,7 @@ sub shelp_r {
 
 =item shelp_u
 
-Clears the short help for a command.
+De-registers a short help page.
 
     TLily::User::shelp_u("help");
 
