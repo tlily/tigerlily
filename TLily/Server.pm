@@ -3,7 +3,8 @@ package TLily::Server;
 use strict;
 
 use Carp;
-use IO::Socket;
+#use IO::Socket;
+use Socket;
 use Fcntl;
 
 use TLily::Event;
@@ -44,6 +45,23 @@ events generated for server data -- the event type will be "protocol_data".
 
 =cut
 
+sub contact {
+    my($serv, $port) = @_;
+
+    my($iaddr, $paddr, $proto);
+    local *SOCK;
+
+    $port = getservbyname($port, 'tcp') if ($port =~ /\D/);
+    croak "No port" unless $port;
+
+    $iaddr = inet_aton($serv);
+    $paddr = sockaddr_in($port, $iaddr);
+    $proto = getprotobyname('tcp');
+    socket(SOCK, PF_INET, SOCK_STREAM, $proto) or return;
+    connect(SOCK, $paddr) or return;
+    return *SOCK;
+}
+
 sub new {
     my($proto, %args) = @_;
     my $class = ref($proto) || $proto;
@@ -75,9 +93,10 @@ sub new {
 
     $ui->print("Connecting to $self->{host}, port $self->{port}...");
 
-    $self->{sock} = IO::Socket::INET->new(PeerAddr => $self->{host},
-					  PeerPort => $self->{port},
-					  Proto    => 'tcp');
+#    $self->{sock} = IO::Socket::INET->new(PeerAddr => $self->{host},
+#					  PeerPort => $self->{port},
+#					  Proto    => 'tcp');
+    $self->{sock} = contact($self->{host}, $self->{port});
     if (!defined $self->{sock}) {
 	$ui->print("failed: $!\n");
 	return;
