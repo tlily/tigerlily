@@ -1,8 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/program.pl,v 1.1 1999/09/19 06:17:28 mjr Exp $
-
-use File::Copy 'cp';
-use Data::Dumper;
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/program.pl,v 1.2 1999/09/19 06:21:37 mjr Exp $
 
 $perms = undef;
 
