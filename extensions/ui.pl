@@ -1,4 +1,4 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/ui.pl,v 1.1 1999/02/27 09:29:13 neild Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/ui.pl,v 1.2 1999/02/27 21:05:21 neild Exp $ 
 use strict;
 
 my $style_help = "
@@ -12,7 +12,7 @@ Valid attribute values are:
   normal, standout, underline, reverse, blink, dim, bold, altcharset
 
 Valid color values are:
-  black, red, yellow, blue, magenta, white
+  black, red, green, yellow, blue, magenta, cyan, white
 
 The actual rendering of these attributes and colors is very much up to the
 specific UI in use.
