@@ -7,7 +7,7 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Daemon/Attic/Connection.pm,v 1.4 1999/04/11 02:35:30 steve Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Daemon/Attic/Connection.pm,v 1.5 1999/06/17 01:26:49 josh Exp $
 
 package TLily::Daemon::Connection;
 
@@ -42,7 +42,7 @@ sub receive {
     
     my $rc = sysread($self->{sock}, $buf, 4096);
     if ($rc < 0) {
-	return if $errno == EAGAIN();
+	return if $errno == $::EAGAIN;
     }
     
     if ($rc <= 0) {

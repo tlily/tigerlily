@@ -7,7 +7,7 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/tlily.PL,v 1.37 1999/04/11 22:16:35 albert Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/tlily.PL,v 1.38 1999/06/17 01:26:41 josh Exp $
 
 use strict;
 use Config;
@@ -38,6 +38,24 @@ if(length $PERL > 32) {
 	" tlily may not work right.\n";
 }
 
+# calculate a fallback value for EAGAIN in case errno.ph does not work.
+local(*F);
+open(F,">/tmp/en.c") || die "Can't write to /tmp/en.c: $!\n";
+print F <<EOF;
+#include <stdio.h>
+#include <sys/errno.h>
+
+int main (int argc, char* argv[]) {
+   printf("EAGAIN=%d\n",EAGAIN);
+   return(0);
+}
+EOF
+close(F);
+system("$Config{cc} /tmp/en.c -o /tmp/en");
+`/tmp/en` =~ /EAGAIN=(\d+)/;
+my $fallback_EAGAIN = $1 || "undef";
+unlink("/tmp/en.c","/tmp/en");
+
 my $PREFIX = '.';
     my $LIBDIR    = $ENV{TL_LIBDIR} || '.';
     my $LIBMODDIR = $ENV{TL_LIBDIR} || '.';
@@ -57,6 +75,7 @@ my $PREFIX = '.';
 	s|\@\@LIBMODDIR\@\@|$LIBMODDIR|;
 	s|\@\@LIBEXTDIR\@\@|$LIBEXTDIR|;
 	s|\@\@ETCDIR\@\@|$ETCDIR|;
+	s|\@\@EAGAIN\@\@|$fallback_EAGAIN|;	
 	print OFH $_;
     }
     close(OFH);
@@ -75,12 +94,15 @@ __END__
 
 require 5.00307;
 
-$TL_ETCDIR="@@ETCDIR@@";
-$TL_LIBDIR="@@LIBDIR@@";
-$TL_EXTDIR="@@LIBEXTDIR@@";
+$TL_ETCDIR = "@@ETCDIR@@";
+$TL_LIBDIR = "@@LIBDIR@@";
+$TL_EXTDIR = "@@LIBEXTDIR@@";
+
+$fallback_EAGAIN = @@EAGAIN@@;
 
 use strict;
 use lib qw(@@LIBMODDIR@@);
+use vars qw($EAGAIN);
 
 use TLily::Event;
 use TLily::Config;
@@ -100,6 +122,17 @@ if ( -f 'tlily.PL' ) {
 	exit;
     }
 }
+
+eval { require "errno.ph"; EAGAIN(); };
+if ($@) { 
+    print "WARNING: Unable to load errno.ph successfully.\n";
+    $EAGAIN = $::fallback_EAGAIN;
+    die "No fallback value for EAGAIN defined!  Unable to continue.\n" 
+       unless $EAGAIN;       
+    print "         Using EAGAIN=$EAGAIN\n";
+} else {
+    $EAGAIN = EAGAIN()
+};
 
 TLily::Config::init();
 TLily::Event::init();
@@ -284,8 +317,6 @@ sub show_banner() {
                 bwhite => qq[------------------------------------------------------------------------------\n]);
     $ui->style("default");
 }
-
-=pod
 
 =head1 NAME
 

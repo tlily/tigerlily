@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Server.pm,v 1.18 1999/05/08 17:23:50 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Server.pm,v 1.19 1999/06/17 01:26:45 josh Exp $
 
 package TLily::Server;
 
@@ -16,8 +16,6 @@ use strict;
 use Carp;
 use Socket;
 use Fcntl;
-
-require "errno.ph";
 
 use TLily::Event;
 
@@ -243,7 +241,7 @@ sub send {
 	my $bytes = syswrite($self->{sock}, $s, length($s), $written);
 	if (!defined $bytes) {
 	    # The following is broken, and must be fixed.
-	    #next if ($errno == EAGAIN);
+	    #next if ($errno == $::EAGAIN);
 	    die "syswrite: $!\n";
 		}
 	$written += $bytes;
@@ -308,7 +306,7 @@ sub reader {
     my $rc = sysread($self->{sock}, $buf, 1024);
 
     # Interrupted by a signal.
-    return if (!defined($rc) && $! == &EAGAIN);
+    return if (!defined($rc) && $! == $::EAGAIN);
 
     # End of line.
     if (!defined($rc) || $rc == 0) {
