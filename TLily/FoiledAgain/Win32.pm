@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/FoiledAgain/Attic/Win32.pm,v 1.4 2003/02/14 00:30:07 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/FoiledAgain/Attic/Win32.pm,v 1.5 2003/02/14 01:28:37 josh Exp $
 
 package TLily::FoiledAgain::Win32;
 
@@ -364,14 +364,12 @@ sub reset_styles {
 
 sub defstyle {
     my($style, @attrs) = @_;
-    DEBUG(@_);
 
 }
 
 
 sub defcstyle {
     my($style, $fg, $bg, @attrs) = @_;
-    DEBUG(@_);
 
 }
 

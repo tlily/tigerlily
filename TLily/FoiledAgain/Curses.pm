@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/FoiledAgain/Attic/Curses.pm,v 1.2 2003/02/14 01:15:13 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/FoiledAgain/Attic/Curses.pm,v 1.3 2003/02/14 01:28:37 josh Exp $
 
 package TLily::FoiledAgain::Curses;
 
@@ -266,7 +266,7 @@ sub clear_background {
     my ($self, $style) = @_;    
 
     $self->{W}->bkgdset
-        (ord(' ') | $self->get_style_attr($self->{bg}));
+        (ord(' ') | $self->get_style_attr($style));
 }
 
 sub set_style {
