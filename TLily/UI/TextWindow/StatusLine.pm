@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/TextWindow/Attic/StatusLine.pm,v 1.1 2003/02/13 15:11:10 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/TextWindow/Attic/StatusLine.pm,v 1.2 2003/02/14 03:56:25 josh Exp $
 
 package TLily::UI::TextWindow::StatusLine;
 
@@ -115,6 +115,7 @@ sub redraw {
 
     $self->build_string();
     $self->{F}->clear_line(0);
+    $self->{F}->set_style('status_window');
     $self->{F}->addstr_at_point($self->{str});
     $self->{F}->commit();
 }
