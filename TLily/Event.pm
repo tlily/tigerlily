@@ -68,7 +68,7 @@ my @e_time;
 my @e_io;
 
 # ID counter.
-my $next_id;
+my $next_id = 1;
 
 # Replacable event core.
 my $core;
