@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/Curses.pm,v 1.57 2002/06/07 07:03:47 bwelling Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/Curses.pm,v 1.58 2002/06/07 17:58:15 bwelling Exp $
 
 package TLily::UI::Curses::Proxy;
 
@@ -73,7 +73,7 @@ AUTOLOAD {
 package TLily::UI::Curses;
 
 use strict;
-use vars qw(@ISA %commandmap %bindmap);
+use vars qw(@ISA %commandmap %bindmap $sigwinch);
 my  ($STTY_LNEXT);
 
 use Carp;
@@ -94,7 +94,6 @@ use TLily::Config qw(%config);
 #
 
 my $termsize_installed;
-our $sigwinch;
 BEGIN {
     eval { require Term::Size; import Term::Size; };
     if ($@) {
