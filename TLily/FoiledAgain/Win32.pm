@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/FoiledAgain/Attic/Win32.pm,v 1.1 2003/02/13 15:11:09 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/FoiledAgain/Attic/Win32.pm,v 1.2 2003/02/13 23:31:47 josh Exp $
 
 package TLily::FoiledAgain::Win32;
 
@@ -52,7 +52,7 @@ my @windows;
 sub start {
     $SCREEN = new Win32::Console();    
     $SCREEN->Alloc();
-    $SCREEN->Title("TigerLily $TLily::Version::VERSION\n");
+    $SCREEN->Title("TigerLily $TLily::Version::VERSION");
     $SCREEN->Display();
 
     $INPUT = new Win32::Console(STD_INPUT_HANDLE);
@@ -93,7 +93,7 @@ sub update_screen {
     my ($col, $line) =  $windows[-1]->{buffer}->Cursor();
     $col  += $windows[-1]->{begin_x};
     $line += $windows[-1]->{begin_y};
-    $SCREEN->Cursor($col, $line);
+    $SCREEN->Cursor($col, $line, 0, 0);
 }
 
 
@@ -129,7 +129,7 @@ sub position_cursor {
     my ($self, $line, $col) = @_;
     DEBUG(@_);
 
-    $self->{buffer}->Cursor($col,$line);
+    $self->{buffer}->Cursor($col,$line, 100, 1);
 }
 
 
@@ -151,11 +151,10 @@ my %keycodemap = (
 
 sub read_char {
     my($self) = @_;
-    DEBUG(@_);
+#   DEBUG(@_);
 
     # don't try to read an event unless there's one pending.
     unless ($INPUT->GetEvents()) {
-        uidebug("no pending events");
         return undef;
     }
 
@@ -172,7 +171,7 @@ sub read_char {
 
     # handle control keys
     if ($char <= 31) {
-        $key = "C-" . chr($char + 64);
+        $key = "C-" . lc(chr($char + 64));
     }
 
     if (exists($keycodemap{$virtual_keycode})) {
@@ -246,7 +245,7 @@ sub move_point {
     my ($self, $y, $x) = @_;
     DEBUG(@_);
 
-    $self->{buffer}->Cursor($x, $y);
+    $self->{buffer}->Cursor($x, $y, 0, 0);
 }
 
 
@@ -279,11 +278,16 @@ sub insch {
 
 
 sub delch_at_point {
-    my ($self, $y, $x) = @_;
+    my ($self) = @_;
     DEBUG(@_);
 
-    my $attr = $self->get_attr_for_style($self->{background_style});    
-    $self->{buffer}->Scroll($x+1,$y,$self->{cols},$y,$x,$y,' ',$attr);
+    # figure out where we are and what's left of the line..
+    my ($x, $y) =  $self->{buffer}->Cursor();
+    my $charsleft = $self->{cols} - $x;
+
+    # slide the line back.
+    my $str = $self->{buffer}->ReadChar($charsleft-1, $x+1, $y);
+    $self->{buffer}->WriteChar($str . ' ', $x, $y);
 }
 
 
@@ -295,15 +299,44 @@ sub scroll {
     my $attr = $self->get_attr_for_style($self->{background_style});
 
     if ($numlines > 0) {
-        $self->{buffer}->Scroll(0, $numlines, 
-                                $self->{cols}, $self->{lines} - $numlines, 
-                                0, 0, 
-                                ' ', $attr) || die "Error scrolling window";
+
+# Scroll() didn't work for me.
+#        $self->{buffer}->Scroll(0, $numlines, 
+#                                $self->{cols}, $self->{lines} - $numlines, 
+#                                0, 0, 
+#                                ' ', $attr) || die "Error scrolling window";
+    
+        # scroll up.
+        my $rect = $self->{buffer}->ReadRect(0, $numlines,
+	                                     $self->{cols}, $self->{lines});
+	$self->{buffer}->WriteRect($rect, 
+	                          0, 0,
+				  $self->{cols}, $self->{lines} - $numlines);
+
+        # blank out the area at the bottom.
+        $self->{buffer}->WriteRect((" " x $numlines * $self->{cols}),
+	                           0, $self->{lines} - $numlines,
+				   $self->{cols}, $self->{lines});
+				  
     } else {
-        $self->{buffer}->Scroll(0, 0,
-                                $self->{cols}, $self->{lines},
-                                0, 0-$numlines, 
-                                ' ', $attr) || die "Error scrolling window";
+    
+# Scroll() didn't work for me.    
+#        $self->{buffer}->Scroll(0, 0,
+#                                $self->{cols}, $self->{lines},
+#                                0, 0-$numlines, 
+#                                ' ', $attr) || die "Error scrolling window";
+
+        # scroll down.
+        my $rect = $self->{buffer}->ReadRect(0, 0,
+	                                     $self->{cols}, $self->{lines} - $numlines);
+	$self->{buffer}->WriteRect($rect, 
+	                          0, $numlines,
+				  $self->{cols}, $self->{lines});
+  
+        # blank out the area at the top.
+        $self->{buffer}->WriteRect((" " x $numlines * $self->{cols}),
+	                           0, 0,
+				   $self->{cols}, $numlines);
     }
 
     # and slap the cursor at the bottom.
