@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/Attic/output.pl,v 1.15 1999/03/01 18:13:58 steve Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/Attic/output.pl,v 1.16 1999/03/01 19:08:11 josh Exp $
 
 use strict;
 
@@ -23,11 +23,11 @@ that the parser module (slcp.pl) send into appopriate output for the user.
 # Print private sends.
 sub private_fmt {
     my($ui, $e) = @_;
-	my $ts = '';
+    my $ts = '';
     
     $ui->print("\n");
     
-	$ts = timestamp($e->{TIME}) if ($e->{STAMP});
+    $ts = timestamp($e->{TIME}) if ($e->{STAMP});
     $ui->indent(private_header => " >> ");
     $ui->prints(private_header => "${ts}Private message from ",
 		private_sender => $e->{SOURCE});
@@ -39,7 +39,7 @@ sub private_fmt {
     
     $ui->indent(private_body => " - ");
     $ui->prints(private_body => $e->{VALUE}."\n");
-
+    
     $ui->indent();
     $ui->style("default");
     return;
@@ -51,10 +51,10 @@ event_r(type  => 'private',
 # Print public sends.
 sub public_fmt {
     my($ui, $e) = @_;
-	my $ts = '';
+    my $ts = '';
     
     $ui->print("\n");
-
+    
     $ts = timestamp ($e->{TIME}) if ($e->{STAMP});
     $ui->indent(public_header => " -> ");
     $ui->prints(public_header => "${ts}From ",
@@ -65,7 +65,7 @@ sub public_fmt {
     
     $ui->indent(public_body   => " - ");
     $ui->prints(public_body   => $e->{VALUE}."\n");
-
+    
     $ui->indent();
     $ui->style("default");
     
@@ -85,7 +85,7 @@ sub emote_fmt {
 		emote_body   => ") ",
 		emote_sender => $e->{SOURCE},
 		emote_body   => $e->{VALUE}."\n");
-
+    
     $ui->indent();
     $ui->style("default");
     
@@ -133,10 +133,10 @@ my @infomsg = ('connect'  => 'A *** %S%U has entered lily ***',
 	       blurb      => 'v (your blurb has been set to [%V])',
 	       blurb      => 'V *** %S%u has changed their blurb to [%V] ***',
 	       blurb      => 'E *** %S%u has turned their blurb off ***',
-           info       => 'd (you have changed the info for %R)',
+	       info       => 'd (you have changed the info for %R)',
 	       info       => 'e (your info has been cleared)',
 	       info       => 'v (your info has been changed)',
-           info       => 'D *** Discussion %R has changed info ***',
+	       info       => 'D *** Discussion %R has changed info ***',
 	       info       => 'V *** %S%u has changed their info ***',
 	       info       => 'E *** %S%u has cleared their info ***',
 	       ignore     => 'A *** %S%u is now ignoring you %V ***',
@@ -147,9 +147,9 @@ my @infomsg = ('connect'  => 'A *** %S%U has entered lily ***',
 	       destroy    => 'e (you have destroyed discussion %R)',
 	       destroy    => 'E *** %S%u has destroyed discussion %R ***',
 	       # bugs in slcp- permit/depermit don't specify people right.
-	       #	       permit     => 'e (someone is now permitted to discussion %R)',
-	       #	       permit     => 'E (You are now permitted to some discussion)',
-	       #	       depermit   => 'e (Someone is now depermitted from %R)',
+#	       permit     => 'e (someone is now permitted to discussion %R)',
+#	       permit     => 'E (You are now permitted to some discussion)',
+#	       depermit   => 'e (Someone is now depermitted from %R)',
 	       # note that slcp doesn't do join and quit quite right
 	       permit     => 'V *** %S%O is now permitted to discussion %R ***',
 	       depermit   => 'V *** %S%O is now depermitted from %R ***',
@@ -194,7 +194,7 @@ my $sub = sub {
 	    $found = $msg; last;
 	}
 	if ($flags =~ /D/ && (defined ($e->{RECIPS}))) {
-		$found = $msg; last;
+	    $found = $msg; last;
 	}
 	if ($flags =~ /v/ && ($e->{SOURCE} eq $Me)
 	    && (defined($e->{VALUE}) && length($e->{VALUE}))) {
@@ -205,8 +205,8 @@ my $sub = sub {
 	    $found = $msg; last;
 	}
 	if ($flags =~ /d/ && ($e->{SOURCE} eq $Me)
-		&& (defined ($e->{RECIPS}))) {
-		$found = $msg; last;
+	    && (defined ($e->{RECIPS}))) {
+	    $found = $msg; last;
 	}
     }
     
@@ -241,22 +241,22 @@ event_r(type  => 'all',
 	call  => $sub);
 
 sub timestamp {
-	my ($time) = @_;
-
-	my ($min, $hour) = (localtime($time))[1,2];
-	my $t = ($hour * 60) + $min;
-	my $ampm = '';
-	$t += $config{zonedelta};
-	$t += (60 * 24) if ($t < 0);
-	$t -= (60 * 24) if ($t >= (60 * 24));
-	$hour = int($t / 60);
-	$min  = $t % 60;
-	if ($config{zonetype} eq '12') {
-		if ($hour >= 12) {
-			$ampm = 'p';
-			$hour -= 12 if $hour > 12;
-		} else {
-			$ampm = 'a';
+    my ($time) = @_;
+    
+    my ($min, $hour) = (localtime($time))[1,2];
+    my $t = ($hour * 60) + $min;
+    my $ampm = '';
+    $t += $config{zonedelta};
+    $t += (60 * 24) if ($t < 0);
+    $t -= (60 * 24) if ($t >= (60 * 24));
+    $hour = int($t / 60);
+    $min  = $t % 60;
+    if ($config{zonetype} eq '12') {
+	if ($hour >= 12) {
+	    $ampm = 'p';
+	    $hour -= 12 if $hour > 12;
+	} else {
+	    $ampm = 'a';
 		}
 	}
 	return sprintf("(%02d:%02d%s) ", $hour, $min, $ampm);
