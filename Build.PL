@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/Attic/Build.PL,v 1.4 1999/03/04 00:45:24 albert Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/Attic/Build.PL,v 1.5 1999/03/12 02:36:20 albert Exp $
 
 use Config;
 use Carp;
@@ -68,7 +68,7 @@ print "-i: $ignore\n" if $debug;
 print "-c: $current\n" if $debug;
 print "target: $target\n" if $debug;
 print "ARGV: @ARGV\n" if $debug;
-exit if $debug;
+#exit if $debug;
 
 $VERSION = $TLily::Version::TL_VERSION;
 $CVSTAG = &ver2tag($VERSION);
@@ -79,6 +79,7 @@ $extdir="extensions";
 $modext='\.pm';
 $extext='\.pl';
 @modsubdirs = qw(UI);
+@uisubdirs = qw(Curses);
 @modfiles = &get_files($moddir, $modext);
 @extfiles = &get_files($extdir, $extext);
 
@@ -86,9 +87,12 @@ my $dir;
 foreach $dir (@modsubdirs) {
     push @modfiles, map {$_ = "$dir/$_"} get_files("$moddir/$dir", $modext)
 }
+foreach $dir (@uisubdirs) {
+    push @modfiles, map {$_ = "UI/$dir/$_"} get_files("$moddir/UI/$dir", $modext)
+}
 
-print join("\n", @modfiles), "\n" if $debug;
-print join("\n", @extfiles), "\n" if $debug;
+print "MODFILES: ", join("\n", @modfiles), "\n" if $debug;
+print "EXTFILES: ", join("\n", @extfiles), "\n" if $debug;
 
 if(!$target || $target eq 'tlily' || $target eq 'tigerlily') {
     &make_tlily;
@@ -191,9 +195,12 @@ elsif($target eq 'install') {
 
     print "Installing tlily internal modules...\n";
     &install('DIR' => "$LIBDIR/$moddir", 'MODE' => 0755);
-	foreach(@modsubdirs) {
-		install('DIR' => "$LIBDIR/$moddir/$_", 'MODE' => 0755);
-	}
+    foreach(@modsubdirs) {
+	    install('DIR' => "$LIBDIR/$moddir/$_", 'MODE' => 0755);
+    }
+    foreach(@uisubdirs) {
+	    install('DIR' => "$LIBDIR/$moddir/UI/$_", 'MODE' => 0755);
+    }
 
     my($file);
     foreach $file (@modfiles) {
