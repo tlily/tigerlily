@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/TextWindow.pm,v 1.7 2003/06/25 18:23:48 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/TextWindow.pm,v 1.8 2003/11/06 20:45:52 bwelling Exp $
 
 package TLily::UI::TextWindow::Proxy;
 
@@ -178,7 +178,7 @@ sub split_window {
 
     # Don't allow more windows to be created than will fit.
     my $imax = $ui->{input_imax} || 2;
-    return if ($imax + 2 * ($tcount + 1) > $ui->{F}->screen_height());
+    return if ($imax + 2 * ($tcount + 1) > TLily::FoiledAgain::screen_height());
 
     $ui->{text}->{status}->make_active(1) if ($tcount == 1);
 
