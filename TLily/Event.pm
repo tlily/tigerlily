@@ -185,13 +185,16 @@ sub time_r {
 	croak "Handler registered with insane interval."
 	  if ($h->{interval} && $h->{interval} <= 0);
 
+	$h->{'time'} = 0 if (!defined($h->{'time'}) && !defined($h->{after}) &&
+			     defined($h->{interval}));
+
 	# Run after N seconds.
 	if (defined($h->{after})) {
 		$h->{'time'} = time + $h->{after};
 	}
 	# Oops.
 	elsif (!defined($h->{'time'})) {
-		croak "Handler registered without \"after\" or \"time\".";
+	    croak "Handler registered without \"after\", \"time\", or \"interval\".";
 	}
 
 	$h->{id} = $next_id++;
