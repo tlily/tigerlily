@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/gag.pl,v 1.11 2003/05/10 21:41:57 coke Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/gag.pl,v 1.12 2003/05/10 21:52:20 coke Exp $ 
 
 use strict;
 
@@ -120,7 +120,10 @@ sub gag_command_handler {
     foreach my $nm (@names) {
         my %state = $server->state(NAME => $nm);
         if (!$state{HANDLE}) {
-	    $ui->print("(could find no match to \"$args[0]\")\n");
+            if ($nm !~ /^#/) {
+                # squawk only if $nm isn't an object id.
+	        $ui->print("(could find no match to \"$nm\")\n");
+            }
 	    next;
         }
 
