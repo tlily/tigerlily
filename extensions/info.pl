@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/info.pl,v 1.3 1999/02/28 21:54:24 steve Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/info.pl,v 1.4 1999/03/13 00:52:10 neild Exp $
 
 sub info_set {
     my ($ui,%args)=@_;
@@ -22,7 +22,9 @@ sub info_set {
 	}
 
 	$ui->suspend;
+        TLily::Event::keepalive();
 	system("$config{editor} $tmpfile");
+        TLily::Event::keepalive(5);
 	$ui->resume;
 
 	my $rc = open(FH, "<$tmpfile");
