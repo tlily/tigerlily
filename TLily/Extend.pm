@@ -1,4 +1,4 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Extend.pm,v 1.1 1999/02/22 19:22:52 neild Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Extend.pm,v 1.2 1999/02/22 22:15:56 neild Exp $ 
 
 # initial version, 10/24/97, Josh Wilmes
 
@@ -110,7 +110,7 @@ sub load_extensions {
 
 
 sub extension_cmd {
-	my($ui, $args) = @_;
+	my($ucmd, $ui, $args) = @_;
 	my @argv = split /\s+/, $args;
 
 	my $cmd = shift @argv || "";
@@ -151,13 +151,13 @@ sub cmd_init {
 	my($ucmd) = @_;
 
 	$ucmd->command_r(extension => \&extension_cmd);
-#	$ucmd->shelp_r  (extension => "manage tlily extensions");
-#	$ucmd->help_r   (extension => "
-#usage: %extension list
-#       %extension load <extension>
-#       %extension unload <extension>
-#       %extension reload <extension>
-#");
+	$ucmd->shelp_r  (extension => "manage tlily extensions");
+	$ucmd->help_r   (extension => "
+usage: %extension list
+       %extension load <extension>
+       %extension unload <extension>
+       %extension reload <extension>
+");
 }
 
 
