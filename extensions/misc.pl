@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/misc.pl,v 1.16 1999/04/09 23:08:25 neild Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/misc.pl,v 1.17 1999/04/21 18:52:08 neild Exp $ 
 
 use strict;
 use TLily::Version;
@@ -132,6 +132,48 @@ command_r('echo' => \&echo_handler);
 shelp_r('exit' => 'Exit TigerLily');
 help_r('exit' => 'Usage: %exit');
 command_r('exit' => sub { TLily::Event::keepalive(); exit; });
+
+
+#
+# Credits.
+#
+
+my $credits = qq{
+Steve "Steve" Czetty       HTTP, CTC.
+Damien "damien" Neil       UI(, UI, UI), event loop, design
+Matt "Silent Bob" Ryan     Biff.
+Chris "Albert" Stevens     Configuration; Build.PL/Makefile.PL.
+Josh "Josh" Wilmes         Parser (classic and SLCP), extensions, subclient.
+};
+shelp_r("credits" => "The people who brought you tlily.", "concepts");
+help_r("credits" => $credits);
+
+my $history = qq{
+Tigerlily began sometime around September 1997, when Chris "Albert" Stevens, \
+Damien "damien" Neil, Jon "jamah" Mah, and Josh "Josh" Wilmes were eating \
+dinner at Chevy's.  Damien mentioned that Perl was the only logical language \
+to write an intelligent Lily client in.  When he went on to mention that he \
+had worked up the beginnings of a Curses UI in Perl, Josh promptly fell in \
+love with the idea.  The next weekend produced some very scary code, and most \
+of a working client.
+
+Josh wrote the first Lily parser, an evil beast spawned from the depths of \
+hell.  (That was a compliment, Josh.)  He is also responsible for extensions, \
+one of tlily's most useful features.  Damien wrote the first UI, and is \
+responsible for the event loop.  Chris wrote the configuration module, and \
+has maintained the build-and-distribution code from the beginning.  Other \
+contributors of note include Matt "Silent Bob" Ryan and Steve "Steve" Czetty.
+
+The first recorded release date is 0.2c, October 28, 1997.  1.0 was released \
+on June 11, 1998.
+
+Sometime around the start of 1999, Josh rewrote the parser to support the \
+new SLCP protocol.  Damien rewrote the UI (again) to make it faster and \
+cleaner.  With momentum gathering, most of the rest of tlily was redesigned. \
+The result is Tigerlily 2.0.
+};
+shelp_r("history" => "A brief history of tlily.", "concepts");
+help_r("history" => $history);
 
 
 # NOTE:  HIDESEND DOES NOT WORK.  WE DON'T CARE ENOUGH TO FIX IT AT PRESENT.
