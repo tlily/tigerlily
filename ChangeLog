@@ -1,4 +1,5 @@
 Version 2.1.1-post
+  * [extensions/blurb.pl] New extension, auto-blurb-compression [WJC]
   * [extensions/http_parse.pl] Merged changes from http2_parse back in [WJC]
   * [extensions/http2_parse.pl] Deleted, merged back into http_parse [WJC]
   * [TLily/Server/HTTP.pm] bugfix + addition of callback, used by the 
