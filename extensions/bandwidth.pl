@@ -1,9 +1,9 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/bandwidth.pl,v 1.4 1999/10/02 02:45:15 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/bandwidth.pl,v 1.5 1999/10/03 18:25:44 josh Exp $
 
 sub load {
     my $ui = ui_name("main");
-    my $server = TLily::Server::active();
+    my $server = active_server();
 
     if ($server) {
 	init_bandwidth();
@@ -17,7 +17,7 @@ sub load {
 
 sub init_bandwidth {
     my $ui = ui_name("main");
-    my $server = TLily::Server::active();
+    my $server = active_server();
     my $last_in  = $server->{bytes_in};
     
     $ui->define(bandwidth => 'right');
@@ -25,7 +25,7 @@ sub init_bandwidth {
     
     my $sub = sub {
 	my $ui = ui_name("main");
-	my $server = TLily::Server::active();
+	my $server = active_server();
 	return 2 unless ($server);
 	
 	my $in       = $server->{bytes_in} - $last_in;

@@ -1,4 +1,4 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/statedebug.pl,v 1.3 1999/10/02 02:45:26 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/statedebug.pl,v 1.4 1999/10/03 18:25:57 josh Exp $
 
 command_r(statedebug => \&state_cmd);
 shelp_r(statedebug => "Debug the SLCP state database");
@@ -39,7 +39,7 @@ sub state_cmd {
     my ($dindex,$dkey) = split /\s+/,$args;
     my ($rec,$index,$key);
 
-    my $server = TLily::Server::active();
+    my $server = active_server();
 
     TLily::Event::keepalive();
 

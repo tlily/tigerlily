@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/submit.pl,v 1.3 1999/10/02 17:46:57 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/submit.pl,v 1.4 1999/10/03 18:25:59 josh Exp $
 
 use TLily::Version;
 use strict;
@@ -37,7 +37,7 @@ sub submit_cmd($) {
 	return;
     } elsif ($submit_to =~ "client") {	
 	  # Get the version of the lily core we're on.
-	  my $server = TLily::Server::active();
+	  my $server = active_server();
 	  $server->cmd_process("/display version", sub {
 			  my($event) = @_;
 			  $event->{NOTIFY} = 0;

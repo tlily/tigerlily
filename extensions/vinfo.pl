@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/vinfo.pl,v 1.4 1999/10/02 17:46:59 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/vinfo.pl,v 1.5 1999/10/03 18:26:02 josh Exp $
 
 event_r(type => 'private',
 	order => 'before',
@@ -9,7 +9,7 @@ command_r('vinfo' => \&vinfo_handler);
 shelp_r('vinfo', "Automatic version information transmission.");
 
 sub command {
-    my $server=TLily::Server::active();
+    my $server=active_server();
     
     # The bit about 'send' events below is a hack for occasions when you
     # send a vinfo request to yourself.

@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/ctc.pl,v 1.9 1999/10/02 02:58:27 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/ctc.pl,v 1.10 1999/10/03 18:25:46 josh Exp $
 
 use Net::Domain qw(hostfqdn);
 use Socket qw(inet_ntoa inet_aton);
@@ -16,7 +16,7 @@ my $hostaddr;
 my $http;
 
 sub command {
-    my $server=TLily::Server::active();
+    my $server=active_server();
     $server->cmd_process(join('', @_), sub {
 					$_[0]->{NOTIFY} = 0 unless ($_[0]->{type} eq 'private')
 				});

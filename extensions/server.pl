@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/server.pl,v 1.21 1999/10/02 02:45:22 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/server.pl,v 1.22 1999/10/03 18:25:55 josh Exp $
 
 use strict;
 
@@ -85,7 +85,7 @@ sub close_command {
     my(@argv) = split /\s+/, $arg;
     TLily::Event::keepalive();
 
-    my $server = TLily::Server::active();
+    my $server = active_server();
     if (!$server) {
 	$ui->print("(you are not currently connected to a server)\n");
 	return;
@@ -108,7 +108,7 @@ sub next_server {
     my($ui, $command, $key) = @_;
 
     my @server = TLily::Server::find();
-    my $server = TLily::Server::active() || $server[-1];
+    my $server = active_server() || $server[-1];
 
     my $idx = 0;
     foreach (@server) {
@@ -140,7 +140,7 @@ event_r(type => 'user_send',
 
 sub to_server {
     my($e, $h) = @_;
-    my $server = TLily::Server::active();
+    my $server = active_server();
 
     if (! $server) {
 	# we aren't connected to a server

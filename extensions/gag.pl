@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/gag.pl,v 1.3 1999/10/02 02:45:17 mjr Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/gag.pl,v 1.4 1999/10/03 18:25:48 josh Exp $ 
 
 use strict;
 
@@ -42,7 +42,7 @@ sub preserve_case($$) {
 
 sub gag_command_handler {
     my($ui, $args) = @_;
-    my $server = TLily::Server::active();
+    my $server = active_server();
     return unless $server;
     my @args = split /\s+/, $args;
 

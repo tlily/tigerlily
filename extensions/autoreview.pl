@@ -1,5 +1,5 @@
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/autoreview.pl,v 1.7 1999/10/03 08:09:20 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/autoreview.pl,v 1.8 1999/10/03 18:25:43 josh Exp $
 
 use strict;
 
@@ -37,7 +37,7 @@ sub review_cmd {
 	$ui->print("(You are currently autoreviewing)\n");
 	return 0;
     }
-    my $server = TLily::Server::active();
+    my $server = active_server();
     review_start($server);
     return 0;
 }

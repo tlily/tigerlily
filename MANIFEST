@@ -6,7 +6,6 @@ MANIFEST.SKIP
 Makefile.PL
 README
 TLily/Bot.pm
-TLily/Command.pm
 TLily/Config.pm
 TLily/Daemon.pm
 TLily/Daemon/Connection.pm
