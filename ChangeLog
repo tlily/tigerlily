@@ -1,3 +1,7 @@
+Version 2.1.1-post
+  * extended %on to support variable expansion, unregistering and listing
+    handlers, and regexp matching. [JDW]
+
 Version 2.1.1
   * Bugfix release - Release 2.1 had several old files that should have
     been included.
