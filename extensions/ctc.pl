@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/ctc.pl,v 1.7 1999/08/31 19:39:04 steve Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/ctc.pl,v 1.8 1999/09/02 00:32:50 steve Exp $
 
 use Net::Domain qw(hostfqdn);
 use Socket qw(inet_ntoa inet_aton);
@@ -39,44 +39,7 @@ sub ctc_cmd {
 		return;
 	}
 
-	if (!defined($http)) {
-		$ui->print("(HTTP service not started.  Try %ctc start)\n");
-		return;
-	}
-
-	if ($cmd eq 'stop') {
-		$http->terminate();
-		$http = undef;
-		return;
-	}
-    
-    if ($cmd eq 'send') {
-		my ($to, $file) = @rest;
-		
-		# Generate an alias
-		my @tmp = split m|/|, $file;
-		my $shfile = pop @tmp;
-		my $alias = "";
-		for (my $i = 0; $i < 8; $i++) {
-			my $c = rand (26);
-			my $r = rand (100);
-			$alias .= ($r < 50) ? chr($c + 65) : chr ($c + 97);
-		}
-		$alias .= "/$shfile";
-		
-		unless ((TLily::Daemon::HTTP::file_r (file  => $file,
-											  alias => $alias))) {
-			$ui->print("(unable to find file $file)\n");
-			return;
-		}
-		$pending{$alias} = { file => $file, to => $to };
-		$ui->print("(sending file request to $to)\n");
-		command($to, 
-				";@@@ ctc send @@@ http://$hostaddr:$http->{port}/$alias");
-		return;
-    }
-	
-    if ($cmd eq 'get') {
+	if ($cmd eq 'get') {
 		my ($from, $file) = @rest;
 		my $lfrom;
 		
@@ -133,21 +96,7 @@ sub ctc_cmd {
 		}
 		return;
     }
-	
-    if ($cmd eq 'cancel') {
-		my ($to, $file) = @rest;
-		
-		for my $p (keys %pending) {
-			if (!$to || $pending{$p}->{to} eq lc($to)) {
-				TLily::Daemon::HTTP::file_u($p);
-				delete $pending{$p};
-			}
-		}
-		my $o = ($to) ? " to $to" : "";
-		$ui->print("(all pending sends", $o, " cancelled)\n");
-		return;
-    }
-	
+
     if ($cmd eq 'refuse') {
 		my ($from, $file) = @rest;
 		
@@ -171,8 +120,57 @@ sub ctc_cmd {
 		return;
     }
 
+	if (!defined($http)) {
+		$ui->print("(HTTP service not started.  Try %ctc start)\n");
+		return;
+	}
 
-
+	if ($cmd eq 'stop') {
+		$http->terminate();
+		$http = undef;
+		return;
+	}
+    
+    if ($cmd eq 'send') {
+		my ($to, $file) = @rest;
+		
+		# Generate an alias
+		my @tmp = split m|/|, $file;
+		my $shfile = pop @tmp;
+		my $alias = "";
+		for (my $i = 0; $i < 8; $i++) {
+			my $c = rand (26);
+			my $r = rand (100);
+			$alias .= ($r < 50) ? chr($c + 65) : chr ($c + 97);
+		}
+		$alias .= "/$shfile";
+		
+		unless ((TLily::Daemon::HTTP::file_r (file  => $file,
+											  alias => $alias))) {
+			$ui->print("(unable to find file $file)\n");
+			return;
+		}
+		$pending{$alias} = { file => $file, to => $to };
+		$ui->print("(sending file request to $to)\n");
+		command($to, 
+				";@@@ ctc send @@@ http://$hostaddr:$http->{port}/$alias");
+		return;
+    }
+	
+    if ($cmd eq 'cancel') {
+		my ($to, $file) = @rest;
+		
+		for my $p (keys %pending) {
+			if (!$to || $pending{$p}->{to} eq lc($to)) {
+				TLily::Daemon::HTTP::file_u($p);
+				delete $pending{$p};
+			}
+		}
+		my $o = ($to) ? " to $to" : "";
+		$ui->print("(all pending sends", $o, " cancelled)\n");
+		return;
+    }
+	
     $ui->print("unknown %ctc command, see %help ctc\n");
 }
 
