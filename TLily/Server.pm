@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Server.pm,v 1.16 1999/04/12 21:55:04 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Server.pm,v 1.17 1999/04/20 17:03:11 neild Exp $
 
 package TLily::Server;
 
@@ -264,6 +264,31 @@ sub sendln {
     # \r\n is non-portable.  Fix, please.
     #$self->send(@_, "\r\n");
     $self->send(@_, $crlf);
+}
+
+
+=item command()
+
+Processes a user command.  The Server base class provides default processing
+for commands -- currently, it recognizes sends.  Returns true if the command
+was recognized, false otherwise.
+
+=cut
+
+sub command {
+    my($self, $ui, $text) = @_;
+
+    # Sends.
+    if ($text =~ /^([^\s;:]*)([;:])(.*)/) {
+        TLily::Event::send(type   => 'user_send',
+                           server => $self,
+                           RECIPS => [split /,/, $1],
+                           dtype  => $2,
+                           text   => $3);
+	return 1;
+    }
+
+    return;
 }
 
 

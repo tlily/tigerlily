@@ -6,7 +6,7 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Server/Attic/SLCP.pm,v 1.17 1999/04/14 03:03:21 albert Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Server/Attic/SLCP.pm,v 1.18 1999/04/20 17:03:14 neild Exp $
 
 package TLily::Server::SLCP;
 
@@ -61,6 +61,19 @@ sub new {
 			  });
 
     bless $self, $class;
+}
+
+
+sub command {
+    my($self, $ui, $text) = @_;
+
+    # Check global command bindings.
+    $self->SUPER::command($text) && return 1;
+
+    # Send the line on to the server.
+    $self->sendln($text);
+
+    return 1;
 }
 
 

@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/server.pl,v 1.16 1999/04/09 22:48:28 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/server.pl,v 1.17 1999/04/20 17:03:17 neild Exp $
 
 use strict;
 
@@ -92,21 +92,11 @@ sub to_server {
     my $server = server_name();
 
     if (! $server) {
-	# we're not connected to a server
+	# we aren't connected to a server
 	return 1;
     }
-    
-    if ($e->{text} =~ /^([^\s;:]*)([;:])(.*)/) {
-	TLily::Event::send(type   => 'user_send',
-			   server => $server,
-			   RECIPS => [split /,/, $1],
-			   dtype  => $2,
-			   text   => $3);
-	return 1;
-    }
-    
-    $server->sendln($e->{text});
-    return 1;
+
+    $server->command($e->{ui}, $e->{text});
 }
 event_r(type  => "user_input",
 	order => "after",
