@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/program.pl,v 1.5 1999/09/20 01:50:24 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/program.pl,v 1.6 1999/09/20 02:02:53 mjr Exp $
 
 $perms = undef;
 
@@ -508,21 +508,21 @@ shelp_r("prop", "MOO property manipulation functions");
 shelp_r("obj", "MOO object manipulation functions");
 
 help_r("verb", "
-%verb show     - Given an object, shows the verbs defined on it.
-                 Given an object:verb, shows the verb properties.
-%verb list     - Given an object, shows the verbs defined on it.
-                 Given an object:verb, lists the code of a verb.
-%verb edit     - Edit a verb.
-%verb reedit   - Recalls a \"dead\" verb from a prior failed edit.
+%verb show <obj>           - Lists the verbs defined on an object.
+%verb show <obj>:<verb>    - Shows a verb's properties.
+%verb list <obj>           - Lists the verbs defined on a object.
+%verb list <obj>:<verb>    - Lists the code of a verb.
+%verb edit <obj>:<verb>    - Edit a verb.
+%verb reedit <obj>:<verb>  - Recalls a \"dead\" verb from a failed edit.
 
 ");
 
 help_r("prop", "
-%prop show     - Given an object, shows the properties defined on it.
-                 Given an object.prop, shows the property.
-%prop showall  - Given an object, shows the properties defined on it, including
-                 inherited properties.
-                 Given an object.prop, shows the property.
+%prop show <obj>            - Lists the properties defined on a object.
+%prop show <obj>:<prop>     - Shows a property.
+%prop showall <obj>         - Lists the properties defined on a object,
+                              including inherited properties.
+%prop showall <obj>:<prop>  - Shows the property.
 
 ");
 
