@@ -69,7 +69,21 @@ your ~/.emacs file:
 
 -------------------------------------------------------------------------------
 
-4) Help text
+4) Prototypes
+
+Perl permits you to define functions with prototypes (for example, sub
+foo($) defines foo to take a single scalar argument).  Perl function
+prototyping is not, however, intended to act in any way like C function
+prototyping.  It exists to permit the creation of functions which act
+like Perl builtin functions, rather than to provide argument checking.
+
+Do not use function prototypes unless you have a clear understanding
+of what they are for and why you want them.  If you think you want
+prototypes on all your functions, you are probably wrong.
+
+See perlsub(1) for more information on prototypes.
+-------------------------------------------------------------------------------
+5) Help text
 
 Every user command you register should have both a short description
 (shelp_r) and a help page (help_r) associated with it.  Help pages
@@ -95,6 +109,6 @@ newlines from the start and end of your help text, so feel free to add some
 if it makes things look nicer for you.  (Again, see above.)
 
 -------------------------------------------------------------------------------
-5) Other
+6) Other
 
 There's plenty of room for more stuff in here.. Go for it :)
