@@ -1,4 +1,4 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/ui.pl,v 1.14 1999/04/12 22:57:14 neild Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/ui.pl,v 1.15 1999/08/04 20:37:56 neild Exp $ 
 use strict;
 
 
@@ -207,6 +207,8 @@ Valid color values are:
 
 The actual rendering of these attributes and colors is very much up to the
 specific UI in use.
+
+(see also: styles)
 ";
 
 sub style_command {
@@ -260,6 +262,35 @@ TLily::Config::callback_r(Variable => '-ALL-',
  			          $ui->redraw();
 			      }
 		          });
+
+my $styles_help = "
+The currently available styles are:
+status_window   The status line at the bottom of the screen.
+input_window    The input line you are typing
+input_error     Words not found by the spellchecker in your input line
+text_window     The default characteristics of the window (background, etc.)
+public_header   The text in the header of a public message
+public_sender   The name of the sender of a public message
+public_dest     The names of the recipients of a public message
+public_body     The actual message of a public message
+private_header  The text in the header of a private message
+private_sender  The name of the sender of a private message
+private_dest    The names of the recipients of a private message
+private_body    The actual message of a private message
+emote_body      The message text of an emote message
+emote_dest      The names of the recipients of an emote message
+emote_sender    The name of the sender of an emote message
+review          (Currently unused)
+slcp            SLCP status messages, indicating a user state change
+user_input      User input lines shown in the output window.
+yellow          Used for the tlily logo
+green           Used for the tlily logo
+bwhite          Used for the tlily logo
+normal          /info text, /memo text, non-SLCP server messages
+default         Used for any style that is not explicitly set.
+";
+shelp_r("styles" => "The various display styles.", "concepts");
+help_r("styles" => $styles_help);
 
 
 TLily::Config::callback_r(Variable => '-ALL-',
