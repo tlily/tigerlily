@@ -8,8 +8,6 @@ Before 2.0 release:
   The following need to be ported/written.  Most should be pretty easy to do
   based on the ones we've already finished.
   
-  run_command.pl(easy)  
-  stock.pl      (easy)
   helper.pl     (pretty easy)
   hidesend.pl   (medium)
   pipes.pl      (medium)

@@ -1,4 +1,4 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/countdown.pl,v 1.1 1999/03/17 00:08:16 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/countdown.pl,v 1.2 1999/03/17 01:15:17 josh Exp $
 #
 # Put a countdown timer on your status line.
 #
@@ -88,7 +88,7 @@ sub countdown_cmd {
     my($ui,$args) = @_;
 
     if ($args eq 'off') {
-	time_u($event_id) if ($event_id);
+	TLily::Event::time_u($event_id) if ($event_id);
 	$timer = '';
 	$ui->set(countdown => $timer);
 	undef $event_id;
