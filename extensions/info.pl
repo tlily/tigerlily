@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/info.pl,v 1.6 1999/04/03 01:03:26 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/info.pl,v 1.7 1999/04/03 06:26:18 neild Exp $
 
 use strict;
 
@@ -67,7 +67,7 @@ sub store {
 	my $size = 0;
 	foreach (@$text) { $size += length($_); }
 	my $t = $target;  $t = "" if ($target eq "me");
-	$server->sendln("\#\$\# export_file memo $size $t $name");
+	$server->sendln("\#\$\# export_file memo $size $name $t");
     }
 
     push @{$server->{_export_queue}},
