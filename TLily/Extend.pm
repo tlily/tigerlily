@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Extend.pm,v 1.11 1999/04/03 05:06:00 josh Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Extend.pm,v 1.12 1999/09/25 18:30:22 mjr Exp $ 
 
 package TLily::Extend;
 use strict;
@@ -19,10 +19,11 @@ use TLily::Registrar;
 use TLily::User  qw(&help_r &shelp_r &command_r);
 use TLily::Event qw(&event_r &event_u);
 use TLily::Command qw(&cmd_process);
+use TLily::Utils qw(&edit_text &diff_text);
 
 my %extensions = ();
 my @share=qw(%config &help_r &shelp_r &command_r &event_r &event_u &cmd_process
-	     &ui_name &server_name);
+	     &ui_name &server_name &edit_text &diff_text);
 
 
 =head1 NAME

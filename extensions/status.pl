@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/status.pl,v 1.15 1999/07/02 08:06:26 albert Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/status.pl,v 1.16 1999/09/25 18:30:32 mjr Exp $
 
 use strict;
 
@@ -39,13 +39,15 @@ sub set_serverstatus {
     $ui->set(server => $sname) if (defined $sname);
     
     my($name, %state);
-    $name  = $server->user_name();
-    return 3 unless defined($name);
+    $name  = $server->user_name() || "";
+
+    if ($name ne "") {
+        %state = $server->state(NAME => $name);
     
-    %state = $server->state(NAME => $name);
-    
-    $name .= " [$state{BLURB}]" if (defined $state{BLURB} &&
-				    $state{BLURB} =~ /\S/);
+        $name .= " [$state{BLURB}]" if (defined $state{BLURB} &&
+				        $state{BLURB} =~ /\S/);
+    }
+
     $ui->set(nameblurb => $name);
     $ui->set(state => $state{STATE}) if defined($state{STATE});
     
@@ -85,6 +87,10 @@ sub load {
 	    call => \&set_serverstatus);
     
     event_r(type => 'connected',
+	    order => 'after',	
+	    call => \&set_serverstatus);
+    
+    event_r(type => 'server_activate',
 	    order => 'after',	
 	    call => \&set_serverstatus);
 }

@@ -1,74 +1,7 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/program.pl,v 1.9 1999/09/25 06:37:17 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/program.pl,v 1.10 1999/09/25 18:30:29 mjr Exp $
 
 $perms = undef;
-
-sub edit_text {
-    my($ui, $text) = @_;
-
-    local(*FH);
-    my $tmpfile = "/tmp/tlily.$$";
-    my $mtime = 0;
-
-    unlink($tmpfile);
-    if (@{$text}) {
-        open(FH, ">$tmpfile") or die "$tmpfile: $!";
-        foreach (@{$text}) { chomp; print FH "$_\n"; }
-        $mtime = (stat FH)[10];
-        close FH;
-    }
-
-    $ui->suspend;
-    TLily::Event::keepalive();
-    system($config{editor}, $tmpfile);
-    TLily::Event::keepalive(5);
-    $ui->resume;
-
-    my $rc = open(FH, "<$tmpfile");
-    unless ($rc) {
-        $ui->print("(edit buffer file not found)\n");
-        return;
-    }  
-
-    if ((stat FH)[10] == $mtime) {
-        close FH;
-        unlink($tmpfile);
-        $ui->print("(file unchanged)\n");
-        return;
-    }  
-
-    @{$text} = <FH>;
-    chomp(@{$text});
-    close FH;
-    unlink($tmpfile);
-
-    return 1;
-}
-
-sub do_diff {
-  my ( $a, $b ) = @_;
-  local(*FH);
-  my $diff = [];
-
-  my $tmpfile_a = "/tmp/tlily-diff-a.$$";
-  my $tmpfile_b = "/tmp/tlily-diff-b.$$";
-  open FH, ">$tmpfile_a";
-  foreach (@{$a}) { print FH "$_\n" };
-  close FH;
-
-  open FH, ">$tmpfile_b";
-  foreach (@{$b}) { print FH "$_\n" };
-  close FH;
-
-  open FH, "diff $tmpfile_a $tmpfile_b |";
-  @{$diff} = <FH>;
-  close FH;
-
-  unlink $tmpfile_a;
-  unlink $tmpfile_b;
-
-  return $diff;
-}
 
 sub verb_set(%) {
   my %args=@_;
@@ -450,7 +383,7 @@ sub verb_cmd {
         # Do diff
         push @data, $args{text};
         if (scalar(@data) == 2) {
-          my $diff = do_diff(@data);
+          my $diff = diff_text(@data);
 
           foreach (@{$diff}) { $ui->print($_) };
         }

@@ -7,7 +7,7 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/tlily.PL,v 1.41 1999/09/17 07:20:18 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/tlily.PL,v 1.42 1999/09/25 18:30:17 mjr Exp $
 
 use strict;
 use Config;
@@ -113,6 +113,7 @@ use TLily::User;
 use TLily::Extend;
 use TLily::Version;
 use TLily::Command;
+use TLily::Utils;
 use TLily::Bot;
 
 if ( -f 'tlily.PL' ) {

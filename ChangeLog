@@ -1,4 +1,6 @@
 Version 2.0-post
+  * [TLily/Utils.pm] New file to hold common functions, like edit_text
+    and diff_text. [MJR]
   * [TLily/Server/SLCP.pm] Added mutli-server aware cmd_process.  May
     eventually remove TLily/Command.pm [MJR]
   * [extensions/slcp_parse.pl] TLily looked for %SLCP-SYNC anywhere

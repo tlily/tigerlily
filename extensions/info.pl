@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/info.pl,v 1.11 1999/05/13 21:45:47 albert Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/info.pl,v 1.12 1999/09/25 18:30:28 mjr Exp $
 
 use strict;
 
@@ -37,49 +37,6 @@ sub export_handler {
 }
 event_r(type => 'export',
 	call => \&export_handler);
-
-
-sub edit_text {
-    my($ui, $text) = @_;
-
-    local(*FH);
-    my $tmpfile = "/tmp/tlily.$$";
-    my $mtime = 0;
-
-    unlink($tmpfile);
-    if (@{$text}) {
-	open(FH, ">$tmpfile") or die "$tmpfile: $!";
-	foreach (@{$text}) { chomp; print FH "$_\n"; }
-	$mtime = (stat FH)[10];
-	close FH;
-    }
-
-    $ui->suspend;
-    TLily::Event::keepalive();
-    system($config{editor}, $tmpfile);
-    TLily::Event::keepalive(5);
-    $ui->resume;
-
-    my $rc = open(FH, "<$tmpfile");
-    unless ($rc) {
-	$ui->print("(edit buffer file not found)\n");
-	return;
-    }
-
-    if ((stat FH)[10] == $mtime) {
-	close FH;
-	unlink($tmpfile);
-	$ui->print("(file unchanged)\n");
-	return;
-    }
-
-    @{$text} = <FH>;
-    chomp(@{$text});
-    close FH;
-    unlink($tmpfile);
-
-    return 1;
-}
 
 
 sub info_cmd {

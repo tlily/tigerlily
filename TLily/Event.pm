@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Event.pm,v 1.24 1999/09/19 03:07:15 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Event.pm,v 1.25 1999/09/25 18:30:20 mjr Exp $
 
 package TLily::Event::Core;
 
@@ -452,6 +452,7 @@ sub invoke {
 =item loop_once()
 
 =cut
+use Data::Dumper;
 sub loop_once {
     # Named events.
   EVENT:
@@ -462,6 +463,7 @@ sub loop_once {
 		my $rc = invoke($h, $e, $h);
 		if (defined($rc) && ($rc != 0) && ($rc != 1)) {
 		    warn "Event handler returned $rc.";
+                    warn Dumper($h);
 		}
 		next EVENT if ($rc);
 	    }

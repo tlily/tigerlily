@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Server.pm,v 1.19 1999/06/17 01:26:45 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Server.pm,v 1.20 1999/09/25 18:30:23 mjr Exp $
 
 package TLily::Server;
 
@@ -219,6 +219,7 @@ sub activate {
     shift if (@_ > 1);
     $active_server = shift;
     $active_server = undef unless ref($active_server);
+    TLily::Event::send(type => 'server_activate', 'server' => $active_server);
 }
 
 =item send()

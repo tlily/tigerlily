@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/server.pl,v 1.19 1999/06/19 19:42:51 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/server.pl,v 1.20 1999/09/25 18:30:31 mjr Exp $
 
 use strict;
 
@@ -114,6 +114,11 @@ sub next_server {
     foreach (@server) {
 	last if ($_ == $server);
 	$idx++;
+    }
+
+    if (@server == 0) {
+        $ui->print("(You are not connected to any servers)\n");
+        return;
     }
 
     $idx = ($idx + 1) % @server;
