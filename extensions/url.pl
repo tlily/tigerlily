@@ -119,7 +119,7 @@ sub url_cmd {
 	$ui->print("(viewing $url)\n");
 	my $cmd=$config{browser};
 	if ($cmd =~ /%URL%/) {
-	    $cmd=~s/%URL%/$url/g;
+	    $cmd=~s/%URL%/'$url'/g;
 	} else {
 	    $cmd .= " '$url'";
  	}
@@ -141,6 +141,7 @@ sub url_cmd {
 	    if ($^O =~ /cygwin/) {
 		$ret=`$cmd`;
 	    } else {
+                $ui->print($cmd);
 		$ret=`$cmd 2>&1`;
 	    }
  	    $ui->print("$ret\n") if $ret;
