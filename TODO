@@ -1,16 +1,8 @@
 To Do
 -----
 
-Before 2.0 release:
-
-  New functionality:
-    - when the last open server connection is closed, provide a exit/reconnect
+  when the last open server connection is closed, provide a exit/reconnect
       option. (integrate with smartexit feature)
-
-  Bug Fixes:
-    - autoreview - frank mentioned this had a problem?
-
-Later:
   helper.pl/program.pl
   multiserver, multiui
   irc mode/ TLily::Server::SubClient
