@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/alias.pl,v 1.7 2000/02/11 22:42:44 tale Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/alias.pl,v 1.8 2000/02/11 22:58:27 tale Exp $
 
 use strict;
 
@@ -49,8 +49,8 @@ sub alias_cmd {
 	if($val eq "") {
 	    $ui->print("(Usage: %alias clear [alias])\n"); return;
 	}
-	undef $alias{$val};
-        $ui->print("(\%$key is now unaliased.)\n");
+	delete $alias{$val};
+        $ui->print("(\%$val is now unaliased.)\n");
         return;
     }
 
