@@ -1,4 +1,5 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_parse.pl,v 1.1 1999/03/15 23:53:15 josh Exp $
+
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_parse.pl,v 1.2 1999/03/17 02:49:48 josh Exp $
 
 use strict;
 use vars qw(%config);
@@ -35,7 +36,7 @@ $keep{DISC} = {HANDLE   => 1,
                CREATION => 1,
 	       NAME     => 1,
 	       TITLE    => 1,
-			  ATTRIB => 1};
+               ATTRIB   => 1};
 
 my %events =
   (
@@ -164,7 +165,7 @@ sub parse_line {
     # initial client state database.
     if ($line =~ /^%USER /) {
 	
-	$ui->print("(please wait, synching with SLCP)\n")
+	$ui->print("(please wait, syncing with SLCP)\n")
 	  if ($ui && !$serv->{SLCP_SYNC});
 	$serv->{SLCP_SYNC} = 1;
 	
@@ -204,7 +205,9 @@ sub parse_line {
 	}
 	
 	$serv->state(DATA => 1, %args);
-	
+
+	return;
+
 	# Debugging. :>
 	return if ($serv->{logged_in});
 	%event = (type   => 'text',
