@@ -7,7 +7,7 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/Makefile.PL,v 1.18 2003/11/03 23:47:34 albert Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/Makefile.PL,v 1.19 2003/11/04 01:19:14 albert Exp $
 
 use strict;
 use Config;
@@ -192,7 +192,8 @@ WriteMakefile(
 
     dist            => { COMPRESS => 'gzip -9 -f', SUFFIX => 'gz' },
     realclean       => { FILES => 'MANIFEST.bak Makefile.old' },
-    clean           => { FILES => 'tlily' },
+    clean           => { FILES => 'tlily tlily.win32.plx tlily.tk.plx '
+                                . 'tlily.curses.plx' },
 );
 
 sub MY::install {
