@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/Curses.pm,v 1.30 1999/04/13 00:27:56 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/Curses.pm,v 1.31 1999/05/05 06:03:17 neild Exp $
 
 package TLily::UI::Curses::Proxy;
 
@@ -326,6 +326,8 @@ sub start_curses {
     eval { idcok(1); };
     typeahead(-1);
     keypad(1);
+
+    TLily::UI::Curses::Generic::start_curses();
 
     $SIG{WINCH} = sub { $sigwinch = 1; };
 }
