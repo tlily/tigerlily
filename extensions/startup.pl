@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/startup.pl,v 1.9 1999/10/03 18:25:56 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/startup.pl,v 1.10 2000/02/05 21:08:57 neild Exp $
 
 use strict;
 
@@ -76,7 +76,8 @@ sub startup_handler ($$) {
 		   type   => "memo",
                    name   => "tlilyStartup",
 		   target => "me",
-		   call   => $sub);
+		   call   => $sub)
+      unless $config{no_startup_memo};
 
     event_u($handler);
     return 1;
