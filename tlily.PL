@@ -7,7 +7,7 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/tlily.PL,v 1.39 1999/07/02 08:06:17 albert Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/tlily.PL,v 1.40 1999/08/10 16:03:35 mjr Exp $
 
 use strict;
 use Config;
@@ -46,7 +46,7 @@ print F <<EOF;
 #include <sys/errno.h>
 
 int main (int argc, char* argv[]) {
-   printf("EAGAIN=%d\n",EAGAIN);
+   printf("EAGAIN=\%d\\n",EAGAIN);
    return(0);
 }
 EOF
