@@ -1,5 +1,4 @@
 use strict;
-use FileHandle;
 
 my $dict;
 
@@ -101,11 +100,15 @@ sub spellcheck_cmd {
 	TLily::UI::istyle_fn_r(\&spellcheck_input);
 	my $dictfile;
 	if (%Search::Dict::) {       
-	    foreach (qw(/usr/dict/words /usr/share/dict/words)) {
-		if ( -f $_ ) { $dictfile = $_; }
+            my @words = qw(/usr/dict/words /usr/share/dict/words);
+	    unshift @words, $config{words} if ($config{words});
+	    foreach (@words) {
+		if ( -f $_ ) { $dictfile = $_; last; }
 	    }
 
-	    $dict = new FileHandle($dictfile);
+            local *DICT;
+	    my $rc = open(DICT, "< $dictfile");
+            $dict = $rc ? *DICT{IO} : undef;
 	}
 	if ($dict) {
 	    $ui->print("(spellcheck enabled, using Search::Dict on $dictfile)\n");
