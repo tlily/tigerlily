@@ -1,4 +1,4 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/after.pl,v 1.3 1999/03/02 02:02:33 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/after.pl,v 1.4 1999/03/06 17:48:31 steve Exp $
 
 use strict;
 
@@ -71,7 +71,7 @@ sub cron_command {
 	foreach $k (sort keys %cron) {
        	    my($sec,$min,$hour,$mday,$mon,$year) = localtime($cron_when{$k});
 	    $ui->printf("(%2d  %02d:%02d:%02d %02d/%02d/%02d  %s)\n",
-			$k, $hour, $min, $sec, $mon, $mday, $year, $cron{$k});
+			$k, $hour, $min, $sec, $mon+1, $mday, $year, $cron{$k});
 	}
 	return;
     }
