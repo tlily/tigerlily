@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Tk/Attic/Event.pm,v 1.2 2001/01/26 03:01:55 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Tk/Attic/Event.pm,v 1.3 2001/02/24 23:04:30 josh Exp $
 
 package TLily::UI::Tk::Event;
 
@@ -70,6 +70,11 @@ sub io_r {
 sub io_u {
     print STDERR ": TLily::UI::Tk::Event::io_u\n" if $config{ui_debug};
     my($self, $fileno, $handle, $mode) = @_;
+
+    print STDERR "handle: ", $handle, "\n" if $config{ui_debug};
+    print STDERR "fileno: ", $fileno, "\n" if $config{ui_debug};
+    print STDERR "mode: ", $mode, "\n" if $config{ui_debug};
+
     if($mode =~ /(e|r)/) {
 	delete $self->{readable}->{$handle};
 	$self->{mainwin}->fileevent($handle, "readable", "");
@@ -117,8 +122,8 @@ sub run {
 }
 
 sub callback {
-    print STDERR ": TLily::UI::Tk::Event::callback\n" if $config{ui_debug};
     my($self, $mode, $handle) = @_;
+    print STDERR ": TLily::UI::Tk::Event::callback ($handle is $mode)\n";# if $config{ui_debug};
     if($mode eq "readable") {
 	vec($rout, $self->{$mode}->{$handle}, 1) = 1;
 	$nfound++;

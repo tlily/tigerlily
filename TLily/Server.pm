@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Server.pm,v 1.26 2001/01/26 03:01:48 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Server.pm,v 1.27 2001/02/24 23:04:29 josh Exp $
 
 package TLily::Server;
 
@@ -46,6 +46,17 @@ matters to you!
 my %server;
 my @server; # For ordering.
 my $active_server;
+
+BEGIN {
+    # Thanks again, POE::Kernel!
+
+    # http://support.microsoft.com/support/kb/articles/Q150/5/37.asp
+    if ($^O eq 'MSWin32') {
+        eval '*EINPROGRESS = sub { 10036 };';
+        eval '*EWOULDBLOCK = sub { 10035 };';
+    }
+}
+
 
 =item new(%args)
 
@@ -110,7 +121,7 @@ sub new {
 
     $ui->print("connected.\n");
 
-    fcntl($self->{sock}, F_SETFL, O_NONBLOCK) or die "fcntl: $!\n";
+    tl_nonblocking($self->{sock});
 
     $self->{io_id} = TLily::Event::io_r(handle => $self->{sock},
 					mode   => 'r',
@@ -294,12 +305,12 @@ sub send {
     my $written = 0;
     while ($written < length($s)) {
 	my $bytes = syswrite($self->{sock}, $s, length($s), $written);
-	
+
 	if (!defined $bytes) {
 	    # The following is broken, and must be fixed.
 	    #next if ($errno == $::EAGAIN);
 	    die "syswrite: $!\n";
-		}
+        }
 	$written += $bytes;
     }
 
@@ -356,11 +367,21 @@ IO Handler to process input from the server.
 sub reader {
     my($self, $mode, $handler) = @_;
 
+Win32Hack:
     my $buf;
     my $rc = sysread($self->{sock}, $buf, 1024);
 
-    # Interrupted by a signal.
+    if (($^O eq "MSWin32") && ($! == &EWOULDBLOCK)) {
+        sleep(1); 
+        print STDERR "STUPID WIN32 HACK WHICH SHOULD BE REMOVED ONCE TK EVENTLOOP STARTS WORKING RIGHT FOR IO\n";
+        goto Win32Hack; 
+    }
+
+    # Interrupted by a signal or would block
     return if (!defined($rc) && $! == $::EAGAIN);
+
+    # Would block.  (used only on win32 right now)
+    return if (($^O eq "MSWin32") && (!defined($rc) && $! == &EWOULDBLOCK));
 
     # End of line.
     if (!defined($rc) || $rc == 0) {
@@ -379,6 +400,39 @@ sub reader {
     }
 
     return;
+}
+
+
+=item tl_nonblocking()
+
+Make a socket non-blocking, cross-platformly.
+  
+This code is lifted from POE::Kernel.  Very cool.  I would not have
+figured this out.
+
+=cut
+
+sub tl_nonblocking {
+    my ($handle) = @_;
+
+    if ($^O eq 'MSWin32') {
+        my $set_it = "1";
+          
+        # 126 is FIONBIO (some docs say 0x7F << 16)
+        ioctl($handle,
+              0x80000000 | (4 << 16) |
+              (ord('f') << 8) | 126,
+              $set_it) or die "Can't set the handle non-blocking: $!";
+
+     } else {
+
+         # Make the handle stop blocking, the POSIX way.
+            
+         my $flags = fcntl($handle, F_GETFL, 0)
+             or croak "fcntl fails with F_GETFL: $!\n";
+         fcntl($handle, F_SETFL, $flags | O_NONBLOCK)
+             or croak "fcntl fails with F_SETFL: $!\n";
+     }
 }
 
 

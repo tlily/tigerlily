@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Event.pm,v 1.32 2001/01/26 03:01:48 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Event.pm,v 1.33 2001/02/24 23:04:29 josh Exp $
 
 package TLily::Event::Core;
 
@@ -202,7 +202,7 @@ to complete.
 
 sub keepalive {
     my($t) = @_;
-    alarm($t || 0);
+    tl_alarm($t || 0);
 }
 
 
@@ -475,9 +475,9 @@ sub invoke {
             }
 
 	}
-        alarm($timeout);
+        tl_alarm($timeout);
 	$rc = $h->{call}->(@_);
-	alarm(0);
+	tl_alarm(0);
     };
     warn "$h->{type} handler caused error: $@" if ($@);
     $h->{registrar}->pop_default  if ($h->{registrar});
@@ -578,7 +578,23 @@ sub loop {
     loop_once while (1);
 }
 
+
+=item tl_alarm()
+
+Wrapper around the alarm() function.
+
+=cut
+sub tl_alarm {
+    if ($^O eq "MSWin32") {
+        # alarm functionality is not available on this platform
+    } else {
+        alarm($_[0]);
+    }
+}
+
+
 1;
+
 
 
 __END__

@@ -7,7 +7,7 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/tlily.PL,v 1.52 2001/01/26 03:01:44 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/tlily.PL,v 1.53 2001/02/24 23:04:29 josh Exp $
 
 require 5.00307;
 use strict;
@@ -225,7 +225,11 @@ sub load_ui {
 
     my %available;
 
-    $config{UI} ||= "Curses";
+    if ($^O eq "MSWin32") {
+        $config{UI} ||= "Tk";    
+    } else {
+        $config{UI} ||= "Curses";
+    }
 
     opendir(D,"$::TL_LIBDIR/TLily/UI");
     map { s/.pm$//; $available{$_}++; } grep /\.pm$/, readdir(D);

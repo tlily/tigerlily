@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/Tk.pm,v 1.7 2001/01/26 03:01:52 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/Tk.pm,v 1.8 2001/02/24 23:04:30 josh Exp $
 
 package TLily::UI::Tk;
 
@@ -330,7 +330,7 @@ sub new {
 
 sub about {
     $mainwin->Dialog(-title => "About Tigerlily",
-                  -text  => qq{Tigerlily 2.1\n(C) 1998-2000, The Tigerlily Team\n},
+                  -text  => qq{Tigerlily $TLily::Version::VERSION\n(C) 1998-2001, The Tigerlily Team\n},
                   -image => $logo,
                   -default_button => "Ok",
                   -buttons => ["Ok"])->Show();
