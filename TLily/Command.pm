@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Command.pm,v 1.1 1999/02/27 00:21:56 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Command.pm,v 1.2 1999/02/27 00:52:37 josh Exp $
 package TLily::Command;
 
 use strict;
@@ -29,7 +29,7 @@ sub init () {
 		return 0;
 	    }); 
 
-    event_r(type => 'cmd',
+    event_r(type => 'all',
 	    call => sub {
 		my($e) = @_;
 		my $id = $e->{cmdid};

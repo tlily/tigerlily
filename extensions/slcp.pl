@@ -1,4 +1,4 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/Attic/slcp.pl,v 1.11 1999/02/27 00:21:59 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/Attic/slcp.pl,v 1.12 1999/02/27 00:52:40 josh Exp $
 
 use strict;
 use vars qw(%config);
@@ -130,7 +130,7 @@ sub parse_line {
     $ui->print("=", $line, "\n") if ($TLily::Config::config{parser_debug});
     
     my %event;
-    
+    my $cmdid = "";
     # prompts #############################################################
     
     my $p;
@@ -150,8 +150,13 @@ sub parse_line {
     if ($line =~ s/^%g//) {
 	$serv->{BELL} = 1;
     }
-    
-    
+
+    # %command, (command leafing)
+    if ($line =~ /^%command \[(\d+)\] (.*)/) {
+	$cmdid = $1;
+	$line = $2;
+    }
+        
     # SLCP ################################################################
     
     # SLCP "%USER" and "%DISC" messages, used to sync up the
@@ -271,15 +276,7 @@ sub parse_line {
 	goto found;
     }
 
-    # %command, all cores.
-    if ($line =~ /^%command \[(\d+)\] (.*)/) {
-	%event = (type  => 'cmd',
-		  cmdid => $1);
-	$line = $2;
-	goto found;
-    }
-    
-    # %end, all cores.
+    # %end (command leafing)
     if ($line =~ /^%end \[(\d+)\]/) {
 	%event = (type => 'endcmd',
 		  cmdid => $1);
@@ -341,6 +338,7 @@ sub parse_line {
     
     # An event has been parsed.
   found:
+    $event{cmdid}   = $cmdid if ($cmdid);
     $event{BELL}    = 1 if ($serv->{BELL});
     $event{server}  = $serv;
     $event{ui_name} = $serv->{ui_name};
