@@ -244,6 +244,7 @@ sub start_of_word {
 sub prefix {
     my($self, $prefix) = @_;
     $self->{prefix} = defined($prefix) ? $prefix : "";
+    $self->update_style();
     $self->rationalize();
     $self->redraw();
 }
