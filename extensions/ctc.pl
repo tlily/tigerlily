@@ -1,9 +1,10 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/ctc.pl,v 1.1 1999/04/06 19:12:05 steve Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/ctc.pl,v 1.2 1999/04/11 02:35:32 steve Exp $
 
 use Net::Domain qw(hostfqdn);
 use Socket qw(inet_ntoa inet_aton);
 use TLily::Daemon::HTTP;
+use TLily::Server::HTTP;
 
 use strict;
 
@@ -52,6 +53,102 @@ sub ctc_cmd {
 		";@@@ ctc send @@@ http://$hostaddr:$http->{port}/$alias");
 	return;
     }
+
+    if ($cmd eq 'get') {
+	my ($from, $file) = @rest;
+	my $lfrom;
+
+	if (!defined $from) {
+	    $ui->print ("(you must specify a user to get from)\n");
+	    return;
+	}
+
+	$lfrom = lc($from);
+	if ((!exists($received{$lfrom})) ||
+	    (!(scalar(@{$received{$lfrom}})))) {
+	    $ui->print ("(no pending sends from ${from})\n");
+	    return;
+	}
+
+	my $url = 0;
+
+	if ($file) {
+	    for (my $i = 0; $i < scalar(@{$received{$lfrom}}); $i++) {
+		if ($received{$lfrom}->[$i]->{URL} =~ /$file$/) {
+		    $url = splice @{$received{$lfrom}}, $i, 1;
+		    last;
+		}
+	    }
+	    if (!$url) {
+		$ui->print ("($from did not send you a file named $file)\n");
+		return;
+	    }
+	} else {
+	    $url = shift @{$received{$lfrom}};
+	}
+
+#	return passive_get($url, $from) if $url->{Passive};
+	$ui->print ("(getting $url->{URL})\n");
+	TLily::Server::HTTP->new(url => $url->{URL},
+				 ui_name => $ui->{name});
+	return;
+    }
+
+    if ($cmd eq 'list') {
+	$ui->print(" Type   User                    Filename\n");
+	
+	foreach my $p (keys %pending) {
+	    my $s = "SEND";   # Passive eventually, too.
+	    $ui->printf(" $s   %-23s %s\n", $pending{$p}->{to},
+			$pending{$p}->{file});
+	}
+	foreach my $p (keys %received) {
+	    foreach my $q (@{$received{$p}}) {
+		my @r = split m|/|, $q->{URL};
+		my $r = pop @r;
+		$ui->printf(" GET    %-23s %s\n", $p, $r);
+	    }
+	}
+	return;
+    }
+
+    if ($cmd eq 'cancel') {
+	my ($to, $file) = @rest;
+
+	for my $p (keys %pending) {
+	    if (!$to || $pending{$p}->{to} eq lc($to)) {
+		TLily::Daemon::HTTP::file_u($p);
+		delete $pending{$p};
+	    }
+	}
+	my $o = ($to) ? " to $to" : "";
+	$ui->print("(all pending sends", $o, " cancelled)\n");
+	return;
+    }
+
+    if ($cmd eq 'refuse') {
+	my ($from, $file) = @rest;
+
+	my $lfrom = lc($from);
+	if (!$received{$lfrom}) {
+	    $ui->print("(no pending gets from $from)\n");
+	    return;
+	}
+
+	for (my $i = 0; $i < scalar(@{$received{$lfrom}}); $i++) {
+	    if (!$file || $received{$lfrom}->[$i]->{URL} =~ /$file$/) {
+		command ($from, ";@@@ ctc refuse @@@ ",
+			 $received{$lfrom}->[$i]->{URL});
+		my @f = split m|/|, $received{$lfrom}->[$i]->{URL};
+		my $f = pop @f;
+		$ui->print("(refusing file $f from $from)\n");
+		splice @{$received{$lfrom}}, $i, 1;
+	    }
+	}
+	delete $received{$lfrom} unless (scalar(@{$received{$lfrom}}));
+	return;
+    }
+    $ui->print("unknown %ctc command, see %help ctc\n");
 }
 
 sub send_handler {

@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_output.pl,v 1.3 1999/04/09 22:48:29 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_output.pl,v 1.4 1999/04/11 02:35:34 steve Exp $
 
 use strict;
 
@@ -175,8 +175,8 @@ my $sub = sub {
     return unless ($serv);
     
     # optimization?
-    #return unless ($e->{NOTIFY});
-    
+    return unless ($e->{NOTIFY});
+
     my $Me =  $serv->user_name;
     
     my $i = 0;

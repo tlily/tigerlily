@@ -1,6 +1,6 @@
 # -*- Perl -*-
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/http_parse.pl,v 1.4 1999/04/06 17:32:04 steve Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/http_parse.pl,v 1.5 1999/04/11 02:35:33 steve Exp $
 
 use strict;
 
@@ -10,38 +10,66 @@ my $daemon = undef;
 
 sub parse_http {
     my ($event, $handler) = @_;
-    my $ui = TLily::UI::name();
-    
-    if ($event->{daemon}->{_state}->{_done}) {
-	# stub for PUT
+    my $st;
+
+    if (defined $event->{server}) {   # Server instance, not daemon instance
+	$st = \$event->{server}->{_state};
+    } else {
+	$st = \$event->{daemon}->{_state};
+    }
+
+    if ($$st->{_done}) {
+	save_file ($event, $handler);
 	return;
     }
     
-    my $text = $event->{daemon}->{_state}->{_partial} . $event->{text};
+    my $text = $$st->{"_partial"} . $event->{data};
 
-#    $ui->print("$text");
     while ($text =~ s/^([^\r\n]+)\r?\n//) {
 	my $line = $1;
-#	$ui->print("$line\n");
 	TLily::Event::send(type   => 'http_line',
 			   daemon => $event->{daemon},
-			   text   => $line);
+			   server => $event->{server},
+			   data   => $line);
     }
-    if ($text =~ s/^\r?\n$//) {
+    if ($text =~ s/^\r?\n//) {
 	TLily::Event::send(type   => 'http_complete',
-			   daemon => $event->{daemon});
+			   server => $event->{server},
+			   daemon => $event->{daemon},
+			   data   => $text);
     }
     
-    $event->{daemon}->{_state}->{_partial} = $text;
+    $$st->{"_partial"} = $text;
 }
 
 sub parse_http_line {
     my ($event, $handler) = @_;
     
-    my $text = $event->{text};
-    my $st = \$event->{daemon}->{_state};
+    my $text = $event->{data};
+    my $st;
     
-    if (!($$st->{_command})) {
+    if (defined $event->{server}) {
+	$st = \$event->{server}->{"_state"}; 
+    } else {
+	$st = \$event->{daemon}->{"_state"};
+    }
+
+#    my $ui = TLily::UI::name();
+
+    if ((defined $event->{server}) && (!($$st->{_status}))) {
+	if ($text !~ /^(HTTP\/\d+\.\d+)[ \t]+(\d+)[ \t]+.*$/) {
+	    # Do something here.  This is unexpected.
+	    return;
+	}
+
+	$event->{server}->{"_state"} = { _proto   => $1,
+					 _status  => $2,
+					 _msg     => $3
+				       };
+
+#	$ui->print ("Server returned status ", $$st->{_status}, "\n");
+	return;
+    } elsif ((!(defined $event->{server})) && (!($$st->{_command}))) {
 	if ($text !~ /^(\w+)[ \t]+(\S+)(?:[ \t]+(HTTP\/\d+\.\d+))?$/) {
 	    $event->{daemon}->send_error (errno => 400,
 					  title => "Bad Request",
@@ -58,7 +86,6 @@ sub parse_http_line {
 	       };
 	
 	return;
-	
     }
     
     if ($text =~ /^(\w+):(.+)$/) {
@@ -70,7 +97,16 @@ sub parse_http_line {
 sub complete_http {
     my ($event, $handler) = @_;
     
-    my $st = \$event->{daemon}->{_state};
+    my $st;
+
+    if (defined $event->{server}) {
+	$event->{server}->{_state}->{_done} = 1;
+	save_file($event, $handler);
+	return;
+    } else {
+	$event->{daemon}->{_state}->{_done} = 1;
+	$st = \$event->{daemon}->{_state};
+    }
     
     if (($$st->{_command} ne 'GET') &&
 	($$st->{_command} ne 'HEAD')) {
@@ -84,31 +120,87 @@ sub complete_http {
     
     # Special case for /
     if ($$st->{_file} =~ m|^/$|) {
-	my $fd = $event->{daemon}->{sock};
+	my $d = $event->{daemon};
 	
-	print $fd "HTTP/1.0 200 OK\r\n";
-	print $fd "Date: " . TLily::Daemon::HTTP::date() . "\r\n";
-	print $fd "Connection: close\r\n";
-	print $fd "\r\n";
+	$d->print("HTTP/1.0 200 OK\r\n");
+	$d->print("Date: " . TLily::Daemon::HTTP::date() . "\r\n");
+	$d->print("Connection: close\r\n");
+	$d->print("\r\n");
 	if ($$st->{_command} eq 'GET') {
-	    print $fd "<html><head>\n<title>Tigerlily</title>\n";
-	    print $fd "</head><body>\n";
-	    print $fd "To download the latest version of Tigerlily, ";
-	    print $fd "click ";
-	    print $fd "<a href=\"http://www.hitchhiker.org/tigerlily\">\n";
-	    print $fd "here</a></body></html>\n";
+	    $d->print("<html><head>\n<title>Tigerlily</title>\n");
+	    $d->print("</head><body>\n");
+	    $d->print("To download the latest version of Tigerlily, ");
+	    $d->print("click ");
+	    $d->print("<a href=\"http://www.hitchhiker.org/tigerlily\">\n");
+	    $d->print("here</a></body></html>\n");
 	}
 	$event->{daemon}->close();
 	return;
     }
     
-    $$st->{_file} =~ s|/||;
+    $$st->{_file} =~ s|^/||;
     
     unless ($event->{daemon}->send(file => $$st->{_file},
 				   head => ($$st->{_command} eq 'HEAD'))) {
 	$event->{daemon}->close();
 	return;
     }
+}
+
+# This is a pseudo-eventhandler.  It never gets called by the event system,
+# it just gets called as soon as possible from other events.
+
+sub save_file {
+    my ($event, $handler) = @_;
+    
+    my $st;
+    my $filename;
+
+    if (defined $event->{server}) {
+	$st = \$event->{server}->{"_state"};
+	$filename = $event->{server}->{filename};
+    } else {
+	$st = \$event->{daemon}->{"_state"};
+	return unless $$st->{_passive};
+	$filename = $$st->{_file};
+    }
+    
+    return if $$st->{_nomorewrite};
+    
+    unless (defined $$st->{_filehandle}) {
+	local *FH;
+	
+	unless (open FH, ">$filename") {
+	    my $ui = TLily::UI::name();
+	    $ui->print ("(Unable to save file $filename: $!)");
+	    $event->{server}->terminate() if $event->{server};
+	    $event->{daemon}->close() if $event->{daemon};
+	    return;
+	}
+	$$st->{_filehandle} = *FH;
+    }
+    
+    syswrite ($$st->{_filehandle}, $event->{data}, length($event->{data}));
+    $$st->{_byteswritten} += length($event->{data});
+
+    if ((defined ($$st->{"Content-Length"})) &&
+	($$st->{_byteswritten} >= $$st->{"Content-Length"})) {
+	$$st->{_nomorewrite} = 1;
+	$event->{server}->terminate() if defined $event->{server};
+	$event->{daemon}->close() if defined $event->{daemon};
+    }
+    return;
+}
+
+sub cleanup {
+    my ($event, $handler) = @_;
+
+    close ($event->{server}->{_state}->{_filehandle})
+      if defined $event->{server}->{_state}->{_filehandle};
+    
+    close ($event->{daemon}->{_state}->{_filehandle})
+      if defined $event->{daemon}->{_state}->{_filehandle};
+    return;
 }
 
 sub load {
@@ -118,9 +210,18 @@ sub load {
 	     call => \&parse_http_line);
     event_r (type => 'http_complete',
 	     call => \&complete_http);
+    event_r (type => 'http_close',
+	     call => \&cleanup);
+    event_r (type => 'server_disconnected',
+	     call => \&cleanup);
     my $port = 31336;
     while (!(defined($daemon)) && ($port < 31340)) {
 	$daemon = TLily::Daemon::HTTP->new (port => ++$port);
     }
     warn ("Unable to bind to a port!") unless $daemon;
+}
+
+sub unload {
+    $daemon->terminate() if defined($daemon);
+    undef $daemon;
 }
