@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/keepalive.pl,v 1.8 2000/09/12 02:26:18 coke Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/keepalive.pl,v 1.9 2001/11/12 05:00:14 tale Exp $
 #
 # keepalive -- periodically ping the server, just to verify our connection
 #              is still there.
@@ -7,7 +7,8 @@
 
 use strict;
 
-shelp_r("keepalive_interval" => "Frequency in seconds of server pings. ", "variables");
+shelp_r("keepalive_interval" => "Frequency in seconds of server pings. ",
+        "variables");
 shelp_r("keepalive" => "Send periodic pings to the server.");
 help_r("keepalive",
 'The keepalive extension is useful for maintaining a connection to the
@@ -48,7 +49,7 @@ sub keepalive {
 			return;
 		    });
     }
-    
+
     return 0;
 }
 
@@ -58,6 +59,11 @@ if ($config{keepalive_interval} <= 0) {
 
 $timer{interval} = $config{keepalive_interval};
 $timer{after} = $config{keepalive_interval};
-$timer{call} = sub { keepalive(active_server(), @_) };
+$timer{call} = sub {
+    foreach my $server (TLily::Server::find()) {
+        next unless defined($server);
+        keepalive($server, @_)
+    }
+};
 
 TLily::Event::time_r(\%timer);

@@ -1,4 +1,6 @@
 Version 2.3
+  * [extensions/keepalive.pl] keepalive will now try to keep all connected
+    servers alive, not just the one focused when the interval expires. [DCL]
   * [TLily/Server/SLCP.pm] During startup, some server output would be
     inadvertently lost because a text event handler was stopping processing of
     all text that did not match what it was looking for. [DCL]
