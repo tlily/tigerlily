@@ -1,12 +1,12 @@
 #!/usr/bin/perl -w
 #    TigerLily:  A client for the lily CMC, written in Perl.
-#    Copyright (C) 1999  The TigerLily Team, <tigerlily@einstein.org>
-#                                http://www.hitchhiker.org/tigerlily/
+#    Copyright (C) 1999  The TigerLily Team, <tigerlily@tlily.centauri.org>
+#                                http://tlily.centauri.org/tigerlily/
 #
 #  This program is free software; you can redistribute it and/or modify it
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/tools/announcement,v 1.2 1999/04/11 22:35:47 albert Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/tools/announcement,v 1.3 2000/01/13 21:13:42 albert Exp $
 
 use strict;
 use Config;
@@ -52,8 +52,8 @@ sub do_announcement (%) {
 	}
 	close(CL);
 
-	my $msg = qq(From: "The Tigerlily Developers" <tigerlily\@hitchhiker.org>
-To: "Tigerlily Announcement List" <tigerlily-announce\@einstein.org>
+	my $msg = qq(From: "The Tigerlily Developers" <tigerlily\@tlily.centauri.org>
+To: "Tigerlily Announcement List" <tigerlily-announce\@tlily.centauri.org>
 Subject: Tigerlily $version is now available
 
 Hi All -
@@ -62,19 +62,17 @@ Tigerlily version $version is now available.
 
 Changes in this release, from the ChangeLog:
 $ChangeLog
-Once Josh moves it into place, it will be available from:
+It is available from:
+http://tlily.centauri.org/tigerlily/
 http://www.hitchhiker.org/tigerlily/
-
-Until then, you can get it from:
-http://www.acm.rpi.edu/~neild/
 -- 
 Share and Enjoy.
 
 The Tigerlily Developers
-Damien, Albert, Josh, Jon, Steve & Matt.
+Albert, Damien, Josh, Matt & Steve.
 ----------------------------------------------------------------------------
-To unsubscribe from this list, send email to <majordomo\@einstein.org> with
-the words "unsubscribe tigerlily-announce" in the body.
+To unsubscribe from this list, send email to <majordomo\@tlily.centauri.org>
+with the words "unsubscribe tigerlily-announce" in the body.
 );
 	my $abort_flag;
 	my $editor = $ENV{EDITOR} || $ENV{VISUAL} || "vi";
@@ -111,7 +109,7 @@ the words "unsubscribe tigerlily-announce" in the body.
     }
     else {
 	print "Don't forget to send an announcement of the new release\n",
-	    "to tigerlily-announce\@einstein.org.\n";
+	    "to tigerlily-announce\@tlily.centauri.org.\n";
     }
 }
 
