@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/Curses.pm,v 1.42 2000/02/15 01:54:58 tale Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/Curses.pm,v 1.43 2000/02/16 23:26:27 josh Exp $
 
 package TLily::UI::Curses::Proxy;
 
@@ -74,6 +74,7 @@ package TLily::UI::Curses;
 
 use strict;
 use vars qw(@ISA %commandmap %bindmap);
+my  ($STTY_LNEXT);
 
 use Carp;
 use TLily::UI;
@@ -338,6 +339,11 @@ sub splitwin {
 
 sub start_curses {
     my($self) = @_;
+    
+    # Work around a bug in certain curses implementations where raw() does
+    # not appear to clear the "lnext" setting.
+    ($STTY_LNEXT) = (`stty -a 2> /dev/null` =~ /lnext = (\S+);/);
+    system("stty lnext undef") if ($STTY_LNEXT);
 
     initscr;
 
@@ -353,8 +359,10 @@ sub start_curses {
     noecho();
     raw();
     idlok(1);
+
     # How odd.  Jordan doesn't have idcok().
     eval { idcok(1); };
+       
     typeahead(-1);
     keypad(1);
 
@@ -367,6 +375,7 @@ sub start_curses {
 sub stop_curses {
     my($self) = @_;
     endwin;
+    system("stty lnext $STTY_LNEXT") if ($STTY_LNEXT);    
 }
 
 
