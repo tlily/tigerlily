@@ -1,4 +1,9 @@
 Version 2.3
+  * [extensions/leet.pl,extensions/paste.pl,extensions/ui.pl] leet-mode,
+    paste-mode and input-search-mode all ignored the return value of
+    intercept_u, so they didn't detect failure to enter their mode because
+    of already being in another mode.  (You can't have your multiline paste
+    leet'd.  Oh darn.) [DCL]
   * [extensions/keepalive.pl] keepalive will now try to keep all connected
     servers alive, not just the one focused when the interval expires. [DCL]
   * [TLily/Server/SLCP.pm] During startup, some server output would be
