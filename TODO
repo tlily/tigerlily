@@ -21,6 +21,7 @@ Before 2.0 release:
   ctc.pl/httpd.pl/Httpd.pm  (hard)
   log.pl        (requires UI support)
   gag.pl        (requires UI support)
+  page.pl       (requires UI support)
   
   The following need to be tested!:
   biff.pl
