@@ -1,6 +1,5 @@
 Version 2.0-pre
-  * Radical changes so mind-numbingly profound that they will blow your mind.
-    [ALL]
+  * Added %memo. [DPN]
   * Added GPL. [CWS, JDW]
   * New install w/ Makefile.PL (removed Build.PL) [CWS]
   * new implementation of ctc protocol [SMC]
@@ -8,6 +7,8 @@ Version 2.0-pre
   * Re-integration of various things.. [JDW]
   * New UI code, event queue code, and tons of other changes [DPN]
   * SLCP, beginnings of multiserver.  Server object. [JDW]
+  * Radical changes so mind-numbingly profound that they will blow your mind.
+    [ALL]
 
 Version 1.0.4-post
   * [extensions/parse.pl] Bugfix for /who output and names with spaces.  [DPN]

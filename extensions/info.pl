@@ -1,153 +1,293 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/info.pl,v 1.5 1999/03/15 23:53:03 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/info.pl,v 1.6 1999/04/03 01:03:26 neild Exp $
 
 use strict;
 
-sub info_set {
-    my ($ui,%args)=@_;
-    
-    my $disc=$args{disc};
-    my $edit=$args{edit};
-    my @data=@{$args{data}};
-    
-    if ($edit) {
-	local(*FH);
-        my $tmpfile = "/tmp/tlily.$$";
-	my $mtime = 0;
-	
-	unlink($tmpfile);
-	if (@data) {
-	    open(FH, ">$tmpfile") or die "$tmpfile: $!";
-	    foreach (@data) { chomp; print FH "$_\n"; }
-	    $mtime = (stat FH)[10];
-	    close FH;
-	}
+sub fetch {
+    my(%args) = @_;
 
-	$ui->suspend;
-        TLily::Event::keepalive();
-	system("$config{editor} $tmpfile");
-        TLily::Event::keepalive(5);
-	$ui->resume;
+    my $server = $args{server};
+    my $call   = $args{call};
+    my $type   = defined($args{type}) ? $args{type} : "info";
+    my $target = defined($args{target}) ? $args{target} : "me";
+    my $name   = $args{name};
+    my $ui     = $args{ui};
 
-	my $rc = open(FH, "<$tmpfile");
-	unless ($rc) {
-	    $ui->print("(info buffer file not found)\n");
-	    return;
-	}
+    my $uiname;
+    $uiname    = $ui->name() if ($ui);
 
-	if ((stat FH)[10] == $mtime) {
-	    $ui->print("(info not changed)\n");
-	    close FH;
-	    unlink($tmpfile);
-	    return;
-	}
-	
-	@data = <FH>;
-	close FH;
-	unlink($tmpfile);
-    }
-    
-    my $size=@data;
-    
-
+    my @data;
     my $sub = sub {
-	my($event,$handler) = @_;
-	my $server = server_name();
-	my $ui = ui_name();
-
-	if ($event->{response} eq 'OKAY') {
-	    my $l;
-	    foreach $l (@data) {
-		$server->send($l);
-	    }
-	} else {
-	    my $deadfile = $ENV{HOME}."/.lily/tlily/dead.info";
-	    my $rc = open(DF, ">$deadfile");
-	    if ($rc) {
-		print DF @data;
-		close(DF);
-		$ui->print("(export refused, info saved to $deadfile)\n");
-	    } else {
-		$ui->print("(export refused, edits lost!)\n");
-	    }
+	my($event) = @_;
+	$event->{NOTIFY} = 0;
+	if (defined($event->{text}) && $event->{text} =~ /^\* (.*)/) {
+	    return if (($type eq "info") && (@data == 0) &&
+		       ($event->{text} =~ /^\* Last Update: /));
+	    push @data, substr($event->{text},2);
+	} elsif ($event->{type} eq 'endcmd') {
+	    $call->(server => $event->{server},
+		    ui     => ui_name($uiname),
+		    type   => $type,
+		    target => $target,
+		    name   => $name,
+		    text   => \@data);
 	}
-	event_u($handler->{id});
-	return 0;
+	return;
     };
-    event_r(type => 'export',
-	    call => $sub);
-    
-    my $server = server_name();
-    $server->sendln("\#\$\# export_file info $size $disc");
+
+    if ($type eq "info") {
+	$ui->print("(fetching info from server)\n") if ($ui);
+	cmd_process("/info $target", $sub);
+    } elsif ($type eq "memo") {
+	$ui->print("(fetching memo from server)\n") if ($ui);
+	cmd_process("/memo $target $name", $sub);
+    }
+
+    return;
 }
 
+sub store {
+    my(%args) = @_;
 
-sub info_edit {
-    my($ui,$target) = @_;
-    
-    my $server = server_name();
-    my $itarget = $target || $server->user_name();
-    
-    $ui->print("(getting info for $itarget)\n");
-    my @data = ();
-    cmd_process("/info $itarget", sub {
-		    my($event) = @_;
-		    $event->{NOTIFY} = 0;
-		    if ($event->{text} =~ /^\* (.*)/) {
-			return if ((@data == 0) &&
-				   ($event->{text} =~ /^\* Last Update: /));
-			push @data, substr($event->{text},2);
-		    } elsif ($event->{type} eq 'endcmd') {
-			map { s/\\(.)/$1/g } @data;
-			info_set($ui,
-				 disc=>$target,
-				 data=>\@data,
-				 edit=>1);
-		    }
-		    return 0;
-		});
-}
-	      
-	      
-sub info_cmd {
-    my $ui = shift @_;
-    my ($cmd,$disc) = split /\s+/,"@_";
-    if ($cmd eq 'set') {
-	info_set($ui,
-		 disc=>$disc,
-		 edit=>1);
-    } elsif ($cmd eq 'edit') {
-	info_edit($ui,$disc);
-    } else {
-	my $server = server_name();
-	$server->sendln("/info @_");
+    my $server = $args{server};
+    my $text   = $args{text};
+    my $type   = defined($args{type}) ? $args{type} : "info";
+    my $target = defined($args{target}) ? $args{target} : "me";
+    my $name   = $args{name};
+
+    my $uiname;
+    $uiname    = $args{ui}->name() if ($args{ui});
+
+    if ($type eq "info") {
+	my $size = @$text;
+	my $t = $target;  $t = "" if ($target eq "me");
+	$server->sendln("\#\$\# export_file info $size $t");
     }
-}
-	     
-sub export_cmd {
-    my ($file, $disc);
-    my $ui = shift @_;
-    my @args=split /\s+/,"@_";
-    if (@args == 1) {
-	($file) = @args;
-    } else {
-	($file,$disc) = @args;
+    elsif ($type eq "memo") {
+	my $size = 0;
+	foreach (@$text) { $size += length($_); }
+	my $t = $target;  $t = "" if ($target eq "me");
+	$server->sendln("\#\$\# export_file memo $size $t $name");
     }
-    my $rc=open(FH, "<$file");
+
+    push @{$server->{_export_queue}},
+      { uiname => $uiname, text => $text, type => $type };
+
+    return;
+}
+
+sub export_handler {
+    my($event, $handler) = @_;
+
+    my $ex = shift @{$event->{server}->{_export_queue}};
+    return unless $ex;
+
+    my $ui;
+    $ui = ui_name($ex->{uiname}) if (defined $ex->{uiname});
+
+    if ($event->{response} eq 'OKAY') {
+	foreach my $l (@{$ex->{text}}) {
+	    $event->{server}->sendln($l);
+	}
+    } else {
+	return unless $ui;
+
+	my $deadfile = $ENV{HOME}."/.lily/tlily/dead.".$ex->{type};
+	local *DF;
+	my $rc = open(DF, ">$deadfile");
+	if (!$rc) {
+	    $ui->print("(export refused, edits lost!)\n");
+	    return;
+	}
+
+	foreach my $l (@{$ex->{text}}) {
+	    print DF $l, "\n";
+	}
+	$ui->print("(export refused, info saved to $deadfile)\n");
+    }
+
+    return;
+}
+event_r(type => 'export',
+	call => \&export_handler);
+
+
+sub edit_text {
+    my($ui, $text) = @_;
+
+    local(*FH);
+    my $tmpfile = "/tmp/tlily.$$";
+    my $mtime = 0;
+
+    unlink($tmpfile);
+    if (@{$text}) {
+	open(FH, ">$tmpfile") or die "$tmpfile: $!";
+	foreach (@{$text}) { chomp; print FH "$_\n"; }
+	$mtime = (stat FH)[10];
+	close FH;
+    }
+
+    $ui->suspend;
+    TLily::Event::keepalive();
+    system($config{editor}, $tmpfile);
+    TLily::Event::keepalive(5);
+    $ui->resume;
+
+    my $rc = open(FH, "<$tmpfile");
     unless ($rc) {
-	$ui->print("(file \"$file\" not found)\n");
+	$ui->print("(edit buffer file not found)\n");
 	return;
     }
-    my @lines=<FH>;
-    close(FH);
-    info_set($ui,
-	     data=>\@lines,
-	     disc=>$disc,
-	     edit=>0);
+
+    if ((stat FH)[10] == $mtime) {
+	close FH;
+	unlink($tmpfile);
+	$ui->print("(file unchanged)\n");
+	return;
+    }
+
+    @{$text} = <FH>;
+    chomp(@{$text});
+    close FH;
+    unlink($tmpfile);
+
+    return 1;
 }
 
 
+sub info_cmd {
+    my($ui, $args) = @_;
+    my ($cmd,$disc) = split /\s+/, $args;
+    my $server = server_name();
+
+    if ($cmd eq 'set') {
+	my @text;
+	edit_text($ui, \@text) or return;
+	store(server => $server,
+	      ui     => $ui,
+	      type   => "info",
+	      target => $disc,
+	      text   => \@text);
+    }
+    elsif ($cmd eq 'edit') {
+	my $sub = sub {
+	    my(%args) = @_;
+	    edit_text($args{ui}, $args{text}) or return;
+	    store(@_);
+	};
+
+	fetch(server => $server,
+	      ui     => $ui,
+	      type   => "info",
+	      target => $disc,
+	      call   => $sub);
+    }
+    else {
+	$server->sendln("/info $args");
+    }
+}
+
+sub memo_cmd {
+    my($ui, $args) = @_;
+    my($cmd,@args) = split /\s+/, $args;
+    my $server = server_name();
+
+    my($target, $name);
+    if (@args == 1) {
+	($name) = @args;
+    } else {
+	($target, $name) = @args;
+    }
+
+    if ($cmd eq 'set') {
+	my @text;
+	edit_text($ui, \@text) or return;
+	store(server => $server,
+	      ui     => $ui,
+	      type   => "memo",
+	      target => $target,
+	      name   => $name,
+	      text   => \@text);
+    }
+    elsif ($cmd eq 'edit') {
+	my $sub = sub {
+	    my(%args) = @_;
+	    edit_text($args{ui}, $args{text}) or return;
+	    store(@_);
+	};
+
+	fetch(server => $server,
+	      ui     => $ui,
+	      type   => "memo",
+	      target => $target,
+	      name   => $name,
+	      call   => $sub);
+    }
+    else {
+	$server->sendln("/memo $args");
+    }
+}
+
+sub export_cmd {
+    my($ui, $args) = @_;
+    my @args = split /\s+/, $args;
+
+    my $usage = "(%export [memo] file target; type %help for help)\n";
+
+    # Ugh.  There HAS to be something cleaner than what follows.
+
+    my($type, $file, $target, $name);
+
+    if (@args > 0 && $args[0] eq "memo") {
+	$type = "memo";
+	shift @args;
+    } else {
+	$type = "info";
+    }
+
+    if (@args < 1) {
+	$ui->print($usage); return;
+    }
+    $file = shift @args;
+
+    if ($type eq "memo") {
+	if (@args == 1) {
+	    ($name) = @args;
+	} elsif (@args == 2) {
+	    ($target, $name) = @args;
+	} else {
+	    $ui->print($usage); return;
+	}
+    }
+    else {
+	if (@args == 1) {
+	    ($target) = @args;
+	} elsif (@args > 0) {
+	    $ui->print($usage); return;
+	}
+    }
+
+    local *FH;
+    my $rc = open(FH, "<$file");
+    unless ($rc) {
+	$ui->print("(\"$file\": $!)\n");
+	return;
+    }
+    my @text=<FH>;
+    chomp(@text);
+    close(FH);
+
+    my $server = server_name();
+    store(server => $server,
+	  ui     => $ui,
+	  type   => $type,
+	  target => $target,
+	  name   => $name,
+	  text   => \@text);
+}
+
 command_r('info'   => \&info_cmd);
+command_r('memo'   => \&memo_cmd);
 command_r('export' => \&export_cmd);
 	       
 shelp_r("info", "Improved /info functions");
