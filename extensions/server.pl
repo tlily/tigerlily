@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/server.pl,v 1.29 2000/12/13 19:18:16 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/server.pl,v 1.30 2000/12/17 15:53:30 coke Exp $
 
 use strict;
 
@@ -182,9 +182,10 @@ sub send_handler {
     for my $recip (@{$e->{RECIPS}}) {
 	my($name, $serv) = split /@/, $recip, 2;
 	if (defined($serv)) {
+	    my $servName = $serv;
 	    $serv = TLily::Server::find($serv);
 	    if (!defined($serv)) {
-		$ui->print("(cannot find server \"$serv\")\n");
+		$ui->print("(cannot find server \"$servName\")\n");
 		return 1;
 	    }
 	} else {
