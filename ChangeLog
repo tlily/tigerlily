@@ -1,4 +1,8 @@
 Version 2.3
+  * [extensions/url.pl] Multiline URIs in /review, /memo and /info should be
+    correctly assembled now much more than they were, though URIs that end
+    exactly at the end of the line now will be wrong.  Since they are
+    pretty rare compared to wrapped URIs, it seemed a fair trade-off. [DCL]
   * [extensions/ui.pl] kill-sentence, as in Emacs, bound to M-k. [DCL]
   * [extensions/ui.pl] zap-to-char, as in Emacs, bound to M-z. [DCL]
   * [TLily/UI/Curses.pm,extensions/leet.pl,extensions/paste.pl,
