@@ -16,14 +16,7 @@ Before 2.0 release:
     - Makefile.PL   (albert is working on this)  
     - when the last open server connection is closed, provide a exit/reconnect
       option. (integrate with smartexit feature)
-      
-  Testing:
-    - autoreview is untested!
 
-  Bugs:
-    log.pl - doesn't do indenting/wrapping right.  damien will move the 
-             wrapping/indenting code out of Curses.pm and into the UI.
-	     
  autologin - doesn't work after the first use
 
 Later:
