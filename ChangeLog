@@ -1,4 +1,8 @@
 Version 2.1.1-post
+  * [extensions/misc.pl] New config vars to help suppress output [WJC]
+  * [extensions/after.pl] Added support for multi-line commands [WJC]
+  * [extensions/keepalive.pl] Added help for vars. [WJC]
+  * [extensions/stock.pl] Rewrite, removed dep on 'wget', uses config vars now [WJC]
   * [extensions/xmms.pl] Fixes, added ability to play a URL. [MJR]
   * [extensions/xmms.pl] New extension; allows user to control Xmms from
     within tlily. [WJC]
