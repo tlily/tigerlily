@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Curses/Attic/Generic.pm,v 1.13 1999/03/23 08:33:30 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Curses/Attic/Generic.pm,v 1.14 1999/03/23 23:36:20 neild Exp $
 
 package TLily::UI::Curses::Generic;
 
@@ -19,6 +19,7 @@ use Curses;
 
 my $meta    = 0;
 my @widgets = ();
+my $active;
 
 # The stylemap and cstylemap hashes map style names to Curses attributes.
 %stylemap   = (default => A_NORMAL);
@@ -82,6 +83,8 @@ sub new {
 
     $self->{begin_y}  = $args{begin_y} || 0;
     $self->{begin_x}  = $args{begin_x} || 0;
+    $self->{Y}        = 0;
+    $self->{X}        = 0;
     $self->{lines}    = $args{lines} || 0;
     $self->{cols}     = $args{cols} || 0;
     $self->{rlines}   = undef;
@@ -151,6 +154,21 @@ sub req_size {
 	$self->{layout}->size_request($self, @_);
     }
     return ($self->{rlines}, $self->{rcols});
+}
+
+
+sub active {
+    my($self) = @_;
+    $active = $self if (ref $self);
+    return $active;
+}
+
+
+sub position_cursor {
+    return unless $active;
+    $active->{W}->move($active->{Y}, $active->{X});
+    $active->{W}->noutrefresh();
+    return;
 }
 
 

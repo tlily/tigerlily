@@ -7,12 +7,13 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Curses/Attic/Text.pm,v 1.16 1999/03/23 08:33:34 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Curses/Attic/Text.pm,v 1.17 1999/03/23 23:36:24 neild Exp $
 
 package TLily::UI::Curses::Text;
 
 use strict;
 use vars qw(@ISA);
+use Curses;
 use TLily::UI::Curses::Generic;
 use TLily::Event;
 
@@ -109,6 +110,11 @@ sub set_pager {
 	$self->{status}->set(t_more => undef);
     } else {
 	$self->{status}->set(t_more => "-- MORE ($r) --");
+    }
+
+    if ($handler) {
+	TLily::UI::Curses::Generic::position_cursor();
+	doupdate();
     }
 }
 

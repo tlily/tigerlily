@@ -7,12 +7,13 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Curses/Attic/Input.pm,v 1.12 1999/03/23 08:33:32 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Curses/Attic/Input.pm,v 1.13 1999/03/23 23:36:22 neild Exp $
 
 package TLily::UI::Curses::Input;
 
 use strict;
 use vars qw(@ISA);
+use Curses;
 use TLily::UI::Curses::Generic;
 
 @ISA = qw(TLily::UI::Curses::Generic);
@@ -175,14 +176,6 @@ sub redraw {
     #print STDERR "redraw\n";
     $self->{W}->erase();
     $self->drawlines(0, $self->{lines});
-    $self->{W}->noutrefresh();
-}
-
-
-# Called to set the (physical) cursor position in the window.
-sub position_cursor {
-    my($self) = @_;
-    $self->{W}->move($self->{Y}, $self->{X});
     $self->{W}->noutrefresh();
 }
 
