@@ -21,6 +21,8 @@ sub new {
 	$self->{kill_reset}  = 0;
 	$self->{prefix}      = "";
 	$self->{text_lines}  = 1;
+	$self->{history}     = [ "" ];
+	$self->{history_pos} = 0;
 
 	bless($self, $class);
 }
@@ -133,6 +135,46 @@ sub start_of_word {
 sub prefix {
 	my($self, $prefix) = @_;
 	$self->{prefix} = $prefix;
+	$self->rationalize();
+	$self->redraw();
+}
+
+
+sub accept_line {
+	my($self) = @_;
+	my $text = $self->{text};
+
+	$self->{text}  = "";
+	$self->{point} = 0;
+	$self->rationalize();
+	$self->redraw();
+
+	$self->{history}->[-1] = $text;
+	push @{$self->{history}}, "";
+	$self->{history_pos} = $#{$self->{history}};
+	return $text;
+}
+
+
+sub previous_history {
+	my($self) = @_;
+	return if ($self->{history_pos} <= 0);
+	$self->{history}->[$self->{history_pos}] = $self->{text};
+	$self->{history_pos}--;
+	$self->{text} = $self->{history}->[$self->{history_pos}];
+	$self->{point} = length $self->{text};
+	$self->rationalize();
+	$self->redraw();
+}
+
+
+sub next_history {
+	my($self) = @_;
+	return if ($self->{history_pos} >= $#{$self->{history}});
+	$self->{history}->[$self->{history_pos}] = $self->{text};
+	$self->{history_pos}++;
+	$self->{text} = $self->{history}->[$self->{history_pos}];
+	$self->{point} = length $self->{text};
 	$self->rationalize();
 	$self->redraw();
 }

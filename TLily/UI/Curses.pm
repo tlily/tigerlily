@@ -79,9 +79,7 @@ BEGIN {
 
 sub accept_line {
 	my($ui) = @_;
-	my $text = $ui->{input}->{text};
-	$ui->{input}->beginning_of_line();
-	$ui->{input}->kill_line();
+	my $text = $ui->{input}->accept_line();
 	$ui->{text}->{main}->{text}->seen();
 	$ui->style("user_input");
 	$ui->print($text, "\n");
@@ -96,6 +94,8 @@ sub accept_line {
 %commandmap = 
   (
    'accept-line'          => \&accept_line,
+   'previous-history'     => sub { $_[0]->{input}->previous_history(); },
+   'next-history'         => sub { $_[0]->{input}->next_history(); },
    'insert-self'          => sub { $_[0]->{input}->addchar($_[2]) },
    'forward-char'         => sub { $_[0]->{input}->forward_char(); },
    'backward-char'        => sub { $_[0]->{input}->backward_char(); },
