@@ -328,48 +328,20 @@ sub get_title {
 }
 
 
-# this is a fun hack.  a %dumpstate for querying the state database :)
-# need to document this.
-# usage: %dumpstate
-#        %dumpstate [HANDLE|NAME KEY]
-#        %dumpstate NAME
-#        %dumpstate NAME Josh
-#        %dumpstate HANDLE #850
-sub dumpstate {
-    my ($self,$args) = @_;
-    my ($dindex,$dkey) = split /\s+/,$args;
-    my ($rec,$index,$key);
+=item set_client_options()
 
-    ui_output("Desired index: \"$dindex\", key: \"$dkey\"");
-
-    foreach $index (sort keys %{$self}) {
-        if ($dindex && ($index ne $dindex)) { next; }
-        ui_output("$index:");
-        if (! ref($self->{$index})) {
-            ui_output("   $self->{$index}\n");
-        }
-        foreach $key (sort keys %{$self->{$index}}) {
-            if ($dkey && ($key ne $dkey)) { next; }
-            if (! ref($self->{$index}{$key})) {
-                ui_output("   $key=$self->{$index}{$key}");
-            } else {
-                ui_output("   $key = {");
-                $rec = $self->{$index}{$key};
-                foreach (sort keys %{$rec}) {
-                    ui_output("     $_=$rec->{$_}");
-                }
-                ui_output("   }");
-            }
-        }
-    }
-}
-
+=cut
 
 sub set_client_options {
   my ($serv) = @_;
 
   $serv->sendln("\#\$\# options +leaf-notify +leaf-cmd +connected");
 }
+
+
+=item set_client_name()
+
+=cut
 
 sub set_client_name {
   my ($serv) = @_;
