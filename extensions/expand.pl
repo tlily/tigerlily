@@ -1,9 +1,9 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/expand.pl,v 1.1 1999/02/24 08:24:53 neild Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/expand.pl,v 1.2 1999/02/24 21:51:56 neild Exp $ 
 
 use strict;
 
 use LC::UI;
-use LC::Server;
+use LC::Server::SLCP;
 use LC::Global qw($event);
 
 
@@ -12,17 +12,6 @@ my %expansions = ('sendgroup' => '',
 		  'recips'    => '');
 
 my @past_sends = ();
-
-my $last_send;
-
-my $server;
-$event->event_r(type => "server_connected",
-		call => sub { $server = $_[0]->{server}; return });
-
-sub exp_set {
-	my($a,$b) = @_;
-	$expansions{$a} = $b;
-}
 
 
 sub exp_expand {
@@ -54,7 +43,7 @@ sub exp_expand {
 		
 		my @dests = split(/,/, $fore);
 		foreach (@dests) {
-			my $full = $server->expand_name($_);
+			my $full = LC::Server::SLCP::expand_name($_);
 			next unless ($full);
 			$_ = $full;
 			$_ =~ tr/ /_/;
@@ -75,14 +64,19 @@ sub exp_complete {
 	my $partial = substr($line, 0, $pos);
 	my $full;
 
-	if (length($partial) == 0) {
+	if ($pos == 0) {
+		return unless @past_sends;
 		$full = $past_sends[0] . ';';
 	} elsif ($partial !~ /[\@\[\]\;\:\=\"\?\s]/) {
-		$partial =~ m/^(.*,)?(.*)/;
-		$full = $1 . $server->expand_name($2);
+		my($fore, $aft) = ($partial =~ m/^(.*,)?(.*)/);
+		$aft = LC::Server::SLCP::expand_name($aft);
+		return unless $aft;
+		$full = $fore if (defined($fore));
+		$full .= $aft;
 		$full =~ tr/ /_/;
 	} elsif (substr($partial, 0, -1) !~ /[\@\[\]\;\:\=\"\?\s]/) {
 		chop $partial;
+		return unless (@past_sends);
 		$full = $past_sends[0];
 		for (my $i = 0; $i < @past_sends; $i++) {
 			if ($past_sends[$i] eq $partial) {
@@ -95,7 +89,7 @@ sub exp_complete {
 	
 	if ($full) {
 		substr($line, 0, $pos) = $full;
-		$pos += length($full) - length($partial);
+		$pos = length($full);
 		$ui->set_input($pos, $line);
 	}
 
@@ -103,42 +97,44 @@ sub exp_complete {
 }
 
 
-my $ui = LC::UI::name("main");
+LC::UI::command_r("expand"   => \&exp_expand);
+LC::UI::command_r("complete" => \&exp_complete);
+LC::UI::bind(','   => "expand");
+LC::UI::bind(':'   => "expand");
+LC::UI::bind(';'   => "expand");
+LC::UI::bind('='   => "expand");
+LC::UI::bind('C-I' => "complete");
 
-$ui->command_r("expand"   => \&exp_expand);
-$ui->command_r("complete" => \&exp_complete);
-$ui->bind(','   => "expand");
-$ui->bind(':'   => "expand");
-$ui->bind(';'   => "expand");
-$ui->bind('='   => "expand");
-$ui->bind('C-I' => "complete");
+sub private_handler {
+	my($event,$handler) = @_;
+	$expansions{sender} = $event->{SOURCE};
 
-__END__
+	my $me = $event->{server}->user_name();
+	return unless (defined $me);
 
-register_eventhandler(Type => 'usend',
-		      Call => sub {
-			  my($event,$handler) = @_;
-			  my $dlist = join(',', @{$event->{To}});
-			  @past_sends = grep { $_ ne $dlist } @past_sends;
-			  unshift @past_sends, $dlist;
-			  pop @past_sends if (@past_sends > 5);
-			  exp_set('recips', $dlist);
-			  $last_send = $event->{Body};
-			  return 0;
-		      });
+	my @group = split /, /, $event->{RECIPS};
+	if (@group > 1) {
+		push @group, $event->{SOURCE};
+		@group = grep { $_ ne $me } @group;
+		$expansions{sendgroup} = join(",", @group);
+	}
 
-register_eventhandler(Type => 'send',
-		      Call => sub {
-			  my($event,$handler) = @_;
-#			  return 0 unless ($event->{First});
-			  return 0 unless ($event->{Form} eq 'private');
-			  exp_set('sender', $event->{From});
-			  my $me = $::servers[0]->user_name();
-			  my @group = @{$event->{To}};
-			  if (@group > 1) {
-			      push @group, $event->{From};
-			      @group = grep { $_ ne $me } @group;
-			      exp_set('sendgroup', join(',',@group));
-			  }
-			  return 0;
-		      });
+	return;
+}
+$event->event_r(type => 'private',
+		call => \&private_handler);
+
+sub user_send_handler {
+	my($event, $handler) = @_;
+	my $dlist = join(",", @{$event->{RECIPS}});
+
+	$expansions{recips} = $dlist;
+
+	@past_sends = grep { $_ ne $dlist } @past_sends;
+	unshift @past_sends, $dlist;
+	pop @past_sends if (@past_sends > 5);
+
+	return;
+}
+$event->event_r(type => 'user_send',
+		call => \&user_send_handler);

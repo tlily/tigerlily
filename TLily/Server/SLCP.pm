@@ -11,6 +11,7 @@ use LC::Config qw(%config);
 
 @ISA = qw(LC::Server);
 
+my $server;
 
 sub new {
 	my($proto, %args) = @_;
@@ -28,6 +29,9 @@ sub new {
 	$self->{HANDLE} = {};
 	$self->{NAME}   = {};
 	$self->{DATA}   = {};
+
+	# FIX!
+	$server = $self;
 
 	bless $self, $class;
 }
@@ -51,79 +55,73 @@ comma-separated list of their members.
 =cut
 
 sub expand_name {
-	my($self,$name) = @_;
+	unshift @_, $server if (@_ < 2);
+	my($self, $name) = @_;
 	my $disc;
 
 	$name = lc($name);
-	$name =~ tr/ /_/;
+	$name =~ tr/_/ /;
 	$disc = 1 if ($name =~ s/^-//);
-
-	# KLUDGE!  Rather that rewrite things properly I took the lazy way out.
-	# shoot me.
-	my (%Users,%Groups,%Discs,$Me);
-	$Me = $self->user_name;
-	foreach (keys %{$self->{NAME}}) {
-		if ($self->{NAME}{$_}->{LOGIN}) {
-			$Users{lc($_)}->{Name} = $_;
-		}
-		if ($self->{NAME}{$_}->{CREATION}) {
-			$Discs{lc($_)}->{Name} = $_;
-		}
-	}
-	# END KLUDGE
 
 	# Check for "me".
 	if (!$disc && $name eq 'me') {
-		return $Me || 'me';
+		return $self->user_name || 'me';
 	}
 
+	# Groups support won't work until SLCP sends group information.
+#	if ($Groups{$name}) {
+#		if ($config{expand_group}) {
+#			return join(',', @{$Groups{$name}->{Members}});
+#		} else {
+#			return $Groups{$name}->{Name};
+#		}
+#	}
+
 	# Check for an exact match.
-	if ($Groups{$name}) {
-		if ($config{expand_group}) {
-			return join(',', @{$Groups{$name}->{Members}});
-		} else {
-			return $Groups{$name}->{Name};
+	if ($self->{NAME}->{$name}) {
+		if ($self->{NAME}->{$name}->{LOGIN} && !$disc) {
+			return $self->{NAME}->{$name}->{NAME};
+		} elsif ($self->{NAME}->{$name}->{CREATION}) {
+			return '-' . $self->{NAME}->{$name}->{NAME};
 		}
 	}
-	if (!$disc && $Users{$name}) {
-		return $Users{$name}->{Name};
-	}
-	if ($Discs{$name}) {
-		return '-' . $Discs{$name}->{Name};
-	}
-        
-	my @unames = keys %Users;
-	my @dnames = keys %Discs;
 
 	# Check the "preferred match" list.
 	if (ref($config{prefer}) eq "ARRAY") {
 		my $m;
 		foreach $m (@{$config{prefer}}) {
 			$m = lc($m);
+			$m =~ tr/_/ /;
 			return $m if (index($m, $name) == 0);
 			return $m if ($m =~ /^-/ && index($m, $name) == 1);
 		}
 	}
-        
+
+	my(@unames, @dnames);
+	foreach (keys %{$self->{NAME}}) {
+		push @unames, $_ if ($self->{NAME}->{$_}->{LOGIN});
+		push @dnames, $_ if ($self->{NAME}->{$_}->{CREATION});
+	}
+
 	my @m;
 	# Check for a prefix match.
 	unless ($disc) {
 		@m = grep { index($_, $name) == 0 } @unames;
-		return $Users{$m[0]}->{Name} if (@m == 1);
+		return $self->{NAME}->{$m[0]}->{NAME} if (@m == 1);
 		return undef if (@m > 1);
 	}
 	@m = grep { index($_, $name) == 0 } @dnames;
-	return '-' . $Discs{$m[0]}->{Name} if (@m == 1);
+	return '-' . $self->{NAME}->{$m[0]}->{NAME} if (@m == 1);
 	return undef if (@m > 1);
         
 	# Check for a substring match.
 	unless ($disc) {
 		@m = grep { index($_, $name) != -1 } @unames;
-		return $Users{$m[0]}->{Name} if (@m == 1);
+		return $self->{NAME}->{$m[0]}->{NAME} if (@m == 1);
 		return undef if (@m > 1);
 	}
 	@m = grep { index($_, $name) != -1 } @dnames;
-	return '-' . $Discs{$m[0]}->{Name} if (@m == 1);
+	return '-' . $self->{NAME}->{$m[0]}->{NAME} if (@m == 1);
 	return undef if (@m > 1);
 	
 	return undef;
@@ -233,7 +231,7 @@ sub state {
 			my $h = $self->{HANDLE}{$args{HANDLE}};
 			return $h ? %$h : undef;
 		} else {
-			my $h = $self->{NAME}{$args{NAME}};
+			my $h = $self->{NAME}{lc($args{NAME})};
 			return $h ? %$h : undef;
 		}
 	} else {
@@ -245,7 +243,7 @@ sub state {
 		if ($args{HANDLE}) {
 			$record = $self->{HANDLE}{$args{HANDLE}};
 		} else {
-			$record = $self->{NAME}{$args{NAME}};
+			$record = $self->{NAME}{lc($args{NAME})};
 		}
 
 		if (! ref($record)) {
@@ -261,7 +259,7 @@ sub state {
 
 		$self->{HANDLE}{$record->{HANDLE}} = $record
 			if ($record->{HANDLE});
-		$self->{NAME}{$record->{NAME}}     = $record
+		$self->{NAME}{lc($record->{NAME})} = $record
 			if ($record->{NAME});
 
 		# and return a copy of the new record.

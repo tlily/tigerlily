@@ -1,4 +1,4 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/Attic/slcp.pl,v 1.2 1999/02/24 08:04:06 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/Attic/slcp.pl,v 1.3 1999/02/24 21:51:59 neild Exp $
 
 use strict;
 
@@ -25,13 +25,15 @@ the SLCP protocol.
 =cut
 
 my %keep;
-$keep{USER} = {HANDLE => 1,
-	       NAME   => 1,
-	       BLURB  => 1,
-	       STATE  => 1};
-$keep{DISC} = {HANDLE => 1, 
-	       NAME   => 1,
-	       TITLE  => 1};
+$keep{USER} = {HANDLE   => 1,
+               LOGIN    => 1,
+	       NAME     => 1,
+	       BLURB    => 1,
+	       STATE    => 1};
+$keep{DISC} = {HANDLE   => 1, 
+               CREATION => 1,
+	       NAME     => 1,
+	       TITLE    => 1};
 
 my %events =
   (

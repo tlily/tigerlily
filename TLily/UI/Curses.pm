@@ -188,6 +188,8 @@ sub new {
 			     mode   => 'r',
 			     call   => sub { $self->run; });
 
+	$self->inherit_global_bindings();
+
 	return $self;
 }
 
@@ -307,7 +309,7 @@ sub run {
 
 	my $cmd = $self->{bindings}->{$key};
 	if ($cmd && $self->{command}->{$cmd}) {
-		$self->{command}->{$cmd}->($self, $cmd, $key);
+		$self->command($cmd, $key);
 	} elsif (length($key) == 1) {
 		$self->{input}->addchar($key);
 	}
@@ -410,7 +412,8 @@ sub bind {
 
 sub command {
 	my($self, $command, $key) = @_;
-	$self->{command}->{$command}->($self, $command, $key);
+	eval { $self->{command}->{$command}->($self, $command, $key); };
+	warn "Command \"$command\" caused error: $@" if ($@);
 }
 
 

@@ -28,6 +28,9 @@ exceptions if this matters to you!
 =cut
 
 
+my %server;
+
+
 =item new(%args)
 
 Creates a new LC::Server object.  Takes 'event', 'host', 'port', and
@@ -52,6 +55,9 @@ sub new {
 	  unless (defined $args{host});
 	croak "required parameter \"port\" missing"
 	  unless (defined $args{port});
+
+	$args{name} = "$args{host}:$args{port}" if (!defined($args{name}));
+	$server{$args{name}} = $self;
 
 	$self->{event}   = $args{event};
 	$self->{host}    = $args{host};

@@ -222,7 +222,9 @@ sub invoke {
 	my $h = shift;
 	$h->{registrar}->push_default if ($h->{registrar});
 	unshift @_, $h->{obj} if ($h->{obj});
-	my $rc = $h->{call}->(@_);
+	my $rc;
+	eval { $rc = $h->{call}->(@_); };
+	warn "$h->{type} handler caused error: $@" if ($@);
 	$h->{registrar}->pop_default  if ($h->{registrar});
 	return $rc;
 }

@@ -37,20 +37,25 @@ sub server_command {
 
 $user->command_r(server => \&server_command);
 
-
-sub server_cat {
-	my($event, $handler) = @_;
-
-	my $ui = LC::UI::name("main");
-	$ui->print($event->{data});
-	return;
+sub send_handler {
+	my($e, $h) = @_;
+	$e->{server}->sendln(join(",",@{$e->{RECIPS}}),$e->{dtype},$e->{text});
 }
-
-$event->event_r(type => 'server_data',
-		call => \&server_cat);
+$event->event_r(type => 'user_send',
+		call => \&send_handler);
 
 sub to_server {
-	my($event, $handler) = @_;
+	my($e, $h) = @_;
 
-	$server->send($event->{text}, "\n");
+	if ($e->{text} =~ /^(\S*)([;:])(.*)/) {
+		$event->send(type   => 'user_send',
+			     server => $server,
+			     RECIPS => [split /,/, $1],
+			     dtype  => $2,
+			     text   => $3);
+		return 1;
+	}
+
+	$server->sendln($e->{text});
+	return 1;
 }
