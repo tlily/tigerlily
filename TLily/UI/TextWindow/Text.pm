@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/TextWindow/Attic/Text.pm,v 1.1 2003/02/13 15:11:10 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/TextWindow/Attic/Text.pm,v 1.2 2003/06/25 21:01:46 neild Exp $
 
 package TLily::UI::TextWindow::Text;
 
@@ -142,6 +142,7 @@ sub set_pager {
 
     if ($handler) {
 	TLily::UI::TextWindow::Generic::position_cursor();
+	TLily::FoiledAgain::update_screen();
     }
 }
 
