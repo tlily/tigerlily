@@ -1,0 +1,31 @@
+To Do
+-----
+
+Before 2.0 release:
+  when the last open server connection is closed, provide a exit/reconnect
+  option, instead of error messages (integrate with smartexit feature)
+  
+  The following need to be ported/written.  Most should be pretty easy to do
+  based on the ones we've already finished.
+  
+  zone.pl       (pretty easy)
+  autoreply.pl  (easy)
+  run_command.pl(easy)  
+  mirror.pl     (easy)
+  countdown.pl  (easy)
+  stock.pl      (easy)
+  submit.pl     (easy)
+  helper.pl     (pretty easy)
+  hidesend.pl   (medium)
+  pipes.pl      (medium)
+  view.pl       (medium)
+  program.pl    (medium)
+  ctc.pl/httpd.pl/Httpd.pm  (hard)
+  log.pl        (requires UI support)
+  gag.pl        (requires UI support)
+  
+  The following need to be tested!:
+  biff.pl
+  
+Later:
+  multiserver, multiui
