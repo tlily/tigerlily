@@ -1,0 +1,16 @@
+If you want to run the command line version, you just need to follow the
+directions on the RPI server in
+
+/memo osx tlilyonjaguar
+
+To build the aqua version, you'll need the developer tools installed. Open the
+Tigerlily.pbproj, then build. You'll get a Tigerlily.App that you can just
+copy onto your hard drive. (Though there's presumably a better way to do that. =-)
+
+You'll also need the camelbones framework (v2) available from sourceforge.
+
+NOTE:
+
+the aqua client is not fully functional. There's a bunch of stuff that doesn't
+work, and needs intrepid folk to fix. At this point, it's slightly more usable
+than telnet (but MUCH prettier.)

@@ -1,0 +1,20 @@
+{
+    IBClasses = (
+        {CLASS = FirstResponder; LANGUAGE = ObjC; SUPERCLASS = NSObject; }, 
+        {
+            ACTIONS = {input = id; }; 
+            CLASS = MyWindowController; 
+            LANGUAGE = ObjC; 
+            OUTLETS = {
+                Entry = id; 
+                Screen = id; 
+                StatusCenter = id; 
+                StatusLeft = id; 
+                StatusRight = id; 
+                Window = id; 
+            }; 
+            SUPERCLASS = NSObject; 
+        }
+    ); 
+    IBVersion = 1; 
+}
