@@ -1,4 +1,7 @@
 Version 2.1.1-post
+  * [extensions/ui.pl] Fixed bug in input_search_mode where the search
+    string would not build on the current text region if more
+    characters matched.
   * [TLily/Event.pm] Reordered the dispatching of events so that timed
     handlers are processed before named hanflers.  This fixes the problem
     of named events sent by timed handlers having to wait for the select

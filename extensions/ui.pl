@@ -1,4 +1,4 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/ui.pl,v 1.22 2000/02/07 13:56:40 tale Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/ui.pl,v 1.23 2000/02/12 00:14:14 tale Exp $ 
 use strict;
 
 =head1 NAME
@@ -254,7 +254,9 @@ sub input_search_mode {
     my($ui, $command, $key) = @_;
     $key = "" if ($key eq "C-r");
     if (length($key) <= 1) {
-        unless ($ui->{input}->search_history(string => $ui->{_search_text} . $key)) {
+        unless ($ui->{input}->search_history(string =>
+                                             $ui->{_search_text} . $key,
+                                             reset => 1)) {
             $ui->bell();
         } else {
             $ui->{_search_text} .= $key;
