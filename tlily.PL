@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w
+#!/site/tools/gnu/bin/perl -w
 
 require 5.00307;
 
@@ -8,7 +8,7 @@ $TL_EXTDIR="extensions";
 
 use strict;
 use vars qw($event);
-use lib qw(LC);
+use lib qw(.);
 
 use LC::Event;
 use LC::UI;
@@ -33,7 +33,8 @@ $user  = LC::User->new(event => $event);
 
 LC::Extend::cmd_init($user);
 
-LC::Extend::load("server", $ui, 1);
+LC::Extend::load("server", $ui);
+LC::Extend::load("output", $ui);
 
 $user->command_r(quit => sub { exit; });
 $user->command_r(foo  => sub { $ui->print("Foo you too!\n"); });
@@ -96,7 +97,7 @@ while (1) {
 sub show_banner() {
 	$ui->print(<<END
      ("`-/")_.-'"``-._ 
-      . . `; -._    )-;-,_`)          TigerLily
+      . . `; -._    )-;-,_`)          Tigerlily
      (v_,)'  _  )`-.\  ``-'          "Feel Free"
     _.- _..-_/ / ((.'
   ((,.-'   ((,/ 

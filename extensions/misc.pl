@@ -1,7 +1,8 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/misc.pl,v 1.1 1999/02/22 23:35:18 neild Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/misc.pl,v 1.2 1999/02/24 01:01:46 neild Exp $ 
 
 use strict;
 use LC::Global qw($event $user);
+
 
 #
 # !commands, %command

@@ -9,6 +9,38 @@ use Fcntl;
 use LC::Event;
 
 
+=head1 NAME
+
+LC::Server - Lily server objet
+
+=head1 DESCRIPTION
+
+The Server module defines a class that represents a tcp connection of
+some form.  It includes I/O functions -- protocol specific functions
+go in subclasses (such as LC::Server::SLCP).
+
+new() and connect() will call die() on failure, so be sure to catch
+exceptions if this matters to you!
+
+=head2 Functions
+=over 10
+
+=cut
+
+
+=item new(%args)
+
+Creates a new LC::Server object.  Takes 'event', 'host', 'port', and
+'protocol' arguments.  The 'protocol' argument is used to determine the
+events generated for server data -- the event type will be "protocol_data".
+
+    $serv = LC::Server->new(event    => $event,
+                            protocol => "slcp",
+                            host     => "lily",
+                            port     => 7777);
+
+=cut
+
 sub new {
 	my($proto, %args) = @_;
 	my $class = ref($proto) || $proto;
@@ -24,6 +56,7 @@ sub new {
 	$self->{event} = $args{event};
 	$self->{host}  = $args{host};
 	$self->{port}  = $args{port};
+	$self->{proto} = defined($args{protocol}) ? $args{protocol} : "server";
 
 	$self->{sock} = IO::Socket::INET->new(PeerAddr => $self->{host},
 					      PeerPort => $self->{port},
@@ -48,6 +81,15 @@ sub new {
 }
 
 
+=item send()
+
+Send a chunk of data to the server, synchronously.  This call will block until
+the entire block of data has been written.
+
+    $serv->send("a bunch of stuff to send to the server");
+
+=cut
+
 sub send {
 	my $self = shift;
 	my $s = join('', @_);
@@ -64,6 +106,19 @@ sub send {
 	}
 
 	return;
+}
+
+
+=item sendln()
+
+Behaves exactly like send(), but sends a crlf pair at the end of the line.
+
+=cut
+
+sub sendln {
+	my $self = shift;
+	# \r\n is non-portable.  Fix, please.
+	$self->send(@_, "\r\n");
 }
 
 
@@ -94,7 +149,7 @@ sub reader {
 
 	# Data as usual.
 	else {
-		$self->{event}->send(type   => 'server_data',
+		$self->{event}->send(type   => "$self->{proto}_data",
 				     server => $self,
 				     data   => $buf);
 	}

@@ -46,7 +46,8 @@ sub new {
 
 	$self->{event}->event_r(type  => "user_input",
 				order => "after",
-				call  => sub { $self->input_handler(@_); });
+				obj   => $self,
+				call  => \&input_handler);
 
 	bless $self, $class;
 

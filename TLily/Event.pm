@@ -237,7 +237,7 @@ sub loop_once {
 		foreach my $h (@{$self->{e_name}}) {
 			if ($e->{type} eq $h->{type} or $h->{type} eq 'all') {
 				my $rc = invoke($h, $e, $h);
-				if (defined($rc) && ($rc != 1)) {
+				if (defined($rc) && ($rc != 0) && ($rc != 1)) {
 					warn "Event handler returned $rc.";
 				}
 				next EVENT if ($rc);

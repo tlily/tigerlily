@@ -2,7 +2,7 @@ use strict;
 
 use LC::Global qw($event $user);
 use LC::UI;
-use LC::Server;
+use LC::Server::SLCP;
 
 my $server;
 
@@ -10,6 +10,8 @@ sub server_command {
 	my($user, $ui, $arg) = @_;
 	my @argv = split /\s+/, $arg;
 
+	#@argv = qw(pauline.einstein.org 7777);
+	@argv = qw(lily.acm.rpi.edu 8888);
 	if (@argv != 2) {
 		$ui->print("(usage: %server <host> <port>)\n");
 		return;
@@ -18,9 +20,9 @@ sub server_command {
 	my($host, $port) = @argv;
 	#my $server;
 	eval {
-		$server = LC::Server->new(host => $host,
-					  port => $port,
-					  event => $event);
+		$server = LC::Server::SLCP->new(host  => $host,
+						port  => $port,
+						event => $event);
 	};
 	unless ($server) {
 		$ui->print($@);
