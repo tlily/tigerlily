@@ -1,5 +1,5 @@
 #    TigerLily:  A client for the lily CMC, written in Perl.
-#    Copyright (C) 1999-2001  The TigerLily Team, <tigerlily@tlily.org>
+#    Copyright (C) 1999-2003  The TigerLily Team, <tigerlily@tlily.org>
 #                                http://www.tlily.org/tigerlily/
 #
 #  This program is free software; you can redistribute it and/or modify it
@@ -206,49 +206,71 @@ Extensions can each have options to configure them; see the documentation
 for the specific module to see what options can be set.
 
 
-CVS access
-----------
-The TigerLily sources are stored in a CVS repository.  Anyone working on
-TigerLily development can get access by contacting Damien (neild@misago.org)
+Subversion access
+-----------------
+The TigerLily sources are stored in a Subversion repository.  Anyone working
+on TigerLily development can get access by contacting Damien (neild@misago.org)
 or Albert (albert@acm.rpi.edu).  We also allow anonymous read-only access.
 
-The repository is currently located on cvs.tlily.org.
+You can find Subversion at subversion.tigris.org.  In addition to the
+source code, you will also find links to precompiled Windows clients,
+such as TortoiseSVN.
+
+The repository is currently located on svn.centauri.org.
 
 To access the repository anonymous read-only, do:
-  cvs -d :pserver:anon@cvs.tlily.org:/data/cvs login
-  (When prompted for a password, just press enter.)
-  cvs -d :pserver:anon@cvs.tlily.org:/data/cvs co tlily2
+  svn co http://svn.centauri.org/svn/tlily/trunk tlily
+Which will get you the most recent development version.
 
-To access the repository read-write, once you have an account, you will
-need to set two environment variables:
-  export CVSROOT=:ext:neild@cvs.tlily.org:/data/cvs
-  export CVS_RSH=ssh
+To access the repository read-write, once you have an account, do:
+  svn co svn+ssh://svn.centauri.org/data/svn/tlily/trunk tlily
 
-Obviously, replace the `neild' with your own userid on cvs.tlily.org.
+If your local login name is not the same as on svn.centauri.org, you will
+need to add a --username to that commandline as appropriate.
 
-The important CVS commands are:
-  - cvs checkout tlily2
-    This will grab a copy of the current source tree, and place it in a
-    new directory named `tlily2'.  No locking is implied by this operation;
-    you may delete the checked out tree without ill effect.
+Subversion has built-in help, accessible from "svn help".  The commands
+are very similar to basic CVS commands, and in some cases, more intuitive.
 
-All other CVS commands accept a list of files as an argument; in the absence
-of this list, they operate on the current directory.
+The important svn commands are:
+  - svn co <URL> [<PATH>]
+    This will grab the latest copy of the sources from the subversion
+    repository located at <URL> (see above for the tlily repository URL).
 
-  - cvs update
+    If <PATH> is given, the checkout will be placed in that directory,
+    creating the directory if necessary.  If <PATH> is omitted, the last
+    directory name in the repository URL will be used as the name of a
+    directory in your current working directory into which svn will do
+    the checkout.
+
+    No locking is implied by this operation; you may delete the checked
+    out tree without ill effect.
+
+  - svn update
     Compares a checked out tree to the current sources, merging down any
-    changed files from the repository.  Changes you make will not be added
-    to the repository until you do a cvs commit.
+    changed files from the repository into your checked out copy.  Does
+    not change the repository.
 
-  - cvs add
-    Registers a new file into the repository.  The file will be visible to
-    others after you cvs commit.
+  - svn add <PATH>
+  - svn remove <PATH>
+  - svn move <PATH> <NEWPATH>
+  - svn copy <PATH> <NEWPATH>
+    These commands cover the addition of a new file/directory into the
+    repository, removing a file/directory from the repository, and renaming
+    or copying a file/directory from one place to another.  Any changes you
+    make will be visible to others only after you run svn commit.
 
-  - cvs remove
-    Removes a file from the repository.  The file will disappear to others
-    after you cvs commit.
+  - svn commit [<PATH>]
+    Checks in all changes in the specified path (or current directory, if
+    no path is specified).
 
-  - cvs commit
-    Checks in all changes in the current tree.
+  - svn diff [<PATH>]
+    Compares a checked out file/path (or current directory) against the
+    repository, outputting a diff-like listing of changes.
 
-Read the CVS documentation for more detailed information.
+  - svn status [<PATH>]
+    Compares a checked out file/path (or current directory) against the
+    repository, outputting a summary of what files have changed.
+
+
+Read the Subversion help and documentation for more detailed information.
+A free book about Subversion can be found at http://svnbook.red-bean.com/
