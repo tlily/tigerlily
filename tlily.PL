@@ -46,7 +46,7 @@ LC::Extend::load("output", $ui, 1);
 LC::Extend::load("expand", $ui, 1);
 LC::Extend::load("status", $ui, 1);
 
-$ui->print("Use the %server command to connect to a lily server.\n");
+$ui->print("Use the %connection command to connect to a lily server.\n");
 
 LC::User::command_r(quit => sub { exit; });
 
