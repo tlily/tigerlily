@@ -1,4 +1,4 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/ui.pl,v 1.5 1999/03/15 21:49:50 neild Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/ui.pl,v 1.6 1999/03/15 22:16:53 neild Exp $ 
 use strict;
 
 
@@ -178,7 +178,6 @@ sub load {
     my($k,$v);
     my $ui = ui_name();
     while (($k,$v) = each %{$config{'mono_attrs'}}) {
-	print STDERR "$k => @$v\n";
 	$ui->defstyle($k, @{$v});
     }
 
