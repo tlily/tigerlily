@@ -1,12 +1,13 @@
 package LC::Server::SLCP;
 
 use strict;
-use vars qw(@ISA);
+use vars qw(@ISA %config);
 
 use Carp;
 
 use LC::Server;
 use LC::Extend;
+use LC::Config qw(%config);
 
 @ISA = qw(LC::Server);
 
@@ -29,6 +30,103 @@ sub new {
 	$self->{DATA}   = {};
 
 	bless $self, $class;
+}
+
+
+=item expand_name()
+
+Translates a name into a full lily name.  For example, 'cougar' might become
+'Spineless Cougar', and 'comp' could become '-computer'.  The name returned
+will be identical to canonical one used by lily for that abberviation,
+with the exception that discussions are returned with a preceding '-'.
+If the name is an exact match (modulo case) for a group, the group name
+is returned.  Substrings of groups are not, however, expanded.  This is
+in line with current lily behavior.
+
+If $config{expand_group} is set, groups will be expanded into a
+comma-separated list of their members.
+
+    expand_name('comp');
+
+=cut
+
+sub expand_name {
+	my($self,$name) = @_;
+	my $disc;
+
+	$name = lc($name);
+	$name =~ tr/ /_/;
+	$disc = 1 if ($name =~ s/^-//);
+
+	# KLUDGE!  Rather that rewrite things properly I took the lazy way out.
+	# shoot me.
+	my (%Users,%Groups,%Discs,$Me);
+	$Me = $self->user_name;
+	foreach (keys %{$self->{NAME}}) {
+		if ($self->{NAME}{$_}->{LOGIN}) {
+			$Users{lc($_)}->{Name} = $_;
+		}
+		if ($self->{NAME}{$_}->{CREATION}) {
+			$Discs{lc($_)}->{Name} = $_;
+		}
+	}
+	# END KLUDGE
+
+	# Check for "me".
+	if (!$disc && $name eq 'me') {
+		return $Me || 'me';
+	}
+
+	# Check for an exact match.
+	if ($Groups{$name}) {
+		if ($config{expand_group}) {
+			return join(',', @{$Groups{$name}->{Members}});
+		} else {
+			return $Groups{$name}->{Name};
+		}
+	}
+	if (!$disc && $Users{$name}) {
+		return $Users{$name}->{Name};
+	}
+	if ($Discs{$name}) {
+		return '-' . $Discs{$name}->{Name};
+	}
+        
+	my @unames = keys %Users;
+	my @dnames = keys %Discs;
+
+	# Check the "preferred match" list.
+	if (ref($config{prefer}) eq "ARRAY") {
+		my $m;
+		foreach $m (@{$config{prefer}}) {
+			$m = lc($m);
+			return $m if (index($m, $name) == 0);
+			return $m if ($m =~ /^-/ && index($m, $name) == 1);
+		}
+	}
+        
+	my @m;
+	# Check for a prefix match.
+	unless ($disc) {
+		@m = grep { index($_, $name) == 0 } @unames;
+		return $Users{$m[0]}->{Name} if (@m == 1);
+		return undef if (@m > 1);
+	}
+	@m = grep { index($_, $name) == 0 } @dnames;
+	return '-' . $Discs{$m[0]}->{Name} if (@m == 1);
+	return undef if (@m > 1);
+        
+	# Check for a substring match.
+	unless ($disc) {
+		@m = grep { index($_, $name) != -1 } @unames;
+		return $Users{$m[0]}->{Name} if (@m == 1);
+		return undef if (@m > 1);
+	}
+	@m = grep { index($_, $name) != -1 } @dnames;
+	return '-' . $Discs{$m[0]}->{Name} if (@m == 1);
+	return undef if (@m > 1);
+	
+	return undef;
 }
 
 
