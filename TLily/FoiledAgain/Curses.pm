@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/FoiledAgain/Attic/Curses.pm,v 1.4 2003/02/14 02:11:43 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/FoiledAgain/Attic/Curses.pm,v 1.5 2003/04/21 22:08:28 josh Exp $
 
 package TLily::FoiledAgain::Curses;
 
@@ -305,7 +305,7 @@ sub addstr {
 sub insch {
     my ($self, $y, $x, $character) = @_;
 
-    $self->{W}->insch($y, $x, $character);
+    $self->{W}->insstr($y, $x, $character);
 }
 
 sub delch_at_point {
