@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/expand.pl,v 1.27 2001/10/22 16:55:38 neild Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/expand.pl,v 1.28 2002/03/22 22:26:14 neild Exp $ 
 
 use strict;
 use TLily::UI;
@@ -194,7 +194,8 @@ event_r(type => 'private',
 sub user_send_handler {
     my($event, $handler) = @_;
     my $serv_name = $event->{server}->name();
-    my $dlist = join(",", map($_."@".$serv_name, @{$event->{RECIPS}}));
+    my $dlist =
+        join(",", map(/@/ ? $_ : ($_."@".$serv_name), @{$event->{RECIPS}}));
     
     $expansions{recips} = $dlist;
     $last_send = $event->{text};
