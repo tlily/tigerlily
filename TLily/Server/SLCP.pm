@@ -6,7 +6,7 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Server/Attic/SLCP.pm,v 1.24 1999/09/19 06:17:25 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Server/Attic/SLCP.pm,v 1.25 1999/09/21 05:01:49 mjr Exp $
 
 package TLily::Server::SLCP;
 
@@ -423,11 +423,12 @@ sub fetch {
         $event->{NOTIFY} = 0;
         # If $event->{text} is defined, it's not the end of the cmd yet
         if (defined($event->{text})) {
-          if ($event->{type} =~ /memo|info/ ) {
-            push @data, substr($event->{text},2);
-          } else {
-            push @data, $event->{text};
-          }
+            if ($type =~ /memo|info/) {
+                  push @data, substr($event->{text},2)
+                      if ($event->{text} =~ /^\* /);
+            } else {
+                push @data, $event->{text};
+            }
         } elsif ($event->{type} eq 'endcmd') {
             $call->(server => $event->{server},
                     ui     => TLily::UI::name($uiname),
