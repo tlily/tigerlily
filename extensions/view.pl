@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/view.pl,v 1.4 1999/10/23 06:16:05 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/view.pl,v 1.5 1999/12/27 14:51:48 mjr Exp $
 
 use strict;
 
@@ -13,8 +13,12 @@ sub view_display {
 
     open(FH,">$tmpfile");
     foreach (@$lref) {
-       chomp;
-       print FH "$_\n";
+        chomp;
+        if ($^O =~ /cygwin/) {
+            print FH "$_\r\n";
+        } else {
+            print FH "$_\n";
+        }
     }
     close(FH);
 
