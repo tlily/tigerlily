@@ -6,42 +6,42 @@ use Curses;
 use Carp;
 
 sub new {
-	my($proto, $ui, $win) = @_;
-	my $class = ref($proto) || $proto;
-	my $self  = [$ui, $win];
-	bless($self, $class);
-	return $self;
+    my($proto, $ui, $win) = @_;
+    my $class = ref($proto) || $proto;
+    my $self  = [$ui, $win];
+    bless($self, $class);
+    return $self;
 }
 
 sub style {
-	my($self, $style) = @_;
-	$self->[0]->{text}->{$self->[1]}->{text}->style($style);
+    my($self, $style) = @_;
+    $self->[0]->{text}->{$self->[1]}->{text}->style($style);
 }
 
 
 sub indent {
-	my $self = shift;
-	$self->[0]->{text}->{$self->[1]}->{text}->indent(@_);
+    my $self = shift;
+    $self->[0]->{text}->{$self->[1]}->{text}->indent(@_);
 }
 
 
 sub print {
-	my $self = shift;
-	$self->[0]->{text}->{$self->[1]}->{text}->print(join('', @_));
-	$self->[0]->{input}->position_cursor();
-	doupdate();
+    my $self = shift;
+    $self->[0]->{text}->{$self->[1]}->{text}->print(join('', @_));
+    $self->[0]->{input}->position_cursor();
+    doupdate();
+};
+
+sub seen {
+    my($self) = @_;
+    $self->[0]->{text}->{$self->[1]}->{text}->seen();
 }
 
 
-sub seen {
-	my($self) = @_;
-	$self->[0]->{text}->{$self->[1]}->{text}->seen(); }
-
-
 AUTOLOAD {
-	my $self = shift;
-	$AUTOLOAD =~ s/.*:://;
-	$self->[0]->$AUTOLOAD(@_);
+    my $self = shift;
+    $AUTOLOAD =~ s/.*:://;
+    $self->[0]->$AUTOLOAD(@_);
 }
 
 
@@ -68,60 +68,60 @@ use TLily::Event;
 my $termsize_installed;
 my $sigwinch;
 BEGIN {
-	eval { require Term::Size; import Term::Size; };
-	if ($@) {
-		warn("*** WARNING: Unable to load Term::Size ***\n");
-		$termsize_installed = 0;
-	} else {
-		$termsize_installed = 1;
-	}
+    eval { require Term::Size; import Term::Size; };
+    if ($@) {
+	warn("*** WARNING: Unable to load Term::Size ***\n");
+	$termsize_installed = 0;
+    } else {
+	$termsize_installed = 1;
+    }
 }
 
 
 sub accept_line {
-	my($ui) = @_;
-	my $text = $ui->{input}->accept_line();
-	$ui->{text}->{main}->{text}->seen();
+    my($ui) = @_;
+    my $text = $ui->{input}->accept_line();
+    $ui->{text}->{main}->{text}->seen();
 
+    if (@{$ui->{prompt}} > 0) {
+	my $args = shift @{$ui->{prompt}};
+	if (defined $args->{prompt}) {
+	    $ui->prompt("");
+	    $ui->print($args->{prompt}, " ");
+	}
+
+	if ($args->{password}) {
+	    $ui->{input}->password(0);
+	} else {
+	    $ui->style("user_input");
+	    $ui->print($text);
+	    $ui->style("normal");
+	}
+	
+	$ui->print("\n");
+	$args->{call}->($ui, $text);
+	
 	if (@{$ui->{prompt}} > 0) {
-		my $args = shift @{$ui->{prompt}};
-		if (defined $args->{prompt}) {
-			$ui->prompt("");
-			$ui->print($args->{prompt}, " ");
-		}
-
-		if ($args->{password}) {
-			$ui->{input}->password(0);
-		} else {
-			$ui->style("user_input");
-			$ui->print($text);
-			$ui->style("normal");
-		}
-
-		$ui->print("\n");
-		$args->{call}->($ui, $text);
-
-		if (@{$ui->{prompt}} > 0) {
-			$args = $ui->{prompt}->[0];
-			$ui->prompt($args->{prompt})
-				if (defined $args->{prompt});
-			$ui->{input}->password(1) if ($args->{password});
-		}
+	    $args = $ui->{prompt}->[0];
+	    $ui->prompt($args->{prompt})
+	      if (defined $args->{prompt});
+	    $ui->{input}->password(1) if ($args->{password});
 	}
+    }
 
-	elsif ($text eq "" && $ui->{text}->{main}->{text}->lines_remaining()) {
-		$ui->command("page-down");
-	}
+    elsif ($text eq "" && $ui->{text}->{main}->{text}->lines_remaining()) {
+	$ui->command("page-down");
+    }
 
-	else {
-		$ui->style("user_input");
-		$ui->print($text, "\n");
-		$ui->style("normal");
-
-		TLily::Event::send(type => 'user_input',
-				   text => $text,
-				   ui   => $ui);
-	}
+    else {
+	$ui->style("user_input");
+	$ui->print($text, "\n");
+	$ui->style("normal");
+	
+	TLily::Event::send(type => 'user_input',
+			   text => $text,
+			   ui   => $ui);
+    }
 }
 
 
@@ -194,321 +194,350 @@ sub accept_line {
 
 
 sub new {
-	my $proto = shift;
-	my $class = ref($proto) || $proto;
-	my $self  = $class->SUPER::new(@_);
-	my %arg   = @_;
-	bless($self, $class);
+    my $proto = shift;
+    my $class = ref($proto) || $proto;
+    my $self  = $class->SUPER::new(@_);
+    my %arg   = @_;
+    bless($self, $class);
+    
+    $self->{want_color} = (defined($arg{color}) ? $arg{color} : 1);
+    $self->{input_maxlines} = $arg{input_maxlines};
+    start_curses($self);
+    
+    $self->{text}->{main}->{status} = TLily::UI::Curses::StatusLine->new
+      (layout  => $self,
+       color   => $self->{color});
+    
+    $self->{text}->{main}->{text} = TLily::UI::Curses::Text->new
+      (layout  => $self,
+       color   => $self->{color},
+       status  => $self->{text}->{main}->{status});
+    
+    $self->{input} = TLily::UI::Curses::Input->new
+      (layout  => $self,
+       color   => $self->{color});
+    
+    $self->{command}   = { %commandmap };
+    $self->{bindings}  = { %bindmap };
 
-	$self->{want_color} = (defined($arg{color}) ? $arg{color} : 1);
-	$self->{input_maxlines} = $arg{input_maxlines};
-	start_curses($self);
-
-	$self->{text}->{main}->{status} = TLily::UI::Curses::StatusLine->new
-	  (layout  => $self,
-	   color   => $self->{color});
-
-	$self->{text}->{main}->{text} = TLily::UI::Curses::Text->new
-	  (layout  => $self,
-	   color   => $self->{color},
-	   status  => $self->{text}->{main}->{status});
-
-	$self->{input} = TLily::UI::Curses::Input->new
-	  (layout  => $self,
-	   color   => $self->{color});
-
-	$self->{command}  = { %commandmap };
-	$self->{bindings} = { %bindmap };
-
-	$self->{prompt}   = [];
-
-	$self->layout();
-
-	TLily::Event::io_r(handle => \*STDIN,
-			   mode   => 'r',
-			   call   => sub { $self->run; });
-
-	$self->inherit_global_bindings();
-
-	return $self;
+    $self->{intercept} = undef;
+    
+    $self->{prompt}    = [];
+    
+    $self->layout();
+    
+    TLily::Event::io_r(handle => \*STDIN,
+		       mode   => 'r',
+		       call   => sub { $self->run; });
+    
+    $self->inherit_global_bindings();
+    
+    return $self;
 }
 
 
 sub prompt_for {
-	my($self, %args) = @_;
-	croak("required parameter \"call\" missing.") unless ($args{call});
+    my($self, %args) = @_;
+    croak("required parameter \"call\" missing.") unless ($args{call});
 
-	push @{$self->{prompt}}, \%args;
-	return if (@{$self->{prompt}} > 1);
+    push @{$self->{prompt}}, \%args;
+    return if (@{$self->{prompt}} > 1);
 
-	$self->prompt($args{prompt}) if (defined($args{prompt}));
-	$self->{input}->password(1) if ($args{password});
-	return;
+    $self->prompt($args{prompt}) if (defined($args{prompt}));
+    $self->{input}->password(1) if ($args{password});
+    return;
 }
 
 
 sub splitwin {
-	my($self, $name) = @_;
+    my($self, $name) = @_;
 
-	unless ($self->{text}->{$name}) {
-		$self->{text}->{$name}->{status} = TLily::UI::Curses::StatusLine->new
-		  ( layout => $self, color => $self->{color} );
-
-		$self->{text}->{$name}->{text} = TLily::UI::Curses::Text->new
-		  ( layout => $self, color => $self->{color},
-		    status => $self->{text}->{$name}->{status} );
-
-		$self->layout();
-	}
-
-	return TLily::UI::Curses::Proxy->new($self, $name);
+    unless ($self->{text}->{$name}) {
+	$self->{text}->{$name}->{status} = TLily::UI::Curses::StatusLine->new
+	  ( layout => $self, color => $self->{color} );
+	
+	$self->{text}->{$name}->{text} = TLily::UI::Curses::Text->new
+	  ( layout => $self, color => $self->{color},
+	    status => $self->{text}->{$name}->{status} );
+	
+	$self->layout();
+    }
+    
+    return TLily::UI::Curses::Proxy->new($self, $name);
 }
 
 
 sub start_curses {
-	my($self) = @_;
+    my($self) = @_;
 
-	initscr;
+    initscr;
 
-	$self->{color} = 0;
-	if ($self->{want_color}) {
-		$self->{color} = has_colors();
-	}
-	if ($self->{color}) {
-		my $rc = start_color() if ($self->{color});
-		$self->{color} = 0 if ($rc && $rc == ERR);
-	}
+    $self->{color} = 0;
+    if ($self->{want_color}) {
+	$self->{color} = has_colors();
+    }
+    if ($self->{color}) {
+	my $rc = start_color() if ($self->{color});
+	$self->{color} = 0 if ($rc && $rc == ERR);
+    }
 
-	noecho();
-	raw();
-	idlok(1);
-	idcok(1);
-	typeahead(-1);
+    noecho();
+    raw();
+    idlok(1);
+    idcok(1);
+    typeahead(-1);
 
-	$SIG{WINCH} = sub { $sigwinch = 1; };
+    $SIG{WINCH} = sub { $sigwinch = 1; };
 }
 
 
 sub stop_curses {
-	my($self) = @_;
-	endwin;
+    my($self) = @_;
+    endwin;
 }
 
 
 sub DESTROY {
-	my($self) = @_;
-	$self->stop_curses();
+    my($self) = @_;
+    $self->stop_curses();
 }
 
 
 # Re-layout the widgets.
 sub layout {
-	my($self) = @_;
+    my($self) = @_;
 
-	my $tcount = scalar(keys %{$self->{text}});
+    my $tcount = scalar(keys %{$self->{text}});
+    
+    # Calculate the max height the input line is allowed to grow to.
+    my $imax = $self->{input_imax} || ($LINES - (2 * $tcount));
+    $imax = 1 if ($imax <= 0);
+    
+    # Find out how large the input line wants to be.
+    my($ilines, $icols) = $self->{input}->req_size();
+    $ilines = 1 if (!$ilines);
+    $ilines = $imax if ($ilines > $imax);
+    
+    my $tlines = ($LINES - $ilines) / $tcount;
+    my $trem   = ($LINES - $ilines) % $tcount;
+    my $y      = 0;
+
+    foreach my $tpair (values %{$self->{text}}) {
+	my $l = $tlines;
+	if ($trem) { $l++; $trem--; }
 	
-	# Calculate the max height the input line is allowed to grow to.
-	my $imax = $self->{input_imax} || ($LINES - (2 * $tcount));
-	$imax = 1 if ($imax <= 0);
+	$tpair->{text}->size($y, 0, $l-1, $COLS);
+	$y += $l-1;
 
-	# Find out how large the input line wants to be.
-	my($ilines, $icols) = $self->{input}->req_size();
-	$ilines = 1 if (!$ilines);
-	$ilines = $imax if ($ilines > $imax);
+	$tpair->{status}->size($y, 0, 1, $COLS);
+	$y++;
+    }
 
-	my $tlines = ($LINES - $ilines) / $tcount;
-	my $trem   = ($LINES - $ilines) % $tcount;
-	my $y      = 0;
+    $self->{input}->size($LINES - $ilines, 0, $ilines, $COLS);
 
-	foreach my $tpair (values %{$self->{text}}) {
-		my $l = $tlines;
-		if ($trem) { $l++; $trem--; }
-
-		$tpair->{text}->size($y, 0, $l-1, $COLS);
-		$y += $l-1;
-
-		$tpair->{status}->size($y, 0, 1, $COLS);
-		$y++;
-	}
-
-	$self->{input}->size($LINES - $ilines, 0, $ilines, $COLS);
-
-	$self->redraw();
+    $self->redraw();
 }
 
 
 sub size_request {
-	my($self, $win, $lines, $cols) = @_;
-	$self->layout();
+    my($self, $win, $lines, $cols) = @_;
+    $self->layout();
 }
 
 
 sub run {
-	my($self) = @_;
+    my($self) = @_;
 
-	while ($sigwinch) {
-		$sigwinch = 0;
-		if ($termsize_installed) {
-			($ENV{'COLUMNS'}, $ENV{'LINES'}) = Term::Size::chars();
-		}
-		$self->stop_curses();
-		$self->start_curses();
-		$self->layout();
+    while ($sigwinch) {
+	$sigwinch = 0;
+	if ($termsize_installed) {
+	    ($ENV{'COLUMNS'}, $ENV{'LINES'}) = Term::Size::chars();
 	}
+	$self->stop_curses();
+	$self->start_curses();
+	$self->layout();
+    }
 
-	my $key = $self->{input}->read_char();
-	return unless defined($key);
-	#print STDERR "key='$key'\n";
+    my $key = $self->{input}->read_char();
+    return unless defined($key);
+    #print STDERR "key='$key'\n";
 
-	my $cmd = $self->{bindings}->{$key};
-	if ($cmd && $self->{command}->{$cmd}) {
-		$self->command($cmd, $key);
-	} elsif (length($key) == 1) {
-		$self->{input}->addchar($key);
-	}
+    if ($self->{intercept} && $self->{command}->{$self->{intercept}}) {
+	my $rc = $self->command($self->{intercept}, $key);
+	warn "Intercept function returned \"$rc\"\n" if ($rc && $rc != 1);
+	return if ($rc);
+    }
 
-	$self->{input}->position_cursor;
-	doupdate;
+    my $cmd = $self->{bindings}->{$key};
+    if ($cmd && $self->{command}->{$cmd}) {
+	$self->command($cmd, $key);
+    } elsif (length($key) == 1) {
+	$self->{input}->addchar($key);
+    }
+    
+    $self->{input}->position_cursor;
+    doupdate;
 }
 
 
 sub needs_terminal {
-	1;
+    1;
 }
 
 
 sub suspend {
-	my($self) = @_;
-	endwin;
+    my($self) = @_;
+    endwin;
 }
 
 
 sub resume {
-	my($self) = @_;
-	doupdate;
+    my($self) = @_;
+    doupdate;
 }
 
 
 sub defstyle {
-	my($self, $style, @attrs) = @_;
-	TLily::UI::Curses::Generic::defstyle($style, @attrs);
+    my($self, $style, @attrs) = @_;
+    TLily::UI::Curses::Generic::defstyle($style, @attrs);
 }
 
 
 sub defcstyle {
-	my($self, $style, $fg, $bg, @attrs) = @_;
-	TLily::UI::Curses::Generic::defcstyle($style, $fg, $bg, @attrs);
+    my($self, $style, $fg, $bg, @attrs) = @_;
+    TLily::UI::Curses::Generic::defcstyle($style, $fg, $bg, @attrs);
 }
 
 
 sub clearstyle {
-	my($self) = @_;
-	TLily::UI::Curses::Generic::clearstyle();
+    my($self) = @_;
+    TLily::UI::Curses::Generic::clearstyle();
 }
 
 
 sub style {
-	my($self, $style) = @_;
-	$self->{text}->{main}->{text}->style($style);
+    my($self, $style) = @_;
+    $self->{text}->{main}->{text}->style($style);
 }
 
 
 sub indent {
-	my $self = shift;
-	$self->{text}->{main}->{text}->indent(@_);
+    my $self = shift;
+    $self->{text}->{main}->{text}->indent(@_);
 }
 
 
 sub print {
-	my $self = shift;
-	$self->{text}->{main}->{text}->print(join('', @_));
-	$self->{input}->position_cursor();
-	doupdate();
-}
+    my $self = shift;
+    $self->{text}->{main}->{text}->print(join('', @_));
+    $self->{input}->position_cursor();
+    doupdate();
+};
 
 
 sub redraw {
-	my($self) = @_;
+    my($self) = @_;
 
-	foreach my $tpair (values %{$self->{text}}) {
-		$tpair->{text}->redraw();
-		$tpair->{status}->redraw();
-	}
-	$self->{input}->redraw();
-	$self->{input}->position_cursor();
-	doupdate();
+    foreach my $tpair (values %{$self->{text}}) {
+	$tpair->{text}->redraw();
+	$tpair->{status}->redraw();
+    }
+    $self->{input}->redraw();
+    $self->{input}->position_cursor();
+    doupdate();
+    return 1;
 }
 
 
 sub command_r {
-	my($self, $command, $func) = @_;
-	return if ($self->{command}->{$command});
-	$self->{command}->{$command} = $func;
-	return 1;
+    my($self, $command, $func) = @_;
+    return if ($self->{command}->{$command});
+    $self->{command}->{$command} = $func;
+    return 1;
 }
 
 
 sub command_u {
-	my($self, $command) = @_;
-	return unless ($self->{command}->{$command});
-	delete $self->{command}->{$command};
-	return 1;
+    my($self, $command) = @_;
+    return unless ($self->{command}->{$command});
+    delete $self->{command}->{$command};
+    return 1;
 }
 
 
 sub bind {
-	my($self, $key, $command) = @_;
-	$self->{bindings}->{$key} = $command;
-	return 1;
+    my($self, $key, $command) = @_;
+    $self->{bindings}->{$key} = $command;
+    return 1;
+}
+
+
+sub intercept_r {
+    my($self, $name) = @_;
+    return if (defined($self->{intercept}) && $self->{intercept} ne $name);
+    $self->{intercept} = $name;
+    return 1;
+}
+
+
+sub intercept_u {
+    my($self, $name) = @_;
+    return unless (defined($self->{intercept}));
+    return if ($name ne $self->{intercept});
+    $self->{intercept} = undef;
+    return 1;
 }
 
 
 sub command {
-	my($self, $command, $key) = @_;
-	eval { $self->{command}->{$command}->($self, $command, $key); };
-	warn "Command \"$command\" caused error: $@" if ($@);
+    my($self, $command, $key) = @_;
+    my $rc = eval { $self->{command}->{$command}->($self, $command, $key); };
+    warn "Command \"$command\" caused error: $@" if ($@);
+    $self->{input}->position_cursor();
+    doupdate;
+    return $rc;
 }
 
 
 sub prompt {
-	my($self, $prompt) = @_;
-	$self->{input}->prefix($prompt);
-	$self->{input}->position_cursor();
-	doupdate;
+    my($self, $prompt) = @_;
+    $self->{input}->prefix($prompt);
+    $self->{input}->position_cursor();
+    doupdate;
 }
 
 
 sub define {
-	my($self, $name, $pos) = @_;
-	$self->{text}->{main}->{status}->define($name, $pos);
-	$self->{input}->position_cursor();
-	doupdate;
+    my($self, $name, $pos) = @_;
+    $self->{text}->{main}->{status}->define($name, $pos);
+    $self->{input}->position_cursor();
+    doupdate;
 }
 
 
 sub set {
-	my($self, $name, $val) = @_;
-	$self->{text}->{main}->{status}->set($name, $val);
-	$self->{input}->position_cursor();
-	doupdate;
+    my($self, $name, $val) = @_;
+    $self->{text}->{main}->{status}->set($name, $val);
+    $self->{input}->position_cursor();
+    doupdate;
 }
 
 
 sub get_input {
-	my($self) = @_;
-	return $self->{input}->get();
+    my($self) = @_;
+    return $self->{input}->get();
 }
 
 
 sub set_input {
-	my $self = shift;
-	return $self->{input}->set(@_);
+    my $self = shift;
+    return $self->{input}->set(@_);
 }
 
 
 sub bell {
-	my($self) = @_;
-	beep();
+    my($self) = @_;
+    beep();
 }
 
 1;
