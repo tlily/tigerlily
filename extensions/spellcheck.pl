@@ -1,6 +1,8 @@
 use strict;
+use IPC::Open2;
 
 my $dict;
+my $ispell;
 
 sub spellcheck_input {
     my($text) = @_;
@@ -55,6 +57,9 @@ sub spelled_correctly {
     my ($word) = @_;
 
     return 1 if lookup_word($word);
+    return 0 if ($ispell);
+
+    # we don't have ispell, so try to do some of its smarts ourselves..
 
     # try stripping some obvious suffixes
     $word =~ s/(?:s|ed|ing|\'s)$//g;
@@ -107,25 +112,44 @@ sub lookup_word {
     $word =~ s/[^A-Za-z]//g;
     return 1 if ($word !~ /\S/);    
     if (scalar(keys %look_cache) > 500) { undef %look_cache; }
-     
+    
     return 1 if $stop_list{$word};   
-
+    
     if (exists $look_cache{$word}) {
 	return $look_cache{$word};
     }
-
+    
     my $lookout;
-    if ($dict) {
-	look($dict, $word, 1, 1);
-	$lookout = <$dict>;	
+    if ($ispell) {
+	print I_WRITE "^$word\n" or do {
+	    # Stupidly try to re-start ispell
+	    init_ispell();
+	    return;
+	};
+	
+	my $resp  = <I_READ>;
+	while (my $blank = <I_READ>) {
+	    last if $blank =~ /^$/;
+	}
+	
+	if ($resp =~ /^[*+-]/) {
+	    $look_cache{$word}=1;
+	} else {
+	    $look_cache{$word}=0;     
+	}
     } else {
-	$lookout = `look -f $word`;
-    }
-
-    if ($lookout =~ m/\b${word}\b/i) {
-       $look_cache{$word}=1;
-    } else {
-       $look_cache{$word}=0;	
+	if ($dict) {
+	    look($dict, $word, 1, 1);
+	    $lookout = <$dict>;	
+	} else {
+	    $lookout = `look -f $word`;
+	}
+	
+	if ($lookout =~ m/\b${word}\b/i) { 
+ 	    $look_cache{$word}=1;
+	} else {
+	    $look_cache{$word}=0;	
+	}
     }
 
     return $look_cache{$word};
@@ -138,21 +162,28 @@ sub spellcheck_cmd {
     if ($command =~ /on/i) {
 	TLily::UI::istyle_fn_r(\&spellcheck_input);
 	my $dictfile;
-	if (%Search::Dict::) {       
-            my @words = qw(/usr/dict/words /usr/share/dict/words);
-	    unshift @words, $config{words} if ($config{words});
-	    foreach (@words) {
-		if ( -f $_ ) { $dictfile = $_; last; }
-	    }
 
-            local *DICT;
-	    my $rc = open(DICT, "< $dictfile");
-            $dict = $rc ? *DICT{IO} : undef;
-	}
-	if ($dict) {
-	    $ui->print("(spellcheck enabled, using Search::Dict on $dictfile)\n");
+	$ispell = init_ispell();
+
+	if ($ispell) {
+	    $ui->print("(spellcheck enabled, using \'ispell\')\n");
 	} else {
-	    $ui->print("(spellcheck enabled, using \`look\`)\n");
+	    if (%Search::Dict::) {       
+		my @words = qw(/usr/dict/words /usr/share/dict/words);
+		unshift @words, $config{words} if ($config{words});
+		foreach (@words) {
+		    if ( -f $_ ) { $dictfile = $_; last; }
+		}
+		
+		local *DICT;
+		my $rc = open(DICT, "< $dictfile");
+		$dict = $rc ? *DICT{IO} : undef;
+	    }
+	    if ($dict) {
+		$ui->print("(spellcheck enabled, using Search::Dict on $dictfile)\n");
+	    } else {
+		$ui->print("(spellcheck enabled, using \`look\`)\n");
+	    }
 	}
 	$state="enabled";
     } elsif ($command =~ /off/i) {
@@ -163,6 +194,15 @@ sub spellcheck_cmd {
 	$state ||= "disabled";	
     	$ui->print("(spellcheck is $state)\n");
     }
+}
+
+sub init_ispell {
+    close I_WRITE;
+    close I_READ;
+    my $pid = open2(\*I_READ, \*I_WRITE, 'ispell', '-a') or return undef;
+    my $banner = <I_READ>;
+    $banner =~ /^\@/ or die "Couldn't sync with ispell";
+    return $pid;
 }
 
 sub unload { undef $dict; }
