@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/url.pl,v 1.25 2002/04/23 13:53:51 coke Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/url.pl,v 1.26 2002/04/27 18:36:40 coke Exp $
 
 #
 # URL handling
@@ -125,7 +125,7 @@ sub url_cmd {
  	}
 	if ($^O =~ /MSWin32/) {
 
-		use Win32::Shell;
+		require Win32::Shell;
 
 		Win32::Shell::Execute("open", $url, undef, undef, "SW_SHOWNORMAL");
 
