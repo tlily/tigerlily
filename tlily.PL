@@ -7,7 +7,7 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/tlily.PL,v 1.57 2001/11/10 02:36:32 albert Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/tlily.PL,v 1.58 2003/02/14 02:16:44 josh Exp $
 
 require 5.00307;
 use strict;
@@ -218,7 +218,7 @@ sub load_ui {
     my %available;
 
     if ($^O eq "MSWin32") {
-        $config{UI} ||= "Tk";    
+        $config{UI} ||= "TextWindow";    
     } else {
         $config{UI} ||= "Curses";
     }
