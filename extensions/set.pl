@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/set.pl,v 1.7 2001/01/29 03:01:54 jordan Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/set.pl,v 1.8 2001/01/29 04:53:12 jordan Exp $
 
 use strict;
 
@@ -28,26 +28,38 @@ sub dumpit {
 
 # %show handler
 sub show_handler($) {
-    my($ui,$args) = @_;
-    (my $name = $args) =~ /[\w\-_]/;
-    dumpit($ui, 0, ($name =>$config{$name}));
-    return 0;
+  my($ui,$args,$startup) = @_;
+  return setter($ui,$args,$startup,'show');
 }
 
 # %unset handler
 sub unset_handler($) {
-    my($ui,$args) = @_;
-    (my $name = $args) =~ /[\w\-_]/;
-    delete $config{$name};
-    return 0;
+  my($ui,$args,$startup) = @_;
+  return setter($ui,$args,$startup,'unset');
 }
 
 # %set handler
 sub set_handler($) {
   my($ui,$args,$startup) = @_;
+  return setter($ui,$args,$startup,'set');
+}
 
+# setter does the actual work behind %set, %unset, and %show
+sub setter {
+  my ($ui,$args,$startup,$mode)=@_;
   if($args=~/^\s*(?:([\w-_]+)(?:\{([^{}]+)\})?\s*(?:[ =]\s*(.*?))?)?$/) {
     my ($var,$key,$val)=($1,$2,$3);
+
+    # Only %set takes more than just a variable name, so generate a
+    # syntax error if a value is provided for %unset or %show.  Also,
+    # %unset can't be called without a variable name, so also give an
+    # error if one isn't provided.
+    if ((($mode ne 'set') && defined($val)) ||
+	(($mode eq 'unset') && !defined($var))) {
+      $ui->print("(Syntax error: see \%help $mode for usage)\n");
+      return 0;
+    }
+
     if (defined($var)) {  # A variable name was provided
 
       # Determine if a hash element was selected and if so, validate the key
@@ -58,7 +70,7 @@ sub set_handler($) {
       }
 
       # If the user didn't specify a value, print the current value
-      if (defined($val)) {  # We're setting a variable to a value
+      if (defined($val)) { # We're setting a variable
 
 	# XXX The value string should really allow more versitle
 	#     syntax to permit, for example, leading and trailing
@@ -72,8 +84,8 @@ sub set_handler($) {
 	  # spaces
 	  $val=[map {s/^\s*//; s/\s*$//; $_} split(/,/,$val)];
 	  $islist=1;
-	} # else, User is specifying a scalar value
-
+	} # else, User is specifying a scalar value or is unsetting
+	
 	# Check that the data type of the new value is consistent with the
 	# established data type of the config variable
 	if (defined($config{$var})) {
@@ -84,14 +96,14 @@ sub set_handler($) {
 	  if ($ishash) {
 	    if (ref($config{$var}) ne 'HASH') {
 	      $ui->print("(Type mismatch: Config variable is not a hash.  ",
-			 "See %help set)\n");
+			 "See \%help $mode)\n");
 	      return 0;
 	    }
 	    if (defined($config{$var}) && defined($config{$var}->{$key})) {
 	      if ((ref($config{$var}->{$key}) eq 'ARRAY')!=$islist) {
 		$ui->print("(Type mismatch: Config variable's value is ",
 			   ($islist?"":"not "),
-			   "a list.  See %help set)\n");
+			   "a list.  See \%help $mode)\n");
 		return 0;
 		# (You following all this?)
 	      }
@@ -99,19 +111,19 @@ sub set_handler($) {
 	  } else {
 	    if (ref($config{$var}) eq 'HASH') {
 	      $ui->print("(Type mismatch: Config variable is a hash.  ",
-			 "See %help set)\n");
+			 "See \%help $mode)\n");
 	      return 0;
 	    }
 	    if ((ref($config{$var}) eq 'ARRAY')!=$islist) {
 	      $ui->print("(Type mismatch: Config variable's value is ",
 			 ($islist?"":"not "),
-			 "a list.  See %help set)\n");
+			 "a list.  See \%help $mode)\n");
 	      return 0;
 	    }
 	  }
 	}
 
-	# Okay, it's time to actually set the variable
+	# Okay, it's finally time to actually set the variable
 	if ($ishash) {
 	  $config{$var}->{$key}=$val;
 	} else {
@@ -123,8 +135,34 @@ sub set_handler($) {
 	# print the current (new) value.  We decide whether to return
 	# or not based on whether we're running interactively or from
 	# a script and, if the former, based on a user preference.
-	
 	return(0) if ($startup || !$config{set_echo});
+
+      } elsif ($mode eq 'unset') { # We're unsetting a variable
+
+	my $reason;
+	if (defined($config{$var})) {
+	  if ($ishash) { # Deleting a hash member
+	    if (ref($config{$var}) eq 'HASH') {
+	      delete($config{$var}->{$key});
+	      $reason="$var\{$key} deleted";
+	    } else {
+	      $ui->print("(Type mismatch: Config variable is not a hash.  ",
+			 "See \%help $mode)");
+	      return 0;
+	    }
+	  } else { # Deleting a variable	      
+	    delete($config{$var});
+	    $reason="$var deleted";
+	  }
+	} else {
+	  $reason="Variable $var does not exist";
+	}
+
+	# We only print the result when running interactively and only
+	# when the user has set $config{set_echo} to true
+	$ui->print($reason,"\n") if (!$startup && $config{set_echo});
+	return 0;
+
       }
 
       # Print the current value of a variable
@@ -153,15 +191,30 @@ sub set_handler($) {
       return 0;
     }
   }
-  $ui->print("(Syntax error: see %help set for usage)\n");
+  $ui->print("(Syntax error: see \%help $mode for usage)\n");
   return 0;
 }
 
 command_r('show', \&show_handler);
 shelp_r('show', "Show the value of a configuration variable");
+help_r('show', qq(usage:
+    %show
+        Lists all config variables and their values.
+    %show name
+        Lists the value of the config variable named [name].
+    %show name{key}
+        Lists the value of the hash element identified by [key] in the config
+        variable named [name].
+));
 
 command_r('unset', \&unset_handler);
 shelp_r('unset', "UNset a configuration variable");
+help_r('unset', qq(usage:
+    %unset name
+        Unsets the config variable named [name].
+    %unset name{key}
+        Removes the key [key] from the hash config variable [name].
+));
 
 command_r('set', \&set_handler);
 shelp_r('set', "Set a configuration variable");
@@ -173,8 +226,9 @@ help_r('set', qq(usage:
     %set name{key} value
         Sets the hash key [key] in the config variable [name] to [value].
     %set name{key} (value,value,value)
-        Sets the hash key [key] in the config variable [name] to the given list.
-  Examples:
+        Sets the hash key [key] in the config variable [name] to the given
+        list.
+Examples:
     %set mono 1
         Turns on monochrome mode.  (Also has the side effect of setting the
         colors on your screen to your monochrome preferences.)
