@@ -16,6 +16,9 @@ Before 2.0 release:
     - when the last open server connection is closed, provide a exit/reconnect
       option. (integrate with smartexit feature)
       
+  Testing:
+    - autoreview is untested!
+
   Bugs:
     UI     - if UI is suspended (for example C-z), when it comes back, the 
              cursor keys don't work.
