@@ -1,5 +1,5 @@
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/namethatblurb.pl,v 1.1 2001/12/13 03:08:41 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/namethatblurb.pl,v 1.2 2001/12/13 03:17:35 neild Exp $
 #
 
 use strict;
@@ -37,6 +37,7 @@ sub blurbcheck {
 	@match = grep(!/^-/, $server->expand_name($_));
 	last if @match;
     }
+    return unless @match;
 
     @match =
       sort { ($b->{BLURBTIME} || 0) <=> ($a->{BLURBTIME} || 0) }
@@ -46,7 +47,11 @@ sub blurbcheck {
     return if (time - $mention{$match[0]->{HANDLE}} < $repeat_quelch);
     $mention{$match[0]->{HANDLE}} = time;
 
-    $ui->print("($match[0]->{NAME}'s blurb is [$match[0]->{BLURB}])\n");
+    if ($match[0]->{BLURB} eq "") {
+	$ui->print("($match[0]->{NAME} has no blurb)\n");
+    } else {
+	$ui->print("($match[0]->{NAME}'s blurb is [$match[0]->{BLURB}])\n");
+    }
     return;
 }
 
