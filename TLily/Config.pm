@@ -8,7 +8,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Config.pm,v 1.7 1999/04/09 22:48:15 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Config.pm,v 1.8 1999/05/15 03:58:27 albert Exp $
 
 package TLily::Config;
 
@@ -314,7 +314,7 @@ sub collapse_list {
 
 # Tells the caller whether the named /command can
 # be intercepted.
-sub config_ask {
+sub ask {
 	my($cmd) = @_;
 	return (grep($_ eq $cmd, @{$config{slash}}));
 }
@@ -340,7 +340,7 @@ TLily::Config - Configuration Handling
                                     List => 'config'
 				    Call => \&set_colors);
 
-    if(TLily::Config::config_ask('info')) {
+    if(TLily::Config::ask('info')) {
 	&do_something();
     }
 

@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/status.pl,v 1.13 1999/05/05 17:39:49 steve Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/status.pl,v 1.14 1999/05/15 03:58:34 albert Exp $
 
 use strict;
 
@@ -25,14 +25,14 @@ sub set_clock {
 	}
 	
 	$ui->set(clock => sprintf("%02d:%02d%s", $a[2], $a[1], $ampm));
-	return;
+	return 0;
     }
 }    
 
 sub set_serverstatus {
     my $ui     = ui_name("main");
     my $server = server_name();
-    return unless ($server);
+    return 2 unless ($server);
 
     my $sname = $server->state(DATA => 1,
 			       NAME => "NAME");
@@ -40,7 +40,7 @@ sub set_serverstatus {
     
     my($name, %state);
     $name  = $server->user_name();
-    return unless defined($name);
+    return 3 unless defined($name);
     
     %state = $server->state(NAME => $name);
     

@@ -1,11 +1,11 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/startup.pl,v 1.4 1999/04/18 19:45:31 albert Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/startup.pl,v 1.5 1999/05/15 03:58:32 albert Exp $
 
 use strict;
 
-event_r(type => 'connected',
-	order => 'after',
-	call => \&startup_handler);
+event_r(type  => 'connected',
+	order => 'during',
+	call  => \&startup_handler);
 
 sub startup_handler ($$) {
     my($event,$handler) = @_;
@@ -38,6 +38,7 @@ sub startup_handler ($$) {
         
 	if(!$args{text}) {
 	    $args{ui}->print("Error opening *tlilyStartup: $!\n");
+	    event_u($handler->{id});
 	    return 0;
 	}
         {   my $f;
@@ -47,6 +48,7 @@ sub startup_handler ($$) {
 		$args{ui}->print("(No startup memo found.)\n",
 		    "(If you want to install one, ",
 		    "call it tlilyStartup or *tlilyStartup)\n");
+		event_u($handler->{id});
 		return 0;
 	    }
         }

@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/bandwidth.pl,v 1.2 1999/03/23 08:33:42 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/bandwidth.pl,v 1.3 1999/05/15 03:58:31 albert Exp $
 
 sub load {
     my $ui = ui_name("main");
@@ -26,7 +26,7 @@ sub init_bandwidth {
     my $sub = sub {
 	my $ui = ui_name("main");
 	my $server = server_name();
-	return unless ($server);
+	return 2 unless ($server);
 	
 	my $in       = $server->{bytes_in} - $last_in;
 	my $last_in  = $server->{bytes_in};
@@ -45,6 +45,6 @@ sub init_bandwidth {
 			 interval => $update,
 			 call     => $sub);
     
-    return;
+    return 0;
 }
 
