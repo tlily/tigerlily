@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Server.pm,v 1.15 1999/04/09 22:48:18 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Server.pm,v 1.16 1999/04/12 21:55:04 neild Exp $
 
 package TLily::Server;
 
@@ -309,7 +309,7 @@ sub reader {
 }
 
 
-DESTROY { warn "Server object going down!\n"; }
+#DESTROY { warn "Server object going down!\n"; }
 
 1;
 
