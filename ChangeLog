@@ -1,4 +1,6 @@
 Version 2.3
+  * [Makefile.PL] The inclusion of the Tk interface in the single file build
+    is now conditional on the presence of Tk.pm. [DCL]
   * [TLily/Event.pm] Show named event registration/reception/deregistration
     based on the setting of event_debug, which is interpreted as a regular
     expression matched against a string that is the event type followed by

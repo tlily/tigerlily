@@ -7,7 +7,7 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/Makefile.PL,v 1.13 2001/11/10 02:36:32 albert Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/Makefile.PL,v 1.14 2001/11/10 07:33:07 tale Exp $
 
 use strict;
 use Config;
@@ -133,8 +133,6 @@ my @modules =
      TLily::UI::Curses::StatusLine
      TLily::UI::Curses::Text
      TLily::UI
-     TLily::UI::Tk::Event
-     TLily::UI::Tk
      TLily::Utils
      TLily::User
      TLily::Extend
@@ -148,6 +146,9 @@ my @modules =
      TLily::Bot
      TLily::UI::Curses
     );
+
+push (@modules, qw(TLily::UI::Tk::Event TLily::UI::Tk))
+    if eval { require Tk; };
 
 my %added;
 
