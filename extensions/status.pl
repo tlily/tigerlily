@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/status.pl,v 1.23 2001/08/21 18:39:53 albert Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/status.pl,v 1.24 2002/06/06 22:23:41 bwelling Exp $
 
 use strict;
 
@@ -15,7 +15,8 @@ sub set_clock {
 	$a[1] = $t % 60;
     }
     my $ampm = "";
-    my $format = "%02d:%02d%s";
+    my $seconds = "";
+    my $format = "%02d:%02d%s%s";
     if ($config{clocktype} eq '12') {
 	if ($a[2] >= 12) {
 	    $ampm = 'p';
@@ -25,10 +26,13 @@ sub set_clock {
             $a[2] = 12 if $a[2] == 0;
 	    $ampm = 'a';
 	}
-        $format = "%2d:%02d%s";
+        $format = "%2d:%02d%s%s";
+    }
+    if ($config{clockseconds}) {
+        $seconds = sprintf(":%02d", $a[0]);
     }
 	
-    $ui->set(clock => sprintf($format, $a[2], $a[1], $ampm));
+    $ui->set(clock => sprintf($format, $a[2], $a[1], $seconds, $ampm));
     return 0;
 }    
 
@@ -74,8 +78,16 @@ sub load {
     
     my $sec = (localtime)[0];
     set_clock();
-    TLily::Event::time_r(after    => 60 - $sec,
-			 interval => 60,
+    my ($after, $interval);
+    if ($config{clockseconds}) {
+        $after = 1;
+	$interval = 1;
+    } else {
+        $after = 60 - $sec;
+	$interval = 60;
+    }
+    TLily::Event::time_r(after    => $after,
+			 interval => $interval,
 			 call     => \&set_clock);
     
     if ($server) {
