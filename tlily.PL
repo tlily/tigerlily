@@ -7,7 +7,7 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/tlily.PL,v 1.60 2003/02/26 03:57:49 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/tlily.PL,v 1.61 2003/08/12 03:41:21 coke Exp $
 
 require 5.00307;
 use strict;
@@ -23,6 +23,20 @@ use TLily::Version;
 use TLily::Utils;
 
 BEGIN {
+    if ($TLily::Version::VERSION =~ /-aqua$/) {
+        eval {
+            require Foundation;
+            require Foundation::Functions;
+            require AppKit;
+            require AppKit::Functions;
+            require MyApp;
+        };
+        # This seems... a tad evil.
+        $::TL_LIBDIR = $INC[0];
+        $::TL_EXTDIR = $INC[0]. "/extensions";
+        push @INC,$::TL_LIBDIR;
+    }
+
     if (!defined($::TL_LIBMODDIR) ||
 	($::TL_LIBMODDIR ne "//INTERNAL")) {
 	unshift @INC, $::TL_LIBMODDIR;
@@ -90,7 +104,23 @@ TLily::Event::init();
 if(defined $config{bot}) {
     eval "use TLily::Bot; TLily::Bot::init();";
 }
+
+our $nsApp;
+if ($TLily::Version::VERSION =~ /-aqua$/) {
+
+    # Get a reference to the shared NSApplication object
+    $nsApp = NSApplication->sharedApplication;
+    
+    # Load the main menu Nib, making the NSApplication object its owner
+    NSBundle->loadNibNamed_owner("MainMenu", $nsApp);
+}
+
 my $ui = load_ui();
+
+if ($TLily::Version::VERSION =~ /-aqua$/) {
+    # Make the controller the delegate of the application
+    $nsApp->setDelegate($ui);
+}
 
 show_banner();
 
@@ -197,40 +227,49 @@ TLily::Event::send(type => 'user_input',
 		   ui   => $ui,
 		   text => "%connect") unless ($config{noauto});
 
-while (1) {
-    eval { TLily::Event::loop; };
+
+if ($TLily::Version::VERSION =~ /-aqua$/) {
+    # Start the NSApplication object's run loop
+    $nsApp->run;
+} else {
+   # use the normal event loop.
+    while (1) {
+        eval { TLily::Event::loop; };
+
+        # Normal exit.
+        if ($@ eq '') {
+          $ui->print("*** Exiting.");
+          exit;
+        }
     
-    # Normal exit.
-    if ($@ eq '') {
-	$ui->print("*** Exiting.");
-	exit;
+        # Non-fatal errors.
+        if ($@ =~ /^Undefined subroutine/) {
+          $ui->print("ERROR: ", $@);
+          next;
+        }
+    
+        # Oh, well.  Guess we have a problem.
+        die;
     }
-    
-    # Non-fatal errors.
-    if ($@ =~ /^Undefined subroutine/) {
-	$ui->print("ERROR: ", $@);
-	next;
-    }
-    
-    # Oh, well.  Guess we have a problem.
-    die;
 }
-
-
-
+                   
 sub load_ui {
     my %available;
 
-    $config{UI} ||= "TextWindow";    
+    my $default_UI = "TextWindow";
+
+    if ($TLily::Version::VERSION =~ /-aqua$/) {
+        $default_UI = "Cocoa";
+    }
+ 
+    $config{UI} ||= $default_UI;
 
     if ($::TL_LIBDIR =~ m|^//INTERNAL|) {
-
 	my $ui = eval "TLily::UI::$config{UI}->new(name => 'main');";
 	if ($@) {
 	    print STDERR "ERROR: Unable to load UI \"$config{UI}\".\n$@\n";
 	    exit;
 	}
-
 	return $ui;
     }
 
@@ -316,5 +355,4 @@ L<extensions::slcp_output>.
 Many.  We will eventually fix them and cause more.
 
 =cut
-
 1;
