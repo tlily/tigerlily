@@ -1,11 +1,12 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/paste.pl,v 1.3 1999/04/21 20:09:58 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/paste.pl,v 1.4 2000/03/14 05:29:19 kazrak Exp $
 
 use strict;
 
 sub paste_mode {
     my($ui, $command, $key) = @_;
-    return 1 if ($ui->{_paste_nl_flag} && ($key eq "nl" || $key eq " "));
+    return 1 if ($ui->{_paste_nl_flag} &&
+                 ($key eq "nl" || $key eq " " || $key eq ">"));
     if ($key eq "nl") {
 	$ui->{_paste_nl_flag} = 1;
 	$ui->command("insert-self", " ");
