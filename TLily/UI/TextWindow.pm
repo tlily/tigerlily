@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/TextWindow.pm,v 1.1 2003/02/13 15:11:09 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/TextWindow.pm,v 1.2 2003/02/14 02:11:43 josh Exp $
 
 package TLily::UI::TextWindow::Proxy;
 
@@ -340,8 +340,8 @@ sub new {
     bless($self, $class);
 
     TLily::FoiledAgain::set_ui($config{'textwindow_ui'});
+    TLily::FoiledAgain::want_color((defined($arg{color}) ? $arg{color} : 1));
 
-    $self->{want_color} = (defined($arg{color}) ? $arg{color} : 1);
     $self->{input_maxlines} = $arg{input_maxlines};
     start_curses($self);
 
@@ -537,8 +537,6 @@ sub configure {
 	my $val = shift;
 
 	if ($opt eq 'color') {
-	    return unless (has_colors());
-	    print STDERR "val=$val\n";
 	    $self->{color} = $val ? 1 : 0;
 	    $self->{input}->configure(color => $val);
 	    foreach my $tpair (values %{$self->{win}}) {

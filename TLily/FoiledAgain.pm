@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/FoiledAgain.pm,v 1.4 2003/02/14 01:28:37 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/FoiledAgain.pm,v 1.5 2003/02/14 02:11:43 josh Exp $
 
 package TLily::FoiledAgain;
 
@@ -16,7 +16,7 @@ use Carp;
 
 use vars qw($DEBUG);
 
-$DEBUG = 1;
+$DEBUG = 0;
 my $UI_CLASS = undef;
 
 =head1 NAME
@@ -69,6 +69,8 @@ Copy the current contents of the virtual screen described by any windows
 (see below) to the real screen.  The cursor should be left at the location of
 the point (in the last window?)
 
+=item want_color($bool)
+
 =item reset_styles()
 
 =item defstyle($style, @attrs)
@@ -84,13 +86,15 @@ relative to the window, not the screen.
 
 =item new($lines, $cols, $begin_x, $begin_y)
 
-Allocate the window.
+Allocate the window of the given size, at the given position on the screen.
 
 =item destroy()
 
 Clean up the window.
 
 =item clear()
+
+Clear the contents of the window.
 
 =item clear_background($style)
 
@@ -107,13 +111,24 @@ beginning of the deleted line.
 
 =item move_point($line, $col)
 
+Move the current cursor position.
+
 =item addstr_at_point($string)
+
+Add a string at the current cursor position.
 
 =item addstr($line, $col, $string)
 
+Add a string at the specified position.
+
 =item insch($line, $col, $character)
 
+Insert a character at the given position, pushing the rest of the 
+line over one character.
+
 =item delch_at_point()
+
+Remove a character at the given postion, pulling back the rest of the line.
 
 =item position_cursor($line, $col)
 
@@ -129,6 +144,8 @@ to show up on the next call to update_screen.
 
 =item read_char()
 
+Return a character of input, if available.  Otherwise return undef.
+
 =cut
 
 # screen operations
@@ -141,6 +158,7 @@ sub screen_width     { dispatch_classmethod(screen_width     => @_); }
 sub screen_height    { dispatch_classmethod(screen_height    => @_); }
 sub update_screen    { dispatch_classmethod(update_screen    => @_); }
 sub bell             { dispatch_classmethod(bell             => @_); }
+sub want_color       { dispatch_classmethod(want_color       => @_); }
 sub reset_styles     { dispatch_classmethod(reset_styles     => @_); }
 sub defstyle         { dispatch_classmethod(defstyle         => @_); }
 sub defcstyle        { dispatch_classmethod(defcstyle        => @_); }

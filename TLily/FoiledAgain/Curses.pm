@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/FoiledAgain/Attic/Curses.pm,v 1.3 2003/02/14 01:28:37 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/FoiledAgain/Attic/Curses.pm,v 1.4 2003/02/14 02:11:43 josh Exp $
 
 package TLily::FoiledAgain::Curses;
 
@@ -16,7 +16,7 @@ use vars qw(@ISA $sigwinch $COLS $LINES);
 use TLily::FoiledAgain;
 @ISA = qw(TLily::FoiledAgain);
 
-my ($STTY_LNEXT);
+my ($STTY_LNEXT, $WANT_COLOR, $USING_COLOR);
 
 use strict;
 use Carp;
@@ -84,9 +84,6 @@ my %snamemap   =
 # IDs.  (fg and bg are Curses color IDs.)
 my %cpairmap   = ("-1 -1" => 0);
 
-
-my %crud = (want_color => 1);  # broken stuff, duh.  need to get rid of this.
-
 sub start {
     # Work around a bug in certain curses implementations where raw() does
     # not appear to clear the "lnext" setting.
@@ -96,11 +93,11 @@ sub start {
 
     initscr;
 
-    $crud{color} = 0;
-    if ($crud{want_color} && has_colors()) {
+    $USING_COLOR = 0;
+    if ($WANT_COLOR && has_colors()) {
 	my $rc = start_color();
-	$crud{color} = ($rc == OK);
-	if ($crud{color}) {
+	$USING_COLOR = ($rc == OK);
+	if ($USING_COLOR) {
 	    eval { use_default_colors(); };
 	}
     }
@@ -193,7 +190,7 @@ sub new {
     $self->{W}->scrollok(0);
     $self->{W}->nodelay(1);
 
-    $self->{stylemap} = ($crud{color} ? \%cstylemap : \%stylemap);
+    $self->{stylemap} = ($USING_COLOR ? \%cstylemap : \%stylemap);
 
     return $self;
 }
@@ -331,6 +328,9 @@ sub commit {
     $self->{W}->noutrefresh();
 }
 
+sub want_color {
+    ($WANT_COLOR) = @_;
+}
 
 sub reset_styles {
     %stylemap  = (default => A_NORMAL);

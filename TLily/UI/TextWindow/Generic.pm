@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/TextWindow/Attic/Generic.pm,v 1.3 2003/02/14 01:15:14 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/TextWindow/Attic/Generic.pm,v 1.4 2003/02/14 02:11:43 josh Exp $
 
 package TLily::UI::TextWindow::Generic;
 
@@ -47,16 +47,6 @@ sub new {
     bless($self, $class);
 }
 
-
-# xxx foiledagain
-#sub stop_curses {
-#    foreach my $w (@widgets) {
-#        $w->{F}->destroy();
-#	$w->{F} = undef;
-#    }
-#}
-
-
 sub configure {
     my $self = shift;
 
@@ -65,8 +55,12 @@ sub configure {
 	my $val = shift;
 
 	if ($opt eq 'color') {
-#	    $self->{stylemap} = ($val ? \%cstylemap : \%stylemap); #xxx foiledagain
-#           $self->{F}->clear_background($self->{bg});             #xxx foiledagain
+
+            # XXX  this doesn't work.  Currently we can't turn color 
+            #      off or on once it's initially been set up.
+
+            TLily::FoiledAgain::want_color($val);
+            $self->{F}->clear_background($self->{bg});
 	}
     }
 }

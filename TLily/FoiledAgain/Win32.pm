@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/FoiledAgain/Attic/Win32.pm,v 1.5 2003/02/14 01:28:37 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/FoiledAgain/Attic/Win32.pm,v 1.6 2003/02/14 02:11:43 josh Exp $
 
 package TLily::FoiledAgain::Win32;
 
@@ -16,6 +16,8 @@ use vars qw(@ISA);
 use TLily::Version;
 use TLily::FoiledAgain;
 @ISA = qw(TLily::FoiledAgain);
+
+my $USING_COLOR = 1;
 
 use strict;
 use Carp;
@@ -28,6 +30,67 @@ use Win32::Sound;
 TLily::FoiledAgain::Win32 - Win32 implementation of the FoiledAgain interface
 
 =cut;
+
+# The cnamemap hash maps English color names to Win32::Console color attrs.
+my %fg_cnamemap = (
+   '-'              => -1,
+   mask             => -1,
+   black            => 0,
+   red              => FOREGROUND_RED,
+   green            => FOREGROUND_GREEN,
+   yellow           => FOREGROUND_RED | FOREGROUND_GREEN,
+   blue             => FOREGROUND_BLUE,
+   magenta          => FOREGROUND_BLUE | FOREGROUND_RED,
+   cyan             => FOREGROUND_GREEN | FOREGROUND_BLUE,
+   white            => FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE
+);
+
+my %bg_cnamemap = (
+   '-'              => -1,
+   mask             => -1,
+   black            => 0,
+   red              => BACKGROUND_RED,
+   green            => BACKGROUND_GREEN,
+   yellow           => BACKGROUND_RED | BACKGROUND_GREEN,
+   blue             => BACKGROUND_BLUE,
+   magenta          => BACKGROUND_BLUE | BACKGROUND_RED,
+   cyan             => BACKGROUND_GREEN | BACKGROUND_BLUE,
+   white            => BACKGROUND_RED | BACKGROUND_GREEN | BACKGROUND_BLUE
+);
+
+# The snamemap hash maps English style names to Win32::Console style attrs.
+my %snamemap = (
+   '-'             => 0,
+   'normal'        => 0,
+   'standout'      => FOREGROUND_INTENSITY,
+   'underline'     => FOREGROUND_INTENSITY,  # unsupported
+   'reverse'       => 0,                     # special case
+   'blink'         => FOREGROUND_INTENSITY,  # unsupported
+   'dim'           => 0,
+   'bold'          => FOREGROUND_INTENSITY,
+   'altcharset'    => 0                      # unsupported
+);
+
+
+# The keycodemap hash maps windows keycodes to tlily's names.
+my %keycodemap = (
+    40 => 'down',
+    38 => 'up',
+    37 => 'left',
+    39 => 'right',
+    33 => 'pageup',
+    34 => 'pagedown',
+    8  => 'bs',
+    45 => 'ins',
+    46 => 'del',
+    36 => 'home',
+    35 => 'end',
+    13 => 'nl'
+);
+
+# The stylemap and cstylemap hashes map style names to Curses attributes.
+my %stylemap   = (default => $main::ATTR_NORMAL);
+my %cstylemap  = (default => $main::ATTR_NORMAL);
 
 sub DEBUG { 
     my ($self) = shift;
@@ -114,6 +177,8 @@ sub new {
     # and $self->{lines} ourselves (alas).
     $self->{buffer}->Size($cols, $lines);
 
+    $self->{stylemap} = ($USING_COLOR ? \%cstylemap : \%stylemap);
+
     bless($self, $class);
 
     push @windows, $self;
@@ -131,22 +196,6 @@ sub position_cursor {
     $self->{buffer}->Cursor($col,$line, 100, 1);
 }
 
-
-# The keycodemap hash maps windows keycodes to tlily's names.
-my %keycodemap = (
-    40 => 'down',
-    38 => 'up',
-    37 => 'left',
-    39 => 'right',
-    33 => 'pageup',
-    34 => 'pagedown',
-    8  => 'bs',
-    45 => 'ins',
-    46 => 'del',
-    36 => 'home',
-    35 => 'end',
-    13 => 'nl'
-);
 
 sub read_char {
     my($self) = @_;
@@ -221,7 +270,7 @@ sub clear_background {
     DEBUG(@_);
 
     $self->{background_style} = $style;
-    $self->{buffer}->Cls(get_attr_for_style($style));
+    $self->{buffer}->Cls($self->get_attr_for_style($style));
 }
 
 
@@ -229,7 +278,7 @@ sub set_style {
     my($self, $style) = @_;
     DEBUG(@_);
 
-    $self->{buffer}->Attr(get_attr_for_style($style));
+    $self->{buffer}->Attr($self->get_attr_for_style($style));
 }
 
 
@@ -255,8 +304,8 @@ sub addstr_at_point {
     my ($self, $string) = @_;
     DEBUG(@_);
 
-   defined($self->{buffer}->Write($string)) || 
-       die "Error in Write";
+    defined($self->{buffer}->Write($string)) || 
+        die "Error in Write";
 }
 
 
@@ -355,31 +404,53 @@ sub commit {
 
 }
 
+sub want_color {
+    ($USING_COLOR) = @_;
+}
 
 sub reset_styles {
     DEBUG(@_);
 
+    %stylemap   = (default => $main::ATTR_NORMAL);
+    %cstylemap  = (default => $main::ATTR_NORMAL);
 }
 
 
 sub defstyle {
     my($style, @attrs) = @_;
-
+    
+    if (grep { $_ eq "reverse" } @attrs) {
+        $stylemap{$style} = parsestyle(@attrs) | $fg_cnamemap{black} | $bg_cnamemap{white};
+    } else {
+        $stylemap{$style} = parsestyle(@attrs) | $fg_cnamemap{white} | $bg_cnamemap{black};
+    }
 }
 
 
 sub defcstyle {
     my($style, $fg, $bg, @attrs) = @_;
 
+    if (grep { $_ eq "reverse" } @attrs) {
+        my $oldfg = $fg;
+        $fg = $bg; $bg = $oldfg;
+    }
+
+    $cstylemap{$style} = parsestyle(@attrs) | $fg_cnamemap{$fg} | $bg_cnamemap{$bg};
 }
 
 ###############################################################################
 # Private functions
 
 sub get_attr_for_style {
-    my ($self) = @_;
+    my ($self, $style) = @_;
 
-    $main::ATTR_NORMAL;
+    $self->{stylemap}{$style} || $main::ATTR_NORMAL;
+}
+
+sub parsestyle {
+    my $style = 0;
+    foreach (@_) { $style |= $snamemap{$_} if $snamemap{$_} };
+    return $style;
 }
 
 1;
