@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/Tk.pm,v 1.2 1999/12/13 05:37:47 albert Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/Tk.pm,v 1.3 1999/12/15 12:36:10 mjr Exp $
 
 package TLily::UI::Tk;
 
@@ -917,6 +917,33 @@ sub istyle_fn_u {
     #    $self->{input}->style_fn(undef);
     return 1;
 }
+
+# Search through the history for a given string
+sub search_history {
+    my $self = shift;
+    my $string = shift;
+    my $dir = shift || -1;
+    my $dir = ($dir >= 0)?1:-1;
+
+    return unless ($string);
+    my $hist_idx = $self->{history_pos};
+
+    while (($hist_idx >= 0) && ($hist_idx <= $#{$self->{history}}) ) {
+        last if ($self->{history}->[$hist_idx] =~ /$string/);
+        $hist_idx += $dir;
+    }
+    return unless (($hist_idx >= 0) && ($hist_idx <= $#{$self->{history}}));
+
+    $self->{history_pos} = $hist_idx;
+
+    $self->{input}->delete("1.0","end");
+    $self->{input}->insert("end", $self->{history}->[$self->{history_pos}]);
+    $self->{input}->mark("set", "insert", "end");
+
+    my $pos = index($self->{text}, $string);
+    $self->{input}->mark("set", "insert", "1.$pos");
+}
+
 
 sub previous_history {
     my($self) = shift;
