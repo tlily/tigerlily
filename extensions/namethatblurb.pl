@@ -1,5 +1,5 @@
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/namethatblurb.pl,v 1.2 2001/12/13 03:17:35 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/namethatblurb.pl,v 1.3 2001/12/18 23:23:45 neild Exp $
 #
 
 use strict;
@@ -21,21 +21,24 @@ sub blurbcheck {
     my $server = $event->{server};
     my $ui     = TLily::UI::name($event->{ui_name});
 
-    return unless ($text =~ /(.*)\'s\s*blurb/i);
-    my @name = split /\s+/, $1;
-    return unless @name;
-
-    my @who;
-    shift @name while (@name > 3);
-    while (@name) {
-	push @who, "@name";
-	shift @name;
-    }
-
     my @match;
-    for (@who) {
-	@match = grep(!/^-/, $server->expand_name($_));
-	last if @match;
+    if ($text =~ /(.*)\'s\s*blurb/i) {
+	    my @name = split /\s+/, $1;
+	    return unless @name;
+
+	    my @who;
+	    shift @name while (@name > 3);
+	    while (@name) {
+		    push @who, "@name";
+		    shift @name;
+	    }
+
+	    for (@who) {
+		    @match = grep(!/^-/, $server->expand_name($_));
+		    last if @match;
+	    }
+    } elsif ($text =~ /(his|her|its)\s*blurb/i) {
+	    @match = ($event->{SOURCE});
     }
     return unless @match;
 
