@@ -56,6 +56,7 @@ my @widgets = ();
    &KEY_PPAGE       => 'pageup',
    &KEY_NPAGE       => 'pagedown',
    &KEY_BACKSPACE   => 'bs',
+   &KEY_DC          => 'bs',
    &KEY_HOME        => 'home',
    &KEY_END         => 'end',
    "\n"             => 'nl'
