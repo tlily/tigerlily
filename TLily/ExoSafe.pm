@@ -8,7 +8,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/ExoSafe.pm,v 1.7 2001/01/26 03:01:48 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/ExoSafe.pm,v 1.8 2001/11/10 07:02:35 tale Exp $
 
 package ExoSafe;
 
@@ -80,6 +80,8 @@ sub rdo {
 	$subref = eval "package $root; sub { do \$file }";
     }
 
+    ${$root . "::__FILE__"} = $file;
+
     return &$subref;
 }
 
@@ -104,7 +106,7 @@ sub load_internal_files {
     if (keys %internal_files == 0) {
 	local *FH;
 	my $rc = open(FH, $0) or die "$0: $!";
-	
+
 	my $name;
 	my $data = "";
 	while (<FH>) {

@@ -1,4 +1,6 @@
 Version 2.3
+  * [TLily/ExoSafe.pm] Add a __FILE__ identifier to each compartment
+    to make finding the source of an eval (eg, an event handler) easier. [DCL]
   * [extensions/blurbless.pl] Changed the handlers around a little so
     that a server_connected event triggers registering of the text/prompt
     handlers, allowing blurbless to work for connections beyond the first one.
