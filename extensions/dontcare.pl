@@ -96,7 +96,8 @@ sub silencer {
    my $lncnt = length($event->{VALUE})/72;
 
    if($lncnt >= $lines) { 
-     $event->{VALUE} = "...but you don't care.";
+     $event->{VALUE} =~ s/^(.*?[\\\?\\\!\\\.]+).*/$1/g;
+     $event->{VALUE} .= " ...but you don't care.";
    }
    return;
 }
