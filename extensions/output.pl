@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/Attic/output.pl,v 1.17 1999/03/03 23:18:22 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/Attic/output.pl,v 1.18 1999/03/15 22:22:52 steve Exp $
 
 use strict;
 
@@ -24,13 +24,16 @@ that the parser module (slcp.pl) send into appopriate output for the user.
 sub private_fmt {
     my($ui, $e) = @_;
     my $ts = '';
+	my $blurb = $e->{server}->get_blurb(HANDLE => $e->{SHANDLE});
+	$blurb = " [$blurb]" if $blurb;
     
     $ui->print("\n");
     
     $ts = timestamp($e->{TIME}) if ($e->{STAMP});
     $ui->indent(private_header => " >> ");
     $ui->prints(private_header => "${ts}Private message from ",
-		private_sender => $e->{SOURCE});
+		private_sender => $e->{SOURCE},
+        private_header => $blurb);
     if ($e->{RECIPS} =~ /,/) {
 	$ui->prints(private_header => ", to ",
 		    private_dest   => $e->{RECIPS});
@@ -52,6 +55,9 @@ event_r(type  => 'private',
 sub public_fmt {
     my($ui, $e) = @_;
     my $ts = '';
+	my $blurb = $e->{server}->get_blurb(HANDLE => $e->{SHANDLE});
+	$blurb = " [$blurb]" if $blurb;
+
     
     $ui->print("\n");
     
@@ -59,7 +65,7 @@ sub public_fmt {
     $ui->indent(public_header => " -> ");
     $ui->prints(public_header => "${ts}From ",
 		public_sender => $e->{SOURCE},
-		public_header => ", to ",
+		public_header => "$blurb, to ",
 		public_dest   => $e->{RECIPS},
 		public_header => ":\n");
     
