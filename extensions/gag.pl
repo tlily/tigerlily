@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/gag.pl,v 1.10 2002/08/20 16:25:49 kazrak Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/gag.pl,v 1.11 2003/05/10 21:41:57 coke Exp $ 
 
 use strict;
 
@@ -121,7 +121,7 @@ sub gag_command_handler {
         my %state = $server->state(NAME => $nm);
         if (!$state{HANDLE}) {
 	    $ui->print("(could find no match to \"$args[0]\")\n");
-	    return;
+	    next;
         }
 
         if (defined $gagged{$state{HANDLE}}) {
