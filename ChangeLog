@@ -1,4 +1,9 @@
 Version 2.1.1-post
+  * [TLily/Server/Event.pm] Configurable event_timeout.
+  * [extensions/url.pl] Capture URLs in text events (but still needs a
+    little work to figure out wrapped URLs).  Length of default list
+    configurable via $config{url_list_count}.  Format of list
+    configurable via $config{url_list_format}.
   * [TLily/UI/Curses.pm, TLily/UI/Curses/Input.pm] backward-sentence,
     forward-sentence, capitalize-word, down-case-word, up-case-word
     tranpose-words and quoted insert (the last has a few problems with
@@ -6,9 +11,9 @@ Version 2.1.1-post
     $config{doublespace_period} (default: 0) to determine whether the
     end of a sentence should have two spaces.  The word commands use
     $config{word_characters} (string, default "") to determine what
-    sort of characters besides alphanumerics are word characters.
+    sort of characters besides alphanumerics are word characters. [DCL]
   * [extensions/startup.pl] Set no_startup_memo on the command line to not
-    attempt to find a lilyStartup memo at the server.
+    attempt to find a lilyStartup memo at the server. [DCL]
   * [extensions/slcp_parse.pl] Added support for queueing %NOTIFY events
     before the initial SLCP sync.  (No more "> #1739 kills Kazrak.") [SMC]
   * extended %on to support variable expansion, unregistering and listing
