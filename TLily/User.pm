@@ -54,7 +54,7 @@ Welcome to Tigerlily!
 
 Tigerlily is a client for the lily CMC, written entirely in 100% pure Perl.
 
-For a list of commands, try "/help commands".
+For a list of commands, try "%help commands".
 ');
 
 	return $self;
@@ -143,6 +143,7 @@ sub command_help {
 sub help_command {
 	my($self, $ui, $arg) = @_;
 	$arg = "help" if ($arg eq "");
+	$arg =~ s/^%//;
 
 	unless ($self->{help}->{$arg}) {
 		$ui->print("(there is no help on \"$arg\")\n");
