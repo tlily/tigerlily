@@ -1,4 +1,4 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/ui.pl,v 1.21 2000/02/07 06:02:54 tale Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/ui.pl,v 1.22 2000/02/07 13:56:40 tale Exp $ 
 use strict;
 
 =head1 NAME
@@ -23,19 +23,25 @@ Binds a key to a command.  See L<"%help bind"|%help bind> for details.
 
 =cut
 
-my $bind_help = "
-Usage: %bind [locally] key [command]
+my $bind_help = qq{
+Usage: %bind ["locally"] [key [command]]
 
 %bind binds a key to a command.  The actual set of commands you can bind \
 a key to is unfortunately poorly specified at this time.  If the \"locally\" \
 argument is specified (or a substring thereof), the binding will apply only \
-to the current UI; otherwise, it will be a global binding.
+to the current UI; otherwise, it will be a global binding. \
 
-If the command argument is not specified, the key will be bound to print
-itself.
+If the command argument is not specified, the binding of the key in the \
+current UI will be printed.
+
+If the key argument is not specified, all bindings in the current UI \
+will be printed, except for keys which do "insert-self".
+
+(The 1 and 2 argument versions of %bind are currently only available with \
+the Curses UI.)
 
 (see also %keyname)
-";
+};
 
 my $keyname_help = "
 Usage: %keyname
@@ -50,12 +56,14 @@ sub bind_command {
     my @args = split /\s+/, $args;
     my $local;
 
-    if ($args[0] && index("locally", $args[0]) == 0) {
+    if ($args[0] && index("locally", $args[0]) == 0 && length($args[0]) > 1) {
 	shift @args;
 	$local = 1;
     }
 
-    if (@args > 2) {
+    if (@args < 2) {
+        $local = 1;
+    } elsif (@args > 2) {
 	$ui->print("(%bind [locally] key command; type %help for help)\n");
 	return;
     }
