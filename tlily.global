@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/Attic/tlily.global,v 1.12 1999/02/28 22:53:17 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/Attic/tlily.global,v 1.13 1999/03/01 01:14:11 josh Exp $
 # Global defaults for tlily
 # PLEASE DO NOT EDIT EXCEPT FOR DEVELOPMENT!
 # EDIT YOUR SITE CONFIG FILE INSTEAD!
@@ -30,6 +30,9 @@
    'emote_sender'    => [qw(cyan    black   normal)],
    'review'          => [qw(magenta black   normal)],
    'slcp'            => [qw(yellow  black   normal)],
+   'yellow'          => [qw(yellow  black   bold  )],
+   'green'           => [qw(green   black   bold  )],
+   'bwhite'          => [qw(white   black   bold  )],
   );
 
 %mask_color_attrs =
@@ -51,6 +54,9 @@
    'emote_sender'    => [qw(cyan    -       normal)],
    'review'          => [qw(magenta -       normal)],
    'slcp'            => [qw(yellow  -       normal)],
+   'yellow'          => [qw(yellow  -       bold  )],
+   'green'           => [qw(green   -       bold  )],
+   'bwhite'          => [qw(-       -       bold  )],   
   );
 
 %color_attrs = %traditional_color_attrs;
