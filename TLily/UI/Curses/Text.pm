@@ -311,11 +311,11 @@ sub print {
 	return;
     }
 
-    $self->{idx_anchor} = $#{$self->{indexes}};
-
     my $max_scroll = $self->{lines} - ($self->{idx_anchor} -
 				       $self->{idx_unseen});
     return if ($max_scroll <= 0);
+
+    $self->{idx_anchor} = $#{$self->{indexes}};
     while (@lines > $max_scroll) {
 	pop @lines;
 	$self->{idx_anchor}--;
@@ -427,7 +427,7 @@ sub indent {
 # Mark the current visible area as having been seen by the user.
 sub seen {
     my($self) = @_;
-    $self->{idx_unseen} = @{$self->{indexes}} + 1;
+    $self->{idx_unseen} = max($self->{idx_unseen}, $self->{idx_anchor} + 1);
 }
 
 
