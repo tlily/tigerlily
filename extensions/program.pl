@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/program.pl,v 1.17 2000/01/03 08:07:06 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/program.pl,v 1.17.2.1 2000/01/05 10:03:54 mjr Exp $
 
 sub verb_showlist {
     my ($cmd, $ui, $verb_spec) = @_;
@@ -381,7 +381,7 @@ sub verb_copy {
         if (($args{text}[0] =~ /^That object does not define that verb\.$/)
              || ($args{text}[0] =~ /^Invalid object \'.*\'\.$/)) {
             # Encountered an error.
-            $args{ui}->print($args{server} . ": " . $args{text}[0] . "\n");
+            $args{ui}->print($args{server}->name . ": " . $args{text}[0] . "\n");
             return;
         } elsif ($args{text}[0] =~/^That verb has not been programmed\.$/) {
             # Verb exists, but there's no code for it yet.

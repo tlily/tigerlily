@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Server.pm,v 1.25 2000/01/02 10:36:17 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Server.pm,v 1.25.2.1 2000/01/05 10:03:53 mjr Exp $
 
 package TLily::Server;
 
@@ -293,14 +293,13 @@ sub send {
 
     my $written = 0;
     while ($written < length($s)) {
-	my $bytes = syswrite($self->{sock}, $s, length($s), $written);
+        my $bytes = syswrite($self->{sock}, $s, length($s), $written);
 	
-	if (!defined $bytes) {
-	    # The following is broken, and must be fixed.
-	    #next if ($errno == $::EAGAIN);
-	    die "syswrite: $!\n";
-		}
-	$written += $bytes;
+        if (!defined $bytes) {
+            next if ($! == $::EAGAIN);
+            die "syswrite: $!\n";
+        }
+        $written += $bytes;
     }
 
     return;
