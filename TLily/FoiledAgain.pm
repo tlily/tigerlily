@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/FoiledAgain.pm,v 1.1 2003/02/13 15:11:09 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/FoiledAgain.pm,v 1.2 2003/02/13 19:27:14 josh Exp $
 
 package TLily::FoiledAgain;
 
@@ -150,29 +150,22 @@ sub new {
     my $object = dispatch_classmethod(new => @_);
 }
 
-sub NOTIMPLEMENTED() { 
-    my $method = (caller(1))[3];
-    $method =~ s/TLily::FoiledAgain//g;
-
-    die "$method not implemented by subclass $UI_CLASS.\n";
-}
-
-sub destroy { NOTIMPLEMENTED; }
-sub clear { NOTIMPLEMENTED; }
-sub clear_background { NOTIMPLEMENTED; }
-sub reset_styles { NOTIMPLEMENTED; }
-sub defstyle { NOTIMPLEMENTED; }
-sub defcstyle { NOTIMPLEMENTED; }
-sub set_style { NOTIMPLEMENTED; }
-sub clear_line { NOTIMPLEMENTED; }
-sub move_point { NOTIMPLEMENTED; }
-sub addstr_at_point { NOTIMPLEMENTED; }
-sub addstr { NOTIMPLEMENTED; }
-sub insch { NOTIMPLEMENTED; }
-sub delch_at_point { NOTIMPLEMENTED; }
-sub scroll { NOTIMPLEMENTED; }
-sub commit { NOTIMPLEMENTED; }
-sub read_char { NOTIMPLEMENTED; }
+sub destroy { NOTIMPLEMENTED(@_); }
+sub clear { NOTIMPLEMENTED(@_); }
+sub clear_background { NOTIMPLEMENTED(@_); }
+sub reset_styles { NOTIMPLEMENTED(@_); }
+sub defstyle { NOTIMPLEMENTED(@_); }
+sub defcstyle { NOTIMPLEMENTED(@_); }
+sub set_style { NOTIMPLEMENTED(@_); }
+sub clear_line { NOTIMPLEMENTED(@_); }
+sub move_point { NOTIMPLEMENTED(@_); }
+sub addstr_at_point { NOTIMPLEMENTED(@_); }
+sub addstr { NOTIMPLEMENTED(@_); }
+sub insch { NOTIMPLEMENTED(@_); }
+sub delch_at_point { NOTIMPLEMENTED(@_); }
+sub scroll { NOTIMPLEMENTED(@_); }
+sub commit { NOTIMPLEMENTED(@_); }
+sub read_char { NOTIMPLEMENTED(@_); }
 
 
 sub dispatch_classmethod {
@@ -190,5 +183,17 @@ sub dispatch_classmethod {
     $UI_CLASS->$method(@_);
 }
 
+sub NOTIMPLEMENTED { 
+    my ($object) = @_;
+    
+    my $method = (caller(1))[3];
+    $method =~ s/TLily::FoiledAgain:://g;
+     
+    if (ref($object) ne $UI_CLASS) {
+       confess "$method(@_) not called as an object method of $UI_CLASS!\n";   
+    } else {
+       confess "$method(@_) not implemented by subclass $UI_CLASS.\n";
+    }
+}
 
 1;
