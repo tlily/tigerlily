@@ -7,13 +7,14 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Curses/Attic/Text.pm,v 1.17 1999/03/23 23:36:24 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Curses/Attic/Text.pm,v 1.18 1999/03/24 01:17:36 neild Exp $
 
 package TLily::UI::Curses::Text;
 
 use strict;
 use vars qw(@ISA);
 use Curses;
+use TLily::UI::Util qw(next_line);
 use TLily::UI::Curses::Generic;
 use TLily::Event;
 
@@ -77,7 +78,7 @@ sub size {
     if ($newc && ($newc != $self->{cols})) {
 	$self->{indexes}  = [ 0 ];
 	pos($self->{text}) = 0;
-	while ($self->next_line()) {
+	while (next_line($self->{text}, $self->{cols})) {
 	    push @{$self->{indexes}}, pos($self->{text});
 	}
 	pop @{$self->{indexes}} if (@{$self->{indexes}} > 1);
@@ -167,57 +168,6 @@ sub format_line {
 }
 
 
-# Returns the starting and ending indices of the next line in the text
-# buffer.  The search starts at pos($self->{text}), and pos is updated
-# by this function.  Returns undef if no lines remain.  $len, if
-# supplied is the maximum line length to return; this defaults to the
-# window width.
-sub next_line {
-    my($self, $len) = @_;
-    $len = $self->{cols} if (!defined $len);
-
-    # Bail if we are at the end of the buffer.
-    return if (pos($self->{text}) &&
-	       pos($self->{text}) == length($self->{text}));
-
-    # Wordwrapping is in the lily style: words longer than N
-    # (currently 10) characters will not be broken.  We consider the
-    # string to find as containing two parts: the initial portion
-    # which cannot be wordwrapped ($len - 10 here), and the remainder
-    # which can.
-
-    # The initial, non-breakable portion.
-    my $imatch = $len - 10;
-    $imatch = 0 if ($imatch < 0);
-
-    # The remainder, less one.
-    my $nmatch = $len - $imatch - 1;
-    return if ($nmatch <= 0);
-
-    # Here is the wordwrapper.
-    my $mstart = pos($self->{text});
-    $self->{text} =~ m(\G
-                       # These need not be wrapped.
-		       (?: .{0,$imatch})
-		       (?:
-                          # Either break on a space/newline...
-                          (?: .{0,$nmatch} (?: \s | $ )) |
-                          # Or none is available, so take what we can fit.
-			  (?: ..{0,$nmatch} \n ? )
-		       )
-		      )xg or return;
-    my $mend = pos($self->{text});
-
-    # I don't think this is strictly necessary, but why take chances?
-    $mend-- if (substr($self->{text}, $mend-1, 1) eq "\n");
-
-    #my $ll = substr($self->{text}, $mstart, $mend-$mstart);
-    #$ll =~ s/\n/*/g;
-    #print STDERR "  == $mstart $mend \"$ll\"\n";
-    return ($mstart, $mend);
-}
-
-
 # Writes a line to the screen at the given coordinates.
 sub draw_line {
     my($self, $y, $x, $line) = @_;
@@ -276,7 +226,7 @@ sub fetch_lines {
     pos($self->{text}) = $offset;
     my @lines = ();
     while (!$count || @lines < $count) {
-	my($b, $e) = $self->next_line($len);
+	my($b, $e) = next_line($self->{text}, $len);
 	last if (!defined $e);
 	push @lines, $self->format_line($b, $e, $st_idx, $in_idx);
 	last if (pos($self->{text}) == length($self->{text}));

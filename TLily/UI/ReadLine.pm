@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/ReadLine.pm,v 1.4 1999/03/23 08:33:28 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/ReadLine.pm,v 1.5 1999/03/24 01:17:33 neild Exp $
 
 package TLily::UI::ReadLine;
 
@@ -15,6 +15,7 @@ use strict;
 use vars qw(@ISA %commandmap %bindmap);
 
 use TLily::UI;
+use TLily::UI::Util qw(wrap);
 use Term::ReadLine;
 use TLily::Event;
 
@@ -147,8 +148,10 @@ WARNING: At present, the ReadLine UI requires Term::ReadLine::Gnu.
     $self->{R}->callback_handler_install("", sub { $self->accept_line(@_) });
 
     $self->{prompt}   = [];
+    $self->{indent}   = "";
     $self->{command}  = {};
     $self->{bindings} = {};
+    $self->{queued}   = "";
     $self->{printed}  = 0;
 
     TLily::Event::io_r(handle => \*STDIN,
@@ -211,13 +214,19 @@ sub style {
 
 
 sub indent {
-    my $self = shift;
+    my($self, $indent) = @_;
+    $self->{indent} = defined($indent) ? $indent : "";
 }
 
 
 sub print {
     my $self = shift;
-    print @_;
+    $self->{queued} .= join('', @_);
+    return unless ($self->{queued} =~ s/^(.*\n)//s);
+    my $s = $1;
+    foreach my $l (wrap($s, cols => 80, 'indent' => $self->{indent})) {
+	print $l, "\n";
+    }
     $self->{printed} = 1;
 };
 
