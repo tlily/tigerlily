@@ -1,4 +1,5 @@
 Version 2.1.1-post
+  * [UI/Tk] Added dump_to_file method for %dumpscrollback. [CWS]
   * [UI] Added %dumpscrollback, which lets you dump the scrollback buffer to 
     a file. [JDW]
   * [tlily.PL, extensions/on.pl] Changed the formatting of SLCP sends to

@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/Tk.pm,v 1.5 2000/02/13 20:24:47 tale Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/Tk.pm,v 1.6 2000/04/02 11:10:47 albert Exp $
 
 package TLily::UI::Tk;
 
@@ -982,6 +982,21 @@ sub next_history {
 sub bell {
     my($self) = @_;
     $self->{toplevel}->bell;
+}
+
+sub dump_to_file {
+    my($self, $filename) = @_;
+
+    local(*FILE);
+    open(FILE, ">$filename");
+    if($!) {
+        $self->print("(Unable to open $filename for writing: $!)\n");
+	return 0;
+    }
+
+    print FILE $self->{text}->get("1.0", "end");
+    close(FILE);  
+    return int($self->{text}->index("end"))-1;
 }
 
 1;
