@@ -301,40 +301,15 @@ sub scroll {
     my ($self, $numlines) = @_;
     DEBUG(@_);
 
-    my @lineevents = @{$self->{lineevents}};
-    $self->{lineevents} = [];
-    
     if ($numlines > 0) {
         # toss the scrolled-off line off the screen.
-        shift @lineevents for (1..$numlines);
-	
-	# reexecute the rest of the events, but tweak the line numbers.
-	foreach my $line (@lineevents) {
-	    next unless defined($line);
-	    foreach my $event (@{$line}) {
-                my ($x, $y, $command, @args) = @{$event};
-	    
-    		$y-- if defined($y);
-                $self->_queue_event(0, $y, 'clreol');		
-	        $self->_queue_event($x, $y, $command, @args);
-	    }
-	}
+        
+        $self->_queue_event(0, 0, 'dl');
+
     } else {
         # toss the scrolled-off line off the screen.
-        pop @lineevents for (1..-$numlines);
-	
-	# reexecute the rest of the events, but tweak the line numbers.
-	foreach my $line (@lineevents) {
-	    next unless defined($line);	
-            foreach my $event (@{$line}) {
-                my ($x, $y, $command, @args) = @{$event};
-	    
-                $y++ if defined($y);
-                $self->_queue_event(0, $y, 'clreol');
-                $self->_queue_event($x, $y, $command, @args);
-            }		
-	}
-        
+
+        $self->_queue_event(0, 0, 'il');
     }
 
     # and slap the cursor at the bottom.
@@ -355,8 +330,8 @@ sub commit {
             if (defined($x)) {
                 $SCREEN->at($y + $window->{begin_y},
                             $x + $window->{begin_x});
-                uidebug("commit - at(" . $y + $window->{begin_y} . ",".
-                                         $x + $window->{begin_x} . ")\n");
+                uidebug("commit - at(" . ($y + $window->{begin_y}) . ",".
+                                         ($x + $window->{begin_x}) . ")\n");
             }
 	    uidebug("commit - $command(@args)\n");
             $SCREEN->$command(@args);
