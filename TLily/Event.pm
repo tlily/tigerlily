@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Event.pm,v 1.23 1999/07/02 04:56:29 albert Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Event.pm,v 1.24 1999/09/19 03:07:15 neild Exp $
 
 package TLily::Event::Core;
 
@@ -120,7 +120,7 @@ my @queue;
 # Priority-sorted list of event handlers.
 my @e_name;
 # List of event handlers to remove
-my @e_name_remove;
+my %e_name_remove;
 
 # Time-sorted list of timed handlers.
 my @e_time;
@@ -241,7 +241,7 @@ use Carp qw(confess);
 sub event_u {
     my($id) = @_;   
     $id = $id->{id} if (ref $id);
-    push(@e_name_remove, $id);
+    $e_name_remove{$id} = 1;
     TLily::Registrar::remove("name_event", $id);
     return;
 }
@@ -457,7 +457,7 @@ sub loop_once {
   EVENT:
     while (my $e = shift @queue) {
 	foreach my $h (@e_name) {
-	    next if grep {$h->{id} == $_} @e_name_remove;
+	    next if $e_name_remove{$h->{id}};
 	    if ($e->{type} eq $h->{type} or $h->{type} eq 'all') {
 		my $rc = invoke($h, $e, $h);
 		if (defined($rc) && ($rc != 0) && ($rc != 1)) {
@@ -467,11 +467,9 @@ sub loop_once {
 	    }
 	}
     }
-    if(@e_name_remove) {
-	@e_name = grep { my $id = $_->{id};
-			 grep { $_ != $id } @e_name_remove
-		       } @e_name;
-	@e_name_remove = ();
+    if(%e_name_remove) {
+	@e_name = grep { !$e_name_remove{$_->{id}} } @e_name;
+	%e_name_remove = ();
     }
     
     # Timed events.
