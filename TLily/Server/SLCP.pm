@@ -211,7 +211,8 @@ sub state {
 	# OK, the rest of this function refers to the normal records, which
 	# are indexed by HANDLE and NAME.
 
-	carp "bad state call"  unless ($args{HANDLE} || $args{NAME});
+	carp "bad state call: HANDLE=\"$args{HANDLE}\", NAME=\"$args{NAME}\""
+	  unless ($args{HANDLE} || $args{NAME});
 
 	# figure out if the user is querying or insert/updating.
 	my $query = 1;

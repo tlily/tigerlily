@@ -1,4 +1,3 @@
-
 # This hash keeps track of what fields from %USER and %DISC are stored in 
 # the state database.  We need to ensure that every one of these state 
 # variables that we do store is properly updated by the corresponding %NOTIFY
@@ -25,29 +24,29 @@ my %keep;
 
 # build the default handlers defined above:
 foreach (keys %keep) {
-	my $s;
-	foreach $s (keys %{$keep{$_}}) {
-		next if ($keep{$_}{$s} == 1);
-
-		my $sub = {
-			my($e) = @_;
-			my $serv = $e->{server};
-
-			if ($s eq "NAME") {
-				$serv->state(HANDLE => $e->{HANDLE},
-					     NAME => $e->{VALUE},
-					     UPDATED => 1);
-			} else {
-				$serv->state(HANDLE => $e->{HANDLE},
-					     $s, $e->{VALUE});
-			}
-			return;
-		};
-
-		TLily::Event::event_r(type  => $keep{$_}{$s},
-		                order => 'after',
-		                call  => $sub);
-	}
+    my $s;
+    foreach $s (keys %{$keep{$_}}) {
+	next if ($keep{$_}{$s} == 1);
+	
+	my $sub = sub {
+	    my($e) = @_;
+	    my $serv = $e->{server};
+	    
+	    if ($s eq "NAME") {
+		$serv->state(HANDLE => $e->{SHANDLE},
+			     NAME => $e->{VALUE},
+			     UPDATED => 1);
+	    } else {
+		$serv->state(HANDLE => $e->{SHANDLE},
+			     $s, $e->{VALUE});
+	    }
+	    return;
+	};
+	
+	TLily::Event::event_r(type  => $keep{$_}{$s},
+			      order => 'after',
+			      call  => $sub);
+    }
 }
 
 
@@ -55,50 +54,50 @@ foreach (keys %keep) {
 # USER/STATE (dispatch userstate events _and_ update STATE)
 
 my $sub = sub {
-	my($e) = @_;
-	my $serv = $e->{server};
+    my($e) = @_;
+    my $serv = $e->{server};
 
-	$serv->state(HANDLE => $e->{HANDLE},
-	             STATE  => "here");
+    $serv->state(HANDLE => $e->{SHANDLE},
+		 STATE  => "here");
 
-	# if it's me, fire off a userstate event.
-	if ($e->{IsUser}) {
-		my %event = (type   => 'userstate',
-		             isuser => 1,
-		             from   => 'away',
-		             to     => 'here',
-		             server => $e->{Server});
-		TLily::Event::send(\%event);
-	}
-
-	return;
+    # if it's me, fire off a userstate event.
+    if ($e->{isuser}) {
+	my %event = (type   => 'userstate',
+		     isuser => 1,
+		     from   => 'away',
+		     to     => 'here',
+		     server => $e->{Server});
+	TLily::Event::send(\%event);
+    }
+    
+    return;
 };
 TLily::Event::event_r(type  => 'here',
-		order => 'before',
-		call  => $sub);
+		      order => 'before',
+		      call  => $sub);
 
 $sub = sub {
-	my ($e) = @_;
-	my $serv = $e->{server};
-
-	$serv->state(HANDLE => $e->{HANDLE},
-	             STATE  => "away");
-
-	# if it's me, fire off a userstate event.
-	if ($e->{IsUser}) {
-		my %event = (type   => 'userstate',
-		             isuser => 1,
-		             from   => 'here',
-		             to     => 'away',
-		             server => $serv);
-		TLily::Event::send(\%event);
-	}
-
-	return;
+    my ($e) = @_;
+    my $serv = $e->{server};
+    
+    $serv->state(HANDLE => $e->{SHANDLE},
+		 STATE  => "away");
+    
+    # if it's me, fire off a userstate event.
+    if ($e->{isuser}) {
+	my %event = (type   => 'userstate',
+		     isuser => 1,
+		     from   => 'here',
+		     to     => 'away',
+		     server => $serv);
+	TLily::Event::send(\%event);
+    }
+    
+    return;
 };
 TLily::Event::event_r(type  => 'away',
-		order => 'before',
-		call  => $sub);
+		      order => 'before',
+		      call  => $sub);
 
 # DISC/destroy
 # (need to add one.. not that it matters really)

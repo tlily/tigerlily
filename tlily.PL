@@ -135,6 +135,7 @@ TLily::Extend::load("server", $ui, 1);
 TLily::Extend::load("output", $ui, 1);
 TLily::Extend::load("expand", $ui, 1);
 TLily::Extend::load("status", $ui, 1);
+TLily::Extend::load("state", $ui, 1);
 
 while (1) {
 	eval { TLily::Event::loop; };
