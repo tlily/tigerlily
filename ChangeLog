@@ -1,8 +1,9 @@
 Version 2.1.1-post
+  * [extensions/blurb.pl] Removed #@$#@ filter, added multi-server support [WJC]
   * [extensions/slcp_output.pl,extensions/ui.pl,tlily.global]  Add new
     styles to tag server names in pub,priv,emote messages. [RBJ]
   * [extensions/stripper.pl] Strip leading spaces from input sent to server.
-  * [extensions/source.pl] You can source memos now.
+  * [extensions/source.pl] You can source memos now. [WJC]
   * [extensions/url.pl] Add regex support to %url show; '%url show <regex>'
     will now show the last URL matching the regex. [RBJ]
   * [extensions/blurb.pl] New extension, auto-blurb-compression [WJC]
