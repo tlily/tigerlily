@@ -1,5 +1,12 @@
 #!/usr/bin/perl -w
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/tools/announcement,v 1.1 1999/04/11 22:16:41 albert Exp $
+#    TigerLily:  A client for the lily CMC, written in Perl.
+#    Copyright (C) 1999  The TigerLily Team, <tigerlily@einstein.org>
+#                                http://www.hitchhiker.org/tigerlily/
+#
+#  This program is free software; you can redistribute it and/or modify it
+#  under the terms of the GNU General Public License version 2, as published
+#  by the Free Software Foundation; see the included file COPYING.
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/tools/announcement,v 1.2 1999/04/11 22:35:47 albert Exp $
 
 use strict;
 use Config;
