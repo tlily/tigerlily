@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/Curses.pm,v 1.50 2001/02/08 21:15:37 kazrak Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/Curses.pm,v 1.51 2001/02/12 18:39:55 kazrak Exp $
 
 package TLily::UI::Curses::Proxy;
 
@@ -381,7 +381,7 @@ sub sigwinch {
 sub stop_curses {
     my($self) = @_;
     endwin;
-    refresh;
+    #refresh;
     system("stty lnext $STTY_LNEXT") if ($STTY_LNEXT);    
 }
 
@@ -455,6 +455,7 @@ sub run {
 	    }
 	}
 	$self->stop_curses();
+        refresh;
 	$self->start_curses();
 	$self->layout();
     }
