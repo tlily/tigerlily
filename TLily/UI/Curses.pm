@@ -309,6 +309,7 @@ sub start_curses {
     # How odd.  Jordan doesn't have idcok().
     eval { idcok(1); };
     typeahead(-1);
+    keypad(1);
 
     $SIG{WINCH} = sub { $sigwinch = 1; };
 }
