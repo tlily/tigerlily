@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Curses/Attic/Generic.pm,v 1.22 2001/05/29 19:36:58 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Curses/Attic/Generic.pm,v 1.23 2001/10/22 17:03:18 neild Exp $
 
 package TLily::UI::Curses::Generic;
 
@@ -68,6 +68,7 @@ my $active;
    &KEY_PPAGE       => 'pageup',
    &KEY_NPAGE       => 'pagedown',
    &KEY_BACKSPACE   => 'bs',
+   &KEY_IC          => 'ins',
    &KEY_DC          => 'del',
    &KEY_HOME        => 'home',
    &KEY_END         => 'end',
