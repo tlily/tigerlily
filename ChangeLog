@@ -1,4 +1,6 @@
 Version 2.1.1-post
+  * [extension/pinhead.pl] Updated tlily1.x print call [WJC]
+  * [extension/gag.pl] Updated tlily1.x print call [WJC]
   * [extensions/misc.pl] New config vars to help suppress output [WJC]
   * [extensions/after.pl] Added support for multi-line commands [WJC]
   * [extensions/keepalive.pl] Added help for vars. [WJC]
