@@ -2,19 +2,13 @@ To Do
 -----
 
 Before 2.0 release:
-  
-  The following need to be ported/written.  Most should be pretty easy to do
-  based on the ones we've already finished.
-
-  pipes.pl
 
   New functionality:
-    - Makefile.PL   (albert is working on this)  
     - when the last open server connection is closed, provide a exit/reconnect
       option. (integrate with smartexit feature)
 
-Bug Fixes:
-   autoreview - frank mentioned this had a problem?
+  Bug Fixes:
+    - autoreview - frank mentioned this had a problem?
 
 Later:
   helper.pl/program.pl

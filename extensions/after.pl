@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/after.pl,v 1.6 1999/03/23 08:33:36 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/after.pl,v 1.7 1999/04/18 19:38:41 josh Exp $
 
 use strict;
 
@@ -60,9 +60,8 @@ sub parse_interval {
 }
 
 sub cron_command {
-    my($ui, $args, $command) = @_;
+    my($command, $ui, $args) = @_;
     my @args = split /\s+/, $args;
-
     my $usage = "(%cron after|every interval command; type %help for help)\n";
 
     # Print all current tasks.
@@ -113,7 +112,9 @@ sub cron_command {
 
     $cron{$id} = $cmd;
     $cron_when{$id} = time + $interval;
-
+    
+    my $hid = $id;  # because $id will change, and the closure will see that.
+                    # ($id is not local).
     my $sub = sub {
 	my($handler) = @_;
 	my $ui = TLily::UI::name($ui_name);
@@ -122,9 +123,9 @@ sub cron_command {
 			   ui   => $ui,
 			   text => $cmd);
 	unless (defined $handler->{interval}) {
-	    delete $cron{$id};
-	    delete $cron_id{$id};
-	    delete $cron_when{$id};
+	    delete $cron{$hid};
+	    delete $cron_id{$hid};
+	    delete $cron_when{$hid};
 	}
     };
     my $h = { after => $interval, call => $sub };
@@ -135,9 +136,9 @@ sub cron_command {
     $id++;
     return 0;
 }
-command_r("cron"  => \&cron_command);
-command_r("after" => \&cron_command);
-command_r("every" => \&cron_command);
+command_r("cron"  => sub { cron_command("cron", @_); });
+command_r("after" => sub { cron_command("after",@_); });
+command_r("every" => sub { cron_command("every",@_); });
 shelp_r("cron" => "Run a command at a designated time.");
 help_r("cron" => $cron_help);
 shelp_r("after" => "Run a command after a given amount of time.");
