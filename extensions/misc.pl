@@ -1,7 +1,8 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/misc.pl,v 1.3 1999/02/24 23:36:42 neild Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/misc.pl,v 1.4 1999/02/24 23:58:09 neild Exp $ 
 
 use strict;
 use LC::Global qw($event);
+use LC::Version;
 
 
 #
@@ -92,7 +93,7 @@ The results of the eval, if any, will be printed.
 
 sub version_handler {
 	my($ui, $args) = @_;
-	#$ui->print("(Tigerlily version $TL_VERSION)\n");
+	$ui->print("(Tigerlily version $LC::Version::TL_VERSION)\n");
 	#server_send("/display version\r\n");
 	return;
 }

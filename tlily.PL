@@ -1,22 +1,24 @@
-#!/site/t/gnu/bin/perl -w
+@@PERL@@
 
 require 5.00307;
 
 #$TL_ETCDIR=".";
 #$TL_LIBDIR="LC";
-$TL_EXTDIR="extensions";
+$TL_EXTDIR="@@LIBEXTDIR@@";
 
 use strict;
 use vars qw($event);
-use lib qw(.);
+use lib qw(@@LIBMODDIR@@);
 
 use LC::Event;
 use LC::UI;
 use LC::UI::Curses;
 use LC::Server;
+use LC::Server::SLCP;
 use LC::User;
 use LC::Extend;
 use LC::Global qw($event);
+use LC::Version;
 
 if ( -f 'tlily.PL' ) {
 	my @tstat = stat('tlily.PL');
