@@ -6,7 +6,7 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Server/Attic/SLCP.pm,v 1.26 1999/09/24 07:50:03 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Server/Attic/SLCP.pm,v 1.27 1999/09/24 08:16:38 mjr Exp $
 
 package TLily::Server::SLCP;
 
@@ -150,6 +150,42 @@ sub command {
 
     return 1;
 }
+
+=item cmd_process()
+
+Store a file on the server.
+Args:
+    --  lily command to execute
+    --  callback to process the output of the command
+
+Used to custom-process the output of a lily command.  It will execute
+the passed command, and call the callback given for each line returned
+by the lily server.  The lines are passed into the callback as TLily
+events.
+
+Example:
+my $server = server_name(); # get current active server
+
+my $count = 0;
+$server->cmd_process("/who here",  sub {
+    my($event) = @_;
+
+    # Don't want user to see output from /who
+    $event->{NOTIFY} = 0;
+
+    if ($event->{type} eq 'endcmd') {
+      # If type is 'endcmd', command is finished, print out result.
+      $ui->print("(There are $count people here)\n");
+    } elsif ($event->{type} ne 'begincmd') {
+      # Command has started, match only lines ending in 'here'; increment
+      # counter for each found.
+      $count++ if ($event->{text} =~ /here$/);
+    }
+
+    return 0;
+});
+
+=cut
 
 sub cmd_process {
     my($self, $c, $f) = @_;
