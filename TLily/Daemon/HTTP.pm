@@ -7,7 +7,7 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Daemon/Attic/HTTP.pm,v 1.6 1999/04/06 19:12:03 steve Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Daemon/Attic/HTTP.pm,v 1.7 1999/08/31 00:04:29 steve Exp $
 
 package TLily::Daemon::HTTP::Connection;
 
@@ -188,6 +188,17 @@ sub new {
     bless $self, $class;
 }
 
+=item daemon()
+
+Returns a reference to the currently running daemon object, or undef
+if there is not one running.
+
+=cut
+
+sub daemon {
+	return $inst;
+}
+
 =item terminate()
 
 Terminate the daemon
@@ -283,6 +294,7 @@ sub date {
 }
 
 sub DESTROY {
+	TLily::Event::send (type => 'http_terminate');
     $inst->SUPER::DESTROY();
     $inst = undef;
 }

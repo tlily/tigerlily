@@ -1,7 +1,13 @@
 Version 2.0-post
   * Fixed the client-name-and-version-not-set problem. [CWS]
   * [TLily/Event.pm] Hopefully fixed the lost-handler bug. [CWS]
-
+  * [TLily/Daemon/HTTP.pm]
+  * [extensions/http_parse.pl] Stopped http_parse from opening a socket
+    on load. [SMC]
+  * [extensions/ctc.pl] Added %ctc start and %ctc stop commands, ctc
+    module will not start daemon on load. [SMC]
+  * [tlily.global] Added ctc.pl and http_parse.pl to @load [SMC]
+	
 Version 2.0
   * Added %memo. [DPN]
   * Added GPL. [CWS, JDW]
