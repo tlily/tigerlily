@@ -210,8 +210,10 @@ sub read_char {
 	my $ctrl;
 
 	my $c = $self->{W}->getch();
+	return if ($c == -1 || !defined $c);
+
 	#print STDERR "c: '$c' (", ord($c), ")\n";
-	if ($c eq chr(27)) {
+	if (ord($c) == 27) {
 		$meta = 1;
 		return $self->read_char();
 	}
@@ -231,6 +233,7 @@ sub read_char {
 	my $r = ($ctrl ? "C-" : "") . ($meta ? "M-" : "") . $c;
 	$ctrl = $meta = 0;
 
+	#print STDERR "r=$r\n";
 	return $r;
 }
 
