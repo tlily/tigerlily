@@ -186,7 +186,7 @@ sub next_line {
                           # Either break on a space/newline...
                           (?: .{0,$nmatch} (?: \s | $ )) |
                           # Or none is available, so take what we can fit.
-			  (?: ..{0,$nmatch})
+			  (?: ..{0,$nmatch} \n ? )
 		       )
 		      )xg or return;
     my $mend = pos($self->{text});
