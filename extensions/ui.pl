@@ -1,4 +1,4 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/ui.pl,v 1.28 2000/03/10 07:31:09 mjr Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/ui.pl,v 1.29 2000/12/13 19:29:11 kazrak Exp $ 
 use strict;
 
 =head1 NAME
@@ -536,13 +536,16 @@ public_header   The text in the header of a public message
 public_sender   The name of the sender of a public message
 public_dest     The names of the recipients of a public message
 public_body     The actual message of a public message
+public_server   The name of the server a public message came from [1]
 private_header  The text in the header of a private message
 private_sender  The name of the sender of a private message
 private_dest    The names of the recipients of a private message
 private_body    The actual message of a private message
+private_server  The name of the server a private message came from [1]
 emote_body      The message text of an emote message
 emote_dest      The names of the recipients of an emote message
 emote_sender    The name of the sender of an emote message
+emote_server    The name of the server an emote message came from [1]
 review          (Currently unused)
 slcp            SLCP status messages, indicating a user state change
 user_input      User input lines shown in the output window.
@@ -552,6 +555,9 @@ green           Used for the tlily logo
 bwhite          Used for the tlily logo
 normal          /info text, /memo text, non-SLCP server messages
 default         Used for any style that is not explicitly set.
+
+[1] Note that the *_server styles are only used when tlily is connected to
+multiple servers at once.
 ";
 shelp_r("styles" => "The various display styles.", "concepts");
 help_r("styles" => $styles_help);

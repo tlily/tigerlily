@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_output.pl,v 1.18 2000/03/20 08:04:57 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_output.pl,v 1.19 2000/12/13 19:29:10 kazrak Exp $
 
 use strict;
 
@@ -24,6 +24,7 @@ sub private_fmt {
     my $ts = '';
     my $blurb = $e->{server}->get_blurb(HANDLE => $e->{SHANDLE});
 
+    my $server_fmt = $e->{server_fmt} || "private_server";
     my $header_fmt = $e->{header_fmt} || "private_header";
     my $sender_fmt = $e->{sender_fmt} || "private_sender";
     my $dest_fmt   = $e->{dest_fmt}   || "private_dest";
@@ -36,7 +37,7 @@ sub private_fmt {
 
     $ts = timestamp($e->{TIME}) if ($e->{STAMP});
     $ui->indent($header_fmt => " >> ");
-    $ui->prints($header_fmt => $servname)
+    $ui->prints($server_fmt => $servname)
       if (defined $servname);
     $ui->prints($header_fmt => "${ts}Private message from ",
                 $sender_fmt => $e->{SOURCE});
@@ -65,6 +66,7 @@ sub public_fmt {
     my $ts = '';
     my $blurb = $e->{server}->get_blurb(HANDLE => $e->{SHANDLE});
 
+    my $server_fmt = $e->{server_fmt} || "public_server";
     my $header_fmt = $e->{header_fmt} || "public_header";
     my $sender_fmt = $e->{sender_fmt} || "public_sender";
     my $dest_fmt   = $e->{dest_fmt}   || "public_dest";
@@ -77,7 +79,7 @@ sub public_fmt {
 
     $ts = timestamp ($e->{TIME}) if ($e->{STAMP});
     $ui->indent($header_fmt => " -> ");
-    $ui->prints($header_fmt => $servname)
+    $ui->prints($server_fmt => $servname)
       if (defined $servname);
     $ui->prints($header_fmt => "${ts}From ",
                 $sender_fmt => $e->{SOURCE});
@@ -104,6 +106,7 @@ sub emote_fmt {
     my($ui, $e) = @_;
     my $ts = '';
 
+    my $server_fmt = $e->{server_fmt} || "emote_server";
     my $sender_fmt = $e->{sender_fmt} || "emote_sender";
     my $dest_fmt   = $e->{dest_fmt}   || "emote_dest";
     my $body_fmt   = $e->{body_fmt}   || "emote_body";
@@ -115,7 +118,7 @@ sub emote_fmt {
 
     $ts = etimestamp ($e->{TIME}) if ($e->{STAMP} || $config{'stampemotes'});
     $ui->indent($body_fmt   => "> ");
-    $ui->prints($body_fmt => $servname)
+    $ui->prints($server_fmt => $servname)
       if (defined $servname);
     $ui->prints($body_fmt   => "(${ts}to ",
                 $dest_fmt   => $dest,
