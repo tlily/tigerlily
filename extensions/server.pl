@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/server.pl,v 1.27 2000/09/09 20:13:44 jordan Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/server.pl,v 1.28 2000/12/12 19:49:41 neild Exp $
 
 use strict;
 
@@ -166,6 +166,40 @@ TLily::UI::bind("C-q" => "next-server");
 
 sub send_handler {
     my($e, $h) = @_;
+
+    #
+    # Multiserver sends.
+    #
+    my $ui = $e->{ui} || TLily::UI::name();
+    my $active = TLily::Server::active();
+    my $server;
+
+    for my $recip (@{$e->{RECIPS}}) {
+	my($name, $serv) = split /@/, $recip, 2;
+	if (defined($serv)) {
+	    $serv = TLily::Server::find($serv);
+	    if (!defined($serv)) {
+		$ui->print("(cannot find server \"$serv\")\n");
+		return 1;
+	    }
+	} else {
+	    $serv = $active;
+	}
+
+	if (!defined $server) {
+	    $server = $serv;
+	}
+	
+	if ($server != $serv) {
+	    $ui->print("(can only send to one server at a time)\n");
+	    return 1;
+	}
+
+	$recip = $name;
+    }
+
+    $e->{server} = $server;
+
     $e->{server}->sendln(join(",",@{$e->{RECIPS}}),$e->{dtype},$e->{text});
 }
 event_r(type => 'user_send',
