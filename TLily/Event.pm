@@ -185,8 +185,9 @@ sub time_r {
 	croak "Handler registered with insane interval."
 	  if ($h->{interval} && $h->{interval} <= 0);
 
-	$h->{'time'} = 0 if (!defined($h->{'time'}) && !defined($h->{after}) &&
-			     defined($h->{interval}));
+	$h->{'after'} = 0 if (!defined($h->{'time'}) &&
+			      !defined($h->{after}) &&
+			      defined($h->{interval}));
 
 	# Run after N seconds.
 	if (defined($h->{after})) {
