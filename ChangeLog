@@ -1,4 +1,5 @@
 Version 2.4-post
+  * [extensions/deblurb.pl] Fixed handling of blurb changes [RBJ]
   * [extensions/profane.pl] Add extension to convert someone's sends into
     obscenities. [RBJ] 
   * [extensions/deblurb.pl] Add extension to remove blurbs from a given user's

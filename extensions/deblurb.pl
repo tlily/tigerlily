@@ -102,11 +102,13 @@ sub deblurbifier {
     my $deblurbthis = 0;
     $deblurbthis = 1 if defined $deblurbed{$event->{SHANDLE}};
     return unless ($deblurbthis);
+    return unless ($event->{EVENT} =~ /blurb/i);
     delete $event->{NOTIFY} if ($event->{NOTIFY});
     $event->{server}->state(HANDLE => $event->{SHANDLE},
 			    OLDBLURB => $event->{VALUE},
+                            BLURB => '',
 			    UPDATED => 1);
-    $event->{BLURB} = '';
+    $event->{VALUE} = undef;
     return;
 }
 
