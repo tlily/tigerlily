@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_parse.pl,v 1.12 1999/10/02 02:45:23 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_parse.pl,v 1.13 1999/10/13 02:38:39 mjr Exp $
 
 use strict;
 use vars qw(%config);
@@ -252,6 +252,8 @@ sub parse_line {
 	$event{VALUE} = undef if $event{EMPTY};
 	
 	# Update the state database, if necessary.
+        # We may have to update this to be able to differentiate
+        # between set, undef, and EMPTY.
 	my $param = $events{$event{EVENT}};
 	if ($param) {
 	    $serv->state(HANDLE => $event{SHANDLE},

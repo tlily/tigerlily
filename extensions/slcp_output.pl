@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_output.pl,v 1.10 1999/08/30 23:49:29 kazrak Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_output.pl,v 1.11 1999/10/13 02:38:38 mjr Exp $
 
 use strict;
 
@@ -26,10 +26,14 @@ sub private_fmt {
     
     $ui->print("\n");
     
+    my $source = $e->{SOURCE};
+    $source .= "\@" . $e->{server}->name()
+      if (scalar(TLily::Server::find()) > 1);
+
     $ts = timestamp($e->{TIME}) if ($e->{STAMP});
     $ui->indent(private_header => " >> ");
     $ui->prints(private_header => "${ts}Private message from ",
-		private_sender => $e->{SOURCE});
+		private_sender => $source);
     $ui->prints(private_header => " [$blurb]")
       if (defined $blurb && ($blurb ne ""));
     if ($e->{RECIPS} =~ /,/) {
@@ -57,10 +61,14 @@ sub public_fmt {
     
     $ui->print("\n");
     
+    my $source = $e->{SOURCE};
+    $source .= "\@" . $e->{server}->name()
+      if (scalar(TLily::Server::find()) > 1);
+
     $ts = timestamp ($e->{TIME}) if ($e->{STAMP});
     $ui->indent(public_header => " -> ");
     $ui->prints(public_header => "${ts}From ",
-		public_sender => $e->{SOURCE});
+		public_sender => $source);
     $ui->prints(public_header => " [$blurb]")
       if (defined $blurb && ($blurb ne ""));
     $ui->prints(public_header => ", to ",
@@ -84,10 +92,14 @@ sub emote_fmt {
     my($ui, $e) = @_;
     my $ts = '';
     
+    my $dest = $e->{RECIPS};
+    $dest .= "\@" . $e->{server}->name()
+      if (scalar(TLily::Server::find()) > 1);
+
     $ts = etimestamp ($e->{TIME}) if ($e->{STAMP} || $config{'stampemotes'});
     $ui->indent(emote_body   => "> ");
     $ui->prints(emote_body   => "(${ts}to ",
-		emote_dest   => $e->{RECIPS},
+		emote_dest   => $dest,
 		emote_body   => ") ",
 		emote_sender => $e->{SOURCE},
 		emote_body   => $e->{VALUE}."\n");
@@ -105,69 +117,81 @@ event_r(type  => 'emote',
 # %U: source's pseudo and blurb
 # %u: source's pseudo
 # %V: VALUE
-# %T: title of discussion whose name is in VALUE.
+# %D: title of discussion whose name is in VALUE.
 # %R: RECIPS
 # %O: name of thingy whose OID is in VALUE.
-# %S: timestamp, if STAMP is defined, empty otherwise.
+# %T: timestamp, if STAMP is defined, empty otherwise.
+# %S: '(servername)', if connected to more than one, empty otherwise.
+# %s: '@servername', if connected to more than one, empty otherwise.
 # %B: if SOURCE has a blurb " with the blurb [blurb]", else "".
 #
-# leading characters (up to first space) define behavior as follows: 
+# leading characters (up to first space) define behavior as follows:
+#### Catch all: mutually exclusive with all other flags
 # A: always use this message
+#### VALUE flags: mutually exclusive with each other
+# E: use this message if VALUE is EMPTY.  Always order this before U, since
+#    U will also match EMPTY.
 # V: use this message if VALUE is defined.
-# E: use this message if VALUE is empty.
+# U: use this message if VALUE is undefined.
+#### RECIPS flags: mutually exclusive with each other
 # D: use this message if RECIP is defined. (hack for EVENT=info)
-# v: use this message if the source of the event is "me" and VALUE is defined
-# e: use this message if the source of the event is "me" and the VALUE is empty
-# d: use this message if the source of the event is "me" and RECIP is defined
-#    (hack for EVENT=info)
+####
+# S: SOURCE is "me"
+####
 
 # the first matching message is always used.
 
-my @infomsg = ('connect'  => 'A *** %S%U has entered lily ***',
-	       attach     => 'A *** %S%U has reattached ***',
-	       disconnect => 'V *** %S%U has left lily (%V) ***',
-	       disconnect => 'E *** %S%U has left lily ***',
-	       detach     => 'E *** %S%U has detached ***',
-	       detach     => 'V *** %S%U has been detached %V ***',
-	       here       => 'e (you are now here%B)',
-	       here       => 'E *** %S%U is now "here" ***',
-	       away       => 'e (you are now away%B)',
-	       away       => 'E *** %S%U is now "away" ***',
-	       away       => 'V *** %S%U has idled "away" ***', # V=idled really.
-	       'rename'   => 'v (you are now named %V)',
-	       'rename'   => 'V *** %S%u is now named %V ***',
-	       blurb      => 'e (your blurb has been turned off)',
-	       blurb      => 'v (your blurb has been set to [%V])',
-	       blurb      => 'V *** %S%u has changed their blurb to [%V] ***',
-	       blurb      => 'E *** %S%u has turned their blurb off ***',
-	       info       => 'd (you have changed the info for %R)',
-	       info       => 'e (your info has been cleared)',
-	       info       => 'v (your info has been changed)',
-	       info       => 'D *** Discussion %R has changed info ***',
-	       info       => 'V *** %S%u has changed their info ***',
-	       info       => 'E *** %S%u has cleared their info ***',
-	       ignore     => 'A *** %S%u is now ignoring you %V ***',
-	       unignore   => 'A *** %S%u is no longer ignoring you ***',
-	       unidle     => 'A *** %S%u is now unidle ***',
-	       create     => 'e (you have created discussion %R "%T")',
-	       create     => 'E *** %S%u has created discussion %R "%T" ***',
-	       destroy    => 'e (you have destroyed discussion %R)',
-	       destroy    => 'E *** %S%u has destroyed discussion %R ***',
+my @infomsg = ('connect'    => 'A *** %S%T%U has entered lily ***',
+	       'attach'     => 'A *** %S%T%U has reattached ***',
+	       'disconnect' => 'V *** %S%T%U has left lily (%V) ***',
+	       'disconnect' => 'U *** %S%T%U has left lily ***',
+	       'detach'     => 'U *** %S%T%U has detached ***',
+	       'detach'     => 'V *** %S%T%U has been detached %V ***',
+	       'here'       => 'SU (you are now here%B)',
+	       'here'       => 'U *** %S%T%U is now "here" ***',
+	       'away'       => 'SU (you are now away%B)',
+	       'away'       => 'U *** %S%T%U is now "away" ***',
+	       'away'       => 'V *** %S%T%U has idled "away" ***', # V=idled really.
+	       'rename'     => 'SV (you are now named %V)',
+	       'rename'     => 'V *** %S%T%u is now named %V ***',
+	       'blurb'      => 'SE (your blurb has been turned off)',
+	       'blurb'      => 'SV (your blurb has been set to [%V])',
+	       'blurb'      => 'V *** %S%T%u has changed their blurb to [%V] ***',
+	       'blurb'      => 'E *** %S%T%u has turned their blurb off ***',
+	       'info'       => 'SED (you have cleared the info for %R)',
+	       'info'       => 'SD (you have changed the info for %R)',
+	       'info'       => 'SE (your info has been cleared)',
+	       'info'       => 'SU (your info has been changed)',
+# For compatibility with older cores:
+	       'info'       => 'SV (your info has been changed)',
+	       'info'       => 'ED *** %S%T%u has cleared the info for discussion %R ***',
+	       'info'       => 'D *** %S%T%u has changed the info for discussion %R ***',
+	       'info'       => 'E *** %S%T%u has cleared their info ***',
+	       'info'       => 'U *** %S%T%u has changed their info ***',
+# For compatibility with older cores:
+	       'info'       => 'V *** %S%T%u has changed their info ***',
+	       'ignore'     => 'A *** %S%T%u is now ignoring you %V ***',
+	       'unignore'   => 'A *** %S%T%u is no longer ignoring you ***',
+	       'unidle'     => 'A *** %S%T%u is now unidle ***',
+	       'create'     => 'SU (you have created discussion %R "%D")',
+	       'create'     => 'U *** %S%T%u has created discussion %R "%D" ***',
+	       'destroy'    => 'SU (you have destroyed discussion %R)',
+	       'destroy'    => 'U *** %S%T%u has destroyed discussion %R ***',
 	       # bugs in slcp- permit/depermit don't specify people right.
 #	       permit     => 'e (someone is now permitted to discussion %R)',
 #	       permit     => 'E (You are now permitted to some discussion)',
 #	       depermit   => 'e (Someone is now depermitted from %R)',
 	       # note that slcp doesn't do join and quit quite right
-	       permit     => 'V *** %S%O is now permitted to discussion %R ***',
-	       depermit   => 'V *** %S%O is now depermitted from %R ***',
-	       'join'     => 'e (you have joined %R)',
-	       'join'     => 'E *** %S%u is now a member of %R ***',
-	       quit       => 'e (you have quit %R)',
-	       quit       => 'E *** %S%u is no longer a member of %R ***',
-	       retitle    => 'v (you have changed the title of %R to "%V")',
-	       retitle    => 'V *** %S%u has changed the title of %R to "%V" ***',
-	       sysmsg     => 'V %V',
-	       pa         => 'V ** %SPublic address message from %U: %V **'
+	       'permit'     => 'V *** %S%T%O is now permitted to discussion %R ***',
+	       'depermit'   => 'V *** %S%T%O is now depermitted from %R ***',
+	       'join'       => 'SU (you have joined %R)',
+	       'join'       => 'U *** %S%T%u is now a member of %R ***',
+	       'quit'       => 'SU (you have quit %R)',
+	       'quit'       => 'U *** %S%T%u is no longer a member of %R ***',
+	       'retitle'    => 'SV (you have changed the title of %R to "%V")',
+	       'retitle'    => 'V *** %S%T%u has changed the title of %R to "%V" ***',
+	       'sysmsg'     => 'V %S%V',
+	       'pa'         => 'V ** %S%TPublic address message from %U: %V **'
 	       # need to handle review, sysalert, pa, game, and consult.
 	      );
 
@@ -194,48 +218,47 @@ my $sub = sub {
 	if ($flags =~ /A/) {
 	    $found = $msg; last;
 	}
-	if ($flags =~ /V/ && (defined ($e->{VALUE})) &&
-	    ($e->{VALUE} =~ /\S/)) { 
-	    $found = $msg; last; 
+
+	if ($flags =~ /S/) {
+            next if ($e->{'SOURCE'} ne $Me);
 	}
-	if ($flags =~ /E/ && ((!(defined ($e->{VALUE}))) || 
-			      ($e->{VALUE} !~ /\S/))) {
-	    $found = $msg; last;
-	}
-	if ($flags =~ /D/ && (defined ($e->{RECIPS}))) {
-	    $found = $msg; last;
-	}
-	if ($flags =~ /v/ && ($e->{SOURCE} eq $Me)
-	    && (defined($e->{VALUE}) && length($e->{VALUE}))) {
-	    $found = $msg; last;
-	}
-	if ($flags =~ /e/ && ($e->{SOURCE} eq $Me)
-	    && (!defined($e->{VALUE}) || !length($e->{VALUE}))) {
-	    $found = $msg; last;
-	}
-	if ($flags =~ /d/ && ($e->{SOURCE} eq $Me)
-	    && (defined ($e->{RECIPS}))) {
-	    $found = $msg; last;
-	}
+
+        if ($flags =~ /V/i) {
+            next unless (defined ($e->{VALUE}));
+        } elsif ($flags =~ /E/i) {
+            next unless (defined($e->{EMPTY}));
+        } elsif ($flags =~ /U/i) {
+            next if (defined($e->{VALUE}));
+        }
+
+        if ($flags =~ /D/i) {
+            next unless (defined($e->{RECIPS}));
+        }
+	$found = $msg;
+	last;
     }
     
     if ($found) {
+        my $servname = $serv->name();
 	my $source = $e->{SOURCE};
 	$found =~ s/\%u/$source/g;
 	my $blurb = $serv->get_blurb(HANDLE => $e->{SHANDLE});
 	$source .= " [$blurb]" if (defined ($blurb) && ($blurb ne ""));
 	$found =~ s/\%U/$source/g;
+        my $ss = (scalar(TLily::Server::find()) > 1) ? "($servname) ": '';
+	$found =~ s/\%S/$ss/g;
+	$found =~ s/\%s/\@$servname/g;
 	$found =~ s/\%V/$e->{VALUE}/g;
 	$found =~ s/\%R/$e->{RECIPS}/g;
 	my $ts = ($e->{STAMP}) ? timestamp($e->{TIME}) : '';
-	$found =~ s/\%S/$ts/g;
+	$found =~ s/\%T/$ts/g;
 	if ($found =~ m/\%O/) {
 	    my $target = $serv->get_name(HANDLE => $e->{VALUE});
 	    $found =~ s/\%O/$target/g;
 	}
-	if ($found =~ m/\%T/) {
+	if ($found =~ m/\%D/) {
 	    my $title = $serv->get_title(NAME => $e->{RECIPS});
-	    $found =~ s/\%T/$title/g;
+	    $found =~ s/\%D/$title/g;
 	}
 	if ($found =~ m/\%B/) {
 	    if (defined ($blurb) && ($blurb ne "")) {

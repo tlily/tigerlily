@@ -32,7 +32,6 @@ TLily/Utils.pm
 TLily/Version.pm
 TODO
 contrib/Curses.pm.patch
-extensions/#autologin.pl#
 extensions/after.pl
 extensions/alias.pl
 extensions/autologin.pl
