@@ -1,4 +1,7 @@
 Version 2.1.1-post
+  * [tlily.global, extensions/blurbless.pl] New extension.  If
+    $config{enter_blurbless} is true, automatically bypass the "please
+    enter a blurb" prompt with no blurb. [DCL]
   * [TLily/UI/Curses/Text.pm] Default pager value for text widget set based
     on $config{page}. [DCL]
   * [extensions/keepalive.pl] Changing $config{keepalive_interval}
