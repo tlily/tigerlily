@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Server.pm,v 1.32 2002/03/12 08:49:24 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Server.pm,v 1.33 2002/08/27 02:34:08 coke Exp $
 
 package TLily::Server;
 
@@ -276,7 +276,27 @@ Given no arguments, will return the list of servers currently open.
 =cut
 
 sub find {
-    return $server{$_[0]} if defined($_[0]);
+
+    my $target = shift; 
+
+    if (defined ($target)) {
+ 
+        return $server{$target} if exists($server{$target});
+  
+        ## allow a case insensitive match, but only if it's unique.
+        my @matches;
+        foreach my $potential (@server) {
+            if (lc($potential->name) eq lc($target)) {
+                push @matches,$potential;
+            }     
+        }
+        if (@matches == 1) {
+            return $matches[0];
+        } else {
+            return undef;
+        }
+    }
+ 
     return @server;
 }
 
