@@ -106,6 +106,7 @@ sub log {
     if (defined $file) {
 	local *FH;
 	open(FH, ">$file") or die "$file: $!\n";
+	my $fh = select(FH); $|=1; select($fh);
 	$self->{log_file} = $file;
 	$self->{log_fh}   = *FH;
     }

@@ -12,7 +12,6 @@ use lib qw(@@LIBMODDIR@@);
 use TLily::Event;
 use TLily::Config;
 use TLily::UI;
-use TLily::UI::Curses;
 use TLily::Server;
 use TLily::Server::SLCP;
 use TLily::User;
@@ -32,7 +31,7 @@ if ( -f 'tlily.PL' ) {
 TLily::Config::init();
 TLily::Event::init();
 TLily::Command::init();
-my $ui = TLily::UI::Curses->new(name => 'main');
+my $ui = load_ui();
 
 show_banner();
 
@@ -153,6 +152,27 @@ while (1) {
     die;
 }
 
+
+
+sub load_ui {
+    opendir(D,"$::TL_LIBDIR/TLily/UI");
+    my @u = grep /\.pm$/, readdir(D);
+    closedir D;
+
+    ($config{UI}) = grep { /$config{UI}\.pm/i } @u;
+    $config{UI} =~ s/\.pm$//g;
+    $config{UI} ||= "Curses";
+
+    my $ui;    
+    my $u = join ', ', (sort map { s/.pm$//; $_ } @u);
+    eval "use TLily::UI::$config{UI}; \$ui = TLily::UI::$config{UI}->new(name => 'main');";
+    die "ERROR: Unable to load UI \"$config{UI}\".  Available UI's: $u.\n$@\n" 
+      if ($@);
+    
+    return $ui;
+}
+
+
 # This screws up cperl something terrible, so put it at the end where we
 # don't care.
 sub show_banner() {
@@ -166,6 +186,5 @@ sub show_banner() {
                 bwhite => qq[------------------------------------------------------------------------------\n]);
     $ui->style("default");
 }
-
 
 1;

@@ -8,20 +8,21 @@ Before 2.0 release:
   The following need to be ported/written.  Most should be pretty easy to do
   based on the ones we've already finished.
 
-  helper.pl     (pretty easy)
+  helper.pl     (waiting for coke's patches)
   hidesend.pl   (medium)
   pipes.pl      (medium)
   view.pl       (medium)
   program.pl    (medium)
-  ctc.pl/httpd.pl/Httpd.pm  (hard)
+  ctc.pl/httpd.pl/Httpd.pm  (steve is working on this)
   
   The following need to be tested!:
-  biff.pl
-  log.pl
-  gag.pl
   Paging.  (Part of ui.pl.)
   autoreply.pl
-  
+
+  Bugs:
+    log.pl - doesn't do indenting/wrapping right.  damien will move the 
+             wrapping/indenting code out of Curses.pm and into the UI.
+    
 Later:
   multiserver, multiui
   irc mode/ TLily::Server::SubClient

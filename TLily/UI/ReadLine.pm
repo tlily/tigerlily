@@ -123,6 +123,16 @@ sub new {
     $| = 1;
 
     $self->{R} = Term::ReadLine->new('tlily');
+
+    if ($self->{R}->ReadLine() !~ /Gnu/) {
+	warn "
+WARNING: At present, the ReadLine UI requires Term::ReadLine::Gnu.
+         You have " . $self->{R}->ReadLine() . " installed.  This may not work.
+         If you have multiple Term::ReadLine modules installed, you may
+         specify which module to use by setting the PERL_RL environment
+         variable.\n\n";
+    }
+
     $self->{R}->callback_handler_install("", sub { $self->accept_line(@_) });
 
     $self->{prompt}   = [];
