@@ -53,7 +53,7 @@ sub masker {
     if (defined($server->{NAME}->{$name}->{MEMBERS})) {
       my @members = (split(',',$server->{NAME}->{$name}->{MEMBERS}));
       next unless @members == 1;
-      $mask{$members[0]} = $name;
+      $mask{$members[0]} = $server->{NAME}->{$name}->{NAME};
     }
   }
 
