@@ -42,9 +42,11 @@ extensions/autoreply.pl
 extensions/autoreview.pl
 extensions/bandwidth.pl
 extensions/biff.pl
+extensions/blurbless.pl
 extensions/countdown.pl
 extensions/ctc.pl
 extensions/expand.pl
+extensions/floyd.pl
 extensions/gag.pl
 extensions/http_parse.pl
 extensions/info.pl
