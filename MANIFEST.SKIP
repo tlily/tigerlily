@@ -6,7 +6,7 @@ CVS/
 \.OLD$
 \.swp$
 \~$
-Makefile
+Makefile$
 Build.PL
 build.cache
 ^core$
@@ -14,3 +14,4 @@ build.cache
 ^tlily$
 ^tlily.site$
 ^foo$
+\.tar\.gz$
