@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Event.pm,v 1.19 1999/04/03 05:05:58 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Event.pm,v 1.20 1999/04/03 07:06:58 josh Exp $
 
 package TLily::Event::Core;
 
@@ -372,7 +372,7 @@ sub time_r {
 }
 
 
-=item io_u()
+=item time_u()
 
 Unregister a timed event handler.
 
