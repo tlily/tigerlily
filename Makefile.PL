@@ -7,7 +7,7 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/Makefile.PL,v 1.15 2001/11/11 19:27:54 tale Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/Makefile.PL,v 1.16 2003/02/28 02:24:23 josh Exp $
 
 use strict;
 use Config;
@@ -127,12 +127,18 @@ my @modules =
      TLily::Config
      TLily::Registrar
      TLily::Event
-     TLily::UI::Util
-     TLily::UI
      TLily::Utils
      TLily::User
-     TLily::Extend
      TLily::Version
+     TLily::UI::Util
+     TLily::UI
+     TLily::FoiledAgain
+     TLily::UI::TextWindow::Generic
+     TLily::UI::TextWindow::Input
+     TLily::UI::TextWindow::StatusLine
+     TLily::UI::TextWindow::Text
+     TLily::UI::TextWindow
+     TLily::Extend
      TLily::Server
      TLily::Server::SLCP
      TLily::Server::HTTP
@@ -142,27 +148,39 @@ my @modules =
      TLily::Bot
     );
 
-my ($ui_curses, $ui_tk);
-$ui_curses = eval { require Curses; };
-$ui_tk = eval { require Tk; };
 
-unless ($ui_curses || $ui_tk) {
+my $ui_curses = eval { require Curses; };
+my $ui_win32  = eval { require Win32::Console; };
+my $ui_tk     = eval { require Tk; };
+
+unless ($ui_curses || $ui_tk || $ui_win32) {
     die qq(
-*** Perl support for neither Curses nor Tk was found, so no user interface
-*** could be included.  Please install Bundle::Curses or Bundle::Tk and then
-*** rerun Makefile.PL.
+*** Perl support for neither Curses nor Tk nor Win32 was found, so
+*** no user interface could be included.  Please install Bundle::Curses or
+*** Bundle::Tk and then rerun Makefile.PL.
 
 );
+}
+
+
+
+if ($ui_win32) {
+    push @modules, qw(TLily::FoiledAgain::Win32);
+} else {
+    warn qq(
+*** Win32::Console support was not found, so its UI support was not included.
+);    
 }
 
 if ($ui_curses) {
     push (@modules, qw(TLily::UI::Curses::Generic TLily::UI::Curses::Input
      		       TLily::UI::Curses::StatusLine TLily::UI::Curses::Text
-		       TLily::UI::Curses));
+		       TLily::UI::Curses));   
+    push @modules, qw(TLily::FoiledAgain::Curses);
 } else {
     warn qq(
 *** Perl Curses support was not found, so Curses UI support was not included.
-*** If you install Bundle::Tk, rerun Makefile.PL to include the Curses UI.
+*** If you install Bundle::Curses, rerun Makefile.PL to include the Curses UI.
 
 );
 }

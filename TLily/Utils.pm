@@ -7,7 +7,7 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Utils.pm,v 1.11 2003/02/26 03:32:15 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Utils.pm,v 1.12 2003/02/28 02:24:23 josh Exp $
 package TLily::Utils;
 
 use strict;
@@ -54,7 +54,7 @@ sub columnize_list {
 }
 
 sub edit_text {
-    my($ui, $text) = @_;
+    my($ui, $text, $quiet) = @_;
 
     local(*FH);
     my $tmpfile = "$::TL_TMPDIR/tlily.$$";
@@ -92,7 +92,7 @@ sub edit_text {
 
     my $rc = open(FH, "<$tmpfile");
     unless ($rc) {
-        $ui->print("(edit buffer file not found)\n");
+        $ui->print("(edit buffer file not found)\n") unless $quiet;
         return;
     }  
      
@@ -101,7 +101,7 @@ sub edit_text {
     } elsif ((stat FH)[10] == $mtime) {
         close FH;
         unlink($tmpfile);
-        $ui->print("(file unchanged)\n");
+        $ui->print("(file unchanged)\n") unless $quiet;
         return;
     }  
     

@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/submit.pl,v 1.10 2001/11/07 05:23:18 tale Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/submit.pl,v 1.11 2003/02/28 02:24:23 josh Exp $
 
 use TLily::Version;
 use strict;
@@ -26,6 +26,12 @@ my $version;
 
 sub submit_cmd($) {
     my $ui = shift @_;
+    
+    if ($^O =~ /cygwin|MSWin32/) {
+        $ui->print("(Sorry, %submit is not available on the $^O platform at this time.)\n");
+	return;
+    }
+    
     my($submit_to,$recover)=split /\s+/, "@_";
  
     if (defined($recover) && $recover ne "-r" && $recover ne "") {

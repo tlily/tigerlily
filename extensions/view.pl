@@ -1,35 +1,7 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/view.pl,v 1.5 1999/12/27 14:51:48 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/view.pl,v 1.6 2003/02/28 02:24:23 josh Exp $
 
 use strict;
-
-sub view_display {
-    my($ui,$lref) = @_;
-    local(*FH);
-
-    my $tmpfile = "$::TL_TMPDIR/tlily.$$";
-
-    unlink($tmpfile);
-
-    open(FH,">$tmpfile");
-    foreach (@$lref) {
-        chomp;
-        if ($^O =~ /cygwin/) {
-            print FH "$_\r\n";
-        } else {
-            print FH "$_\n";
-        }
-    }
-    close(FH);
-
-    $ui->suspend;
-    TLily::Event::keepalive();
-    system("$config{editor} $tmpfile");
-    TLily::Event::keepalive(5);
-    $ui->resume;
-
-    unlink($tmpfile);
-}
 
 sub view_cmd($;$$) {
     my ($ui,$cmd,$filter,$doneproc) = @_;
@@ -43,7 +15,7 @@ sub view_cmd($;$$) {
             if ($doneproc) {
                 &{$doneproc}(\@lines);
             } else {
-	        view_display($ui,\@lines);
+	        edit_text($ui,\@lines,1);
             }
 	} elsif ( $event->{type} ne 'begincmd' &&
                   ( ! $filter || &{$filter}($event->{text}) ) ) {
