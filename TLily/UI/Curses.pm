@@ -213,6 +213,7 @@ sub new {
     $self->{text}->{main}->{text} = TLily::UI::Curses::Text->new
       (layout  => $self,
        color   => $self->{color},
+       buffer_size => 2048,
        status  => $self->{text}->{main}->{status});
 
     $self->{input} = TLily::UI::Curses::Input->new
@@ -260,6 +261,7 @@ sub splitwin {
 
 	$self->{text}->{$name}->{text} = TLily::UI::Curses::Text->new
 	  ( layout => $self, color => $self->{color},
+       buffer_size => 2048,
 	    status => $self->{text}->{$name}->{status} );
 
 	$self->layout();
@@ -534,6 +536,25 @@ sub get_input {
 sub set_input {
     my $self = shift;
     return $self->{input}->set(@_);
+}
+
+
+sub istyle_fn_r {
+    my($self, $style_fn) = @_;
+    return if ($self->{input}->style_fn());
+    $self->{input}->style_fn($style_fn);
+    return $style_fn;
+}
+
+
+sub istyle_fn_u {
+    my($self, $style_fn) = @_;
+    if ($style_fn) {
+	my $cur = $self->{input}->style_fn();
+	return unless ($cur && $cur == $style_fn);
+    }
+    $self->{input}->style_fn(undef);
+    return 1;
 }
 
 

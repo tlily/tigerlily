@@ -6,423 +6,569 @@ use TLily::UI::Curses::Generic;
 
 @ISA = qw(TLily::UI::Curses::Generic);
 
+# These are handy in a couple of places.
+sub max($$) { ($_[0] > $_[1]) ? $_[0] : $_[1] }
+sub min($$) { ($_[0] < $_[1]) ? $_[0] : $_[1] }
+
 
 sub new {
-	my $proto = shift;
-	my $class = ref($proto) || $proto;
-	my $self  = $class->SUPER::new(bg => "input_window", @_);
+    my $proto = shift;
+    my $class = ref($proto) || $proto;
+    my $self  = $class->SUPER::new(bg => "input_window", @_);
 
-	$self->{text}        = "";
-	$self->{password}    = 0;
-	$self->{point}       = 0;
-	$self->{Y}           = 0;
-	$self->{X}           = 0;
-	$self->{topln}       = 0;
-	$self->{kill_buffer} = "";
-	$self->{kill_reset}  = 0;
-	$self->{prefix}      = "";
-	$self->{text_lines}  = 1;
-	$self->{history}     = [ "" ];
-	$self->{history_pos} = 0;
+    # Point is the location of the input cursor.  Text is the input line.
+    $self->{point}       = 0;
+    $self->{text}        = "";
 
-	bless($self, $class);
+    # The current screen coordinates of point.
+    $self->{Y}           = 0;
+    $self->{X}           = 0;
+
+    # A flag indicating if password mode is set.  The contents of the input
+    # line are not drawn when in password mode.
+    $self->{password}    = 0;
+
+    $self->{topln}       = 0;
+    $self->{text_lines}  = 1;
+
+    # The current kill buffer.
+    $self->{kill_buffer} = "";
+
+    # If this is set, the next kill operation will replace the current
+    # contents of the kill buffer.
+    $self->{kill_reset}  = 0;
+
+    # The prefix or prompt string.
+    $self->{prefix}      = "";
+
+    # The input history, and current position within it.
+    $self->{history}     = [ "" ];
+    $self->{history_pos} = 0;
+
+    $self->{'style_fn'}  = undef;
+    $self->{style}       = [1, "input_window"];
+
+    bless($self, $class);
 }
 
 
+# Set password mode on/off.  The contents of the input line are not drawn
+# when in password mode.
 sub password {
-	my($self, $v) = @_;
-	$self->{password} = $v;
-	$self->rationalize();
-	$self->redraw();
+    my($self, $v) = @_;
+    $self->{password} = $v;
+    $self->rationalize();
+    $self->redraw();
 }
 
 
+# Translates an offset into the input string into a y/x coordinate pair.
 sub find_coords {
-	my($self, $point) = @_;
-	$point = $self->{password} ? 0 : $self->{point}
-		unless (defined($point));
-	$point += length($self->{prefix});
+    my($self, $point) = @_;
+    $point = $self->{password} ? 0 : $self->{point}
+      unless (defined($point));
+    $point += length($self->{prefix});
 
-	my $y = int($point / $self->{cols}) - $self->{topln};
-	my $x =     $point % $self->{cols};
-	return ($y, $x);
+    my $y = int($point / $self->{cols}) - $self->{topln};
+    my $x =     $point % $self->{cols};
+    return ($y, $x);
 }
 
 
+# Update the style definition, using the style function.
+sub update_style {
+    my($self) = @_;
+
+    # 5 foo 6 bar 2 baz
+    # 5 foo 7 bar 2 baz
+
+    my @f = (length($self->{prefix}), "input_prefix");
+    push @f, $self->{'style_fn'}->($self->{text}) if ($self->{'style_fn'});
+    push @f, (length($self->{text})), "input_window";
+    $self->{style} = \@f;
+
+    return;
+}
+
+
+# Set the style function.
+sub style_fn {
+    my $self = shift;
+    $self->{'style_fn'} = shift if (@_);
+    $self->update_style;
+    return $self->{'style_fn'};
+}
+
+
+# Set the style as appropriate for a given character position.
+sub char_style {
+    my($self, $pos) = @_;
+
+    my $c = 0;
+    my $i = 0;
+    while ($c < $pos) {
+	$c += $self->{style}->[$i];
+	$i += 2;
+	die "input style meltdown!\n" if ($i > @{$self->{style}});
+    }
+
+    $self->draw_style($self->{style}->[$i+1] || $self->{bg});
+    return;
+}
+
+
+# Writes lines from the input string onto the screen.
 sub drawlines {
-	my($self, $start, $count) = @_;
-	$count = $self->{lines} if (!$count || $count > $self->{lines});
+    my($self, $start, $count) = @_;
+    $count = $self->{lines} if (!$count || $count > $self->{lines});
 
-	my $text = $self->{prefix};
-	$text   .= $self->{text} unless ($self->{password});
-	my $i = ($start && $start > 0) ? $start : 0;
-	my $ti = (($i + $self->{topln}) * $self->{cols});
+    my $text = $self->{prefix};
+    $text   .= $self->{text} unless ($self->{password});
+    my $i = ($start && $start > 0) ? $start : 0;
+    my $ti = (($i + $self->{topln}) * $self->{cols});
 
-	while (($ti < length($text)) &&
-	       ($start - $i < $count)) {
-		$self->{W}->clrtoeol($i, 0);
-		$self->{W}->addstr(substr($text, $ti, $self->{cols}));
-		$i++;
-		$ti += $self->{cols};
+    my @f = @{$self->{style}};
+    $f[0] -= $ti;
+
+    my $col = 0;
+    $self->{W}->clrtoeol($i, 0);
+    while (($ti < length($text)) &&
+	   ($start - $i < $count)) {
+	while ($f[0] <= 0) {
+	    $f[2] += $f[0];
+	    shift @f; shift @f;
 	}
+
+	my $c = min($self->{cols} - $col, $f[0]);
+
+	$self->draw_style($f[1]);
+	$self->{W}->addstr(substr($text, $ti, $c));
+
+	$col += $c;
+	$ti += $c;
+	$f[0] -= $c;
+
+	if ($col >= $self->{cols}) {
+	    $i++;
+	    $col -= $self->{cols};
+	    $self->{W}->clrtoeol($i, 0) if ($i < $self->{lines});
+	}
+    }
 }
 
 
+# Standard widget redraw function.
 sub redraw {
-	my($self) = @_;
+    my($self) = @_;
 
-	$self->{W}->erase();
-	$self->drawlines(0, $self->{lines});
-	$self->{W}->noutrefresh();
+    #print STDERR "redraw\n";
+    $self->{W}->erase();
+    $self->drawlines(0, $self->{lines});
+    $self->{W}->noutrefresh();
 }
 
 
+# Called to set the (physical) cursor position in the window.
 sub position_cursor {
-	my($self) = @_;
-	$self->{W}->move($self->{Y}, $self->{X});
-	$self->{W}->noutrefresh();
+    my($self) = @_;
+    $self->{W}->move($self->{Y}, $self->{X});
+    $self->{W}->noutrefresh();
 }
 
 
+# Ensures that the input cursor is located on-screen.
 sub rationalize {
-	my($self) = @_;
+    my($self) = @_;
 
-	my $text_len  = length($self->{prefix});
-	$text_len += length($self->{text}) unless ($self->{password});
+    my $text_len  = length($self->{prefix});
+    $text_len += length($self->{text}) unless ($self->{password});
 
-	my $text_lines = int($text_len / $self->{cols}) + 1;
-	if ($text_lines != $self->{text_lines}) {
-		$self->{text_lines} = $text_lines;
-		$self->req_size($text_lines, $self->{cols});
-	}
-	
-	my($y, $x) = $self->find_coords();
+    my $text_lines = int($text_len / $self->{cols}) + 1;
+    if ($text_lines != $self->{text_lines}) {
+	$self->{text_lines} = $text_lines;
+	$self->req_size($text_lines, $self->{cols});
+    }
 
-	if ($y >= $self->{lines}) {
-		my $sc = $y - $self->{lines} + 1;
-		$self->{topln} += $sc;
+    my($y, $x) = $self->find_coords();
 
-		$self->{W}->scrollok(1);
-		$self->{W}->scrl($sc);
-		$self->{W}->scrollok(0);
+    if ($y >= $self->{lines}) {
+	my $sc = $y - $self->{lines} + 1;
+	$self->{topln} += $sc;
 
-		$self->drawlines($self->{lines} - $sc, $sc);
-		$y = $self->{lines} - 1;
-	} elsif ($y < 0) {
-		$self->{topln} += $y;
+	$self->{W}->scrollok(1);
+	$self->{W}->scrl($sc);
+	$self->{W}->scrollok(0);
 
-		$self->{W}->scrollok(1);
-		$self->{W}->scrl($y);
-		$self->{W}->scrollok(0);
+	$self->drawlines($self->{lines} - $sc, $sc);
+	$y = $self->{lines} - 1;
+    } elsif ($y < 0) {
+	$self->{topln} += $y;
 
-		$self->drawlines(0, -$y);
-		$y = 0;
-	}
+	$self->{W}->scrollok(1);
+	$self->{W}->scrl($y);
+	$self->{W}->scrollok(0);
 
-	$self->{Y} = $y;
-	$self->{X} = $x;
-	$self->{W}->noutrefresh();
+	$self->drawlines(0, -$y);
+	$y = 0;
+    }
+
+    $self->{Y} = $y;
+    $self->{X} = $x;
+    $self->{W}->noutrefresh();
 }
 
 
+# Returns the offset in the input string of the end of the current word.
 sub end_of_word {
-	my($self) = @_;
-	if (substr($self->{text}, $self->{point}) =~ /^(.*?\w+)/) {
-		return $self->{point} + length($1);
-	} else {
-		return length($self->{text});
-	}
+    my($self) = @_;
+    if (substr($self->{text}, $self->{point}) =~ /^(.*?\w+)/) {
+	return $self->{point} + length($1);
+    } else {
+	return length($self->{text});
+    }
 }
 
 
+# Returns the offset in the input string of the start of the current word.
 sub start_of_word {
-	my($self) = @_;
-	if (substr($self->{text}, 0, $self->{point}) =~ /^(.*\W)\w/) {
-		return length($1);
-	}  else {
-		return 0;
-	}
+    my($self) = @_;
+    if (substr($self->{text}, 0, $self->{point}) =~ /^(.*\W)\w/) {
+	return length($1);
+    } else {
+	return 0;
+    }
 }
 
 
+# Sets the prefix (or prompt) string.
 sub prefix {
-	my($self, $prefix) = @_;
-	$self->{prefix} = $prefix;
-	$self->rationalize();
-	$self->redraw();
+    my($self, $prefix) = @_;
+    $self->{prefix} = defined($prefix) ? $prefix : "";
+    $self->rationalize();
+    $self->redraw();
 }
 
 
+# Clear the current input line and insert it into the history.
 sub accept_line {
-	my($self) = @_;
-	my $text = $self->{text};
+    my($self) = @_;
+    my $text = $self->{text};
 
-	$self->{text}  = "";
-	$self->{point} = 0;
-	$self->rationalize();
-	$self->redraw();
+    $self->{text}  = "";
+    $self->{point} = 0;
+    $self->update_style();
+    $self->rationalize();
+    $self->redraw();
 
-	if ($text ne "" && $text ne $self->{history}->[-1]) {
-		$self->{history}->[-1] = $text;
-		push @{$self->{history}}, "";
-		$self->{history_pos} = $#{$self->{history}};
-	}
+    if ($text ne "" && $text ne $self->{history}->[-1] && !$self->{password}) {
+	$self->{history}->[-1] = $text;
+	push @{$self->{history}}, "";
+	$self->{history_pos} = $#{$self->{history}};
+    }
 
-	return $text;
+    return $text;
 }
 
 
+# Move back one entry in the history.
 sub previous_history {
-	my($self) = @_;
-	return if ($self->{history_pos} <= 0);
-	$self->{history}->[$self->{history_pos}] = $self->{text};
-	$self->{history_pos}--;
-	$self->{text} = $self->{history}->[$self->{history_pos}];
-	$self->{point} = length $self->{text};
-	$self->rationalize();
-	$self->redraw();
+    my($self) = @_;
+    return if ($self->{history_pos} <= 0);
+    $self->{history}->[$self->{history_pos}] = $self->{text};
+    $self->{history_pos}--;
+    $self->{text} = $self->{history}->[$self->{history_pos}];
+    $self->{point} = length $self->{text};
+    $self->update_style();
+    $self->rationalize();
+    $self->redraw();
 }
 
 
+# Move forward one entry in the history.
 sub next_history {
-	my($self) = @_;
-	return if ($self->{history_pos} >= $#{$self->{history}});
-	$self->{history}->[$self->{history_pos}] = $self->{text};
-	$self->{history_pos}++;
-	$self->{text} = $self->{history}->[$self->{history_pos}];
-	$self->{point} = length $self->{text};
-	$self->rationalize();
-	$self->redraw();
+    my($self) = @_;
+    return if ($self->{history_pos} >= $#{$self->{history}});
+    $self->{history}->[$self->{history_pos}] = $self->{text};
+    $self->{history_pos}++;
+    $self->{text} = $self->{history}->[$self->{history_pos}];
+    $self->{point} = length $self->{text};
+    $self->update_style();
+    $self->rationalize();
+    $self->redraw();
 }
 
 
+# Return the current (point, text).
 sub get {
-	my($self) = @_;
-	return wantarray ? ($self->{point}, $self->{text}) : $self->{point};
+    my($self) = @_;
+    return wantarray ? ($self->{point}, $self->{text}) : $self->{point};
 }
 
 
+# Set the current (point, text).
 sub set {
-	my($self, $point, $text) = @_;
-	$self->{point} = $point;
-	if (defined $text) {
-		$self->{text} = $text;
-		$self->rationalize();
-		$self->redraw();
-	} else {
-		$self->rationalize();
-	}
+    my($self, $point, $text) = @_;
+    $self->{point} = $point;
+    if (defined $text) {
+	$self->{text} = $text;
+	$self->update_style();
+	$self->rationalize();
+	$self->redraw();
+    } else {
+	$self->rationalize();
+    }
 }
 
 
+# Insert a character at the current point.
 sub addchar {
-	my($self, $c) = @_;
+    my($self, $c) = @_;
 
-	substr($self->{text}, $self->{point}, 0) = $c;
-	$self->{point}++;
+    substr($self->{text}, $self->{point}, 0) = $c;
+    $self->{point}++;
+    $self->update_style();
 
-	$self->{kill_reset} = 1;
-	return if ($self->{password});
+    $self->{kill_reset} = 1;
+    return if ($self->{password});
 
-	$self->{W}->insch($self->{Y}, $self->{X}, $c);
-
-	for (my $i = $self->{Y}+1; $i < $self->{lines}; $i++) {
-		my $start = ($self->{topln} + $i) * $self->{cols};
-		last if ($start > length($self->{text}));
-		$self->{W}->insch($i, 0, substr($self->{text}, $start, 1));
-	}
-
+    if ($self->{style_fn}) {
 	$self->rationalize();
+	$self->redraw();
+	return;
+    }
+
+    $self->char_style($self->{point}-1);
+    $self->{W}->insch($self->{Y}, $self->{X}, $c);
+
+    for (my $i = $self->{Y}+1; $i < $self->{lines}; $i++) {
+	my $start = ($self->{topln} + $i) * $self->{cols};
+	last if ($start > length($self->{text}));
+	$self->char_style($start);
+	$self->{W}->insch($i, 0, substr($self->{text}, $start, 1));
+    }
+
+    $self->rationalize();
 }
 
 
+# Delete the character immediately after point.
 sub del {
-	my($self) = @_;
-	return if ($self->{point} >= length($self->{text}));
+    my($self) = @_;
+    return if ($self->{point} >= length($self->{text}));
 
-	substr($self->{text}, $self->{point}, 1) = "";
+    substr($self->{text}, $self->{point}, 1) = "";
+    $self->update_style();
 
-	$self->{kill_reset} = 1;
-	return if ($self->{password});
+    $self->{kill_reset} = 1;
+    return if ($self->{password});
 
-	$self->{W}->move($self->{Y}, $self->{X});
-	for (my $i = $self->{Y}; $i < $self->{lines}; $i++) {
-		$self->{W}->delch();
-		my $start = ($self->{topln} + $i + 1) * $self->{cols} - 1;
-		last if ($start >= length($self->{text}));
-		$self->{W}->addch($i, $self->{cols}-1,
-				  substr($self->{text}, $start, 1));
-		$self->{W}->move($i + 1, 0);
-	}
-
+    if ($self->{style_fn}) {
 	$self->rationalize();
+	$self->redraw();
+	return;
+    }
+
+    $self->{W}->move($self->{Y}, $self->{X});
+    for (my $i = $self->{Y}; $i < $self->{lines}; $i++) {
+	$self->{W}->delch();
+	my $start = ($self->{topln} + $i + 1) * $self->{cols} - 1;
+	last if ($start >= length($self->{text}));
+	$self->char_style($start);
+	$self->{W}->addch($i, $self->{cols}-1,
+			  substr($self->{text}, $start, 1));
+	$self->{W}->move($i + 1, 0);
+    }
+
+    $self->rationalize();
 }
 
 
+# Delete the character immediately before point.
 sub bs {
-	my($self) = @_;
-	return if ($self->{point} == 0);
+    my($self) = @_;
+    return if ($self->{point} == 0);
 
-	$self->{point}--;
-	$self->rationalize();
-	$self->del();
-	$self->{kill_reset} = 1;
+    $self->{point}--;
+    $self->rationalize();
+    $self->del();
+    $self->{kill_reset} = 1;
 }
 
 
+# Move point back one character.
 sub backward_char {
-	my($self) = @_;
-	$self->{point}-- unless ($self->{point} <= 0);
-	$self->rationalize();
-	$self->{kill_reset} = 1;
+    my($self) = @_;
+    $self->{point}-- unless ($self->{point} <= 0);
+    $self->rationalize();
+    $self->{kill_reset} = 1;
 }
 
 
+# Move point forward one character.
 sub forward_char {
-	my($self) = @_;
-	$self->{point}++ unless ($self->{point} >= length($self->{text}));
-	$self->rationalize();
-	$self->{kill_reset} = 1;
+    my($self) = @_;
+    $self->{point}++ unless ($self->{point} >= length($self->{text}));
+    $self->rationalize();
+    $self->{kill_reset} = 1;
 }
 
 
+# Move point to the start of the line.
 sub beginning_of_line {
-	my($self) = @_;
-	$self->{kill_reset} = 1;
-	$self->{point} = 0;
-	$self->rationalize();
+    my($self) = @_;
+    $self->{kill_reset} = 1;
+    $self->{point} = 0;
+    $self->rationalize();
 }
 
 
+# Move point to the end of the line.
 sub end_of_line {
-	my($self) = @_;
-	$self->{kill_reset} = 1;
-	$self->{point} = length($self->{text});
-	$self->rationalize();
+    my($self) = @_;
+    $self->{kill_reset} = 1;
+    $self->{point} = length($self->{text});
+    $self->rationalize();
 }
 
 
+# Move point to the start of the next word.
 sub forward_word {
-	my($self) = @_;
-	$self->{kill_reset} = 1;
-	$self->{point} = $self->end_of_word();
-	$self->rationalize();
+    my($self) = @_;
+    $self->{kill_reset} = 1;
+    $self->{point} = $self->end_of_word();
+    $self->rationalize();
 }
 
 
+# Move point to the start of the current word.
 sub backward_word {
-	my($self) = @_;
-	$self->{kill_reset} = 1;
-	$self->{point} = $self->start_of_word();
-	$self->rationalize();
+    my($self) = @_;
+    $self->{kill_reset} = 1;
+    $self->{point} = $self->start_of_word();
+    $self->rationalize();
 }
 
 
+# Transpose the two characters before point.
 sub transpose_chars {
-	my($self) = @_;
-	return if ($self->{point} == 0);
+    my($self) = @_;
+    return if ($self->{point} == 0);
 
-	my($c1, $c2);
-	if ($self->{point} >= length($self->{text})) {
-		($c1, $c2) = ($self->{point}-2, $self->{point}-1);
-	} else {
-		($c1, $c2) = ($self->{point}-1, $self->{point});
-	}
+    my($c1, $c2);
+    if ($self->{point} >= length($self->{text})) {
+	($c1, $c2) = ($self->{point}-2, $self->{point}-1);
+    } else {
+	($c1, $c2) = ($self->{point}-1, $self->{point});
+    }
 
-	(substr($self->{text}, $c1, 1), substr($self->{text}, $c2, 1)) =
-	  (substr($self->{text}, $c2, 1), substr($self->{text}, $c1, 1));
+    (substr($self->{text}, $c1, 1), substr($self->{text}, $c2, 1)) =
+      (substr($self->{text}, $c2, 1), substr($self->{text}, $c1, 1));
+    $self->update_style();
 
-	$self->{kill_reset} = 1;
-	return if ($self->{password});
+    $self->{kill_reset} = 1;
+    return if ($self->{password});
 
-	for my $c ($c1, $c2) {
-		my($y, $x) = $self->find_coords($c);
-		next if ($y < 0);
-		$self->{W}->addch($y, $x, substr($self->{text}, $c, 1));
-	}
+    for my $c ($c1, $c2) {
+	my($y, $x) = $self->find_coords($c);
+	next if ($y < 0);
+	$self->char_style($c);
+	$self->{W}->addch($y, $x, substr($self->{text}, $c, 1));
+    }
 
-	$self->{W}->noutrefresh();
+    $self->{W}->noutrefresh();
 }
 
 
+# Kill a given range of text, and append it to the kill buffer.
 sub kill_append {
-	my($self, $start, $len) = @_;
+    my($self, $start, $len) = @_;
 
-	$self->{kill_buffer}  = "" if ($self->{kill_reset});
-	$self->{kill_reset}   = 0;
+    $self->{kill_buffer}  = "" if ($self->{kill_reset});
+    $self->{kill_reset}   = 0;
 
-	if ($len) {
-		$self->{kill_buffer} .= substr($self->{text}, $start, $len);
-		substr($self->{text}, $start, $len) = "";
-	} else {
-		$self->{kill_buffer} .= substr($self->{text}, $start);
-		substr($self->{text}, $start) = "";
-	}
+    if ($len) {
+	$self->{kill_buffer} .= substr($self->{text}, $start, $len);
+	substr($self->{text}, $start, $len) = "";
+    } else {
+	$self->{kill_buffer} .= substr($self->{text}, $start);
+	substr($self->{text}, $start) = "";
+    }
 }
 
 
+# Kill a given range of text, and prepend it to the kill buffer.
 sub kill_prepend {
-	my($self, $start, $len) = @_;
+    my($self, $start, $len) = @_;
 
-	$self->{kill_buffer}  = "" if ($self->{kill_reset});
-	$self->{kill_reset}   = 0;
+    $self->{kill_buffer}  = "" if ($self->{kill_reset});
+    $self->{kill_reset}   = 0;
 
-	if ($len) {
-		$self->{kill_buffer}  = (substr($self->{text}, $start, $len) .
-					 $self->{kill_buffer});
-		substr($self->{text}, $start, $len) = "";
-	} else {
-		$self->{kill_buffer}  = (substr($self->{text}, $start) .
-					 $self->{kill_buffer});
-		substr($self->{text}, $start) = "";
-	}
+    if ($len) {
+	$self->{kill_buffer}  = (substr($self->{text}, $start, $len) .
+				 $self->{kill_buffer});
+	substr($self->{text}, $start, $len) = "";
+    } else {
+	$self->{kill_buffer}  = (substr($self->{text}, $start) .
+				 $self->{kill_buffer});
+	substr($self->{text}, $start) = "";
+    }
 }
 
 
+# Copy the kill buffer to point.
 sub yank {
-	my($self) = @_;
-	substr($self->{text}, $self->{point}, 0) = $self->{kill_buffer};
-	$self->{point} += length($self->{kill_buffer});
-	$self->rationalize();
-	$self->redraw();
+    my($self) = @_;
+    substr($self->{text}, $self->{point}, 0) = $self->{kill_buffer};
+    $self->{point} += length($self->{kill_buffer});
+    $self->update_style();
+    $self->rationalize();
+    $self->redraw();
 }
 
 
+# Kill from point to the end of the line.
 sub kill_line {
-	my($self) = @_;
-	return if ($self->{point} >= length($self->{text}));
-	$self->kill_append($self->{point});
-	$self->rationalize();
-	$self->redraw();
+    my($self) = @_;
+    return if ($self->{point} >= length($self->{text}));
+    $self->kill_append($self->{point});
+    $self->update_style();
+    $self->rationalize();
+    $self->redraw();
 }
 
 
+# Kill from point to the start of the line.
 sub backward_kill_line {
-	my($self) = @_;
-	return if ($self->{point} == 0);
-	$self->kill_prepend(0, $self->{point});
-	$self->{point} = 0;
-	$self->rationalize();
-	$self->redraw();
+    my($self) = @_;
+    return if ($self->{point} == 0);
+    $self->kill_prepend(0, $self->{point});
+    $self->{point} = 0;
+    $self->update_style();
+    $self->rationalize();
+    $self->redraw();
 }
 
 
+# Kill to the end of the current word.
 sub kill_word {
-	my($self) = @_;
-	my $e = $self->end_of_word();
-	$self->kill_append($self->{point}, $e - $self->{point});
-	$self->rationalize();
-	$self->redraw();
+    my($self) = @_;
+    my $e = $self->end_of_word();
+    $self->kill_append($self->{point}, $e - $self->{point});
+    $self->update_style();
+    $self->rationalize();
+    $self->redraw();
 }
 
 
+# Kill to the start of the current word.
 sub backward_kill_word {
-	my($self) = @_;
-	my $s = $self->start_of_word();
-	$self->kill_prepend($s, $self->{point} - $s);
-	$self->{point} = $s;
-	$self->rationalize();
-	$self->redraw();
+    my($self) = @_;
+    my $s = $self->start_of_word();
+    $self->kill_prepend($s, $self->{point} - $s);
+    $self->{point} = $s;
+    $self->update_style();
+    $self->rationalize();
+    $self->redraw();
 }
 
 
