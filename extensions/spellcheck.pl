@@ -56,11 +56,7 @@ sub spelled_correctly {
     my ($word) = @_;
 
     return 1 if lookup_word($word);
-    $word =~ s/ed^//g;
-    return 1 if lookup_word($word);
-    $word =~ s/s^//g;
-    return 1 if lookup_word($word);
-    $word =~ s/ing^//g;
+    $word =~ s/(?:s|ed|ing)$//g;
     return 1 if lookup_word($word);
 
     return 0;
