@@ -6,7 +6,7 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Server/Attic/SLCP.pm,v 1.23 1999/07/02 08:06:20 albert Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Server/Attic/SLCP.pm,v 1.24 1999/09/19 06:17:25 mjr Exp $
 
 package TLily::Server::SLCP;
 
@@ -421,10 +421,13 @@ sub fetch {
     my $sub = sub {
         my($event) = @_;
         $event->{NOTIFY} = 0;
-        if (defined($event->{text}) && $event->{text} =~ /^\* (.*)/) {
-            return if (($type eq "info") && (@data == 0) &&
-                       ($event->{text} =~ /^\* Last Update: /));
+        # If $event->{text} is defined, it's not the end of the cmd yet
+        if (defined($event->{text})) {
+          if ($event->{type} =~ /memo|info/ ) {
             push @data, substr($event->{text},2);
+          } else {
+            push @data, $event->{text};
+          }
         } elsif ($event->{type} eq 'endcmd') {
             $call->(server => $event->{server},
                     ui     => TLily::UI::name($uiname),
@@ -442,6 +445,9 @@ sub fetch {
     } elsif ($type eq "memo") {
         $ui->print("(fetching memo from server)\n") if ($ui);
         TLily::Command::cmd_process("/memo $target $name", $sub);
+    } elsif ($type eq "verb") {
+        $ui->print("(fetching verb from server)\n") if ($ui);
+        TLily::Command::cmd_process("\@list $target", $sub);
     }
 
     return;
@@ -482,6 +488,8 @@ sub store {
         my $t = $target;  $t = "" if ($target eq "me");
         my $lines = @$text;
         $server->sendln("\#\$\# export_file memo $size $lines $name $t");
+    }
+    elsif ($type eq "verb") {
     }
     elsif ($type eq "config") {
     }

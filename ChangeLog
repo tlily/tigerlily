@@ -1,4 +1,6 @@
 Version 2.0-post
+  * Extended TLily::Server::SLCP::fetch() to also fetch verbs, and
+    added program.pl with verb editing [MJR]
   * Fixed the client-name-and-version-not-set problem. [CWS]
   * [TLily/Event.pm] Hopefully fixed the lost-handler bug. [CWS]
   * [TLily/Daemon/HTTP.pm]
