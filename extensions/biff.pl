@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/biff.pl,v 1.7 2001/11/12 05:07:45 tale Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/biff.pl,v 1.8 2002/08/27 03:23:42 coke Exp $
 
 #
 # A Biff module
@@ -22,6 +22,71 @@ biff.pl - Watch mail drops for incoming mail
 
 This extension watches mail drops for incoming mail, and alerts the user
 when new mail is detected, both audibly, and in the status bar.
+
+=head1 CONFIGURATION
+
+=over 10
+
+=item biff_drops
+
+A list of mail drops to check for incoming mail.
+
+=cut
+
+shelp_r('biff_drops' => 'A list of mail drops.', 'variables');
+help_r('variables biff_drops', q{
+You can set the list of mail drops to be checked by biff.pl via the
+biff_drops configuration variable, by assigning an arrayref of hashrefs to
+it, such as:
+\$config{biff_drops} = [{type => 'mbox', path => '/home/mjr/Mailbox'}];
+Unfortunately, this variable can not yet be set using %set.  You set it
+in your tlilyStartup file (see "%help startup.pl"), or by using %eval.
+
+Valid mail drop types and their required elements are:
+mbox - Standard Unix mbox file
+  path => Absolute path to file
+maildir - Maildir (as used in Qmail)
+  path => Absolute path to directory
+rpimchk - RPI lightweight POP mail check protocol
+  host => mailcheck host
+  port => mailcheck port (usually 1110)
+  user => account username
+});
+
+=item biff_interval
+
+The interval between mail drop checks.
+
+=back
+
+=cut
+
+shelp_r('biff_interval' =>
+  'The interval between mail drop checks', 'variables');
+help_r('variables biff_interval', q{
+The biff_interval configuration variable controls the interval between
+mail drop polls, in seconds.  If one of your mail drops is not an mbox or
+maildir, please be considerate, and keep the interval above 5 minutes.
+(That's 300 seconds for you non-math types.)
+});
+
+# ' This comment with the single quote is to get [c]perl-mode back on track.
+
+shelp_r('biff', 'Monitor mail spool for new mail');
+help_r('biff', q{
+Usage: %biff [on|off|list]
+
+Monitors mail drop(s), and displays an indicator on the status line when
+new mail arrives.  Will automatically look for MAILDIR, then MAIL
+environment variables to determine a single default mail drop, if
+none are set in the config variable.  The 'on' and 'off' arguments
+turn notification on and off, the 'list' argument lists the maildrops
+currently being monitored, and if no argument is given, %biff will list
+those maildrops with unread mail.
+
+See "%help variables biff_drops" for how to configure your mail drop list.
+});
+
 
 =head1 COMMANDS
 
@@ -296,7 +361,7 @@ if ($config{biff_drops}) {
 	push @drops, {'type' => 'mbox', 'path' => $ENV{MAIL}};
     } else {
 	$ui->print("(Can not find a maildrop!)\n");
-	return 0;
+	return 1;
     }
 }
 
@@ -308,70 +373,6 @@ command_r('biff' => \&biff_cmd);
 =back
 
 =cut
-
-=head1 CONFIGURATION
-
-=over 10
-
-=item biff_drops
-
-A list of mail drops to check for incoming mail.
-
-=cut
-
-shelp_r('biff_drops' => 'A list of mail drops.', 'variables');
-help_r('variables biff_drops', q{
-You can set the list of mail drops to be checked by biff.pl via the
-biff_drops configuration variable, by assigning an arrayref of hashrefs to
-it, such as:
-\$config{biff_drops} = [{type => 'mbox', path => '/home/mjr/Mailbox'}];
-Unfortunately, this variable can not yet be set using %set.  You set it
-in your tlilyStartup file (see "%help startup.pl"), or by using %eval.
-
-Valid mail drop types and their required elements are:
-mbox - Standard Unix mbox file
-  path => Absolute path to file
-maildir - Maildir (as used in Qmail)
-  path => Absolute path to directory
-rpimchk - RPI lightweight POP mail check protocol
-  host => mailcheck host
-  port => mailcheck port (usually 1110)
-  user => account username
-});
-
-=item biff_interval
-
-The interval between mail drop checks.
-
-=back
-
-=cut
-
-shelp_r('biff_interval' =>
-  'The interval between mail drop checks', 'variables');
-help_r('variables biff_interval', q{
-The biff_interval configuration variable controls the interval between
-mail drop polls, in seconds.  If one of your mail drops is not an mbox or
-maildir, please be considerate, and keep the interval above 5 minutes.
-(That's 300 seconds for you non-math types.)
-});
-
-# ' This comment with the single quote is to get [c]perl-mode back on track.
-
-shelp_r('biff', 'Monitor mail spool for new mail');
-help_r('biff', q{
-Usage: %biff [on|off|list]
-
-Monitors mail drop(s), and displays an indicator on the status line when
-new mail arrives.  Will automatically look for MAILDIR, then MAIL
-environment variables to determine a single default mail drop, if
-none are set in the config variable.  The 'on' and 'off' arguments
-turn notification on and off, the 'list' argument lists the maildrops
-currently being monitored, and if no argument is given, %biff will list
-those maildrops with unread mail.
-
-See "%help variables biff_drops" for how to configure your mail drop list.
-});
 
 # Start biff by default when loaded.
 biff_cmd($ui, "on");
