@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/Tk.pm,v 1.3 1999/12/15 12:36:10 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/Tk.pm,v 1.4 1999/12/21 03:10:06 albert Exp $
 
 package TLily::UI::Tk;
 
@@ -311,7 +311,7 @@ sub new {
 			  -anchor => "s");
     
     $self->{text}->configure(-state => "normal");
-    $self->{text}->image("create", "1.0", -image => $logo);
+    $self->{text}->image("create", "1.0", -image => $logo) if !$config{quiet};
     $self->{text}->insert("end", "\n");
     $self->{text}->configure(-state => "disabled");
     $self->{text}->see("end");
@@ -546,13 +546,13 @@ sub prompt_for {
     print STDERR "call    : $args{call}\n" if $config{ui_debug};
     if(exists $args{prompt}) { $self->prompt($args{prompt}) }
     
-    my @args = (-width => 80, -insertofftime => 500, -insertontime => 500,
+    my @args = (-insertofftime => 500, -insertontime => 500,
 		-font => $font{normal});
     if($args{password}) { push(@args, -show => "*") }
     
-    $self->{input}->configure(-width => 1);
+    $self->{input}->packForget();
     $self->{prompt_for_w} = $self->{entry}->Entry(@args)
-      ->pack(-side => "right");
+      ->pack(-side => "right", -fill => 'x', -expand => 1);
     $self->{prompt_for_w}->focus();
     $self->{prompt_for_w}->grab();
     $self->{prompt_for_w}->bind('<Meta-less>',
@@ -571,10 +571,13 @@ sub prompt_for {
 				 $self->{event_core}->activate();
 				 $self->{prompt_for_w}->grabRelease();
 				 $self->{prompt_for_w}->destroy();
-				 $self->{input}->configure(-width => 80);
 				 if(exists $args{prompt}) {
 				     $self->prompt(undef);
 				 }
+				 $self->{input}->pack(-side   => "right",
+						      -fill   => 'x',
+						      -expand => "x",
+						      -anchor => "s");
 				 $self->{input}->focus();
 			     }]);
 }
@@ -708,6 +711,7 @@ sub indent {
 
 sub print {
     my $self = shift;
+    return if $config{quiet};
     $self->SUPER::print(@_);
 #    my $txt = join("", @_);
 #    if($self->{indent}) {
@@ -718,6 +722,7 @@ sub print {
 #    $self->{text}->insert("end", $txt, $self->{cur_style});
     foreach(@_) { $self->{text}->insert("end", $_, $self->{cur_style}) }
     $self->{text}->configure(-state => "disabled");
+    $self->{text}->see("end - 2c") unless $self->{page};
 };
 
 
@@ -820,7 +825,8 @@ sub prompt {
 
 sub page {
     my($self, $page) = @_;
-    if(defined $page) { $self->{page} = 1; }
+    print STDERR "page:page:$page\n" if $config{ui_debug};
+    if($page == 1) { $self->{page} = 1; }
     else { $self->{page} = 0; }
 }
     

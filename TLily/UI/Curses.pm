@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/Curses.pm,v 1.34 1999/12/14 06:39:47 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/Curses.pm,v 1.35 1999/12/21 03:10:06 albert Exp $
 
 package TLily::UI::Curses::Proxy;
 
@@ -82,6 +82,7 @@ use TLily::UI::Curses::Text;
 use TLily::UI::Curses::StatusLine;
 use TLily::UI::Curses::Input;
 use TLily::Event;
+use TLily::Config qw(%config);
 
 @ISA = qw(TLily::UI); #) cperl mode is getting confused
 
@@ -520,6 +521,7 @@ sub indent {
 
 sub print {
     my $self = shift;
+    return if $config{quiet};
     $self->SUPER::print(@_);
     $self->{text}->print(join('', @_));
     $self->{input}->position_cursor();

@@ -1,4 +1,6 @@
 Version 2.0-post
+  * [TLily/UI/{Curses,Tk}.pm] Enable/disable output based on
+    $config{quiet}. [CWS]
   * [extensions/status.pl] changed the clock format to remove the
     leading 0. [CWS]
   * [TLily/UI/Curses/Input.pm, extensions/ui.pl]  Added input history

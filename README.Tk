@@ -9,17 +9,30 @@ What Works:
     sending messages
     receiving messages
     text styles
+    color
     prompts
     most keybindings
     statusline
+    command history
 
 What Doesn't Work:
     kill buffer + assoc. keybindings
+	not written yet.
     indents
+	not implementable at this time.
     intercepts
+	not supported yet.
+    input styles
+	not supported yet.
     resizing
+	The widgets don't line up right after resizing
+	prompts cause horizontal auto-resizing
     paging
+	if page=1, the text window won't scroll when new text comes in.
+	if page=0, the text window will scroll to the bottom every time
+	a message is printed.
     quitting
-	After a /detach or /bye, tlily will "Alarm Clock" after a delay.
 	A double-control-c will cause a core dump.
 	File.. Quit will exit with an error msg.
+	After a /detach or /bye, tlily will either hang or exit with an
+        "Alarm Clock" after a delay.

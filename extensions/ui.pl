@@ -1,4 +1,4 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/ui.pl,v 1.19 1999/12/20 17:52:30 mjr Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/ui.pl,v 1.20 1999/12/21 03:10:06 albert Exp $ 
 use strict;
 
 =head1 NAME
@@ -153,9 +153,11 @@ sub page_command {
 		$ui->print("(paging is currently disabled)\n");
 	}
     } elsif ($args eq "on") {
+	$config{page} = 1;
 	$ui->page(1);
 	$ui->print("(paging is now enabled)\n");
     } elsif ($args eq "off") {
+	$config{page} = 0;
 	$ui->page(0);
 	$ui->print("(paging is now disabled)\n");
     } else {
