@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/expand.pl,v 1.19 2000/12/12 19:49:18 neild Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/expand.pl,v 1.20 2000/12/13 19:18:59 neild Exp $ 
 
 use strict;
 use TLily::UI;
@@ -35,7 +35,8 @@ sub mserv_expand_name {
     # First, try to expand the name on the current server.
     my $active  = TLily::Server::active();
     my @exps = $active->expand_name($name);
-    return $exps[0] if (@exps == 1);
+    return $exps[0].($config{always_add_server}?$active->name():"")
+      if (@exps == 1);
     return undef if (@exps > 1);
 
     # Next, try the other servers.
@@ -191,6 +192,44 @@ sub rename_handler {
 event_r(type => 'rename',
 	call => \&rename_handler);
 
+sub server_change_handler {
+    my($event, $handler) = @_;
+    my $ui = $event->{ui} || ui_name();
+
+    my($pos, $line) = $ui->get_input;
+    my $sname = $event->{old_server}->name();
+    my $newsname = $event->{server}->name();
+    my $nline = "";
+
+    while ($line =~ /\G([^,:;]*)([,:;])/g) {
+	my($tgt, $sym) = ($1, $2);
+
+	if ($tgt !~ /@/) {
+	    $pos += 1+length($sname) if (pos($line) <= $pos);
+	    $nline .= $tgt . "@" . $sname . $sym;
+	} elsif ($tgt =~ /^([^@]*)@\Q$newsname\E/i &&
+		 !$config{always_add_server}) {
+	    $nline .= $1 . $sym;
+
+	    if ($pos > length($nline)) {
+		$pos -= length($newsname) + 1;
+		if ($pos < length($nline)) {
+		    $pos = length($nline)-1;
+		}
+	    }
+	} else {
+	    $nline .= $tgt . $sym;
+	}
+
+	last if ($sym eq ';');
+    }
+
+    $nline .= substr($line, pos($line));
+    $ui->set_input($pos, $nline);
+}
+event_r(type => 'server_change',
+	call => \&server_change_handler);
+
 sub oops_cmd {
 	my ($ui, $args) = @_;
 	my $serv = active_server();
@@ -280,5 +319,8 @@ the same effect.
 (see also /also, %oops)
 ");
 
+shelp_r('always_add_server' =>
+	'Always append the server name to destinations.',
+	'variables');
 
 
