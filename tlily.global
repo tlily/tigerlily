@@ -8,7 +8,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/Attic/tlily.global,v 1.40 2000/02/15 00:06:58 tale Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/Attic/tlily.global,v 1.41 2000/02/15 01:54:58 tale Exp $
 
 # Global defaults for tlily
 # PLEASE DO NOT EDIT EXCEPT FOR DEVELOPMENT!
@@ -44,7 +44,7 @@ if ($^O =~ /cygwin/) {
    'emote_dest'      => [qw(cyan    black   normal)],
    'emote_sender'    => [qw(cyan    black   normal)],
    'review'          => [qw(magenta black   normal)],
-   'mark_output'     => [qw(black   magenta normal)],
+   'mark_output'     => [qw(white   magenta normal)],
    'slcp'            => [qw(white   black   normal)],
    'yellow'          => [qw(yellow  black   bold  )],
    'green'           => [qw(green   black   bold  )],

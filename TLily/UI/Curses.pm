@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/Curses.pm,v 1.41 2000/02/14 18:18:04 tale Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/Curses.pm,v 1.42 2000/02/15 01:54:58 tale Exp $
 
 package TLily::UI::Curses::Proxy;
 
@@ -154,8 +154,12 @@ sub accept_line {
 sub mark_output {
     my ($ui) = @_;
 
+    my $clock = $ui->{status}->{var}->{clock} || "";
+
+    my $center = ($COLS - length($clock)) / 2;
+
     $ui->style("mark_output");
-    $ui->print(' ' x ($COLS - 1) . "\n");
+    $ui->print(' ' x $center . $clock . ' ' x $center . "\n");
     $ui->style("normal");
 }
 
