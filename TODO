@@ -6,13 +6,9 @@ Before 2.0 release:
   The following need to be ported/written.  Most should be pretty easy to do
   based on the ones we've already finished.
 
-  pipes.pl      (medium)
-  program.pl    (medium)
+  pipes.pl
   ctc.pl/httpd.pl/Httpd.pm  (steve is working on this)
 			    (steve is almost done with this)
-  Reworking:
-    I want to rewrite TLily::Command.  It needs to make more sense, I think.
-    
   New functionality:
     %GROUP, if xian likes it..
     - Makefile.PL   (albert is working on this)  
@@ -22,10 +18,13 @@ Before 2.0 release:
    autologin - doesn't work after the first use
 
 Later:
+  helper.pl/program.pl
   multiserver, multiui
   irc mode/ TLily::Server::SubClient
   thread extension?
      after [;:], if you press some key, have it insert [xxx], where xxx
      is a scrollable list of threads seen in the discussion?
   lilyBot support
+  I want to rewrite TLily::Command.  It needs to make more sense, I think.
+    
 
