@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Curses/Attic/Input.pm,v 1.22 2000/02/14 00:51:55 tale Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Curses/Attic/Input.pm,v 1.23 2000/02/14 03:34:41 tale Exp $
 
 package TLily::UI::Curses::Input;
 
@@ -321,10 +321,11 @@ sub accept_line {
 
     foreach my $hist_idx (keys %{$self->{saved_history}}) {
         $self->{history}->[$hist_idx] = $self->{saved_history}->{$hist_idx};
+        delete $self->{saved_history}->{$hist_idx};
     }
 
-    if ($text ne "" && $text ne $self->{history}->[-1] &&
-        !$self->{'password'}) {
+    if ($text ne "" && ! $self->{'password'} &&
+        ($#{$self->{history}} == 0 || $text ne $self->{history}->[-2])) {
 	$self->{history}->[-1] = $text;
 	push @{$self->{history}}, "";
     }
@@ -339,9 +340,17 @@ sub accept_line {
 sub save_history_excursion {
     my ($self) = @_;
 
+    # This function only has relevance if the text of current history
+    # entry is different from the current input buffer.
     if ($self->{history}->[$self->{history_pos}] ne $self->{text}) {
-        $self->{saved_history}->{$self->{history_pos}} =
-            $self->{history}->[$self->{history_pos}];
+
+        # Save the current history entry if it has not already been saved.
+        if (! defined $self->{saved_history}->{$self->{history_pos}}) {
+            $self->{saved_history}->{$self->{history_pos}} =
+              $self->{history}->[$self->{history_pos}];
+        }
+    
+        # Set the current history entry to the current input buffer.
         $self->{history}->[$self->{history_pos}] = $self->{text};
     }
 }
@@ -409,7 +418,7 @@ sub search_history {
         # or the last character (when going backward) of the current match.
         # The prefix thus needs to be masked off when going forward, and
         # the suffix masked when going backward.
-        $prefix = $dir == 1 ? $self->{point} : 0;
+        $prefix = $dir == 1 ? $self->{point} - length($string) + 1 : 0;
         $suffix = $dir == 1 ? 0 : $length - length($string) - $self->{point}+1;
 
     } elsif ($args{'switch_dir'}) {
@@ -422,6 +431,45 @@ sub search_history {
         $prefix = $dir == 1 ? $self->{point} : 0;
         $suffix = $dir == 1 ? 0 : $length - $self->{point};
 
+    } elsif ($self->{_search_pos} == $self->{history_pos} &&
+             ($dir ==  1 && $self->{point} >= $self->{_search_anchor}) ||
+             ($dir == -1 && $self->{point} <= $self->{_search_anchor})) {
+        # The search is in the line it started at.  _search_anchor is where
+        # point is when the search started, so it should bound the search.
+        #
+        # The shenanigans with checking to see whether the _search_anchor
+        # is behind point for a forward search or ahead of it for a reverse
+        # search are needed to detech when a search has left the line
+        # but returned to it.  Consider:  two lines "bono" and "oooo".  Point
+        # starts in the middle of "oooo" when a reverse search is done for "o"
+        # and repeated until it is at the "o" following "n" in "bono".  Now
+        # type C-s twice and then type another "o".  Without the additional
+        # _search_anchor tests above, the search will stop at the end of "oooo"
+        # rather than the middle, because the search for 'oo' is starting in
+        # the same line that the whole search started in, and the
+        # _search_anchor is set at the middle of the line.  
+        #
+        # XXXDCL BUG: Same starting scenario.  C-r o C-r C-r =>
+        # now at "o" in "bono".  C-s o => now in middle of "oooo".
+        # Press Delete (or whatever backward-delete-char you have) =>
+        # now at third "o" in "oooo" instead of at end of "bono".
+        # This happens in this case because point == _search_pos in the line
+        # starting the search, but the overall problem is a bit deeper.
+        # Arguably the _search_anchor should be set to the point where the
+        # search changed direction, but (currently) that would also involve
+        # changing the history_pos so that both "reset" and this block worked
+        # correctly, but that could give quite unexpected results if the
+        # search terminated as via C-g -- the history_pos would be wherever
+        # the search direction switched instead of wherever the search was
+        # started.
+        #
+        # I guess one way to *probably* fix this would be to have the
+        # references to $ui->{save_excursion} in ui.pl also save/restore
+        # $ui->{input}->{history_pos}, but frankly I'm kind of tired of working
+        # on this, and this particular bug is not especially troubling to
+        # me at the moment.  Feel Free(tm).
+        $prefix = $dir == 1 ? $self->{_search_anchor} : 0;
+        $suffix = $dir == 1 ? 0 : $length - $self->{_search_anchor};
     }
 
     # Greedy is used to tell whether the perl "*" operator should be greedy

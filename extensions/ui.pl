@@ -1,4 +1,4 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/ui.pl,v 1.25 2000/02/13 20:16:04 tale Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/ui.pl,v 1.26 2000/02/14 03:34:42 tale Exp $ 
 use strict;
 
 =head1 NAME
@@ -344,7 +344,8 @@ sub input_search_mode {
                 $input->search_history(string => $ui->{_search_text},
                                        reset => 1,
                                        dir => $dir);
-                $ui->prompt("($ui->{_search_dir}-i-search)'$ui->{_search_text}':");
+                $ui->prompt("($ui->{_search_dir}-i-search)" .
+                            "'$ui->{_search_text}':");
             }
 
             return 1;
@@ -387,13 +388,20 @@ sub input_search_mode {
 
 sub search_start {
     my ($ui, $dir) = @_;
+    my $input = $ui->{input};
 
     $ui->{_search_text} = "";
     $ui->{_search_last} = "" unless defined $ui->{_search_last};
     $ui->{_search_dir} = $dir;
-    $ui->{save_excursion} = [$ui->{input}->{text}, $ui->{input}->{point}];
+    $ui->{save_excursion} = [$input->{text}, $input->{point}];
+    $ui->{save_prefix} = $input->{prefix};
 
-    $ui->{input}->search_history(reset => 1);
+    $input->search_history(reset => 1);
+    $input->{_search_anchor} = $input->{point};
+
+    # Make the current input searchable by temporarily sticking it
+    # into the history buffer.
+    $input->save_history_excursion;
 
     $ui->intercept_r("input-search-mode");
     $ui->prompt("($dir-i-search):");
@@ -403,7 +411,7 @@ sub search_stop {
     my ($ui) = @_;
 
     $ui->intercept_u("input-search-mode");
-    $ui->prompt("");
+    $ui->prompt($ui->{save_prefix});
 }
 
 sub isearch_forward {

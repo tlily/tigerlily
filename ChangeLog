@@ -1,8 +1,13 @@
 Version 2.1.1-post
+  * [extensions/ui.pl, TLiLy/UI/Curses/Input.pm] Include the current input
+    line in an isearch.   Save the prefix string before searching.
+    Also fixed a bug where the entered line was being appended to history
+    even when it was identical to the previous line.  The code was clearly
+    trying to avoid this but had an off-by-one error. [DCL]
   * [TLiLy/UI/Curses/Input.pm] previous_history and next_history could
     cause the history to become permanently edited.  New function
     save_history_excursion retains copy of the original history entry,
-    which is restored by accept_line.
+    which is restored by accept_line. [DCL]
   * [TLily/UI/Curses.pm] $config{scroll_to_bottom_on_input}, like xterm. [DCL]
   * [extensions/ui.pl, TLiLy/UI/Curses/Input.pm] Mucho hacking on the
     search mechanism.  toggle-input-search-mode is now isearch-backward,
