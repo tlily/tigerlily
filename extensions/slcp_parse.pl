@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_parse.pl,v 1.29 2003/06/27 01:06:17 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_parse.pl,v 1.30 2003/09/28 01:15:43 josh Exp $
 
 use strict;
 use vars qw(%config);
@@ -230,6 +230,9 @@ sub parse_line {
     if ($line =~ /^%NOTIFY /) {
 
 	%event = SLCP_parse($line);
+	
+	# treat event name case-insensitively
+	$event{EVENT} = lc($event{EVENT});
 	
 	# SLCP bug?!
 	# Fixed, I think.  -DN

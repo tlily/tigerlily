@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_output.pl,v 1.27 2003/06/27 01:06:17 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_output.pl,v 1.28 2003/09/28 01:15:43 josh Exp $
 
 use strict;
 
@@ -269,31 +269,33 @@ my @infomsg = (
     'pa'         => 'V'     => '** %S%TPublic address message from %U: %V **',
 
     # appoint/unappoint, as of 2.6.4-cr3.
-    'appoint'    => 'SMC="owner";'  => "(you have accepted ownership of discussion %R)",
+    'appoint'    => 'SMC="owner";' => "(you have accepted ownership of discussion %R)",
     'appoint'    => 'SC="owner";'  => "(you have offered %P ownership of discussion %R)",
     'appoint'    => 'MC="owner";'  => "*** %S%T%u has offered you ownership of discussion %R ***",
-    'appoint'    => 'C="owner";'  => "*** %S%T%u is now the owner of discussion %R ***",
-    'unappoint'  => 'MC="owner";' => "*** %S%T%u has rescinded %p offer of ownership of discussion %R ***",
+    'appoint'    => 'C="owner";'   => "*** %S%T%u is now the owner of discussion %R ***",
+    'unappoint'  => 'MC="owner";'  => "*** %S%T%u has rescinded %p offer of ownership of discussion %R ***",
     'unappoint'  => 'SC="owner";'  => "(you have rescinded your ownership offer to %P of discussion %R)",
 
     'appoint'    => 'tC="speaker";' => "*** Discussion %R is now moderated ***",    
     'appoint'    => 'MC="speaker";' => "*** You have been made a speaker for discussion %R ***",
-    'appoint'    => 'C="speaker";' => "*** %P is now a speaker for discussion %R ***",
+    'appoint'    => 'C="speaker";'  => "*** %P is now a speaker for discussion %R ***",
     'unappoint'  => 'tC="speaker";' => "*** Discussion %R is no longer moderated ***",
     'unappoint'  => 'MC="speaker";' => "*** You are no longer a speaker for discussion %R ***",
-    'unappoint'  => 'C="speaker";' => "*** %P is no longer a speaker for discussion %R ***",
+    'unappoint'  => 'C="speaker";'  => "*** %P is no longer a speaker for discussion %R ***",
 
     'appoint'    => 'MC="author";' => "*** You have been made an author for discussion %R ***",
-    'appoint'    => 'C="author";' => "*** %P is now an author for discussion %R ***",
+    'appoint'    => 'C="author";'  => "*** %P is now an author for discussion %R ***",
     'unappoint'  => 'MC="author";' => "*** You are no longer an author for discussion %R ***",
-    'unappoint'  => 'C="author";' => "*** %P is no longer an author for discussion %R ***",
+    'unappoint'  => 'C="author";'  => "*** %P is no longer an author for discussion %R ***",
 
     'appoint'    => 'M'            => "*** You are now a %E for %R ***",
-    'appoint'    => ''            => "*** %P is now a %E for %R ***",
-    'unappoint'  => 'M'            => "*** You are no longer a %E for %R ***",    
-    'unappoint'  => ''            => "*** %P is no longer a %E for %R ***",    
-    
-    # need to handle review, sysalert, pa, game, and consult.
+    'appoint'    => ''             => "*** %P is now a %E for %R ***",
+    'unappoint'  => 'M'            => "*** You are no longer a %E for %R ***",
+    'unappoint'  => ''             => "*** %P is no longer a %E for %R ***",
+
+    'review'     => ''             => '*** %S%T%u has cleared the review for discussion %R ***',
+
+    # need to handle game event type.
 );
 
 my $sub = sub {
