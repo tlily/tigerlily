@@ -1,4 +1,7 @@
 Version 2.0-post
+  * [TLily/UI/Curses.pm] Changed the key bindings for scroll up/down.
+    M-[ was a pretty bone-headed choice on my part.
+    They're now M-, & M-. [MJR]
   * [extensions/status.pl] Made the statusline clearly indicate when not
     connected to any servers. [MJR]
   * [extensions/info.pl] Added lily help editing [MJR]
