@@ -1,51 +1,99 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/on.pl,v 1.1 1999/10/06 17:05:36 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/on.pl,v 1.2 2000/01/21 22:15:52 josh Exp $
 
 use strict;
 use Text::ParseWords qw(quotewords);
 
 # bugs:
 #
-# %on should list the registered on handlers
+# \n in the what to do section isn't working.
+#
 # handling of the final field (what to do) is wonky.  RIght now, you pretty 
 #    much want to put it in quotes.  Ick.
 
 
-my $usage = "Usage: %on <event> [from <source>] [to <dest>] [value <value>] <what to do>";
+my $usage = "%on [<event> [from <source>] [to <dest>] [value|like <value>] <what to do>]";
 
 command_r(on => \&on_cmd);
 shelp_r(on => "execute a command when a specific event occurs");
-help_r('on', "
+help_r('on', qq[
+%on
+%on list
+%on clear <id>
 $usage
 
-Example:
+(where <event> is any standard SLCP event, such as "public", "private", or 
+"emote".  <value> is the VALUE parameter to that SLCP event, which is the
+message body in the "public", "private", and "emote" events.)
 
-%on unidle from appleseed \"appleseed;[autonag] Gimme my scsi card!\"
-");
+%on supports the following special characters in "what to do":
+
+\$1 .. \$9  variable matches in the regexp, if "like" is used.
+\$sender   for "public", "private", or "emote" events, the sender of the
+          message.
+\$value    the value of the original event
+   
+
+Examples:
+
+  %on unidle from appleseed "appleseed;[autonag] Gimme my scsi card!"
+  %on emote to beener like "fluffs almo" "beener;auto-spurts feathers"
+  %on emote to beener like "ping (.*)" "$1;ping!"
+]);
 
 
+my @on_handlers;
 
 sub on_cmd {
     my($ui, $args) = @_;
     my %mask;
 
+    $args =~ s/\\/\\\\/g;
+
+    if ($args !~ /\S/) {
+	if (@on_handlers) {
+	    $ui->printf("%5.5s %-70.70s\n", "Id", "Description");
+	    $ui->printf("%5.5s %-70.70s\n", "-" x 5, "-" x 70);
+	    foreach (@on_handlers) {
+		$ui->printf("%5.5s %-70.70s\n", $_->[0], $_->[1]);
+	    }
+	} else {
+	    $ui->print("(no %on handlers are currently registered)\n");
+	}
+	return;
+    }
+
+    if ($args =~ /^\s*clear\s*(\d+)/) {
+	if (grep { $_->[0] == $1 } @on_handlers) {
+	    event_u($1);
+	    $ui->print("(%on handler id $1 removed)\n");
+	} else {
+	    $ui->print("(%on handler id $1 not found)\n");
+	}
+	
+	@on_handlers = grep { $_->[0] != $1 } @on_handlers;
+	return;
+    }
+
+
     my @args = quotewords('\s+',0,$args);
 
     if (@args < 2) {
-	$ui->print("$usage\n");
+	$ui->print("Usage: $usage\n");
 	return;
     }
 
     my $event_type = shift @args;
     my $server = active_server();
 
-    while ($args[0] =~ /^(from|to|value)$/i) {
+    while ($args[0] =~ /^(from|to|value|like)$/i) {
 	my $masktype = uc(shift @args);
 	my $maskval  = shift @args;
 
 	if ($masktype =~ /^(FROM|TO)$/) {
 	    my $name   = $server->expand_name($maskval);
-	    my $handle = $server->{"NAME"}{lc($name)}{"HANDLE"};
+	    $name =~ s/^-//;
+	    my $handle = $server->{"NAME"}{lc($name)}{"HANDLE"};	
 	    if ($handle !~ /^\#\d+/) {
 		$ui->print("($maskval not found)\n");
 		return;
@@ -63,7 +111,11 @@ sub on_cmd {
     $str = "(on " . $event_type . " events";
     $str .= " from " .$server->{"HANDLE"}{$mask{"SHANDLE"}}{"NAME"} if $mask{"SHANDLE"};
     $str .= " to " .$server->{"HANDLE"}{$mask{"RHANDLE"}}{"NAME"} if $mask{"RHANDLE"};
-    $str .= " with a value of \"" . $mask{"VALUE"} . "\"" if $mask{"VALUE"};
+    if ($mask{"LIKE"}) {
+	$str .= " with a value like \"" . $mask{"LIKE"} . "\"";
+    } elsif ($mask{"VALUE"}) {
+	$str .= " with a value of \"" . $mask{"VALUE"} . "\"";
+    }
     $str .= ", I will run \"@args\")\n";
 
     $ui->print($str);
@@ -72,22 +124,66 @@ sub on_cmd {
 			  call => sub {
 			      my ($e,$h) = @_;
 			      my $match = 1;
-			      foreach (keys %mask) {
-				  if ($mask{$_} ne $e->{$_}) {
-				      $match = 0;
-				  }
+			      my ($m1,$m2,$m3,$m4,$m5,$m6,$m7,$m8,$m9);
+
+			      # ignore events from me.
+			      if ($e->{"SHANDLE"} eq $e->{server}->user_handle) {
+				  return;				  
 			      }
 			      
+			      foreach (keys %mask) {
+				  if (/LIKE/) {
+				      if ($e->{"VALUE"} !~ /$mask{$_}/i) {
+					  $match = 0;
+				      } else {
+					  ($m1,$m2,$m3,$m4,$m5,$m6,$m7,$m8,$m9)
+					    = ($1,$2,$3,$4,$5,$6,$7,$8,$9);
+				      }
+				  } elsif (/RHANDLE/) {
+				      $match = 0;
+				      # RHANDLE is an arrayref.  Ugh.
+				      foreach (@{$e->{$_}}) {
+					  $match=1 if ($mask{"RHANDLE"} eq $_);
+				      }				      
+				  } elsif ($mask{$_} ne $e->{$_}) {
+				      $match = 0;
+				  }
+
+				  last if $match == 0;
+			      }
+
 			      if ($match) {
-				  TLily::Event::send({type => 'user_input',
-						      ui   => $e->{ui},
-						      text => "@args\n"});
+				  my $cmd = "@args";
+				  my ($sender, $value);
+				  $cmd =~ s/\$sender/$e->{SOURCE}/g;
+				  $cmd =~ s/\$value/$e->{VALUE}/g;
+				  $cmd =~ s/\$1/$m1/g;
+				  $cmd =~ s/\$2/$m2/g;
+				  $cmd =~ s/\$3/$m3/g;
+				  $cmd =~ s/\$4/$m4/g;
+				  $cmd =~ s/\$5/$m5/g;
+				  $cmd =~ s/\$6/$m6/g;
+				  $cmd =~ s/\$7/$m7/g;
+				  $cmd =~ s/\$8/$m8/g;
+				  $cmd =~ s/\$9/$m9/g;
+
+				  foreach (split /\\n/, $cmd) {
+				      TLily::Event::send({type => 'user_input',
+							  ui   => $e->{ui},
+							  text => "$_\n"});
+				  }
 			      }			      
 
 			      return(0);
 			  });
+    push @on_handlers, [ $handler, $args ];
 }
 
-
+sub unload {
+    my $ui = ui_name();
+    while (@on_handlers) {
+	on_cmd($ui, "clear $on_handlers[0]->[0]");
+    }
+}
 
 1;
