@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/FoiledAgain/Attic/Curses.pm,v 1.5 2003/04/21 22:08:28 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/FoiledAgain/Attic/Curses.pm,v 1.6 2003/10/19 00:00:43 josh Exp $
 
 package TLily::FoiledAgain::Curses;
 
@@ -27,7 +27,7 @@ use Curses;
 
 TLily::FoiledAgain::Curses - Curses implementation of the FoiledAgain interface
 
-=cut;
+=cut
 
 # The keycodemap hash maps Curses keycodes to English names.
 my %keycodemap =

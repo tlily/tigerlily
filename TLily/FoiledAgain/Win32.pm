@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/FoiledAgain/Attic/Win32.pm,v 1.10 2003/02/26 03:22:38 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/FoiledAgain/Attic/Win32.pm,v 1.11 2003/10/19 00:00:43 josh Exp $
 
 package TLily::FoiledAgain::Win32;
 
@@ -37,7 +37,7 @@ use Win32::Sound;
 
 TLily::FoiledAgain::Win32 - Win32 implementation of the FoiledAgain interface
 
-=cut;
+=cut
 
 # The cnamemap hash maps English color names to Win32::Console color attrs.
 my %fg_cnamemap = (

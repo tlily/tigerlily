@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/FoiledAgain.pm,v 1.5 2003/02/14 02:11:43 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/FoiledAgain.pm,v 1.6 2003/10/19 00:00:43 josh Exp $
 
 package TLily::FoiledAgain;
 
@@ -75,7 +75,7 @@ the point (in the last window?)
 
 =item defstyle($style, @attrs)
 
-=utem defcstyle($style, $fg, $bg, @attrs)
+=item defcstyle($style, $fg, $bg, @attrs)
 
 =head2 OBJECT (WINDOW) METHODS
 

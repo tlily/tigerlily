@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/FoiledAgain/Attic/TermScreen.pm,v 1.2 2003/10/18 22:25:52 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/FoiledAgain/Attic/TermScreen.pm,v 1.3 2003/10/19 00:00:43 josh Exp $
 
 package TLily::FoiledAgain::TermScreen;
 
@@ -28,7 +28,7 @@ my $USING_COLOR;
 
 TLily::FoiledAgain::TermScreen - Term::Screen implementation of the FoiledAgain interface
 
-=cut;
+=cut
 
 # The cnamemap hash maps English color names to Term::ScreenColor color attrs.
 my %fg_cnamemap = (
