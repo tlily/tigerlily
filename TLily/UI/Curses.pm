@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/Curses.pm,v 1.32 1999/05/08 17:46:04 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/Curses.pm,v 1.33 1999/10/31 03:14:12 josh Exp $
 
 package TLily::UI::Curses::Proxy;
 
@@ -200,6 +200,7 @@ sub accept_line {
    'C-d'        => 'delete-char',
    'del'        => 'delete-char',
    'bs'         => 'backward-delete-char',
+   ''         => 'backward-delete-char',   
    'C-h'        => 'backward-delete-char',
    'C-t'        => 'transpose-chars',
    'C-k'        => 'kill-line',
