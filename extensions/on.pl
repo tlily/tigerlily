@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/on.pl,v 1.16 2002/04/12 17:11:21 coke Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/on.pl,v 1.17 2003/03/23 21:52:49 josh Exp $
 
 use strict;
 use Text::ParseWords qw(quotewords);
@@ -36,6 +36,7 @@ There are a number of options to limit the events acted upon.
   server <name>  - Events sent to a specific server.
   notify <value> - The NOTIFY value of the event is on ('yes'), off ('no'),
                    or ignored ('always').  (Default is 'yes')
+  random <N>     - Randomly take action approximately every 1-in-N matches.
 
 %on supports the following special characters in "what to do":
 
@@ -60,6 +61,7 @@ Examples:
   %on unidle from appleseed "appleseed;[autonag] Gimme my scsi card!"
   %on emote to beener like "fluffs almo" "beener;auto-spurts feathers"
   %on emote to beener like "ping (.*)" "$1;ping!"
+  %on emote to beener like "ice cream" random 10 "$1;screams for ice cream!"
   %on public to news %attr dest_fmt significant
   %on attach from SignificantOther %attr slcp_fmt significant
   %on attach from JoshTest "%eval `banner wazzup?`"  
@@ -124,6 +126,9 @@ sub on_cmd {
 		$desc .= " LIKE \"$mask->{LIKE}\""
 		  if defined($mask->{LIKE});
 
+		$desc .= " RANDOM $mask->{RANDOM}"
+		  if defined($mask->{RANDOM});
+
 		$desc .= " VALUE \"$mask->{VALUE}\""
 		  if defined($mask->{VALUE});
 
@@ -160,7 +165,7 @@ sub on_cmd {
 	my %mask;
 	my $event_type = shift @args;
 
-	while (@args && $args[0] =~ /^(notify|from|to|value|like|server)$/i) {
+	while (@args && $args[0] =~ /^(notify|from|to|value|like|server|random)$/i) {
 	    my $masktype = uc(shift @args);
 	    my $maskval  = shift @args;
 	    $mask{$masktype} = $maskval;
@@ -238,18 +243,19 @@ sub on_cmd {
 	    $str .= " to group $mask{TO}"     if defined($mask{RGROUP});
 
 	    if ($mask{NOTIFY} eq 'always') {
-		$str .= " always";
+	      $str .= " always";
 	    } else {
-		$str .= " when";
-		$str .= " not" if $mask{NOTIFY} eq 'no';
-		$str .= " notified";
+	      $str .= " when";
+	      $str .= " not" if $mask{NOTIFY} eq 'no';
+	      $str .= " notified";
 	    }
 
 	    $str .= " with a value like \"$mask{LIKE}\""
 	      if defined($mask{LIKE});
 	    $str .= " with a value of \"$mask{VALUE}\""
 	      if defined($mask{VALUE});
-	    $str .= ", I will run \"@args\")\n";
+	    $str .= ", I will " . ($mask{RANDOM}?"randomly ":"") .
+	      "run \"@args\")\n";
 
 	    $ui->print($str);
 	}
@@ -336,6 +342,11 @@ sub on_evt_handler {
 	my %to;
 	@to{split /,/, $state{MEMBERS}} = undef;
 	return unless grep(exists($to{$_}), @{$e->{RHANDLE}});
+    }
+
+    # Apply randomization if present
+    if (defined $mask->{RANDOM}) {
+      return unless (rand() < 1 / int($mask->{RANDOM}));
     }
 
     # Match successful.
