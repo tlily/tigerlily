@@ -24,7 +24,6 @@ TLily/Event.pm
 TLily/ExoSafe.pm
 TLily/Extend.pm
 TLily/FoiledAgain.pm
-TLily/FoiledAgain/#Win32.pm#
 TLily/FoiledAgain/Curses.pm
 TLily/FoiledAgain/TermScreen.pm
 TLily/FoiledAgain/Win32.pm
