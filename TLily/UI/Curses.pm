@@ -107,6 +107,11 @@ sub accept_line {
 			$ui->{input}->password(1) if ($args->{password});
 		}
 	}
+
+	elsif ($text eq "" && $ui->{text}->{main}->{text}->lines_remaining()) {
+		$ui->command("page-down");
+	}
+
 	else {
 		$ui->style("user_input");
 		$ui->print($text, "\n");
@@ -140,8 +145,8 @@ sub accept_line {
    'kill-word'            => sub { $_[0]->{input}->kill_word(); },
    'backward-kill-word'   => sub { $_[0]->{input}->backward_kill_word(); },
    'yank'                 => sub { $_[0]->{input}->yank(); },
-   'page-up'              => sub { $_[0]->{text}->{main}->{text}->scroll(-($LINES-1)); },
-   'page-down'            => sub { $_[0]->{text}->{main}->{text}->scroll($LINES-1); },
+   'page-up'              => sub { $_[0]->{text}->{main}->{text}->scroll_page(-1); },
+   'page-down'            => sub { $_[0]->{text}->{main}->{text}->scroll_page(1); },
    'line-up'              => sub { $_[0]->{text}->{main}->{text}->scroll(-1); },
    'line-down'            => sub { $_[0]->{text}->{main}->{text}->scroll(1); },
    'refresh'              => sub { $_[0]->redraw(); },

@@ -33,18 +33,23 @@ $event = LC::Event->new();
 my $ui = LC::UI::Curses->new(name => 'main', event => $event);
 
 # remove
-$ui->defstyle("status" => 'reverse');
-$ui->defcstyle("status" => 'yellow', 'blue', 'bold');
+$ui->defstyle('status'          => 'reverse');
+$ui->defstyle('public_header'   => 'normal');
+$ui->defstyle('public_sender'   => 'bold');
+$ui->defstyle('public_recips'   => 'bold');
+$ui->defstyle('public_body'     => 'normal');
+$ui->defstyle('private_header'  => 'normal');
+$ui->defstyle('private_sender'  => 'bold');
+$ui->defstyle('private_recips'  => 'bold');
+$ui->defstyle('private_body'    => 'normal');
+$ui->defstyle('emote'           => 'normal');
+
+$ui->defcstyle('status' => 'yellow', 'blue', 'bold');
 
 show_banner();
     
 LC::User::init;
 LC::Extend::cmd_init;
-
-LC::Extend::load("server", $ui, 1);
-LC::Extend::load("output", $ui, 1);
-LC::Extend::load("expand", $ui, 1);
-LC::Extend::load("status", $ui, 1);
 
 LC::User::command_r(quit => sub { exit; });
 
@@ -127,6 +132,11 @@ sub prompt_handler {
 $event->event_r(type  => "prompt",
 		order => "after",
 		call  => \&prompt_handler);
+
+LC::Extend::load("server", $ui, 1);
+LC::Extend::load("output", $ui, 1);
+LC::Extend::load("expand", $ui, 1);
+LC::Extend::load("status", $ui, 1);
 
 while (1) {
 	eval { $event->loop; };

@@ -126,8 +126,8 @@ sub next_line {
 		$mend += length $1;
 	}
 
-	#my $ll = substr($self->{text}, $mstart, $mend-$mstart);
-	#$ll =~ s/\n/*/g;
+	my $ll = substr($self->{text}, $mstart, $mend-$mstart);
+	$ll =~ s/\n/*/g;
 	#print STDERR "  == $mstart $mend \"$ll\"\n";
 	return ($mstart, $mend);
 }
@@ -331,6 +331,12 @@ sub scroll {
 }
 
 
+sub scroll_page {
+	my($self, $scroll) = @_;
+	$self->scroll($scroll * $self->{lines});
+}
+
+
 sub style {
 	my($self, $style) = @_;
 
@@ -346,10 +352,14 @@ sub style {
 
 sub indent {
 	my $self  = shift;
+	my($style, $str) = @_;
 	my $style = (@_ > 1) ? shift : "default";
 	my $str   = (@_)     ? shift : "";
+	$style    = "default" if (!defined $style);
+	$str      = ""        if (!defined $str);
 
 	if ($self->{indents}->[-4] == length($self->{text})) {
+		pop @{$self->{indents}};
 		pop @{$self->{indents}};
 		pop @{$self->{indents}};
 	}
@@ -362,6 +372,13 @@ sub indent {
 sub seen {
 	my($self) = @_;
 	$self->{idx_unseen} = @{$self->{indexes}} + 1;
+}
+
+
+sub lines_remaining {
+	my($self) = @_;
+	my $r = $#{$self->{indexes}} - $self->{idx_anchor};
+	return ($r <= 0) ? 0 : $r;
 }
 
 

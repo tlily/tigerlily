@@ -1,4 +1,4 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/expand.pl,v 1.4 1999/02/25 09:07:55 neild Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/expand.pl,v 1.5 1999/02/25 22:40:31 neild Exp $ 
 
 use strict;
 
@@ -22,25 +22,25 @@ sub exp_expand {
 		my $exp;
 		if ($key eq '=') {
 			$exp = $expansions{'sendgroup'};
-			return unless ($exp);
+			goto end unless ($exp);
 			$key = ';';
 		} elsif ($key eq ':') {
 			$exp = $expansions{'sender'};
 		} elsif ($key eq ';') {
 			$exp = $expansions{'recips'};
 		} else {
-			return $ui->command("insert-self", $key);
+			goto end;
 		}
 
 		$exp =~ tr/ /_/;
 		$ui->set_input(length($exp) + 1, $exp . $key . $line);
+		return;
 	} elsif (($key eq ':') || ($key eq ';') || ($key eq ',')) {
 		my $fore = substr($line, 0, $pos);
 		my $aft  = substr($line, $pos);
 		
-		return $ui->command("insert-self", $key) if ($fore =~ /[:;]/);
-		return $ui->command("insert-self", $key)
-		  if ($fore =~ /^\s*[\/\$\?%]/);
+		goto end if ($fore =~ /[:;]/);
+		goto end if ($fore =~ /^\s*[\/\$\?%]/);
 		
 		my @dests = split(/,/, $fore);
 		foreach (@dests) {
@@ -52,8 +52,11 @@ sub exp_expand {
 		
 		$fore = join(',', @dests);
 		$ui->set_input(length($fore) + 1, $fore . $key . $aft);
+		return;
 	}
 
+      end:
+	$ui->command("insert-self", $key);
 	return;
 }
 

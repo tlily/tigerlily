@@ -34,14 +34,25 @@ sub private_fmt {
 	$ui->print("\n");
 
 	$ui->indent(" >> ");
-	$ui->print("Private message from ", $e->{SOURCE});
-	$ui->print(", to ", $e->{RECIPS}) if ($e->{RECIPS} =~ /,/);
+	$ui->style("private_header");
+	$ui->print("Private message from ");
+	$ui->style("private_sender");
+	$ui->print($e->{SOURCE});
+	$ui->style("private_header");
+	if ($e->{RECIPS} =~ /,/) {
+		$ui->print(", to ");
+		$ui->style("private_recips");
+		$ui->print($e->{RECIPS});
+		$ui->style("private_header");
+	}
 	$ui->print(":\n");
 
 	$ui->indent(" - ");
+	$ui->style("private_body");
 	$ui->print($e->{VALUE}, "\n");
 	$ui->indent("");
 
+	$ui->style("default");
 	return;
 };
 $event->event_r(type  => 'private',
@@ -54,13 +65,23 @@ sub public_fmt {
 	$ui->print("\n");
 
 	$ui->indent(" -> ");
-	$ui->print("From ", $e->{SOURCE});
-	$ui->print(", to ", $e->{RECIPS});
+	$ui->style("public_header");
+	$ui->print("From ");
+	$ui->style("public_sender");
+	$ui->print($e->{SOURCE});
+	$ui->style("public_header");
+	$ui->print(", to ");
+	$ui->style("public_recips");
+	$ui->print($e->{RECIPS});
+	$ui->style("public_header");
 	$ui->print(":\n");
 
 	$ui->indent(" - ");
+	$ui->style("public_body");
 	$ui->print($e->{VALUE}, "\n");
 	$ui->indent("");
+
+	$ui->style("default");
 
 	return;
 };
@@ -71,9 +92,11 @@ $event->event_r(type  => 'public',
 sub emote_fmt {
 	my($ui, $e) = @_;
 
+	$ui->style("emote");
 	$ui->indent("> ");
 	$ui->print("(to ", $e->{RECIPS}, ") ", $e->{SOURCE}, $e->{VALUE},"\n");
 	$ui->indent("");
+	$ui->style("default");
 
 	return;
 };

@@ -162,9 +162,12 @@ sub accept_line {
 	$self->rationalize();
 	$self->redraw();
 
-	$self->{history}->[-1] = $text;
-	push @{$self->{history}}, "";
-	$self->{history_pos} = $#{$self->{history}};
+	if ($text ne "" && $text ne $self->{history}->[-1]) {
+		$self->{history}->[-1] = $text;
+		push @{$self->{history}}, "";
+		$self->{history_pos} = $#{$self->{history}};
+	}
+
 	return $text;
 }
 

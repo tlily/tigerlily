@@ -1,8 +1,10 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/Attic/slcp.pl,v 1.5 1999/02/25 08:40:06 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/Attic/slcp.pl,v 1.6 1999/02/25 22:40:34 neild Exp $
 
 use strict;
+use vars qw(%config);
 
 use LC::Global qw($event);
+use LC::Config qw(%config);
 
 =head1 NAME
 
@@ -134,6 +136,10 @@ sub parse_line {
 	my $ui;
 	$ui = LC::UI::name($serv->{ui_name}) if ($serv->{ui_name});
 
+	#$ui->print("=", $line, "\n") if ($config{parser_debug});
+	#print STDERR "=", $line, "\n";
+	$ui->print("=", $line, "\n") if ($LC::Config::config{parser_debug});
+
 	my $cmdid;
 	my %event;
 
@@ -226,9 +232,9 @@ sub parse_line {
 
 		# SLCP bug?!
 		# Fixed, I think.  -DN
-		#if ($event{EVENT} =~ /emote|public|private/) {
-		#	$event{NOTIFY} = 1;
-		#}
+		if ($event{EVENT} =~ /emote|public|private/) {
+			$event{NOTIFY} = 1;
+		}
 
 		$event{SHANDLE} = $event{SOURCE};
 		$event{SOURCE}  = $serv->get_name(HANDLE => $event{SOURCE});
