@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/submit.pl,v 1.5 1999/10/23 06:16:04 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/submit.pl,v 1.6 1999/12/07 20:30:55 mjr Exp $
 
 use TLily::Version;
 use strict;
@@ -7,7 +7,7 @@ use strict;
 # Issue report template
 my $template = 
 "From:
-To: tigerlily-bugs\@einstein.org
+To: tigerlily-bugs\@tlily.centauri.org
 Subject:
 Date:
 
