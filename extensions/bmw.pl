@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/bmw.pl,v 1.2 2000/09/09 06:07:26 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/bmw.pl,v 1.3 2002/05/30 15:59:20 coke Exp $
 
 # strip out leading spaces on sends.
 
@@ -15,6 +15,11 @@ When loaded, this extension will strip out any leading spaces in any public
 or private messages you receive.
 
 =cut
+
+help_r( 'bmw', "Strip leading whitespace from incoming messages.
+
+This extension was named its inspiration, bmw\@RPI.
+");
 
 sub handler {
     my($event, $handler) = @_;
