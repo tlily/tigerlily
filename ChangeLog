@@ -1,4 +1,5 @@
 Version 2.3
+  * [extensions/ui.pl] zap-to-char, as in Emacs, bound to M-z. [DCL]
   * [TLily/UI/Curses.pm,extensions/leet.pl,extensions/paste.pl,
     extensions/ui.pl] Now you *can* have your multiline paste leet'd,
     but if you do we will find you and kill you.  Key command intercepts

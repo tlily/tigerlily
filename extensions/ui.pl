@@ -1,4 +1,4 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/ui.pl,v 1.31 2001/11/15 04:23:35 tale Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/ui.pl,v 1.32 2001/11/15 05:33:23 tale Exp $
 use strict;
 
 =head1 NAME
@@ -444,6 +444,62 @@ TLily::UI::bind("C-r" => "isearch-backward");
 TLily::UI::bind("C-s" => "isearch-forward");
 shelp_r("isearch" => "Search your input buffer for a string.", "concepts");
 help_r("isearch" => $isearch_help);
+
+#
+# Input editing.
+#
+my $zap_help == qq(
+zap-to-char will delete the input buffer up through the next character typed.
+It is normally bound to M-z.  For example, if you had this pending buffer:
+	Tale:You're ugly, and your mother dresses you funny.
+Then typed C-a M-z and a comma, the resulting buffer would be:
+        and your mother dresses you funny.
+);
+
+sub
+zap_to_char {
+    my ($ui, $command, $key) = @_;
+    my $input = $ui->{input};
+
+    if ($ui->intercept_u("zap-to-char")) {
+        # Was already in zap-to-char mode, so do it with the key.
+        my $found;
+
+        $found = index($input->{text}, $key, $input->{point})
+          if length($key) == 1;
+
+        if ($found >= 0) {
+            $input->kill_append($input->{point}, $found - $input->{point} + 1);
+            $ui->prompt($ui->{save_prefix});
+        } else {
+            $ui->bell();
+        }
+
+    } else {
+        if ($ui->intercept_r(name => "zap-to-char", order => 500)) {
+            $ui->{save_prefix} = $input->{prefix};
+            $ui->prompt("(zap-to-char):");
+        } else {
+            $ui->style("input_error");
+            $ui->print("(sorry; a keyboard intercept is already in place)\n");
+            $ui->style("normal");
+        }
+    }
+
+    $input->update_style();
+    $input->rationalize();
+    $input->redraw();
+
+    return 1;
+}
+
+TLily::UI::command_r("zap-to-char" => \&zap_to_char);
+TLily::UI::command_r("zap-to-char" => \&zap_to_char);
+TLily::UI::bind("M-z" => "zap-to-char");
+shelp_r("zap-to-char" =>
+        "Kill the input buffer through the next character typed.");
+
+
 
 #
 # Styles.
