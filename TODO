@@ -21,8 +21,6 @@ Before 2.0 release:
     log.pl - doesn't do indenting/wrapping right.  damien will move the 
              wrapping/indenting code out of Curses.pm and into the UI.
 
-    hidesend (misc.pl) - Doesn't seem to work for me.. why?
-
     README is incorrect on color setup.. probably other things.
     
 
