@@ -10,6 +10,7 @@ Before 2.0 release:
   pipes.pl      (medium)
   program.pl    (medium)
   ctc.pl/httpd.pl/Httpd.pm  (steve is working on this)
+			    (steve is almost done with this)
 
   New functionality:
     - Makefile.PL   (albert is working on this)  
