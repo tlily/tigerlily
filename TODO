@@ -7,8 +7,7 @@ Before 2.0 release:
   based on the ones we've already finished.
 
   pipes.pl
-  ctc.pl/httpd.pl/Httpd.pm  (steve is working on this)
-			    (steve is almost done with this)
+
   New functionality:
     - Makefile.PL   (albert is working on this)  
     - when the last open server connection is closed, provide a exit/reconnect
@@ -26,5 +25,5 @@ Later:
      is a scrollable list of threads seen in the discussion?
   lilyBot support
   I want to rewrite TLily::Command.  It needs to make more sense, I think.
-    
+  I need to add passive mode to the %ctc support.    
 

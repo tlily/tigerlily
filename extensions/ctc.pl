@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/ctc.pl,v 1.2 1999/04/11 02:35:32 steve Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/ctc.pl,v 1.3 1999/04/11 02:44:32 steve Exp $
 
 use Net::Domain qw(hostfqdn);
 use Socket qw(inet_ntoa inet_aton);
@@ -174,6 +174,13 @@ sub send_handler {
 	$ui->print ("(Received ctc send request file \"$file\" from ",
 		    $event->{SOURCE}, ")\n");
 	$ui->print ("(Use %ctc get $event->{SOURCE} to receive)\n");
+	return;
+    }
+
+    if (($cmd eq 'refuse')) {
+	if (delete $pending{$alias}) {
+	    $ui->print($event->{SOURCE}, " refused the file ", $file);
+	}
 	return;
     }
 }
