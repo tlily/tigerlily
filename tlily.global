@@ -1,12 +1,12 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/Attic/tlily.global,v 1.18 1999/03/16 00:33:31 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/Attic/tlily.global,v 1.19 1999/03/16 01:14:46 josh Exp $
 # Global defaults for tlily
 # PLEASE DO NOT EDIT EXCEPT FOR DEVELOPMENT!
 # EDIT YOUR SITE CONFIG FILE INSTEAD!
 # Begin defaults
 @load = qw(server slcp_parse slcp_output slcp_state ui expand status
 	   autologin url after misc info paste set startup source spellcheck
-	   submit look vinfo);
+	   submit vinfo);
 #	   autoreply gag help irc log pager
 #	   pipes run_command view);
 
@@ -17,6 +17,7 @@
    'default'         => [qw(white   black   normal)],
    'status_window'   => [qw(yellow  blue    bold  )],
    'input_window'    => [qw(white   black   normal)],
+   'input_error'     => [qw(red     black   normal)],   
    'text_window'     => [qw(white   black   normal)],
    'public_header'   => [qw(cyan    black   normal)],
    'public_sender'   => [qw(cyan    black   bold  )],
@@ -41,6 +42,7 @@
    'default'         => [qw(-       -       normal)],
    'status_window'   => [qw(yellow  blue    bold  )],
    'input_window'    => [qw(-       -       normal)],
+   'input_error'     => [qw(-       -       reverse)],
    'text_window'     => [qw(-       -       normal)],
    'public_header'   => [qw(cyan    -       normal)],
    'public_sender'   => [qw(cyan    -       bold  )],
