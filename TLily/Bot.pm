@@ -21,14 +21,13 @@
 # cmd's whose only output is a %NOTIFY don't respond. (i.e. /here, /away, /bl)
 
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Bot.pm,v 1.4 1999/10/02 04:45:54 albert Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Bot.pm,v 1.5 1999/10/02 18:03:44 josh Exp $
 
 package TLily::Bot;
 
 use TLily::Config qw(%config);
 use TLily::Event qw(event_r);
 use TLily::Extend;
-use TLily::Command qw(&cmd_process);
 
 use Safe;
 use strict;
@@ -146,6 +145,7 @@ sub init {
 
     # load extension pointed to by $config{'bot'}.
     my $ui = TLily::UI::name();
+
     TLily::Extend::load($config{'bot'},$ui,1) ||
       realdie("can't load $config{bot} extension!");
 }
@@ -161,8 +161,8 @@ sub import {
     # do some special initialization stuff to get the bot extension
     # bootstrapped.
 
-    #my @a = ($module);
-    my @a;
+    my @a = ($module);
+    #my @a;
     
     if (@options) {
 	# this needs work ;)
@@ -331,7 +331,7 @@ sub standard_bot_command {
     
 
     # cmd <foo>: execute <foo>.
-    cmd_process($1, sub {
+    $event->{server}->cmd_process($1, sub {
 		    my ($e) = @_;
 		    
 		    if ($e->{type} eq "begincmd") {

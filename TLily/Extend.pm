@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Extend.pm,v 1.13 1999/10/02 02:45:07 mjr Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Extend.pm,v 1.14 1999/10/02 18:03:46 josh Exp $ 
 
 package TLily::Extend;
 use strict;
@@ -18,11 +18,10 @@ use TLily::Config qw(%config);
 use TLily::Registrar;
 use TLily::User  qw(&help_r &shelp_r &command_r);
 use TLily::Event qw(&event_r &event_u);
-use TLily::Command qw(&cmd_process);
 use TLily::Utils qw(&edit_text &diff_text);
 
 my %extensions = ();
-my @share=qw(%config &help_r &shelp_r &command_r &event_r &event_u &cmd_process
+my @share=qw(%config &help_r &shelp_r &command_r &event_r &event_u 
 	     &ui_name &edit_text &diff_text);
 
 
@@ -110,7 +109,7 @@ sub load {
     
     if (!defined $filename) {
 	$ui->print("(cannot locate extension \"$name\")\n") if ($ui);
-	return;
+	return 0;
     }
     
     $ui->print("(loading \"$name\" from \"$filename\")\n")
@@ -134,7 +133,7 @@ sub load {
     if ($@) {
 	$ui->print("* error: $@") if ($ui);
 	$reg->unwind;
-	return;
+	return 0;
     }
     
     $extensions{$name} = { file => $filename,

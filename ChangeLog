@@ -1,4 +1,6 @@
 Version 2.0-post
+  * [various] Changed calls to old cmd_process to the new per-server one.
+    removed Command.pm. [JDW]
   * [TLily/Config.pm] Removed old debugging print. [CWS]
   * [tlily.PL] Made loading of TLily::Bot dependent on $config{bot}. [CWS]
   * [TLily/Bot.pm] Fixed the import method to not pass the class name. [CWS]
