@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Config.pm,v 1.3 1999/02/27 22:02:14 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Config.pm,v 1.4 1999/03/23 06:19:03 josh Exp $
 package TLily::Config;
 
 use Safe;
@@ -173,7 +173,7 @@ sub read_init_files {
 	    my $key;
 #	    print STDERR "*** Examining ", $safe->root, "\n";
 	    foreach $key (keys %stab) {
-		next if($key =~ /^_/ || $key =~ /::/ || $key eq ENV || $key eq TL_VERSION);
+		next if($key =~ /^_/ || $key =~ /::/ || $key eq ENV || $key eq VERSION);
 #		print STDERR "KEY: $key\n";
 		local(*entry) = $stab{$key};
 		if(defined $entry) {
@@ -221,7 +221,7 @@ sub snarf_file {
 	$safe->mask($safe->emptymask());
     }
 
-    $safe->share_from('main', [ qw($TL_VERSION %ENV) ]);
+    $safe->share_from('main', [ qw(%ENV) ]);
 
 #    print STDERR "*** Pre-Dumping ", $safe->root, "($filename)\n";
 #    main::dumpvar($safe->root);

@@ -1,4 +1,4 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/misc.pl,v 1.13 1999/03/22 05:31:05 neild Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/misc.pl,v 1.14 1999/03/23 06:19:21 josh Exp $ 
 
 use strict;
 use TLily::Version;
@@ -92,7 +92,7 @@ The results of the eval, if any, will be printed.
 
 sub version_handler {
     my($ui, $args) = @_;
-    $ui->print("(Tigerlily version $TLily::Version::TL_VERSION)\n");
+    $ui->print("(Tigerlily version $TLily::Version::VERSION)\n");
     my $server = server_name();
     $server->sendln("/display version");
     return;

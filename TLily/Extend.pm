@@ -1,4 +1,4 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Extend.pm,v 1.7 1999/02/27 00:21:56 josh Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Extend.pm,v 1.8 1999/03/23 06:19:05 josh Exp $ 
 
 # initial version, 10/24/97, Josh Wilmes
 
@@ -61,7 +61,7 @@ sub load {
     
     $safe->share(@share);
     # This only works in perl 5.003_07+
-    $safe->share_from('main', [ qw($TL_VERSION %ENV %INC @INC $@ $] $$) ]);
+    $safe->share_from('main', [ qw(%ENV %INC @INC $@ $] $$) ]);
     
     $safe->rdo($filename);
     unless ($@) {

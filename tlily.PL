@@ -203,7 +203,7 @@ sub load_ui {
 sub show_banner() {
     $ui->prints(yellow => qq[     ("`-/")_.-'"``-._ \n],
                 yellow => qq[      . . `; -._    )-;-,_`)],
-                                             green  => qq[          TigerLily $TLily::Version::TL_VERSION\n],
+                                             green  => qq[          TigerLily $TLily::Version::VERSION\n],
                 yellow => qq[     (v_,)'  _  )`-.\  ``-'],
                                             bwhite => qq[             "Feel Free"\n],
                 yellow => qq[    _.- _..-_/ / ((.'\n],

@@ -346,7 +346,7 @@ sub set_client_options {
 sub set_client_name {
   my ($serv) = @_;
 
-  $serv->sendln("\#\$\# client TigerLily $TLily::Version::TL_VERSION");
+  $serv->sendln("\#\$\# client TigerLily $TLily::Version::VERSION");
 }
 
 

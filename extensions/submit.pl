@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/submit.pl,v 1.1 1999/03/15 23:53:20 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/submit.pl,v 1.2 1999/03/23 06:19:22 josh Exp $
 
 use TLily::Version;
 use strict;
@@ -14,7 +14,7 @@ Date:
 Full_Name:
 Lily_Core:
 Lily_Server:
-tlily_Version: $TLily::Version::TL_VERSION
+tlily_Version: $TLily::Version::VERSION
 OS:
 
 Description:

@@ -1,4 +1,4 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/vinfo.pl,v 1.1 1999/03/01 21:02:44 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/vinfo.pl,v 1.2 1999/03/23 06:19:24 josh Exp $
 
 event_r(type => 'private',
 	order => 'before',
@@ -17,7 +17,7 @@ sub command {
 
 sub send_version_info {
     my($to) = @_;
-    command($to, ";[auto] tlily version is ", $TLily::Version::TL_VERSION,
+    command($to, ";[auto] tlily version is ", $TLily::Version::VERSION,
 	    ", perl version is ", $], ".");
 }
 
