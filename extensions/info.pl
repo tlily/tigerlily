@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/info.pl,v 1.15 1999/12/13 08:32:07 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/info.pl,v 1.16 1999/12/13 17:48:26 josh Exp $
 
 use strict;
 
@@ -260,9 +260,9 @@ help_r("export", "
 
 shelp_r("memo", "Improved /memo functions");
 help_r("memo", "
-%memo [disc|user] name      - View a memo "name" on your memo pad, or that
+%memo [disc|user] name      - View a memo \"name\" on your memo pad, or that
                               of a discussion or another user.
-%memo set [disc] name       - Allows you to set a memo "name" on your memo
+%memo set [disc] name       - Allows you to set a memo \"name\" on your memo
                               pad, or a discussion's memo pad.
 %memo edit [disc|user] name - Edit or view (in your editor) one of your memos,
                               or that of a discussion or another user (you can
