@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/program.pl,v 1.16 2000/01/02 10:36:17 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/program.pl,v 1.17 2000/01/03 08:07:06 mjr Exp $
 
 sub verb_showlist {
     my ($cmd, $ui, $verb_spec) = @_;
@@ -363,7 +363,7 @@ sub verb_cmd {
 verb_cmd_usage:
         $ui->print("Usage: %verb show|list [server::]object[:verb]\n");
         $ui->print("       %verb [re]edit [server::]object:verb\n");
-        $ui->print("       %verb diff [server::]object:verb [server::]object:verb\n");
+        $ui->print("       %verb copy|diff [server::]object:verb [server::]object:verb\n");
     }
     return 0;
 }
@@ -430,7 +430,8 @@ sub verb_diff {
 
             # Put the text into a buffer.
             if ($args{server} eq $server1 &&
-                $args{target} eq $verb1->[1] . ":" . $verb2->[2]) {
+                $args{target} eq $verb1->[1] &&
+                $args{name}   eq $verb2->[2]) {
                 $data[0] = $args{text};
             } else {
                 $data[1] = $args{text};
@@ -451,12 +452,14 @@ sub verb_diff {
     $ui->print("(Diffing verb ", scalar $verb1->[0]->name, "::", $verb1->[1], ":", $verb1->[2], " against ", scalar $verb2->[0]->name, "::", $verb2->[1], ":", $verb2->[2], ")\n");
     $server1->fetch(ui     => $ui,
                     type   => "verb",
-                    target => $verb1->[1] . ':' . $verb1->[2],
+                    target => $verb1->[1],
+                    name   => $verb1->[2],
                     call   => $sub);
 
     $server2->fetch(ui     => $ui,
                     type   => "verb",
-                    target => $verb2->[1] . ':' . $verb2->[2],
+                    target => $verb2->[1],
+                    name   => $verb2->[2],
                     call   => $sub);
 
 }

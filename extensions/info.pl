@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/info.pl,v 1.19 2000/01/02 10:36:17 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/info.pl,v 1.20 2000/01/03 08:07:06 mjr Exp $
 
 use strict;
 
@@ -47,37 +47,78 @@ sub info_cmd {
 }
 
 sub helper_cmd {
-    my($ui, $args) = @_;
-    my($cmd,@args) = split /\s+/, $args;
-    my $server = active_server();
+    my $ui = shift;
+    my ($cmd,@args) = split /\s+/, "@_";
+    my $help_str = shift @args;
+    my $help_spec = [];
 
-    my($target, $name);
-    if (@args == 1) {
-	($name) = @args;
-    } else {
-	($target, $name) = @args;
+    # Attempt to split out the help spec string.
+    goto help_cmd_usage
+      unless ($help_str =~ /^(?:(.+)::)?([^:]+)(?::(.+))?$/);
+
+    @{$help_spec} = ($1, $2, $3);
+
+    # Attempt to translate the servername given to a server object, or
+    # the current active server if no name is given.
+    my $server = active_server();
+    $server = TLily::Server::find($help_spec->[0]) if ($help_spec->[0]);
+    unless (defined($server)) {
+        $ui->print("No such server " . $help_spec->[0] . "\n");
+        return 0;
     }
+    $help_spec->[0] = $server;
+
 
     if ($cmd eq 'set') {
 	my @text;
 	edit_text($ui, \@text) or return;
 	$server->store(ui     => $ui,
 		       type   => "help",
-		       target => $target,
-		       name   => $name,
+		       target => $help_spec->[1],
+		       name   => $help_spec->[2],
 		       text   => \@text);
+    }
+    elsif ($cmd eq 'diff' || $cmd eq 'copy') {
+        my $help2_str = shift @args;
+        my $help2_spec = [];
+
+        # Attempt to split out the help spec string.
+        goto help_cmd_usage
+          unless ($help2_str =~ /^(?:(.+)::)?([^:]+)(?::(.+))?$/);
+
+        @{$help2_spec} = ($1, $2, $3);
+
+        # Attempt to translate the servername given to a server object, or
+        # the current active server if no name is given.
+        my $server = active_server();
+        $server = TLily::Server::find($help2_spec->[0]) if ($help2_spec->[0]);
+        unless (defined($server)) {
+            $ui->print("No such server " . $help2_spec->[0] . "\n");
+            return 0;
+        }
+        $help2_spec->[0] = $server;
+
+        # Make sure the two help specs aren't identical.
+        if ($help_spec->[0] eq $help2_spec->[0] &&
+            $help_spec->[1] eq $help2_spec->[1] &&
+            $help_spec->[2] eq $help2_spec->[2]) {
+            $ui->print("(source and destination are the same)\n");
+            return 0;
+        }
+        help_diff($cmd, $ui, $help_spec, $help2_spec) if ($cmd eq 'diff');
+        help_copy($cmd, $ui, $help_spec, $help2_spec) if ($cmd eq 'copy');
     }
     elsif ($cmd eq 'reedit') {
         # Attempt to recall deadfile
-        my $text = get_deadfile("help", $server, "$target:$name");
+        my $text = get_deadfile("help", $server, join(':', @{$help_spec}[1..2]));
         if (!defined($text)) {
-            $ui->print("(Unable to recall dead help for \"$target:$name\": $!)\n");
+            $ui->print("(Unable to recall dead help for \", join(':', @{$help_spec}[1..2]), \": $!)\n");
         } else {
 	    edit_text($ui, $text) or return;
 	    $server->store(ui     => $ui,
 		           type   => "help",
-		           target => $target,
-		           name   => $name,
+		           target => $help_spec->[1],
+		           name   => $help_spec->[2],
 		           text   => $text);
         }
     }
@@ -90,27 +131,116 @@ sub helper_cmd {
 
 	$server->fetch(ui     => $ui,
 		       type   => "help",
-		       target => $target,
-		       name   => $name,
+		       target => $help_spec->[1],
+		       name   => $help_spec->[2],
 		       call   => $sub);
     }
     elsif ($cmd eq 'list') {
-        if (!defined($name)) {
+        if (!defined($help_spec->[1])) {
             $server->sendln("?lsindex")
-        } elsif (!defined($target)) {
-            $server->sendln("?ls $name");
+        } elsif (!defined($help_spec->[2])) {
+            $server->sendln("?ls $help_spec->[1]");
         } else {
-            $server->sendln("?gethelp $target $name");
+            $server->sendln("?gethelp $help_spec->[1] $help_spec->[2]");
         }
     }
-    elsif ($cmd eq 'clear' && defined($target)) {
-        $server->sendln("?rmhelp $target $name");
+    elsif ($cmd eq 'clear' && defined($help_spec->[1])) {
+        $server->sendln("?rmhelp $help_spec->[1] $help_spec->[2]");
     }
     else {
-        $ui->print("Usage: %helper [list|set|edit|clear] index topic\n");
+help_cmd_usage:
+        $ui->print("Usage: %helper list [server::]index[:topic]\n");
+        $ui->print("       %helper [re]edit [server::]index:topic\n");
+        $ui->print("       %helper diff|copy [server::]index:topic [server::]index:topic\n");
+
     }
 
 }
+
+sub help_copy {
+    my ($cmd, $ui, $help1, $help2) = @_;
+
+    my $server1 = $help1->[0];
+    my $server2 = $help2->[0];
+
+    my $sub = sub {
+        my(%args) = @_;
+
+        if ($args{text}[0] =~ /^\(There is no such help index as/) {
+            # Encountered an error.
+            $args{ui}->print($args{server} . ": " . $args{text}[0] . "\n");
+            return;
+        }
+
+        $server2->store(%args,
+                        target => $help2->[1],
+                        name   => $help2->[2]);
+    };
+
+    $ui->print("(Copying help ", scalar $help1->[0]->name, "::", $help1->[1], ":", $help1->[2], " to ", scalar $help2->[0]->name, "::", $help2->[1], ":", $help2->[2], ")\n");
+    $server1->fetch(ui     => $ui,
+                    type   => "help",
+                    target => $help1->[1],
+                    name   => $help1->[2],
+                    call   => $sub);
+
+}
+
+sub help_diff {
+    my ($cmd, $ui, $help1, $help2) = @_;
+
+    my $server1 = $help1->[0];
+    my $server2 = $help2->[0];
+
+    # A callback that will be called by both fetch()'s.  Once it has both
+    # helps, it will diff them.  This is a closure so we can preserve the
+    # @data array between calls.
+    my $subcon = sub {
+        my @data = ();
+        return sub {
+            my(%args) = @_;
+
+            if ($args{text}[0] =~ /^\(There is no such help index as/) {
+                # Encountered an error.
+                $args{ui}->print($args{server} . ": " . $args{text}[0] . "\n");
+                return;
+            }
+
+            # Put the text into a buffer.
+            if ($args{server} eq $server1 &&
+                $args{target} eq $help1->[1] &&
+                $args{name}   eq $help1->[2]) {
+                $data[0] = $args{text};
+            } else {
+                $data[1] = $args{text};
+            }
+
+            # if we have both helps, do the diff.
+            if (defined($data[0]) && defined($data[1])) {
+                my $diff = diff_text(@data);
+
+                $ui->print("(no differences found)\n") unless (@{$diff});
+                foreach (@{$diff}) { $ui->print($_) };
+            }
+        }
+    };
+
+    my $sub = &$subcon;
+    $ui->print("(Diffing help ", scalar $help1->[0]->name, "::", $help1->[1], ":", $help1->[2], " against ", scalar $help2->[0]->name, "::", $help2->[1], ":", $help2->[2], ")\n");
+    $server1->fetch(ui     => $ui,
+                    type   => "help",
+                    target => $help1->[1],
+                    name   => $help1->[2],
+                    call   => $sub);
+
+    $server2->fetch(ui     => $ui,
+                    type   => "help",
+                    target => $help2->[1],
+                    name   => $help2->[2],
+                    call   => $sub);
+
+}
+
 
 sub memo_cmd {
     my($ui, $args) = @_;
