@@ -7,7 +7,7 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/tlily.PL,v 1.56 2001/11/02 23:07:26 tale Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/tlily.PL,v 1.57 2001/11/10 02:36:32 albert Exp $
 
 require 5.00307;
 use strict;
@@ -215,8 +215,16 @@ while (1) {
 
 
 sub load_ui {
+    my %available;
+
+    if ($^O eq "MSWin32") {
+        $config{UI} ||= "Tk";    
+    } else {
+        $config{UI} ||= "Curses";
+    }
+
     if ($::TL_LIBDIR =~ m|^//INTERNAL|) {
-	return TLily::UI::Curses->new(name => 'main');
+	#return TLily::UI::Curses->new(name => 'main');
 
 	my $ui = eval "TLily::UI::$config{UI}->new(name => 'main');";
 	if ($@) {
@@ -225,14 +233,6 @@ sub load_ui {
 	}
 
 	return $ui;
-    }
-
-    my %available;
-
-    if ($^O eq "MSWin32") {
-        $config{UI} ||= "Tk";    
-    } else {
-        $config{UI} ||= "Curses";
     }
 
     opendir(D,"$::TL_LIBDIR/TLily/UI");

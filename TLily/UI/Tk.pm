@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/Tk.pm,v 1.8 2001/02/24 23:04:30 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/Tk.pm,v 1.9 2001/11/10 02:36:32 albert Exp $
 
 package TLily::UI::Tk;
 
@@ -179,8 +179,8 @@ sub new {
     } else {
 	# "OK, you guys got yourself a ship."
 	$mainwin = new MainWindow;
-	$logo = $mainwin->Photo(-format => "gif",
-				-file   => $main::TL_LIBDIR."/TLily/UI/Tk/tiger.gif");
+	#$logo = $mainwin->Photo(-format => "gif",
+	#			 -data   => $image_data);
 	$font{normal} = $mainwin->Font(-family => "Courier", -size => 12),
 	$font{bold}   = $mainwin->Font(-family => "Courier",
 				       -size => 12,
@@ -311,7 +311,7 @@ sub new {
 			  -anchor => "s");
     
     $self->{text}->configure(-state => "normal");
-    $self->{text}->image("create", "1.0", -image => $logo) if !$config{quiet};
+    #$self->{text}->image("create", "1.0", -image => $logo) if !$config{quiet};
     $self->{text}->insert("end", "\n");
     $self->{text}->configure(-state => "disabled");
     $self->{text}->see("end");
@@ -331,9 +331,9 @@ sub new {
 sub about {
     $mainwin->Dialog(-title => "About Tigerlily",
                   -text  => qq{Tigerlily $TLily::Version::VERSION\n(C) 1998-2001, The Tigerlily Team\n},
-                  -image => $logo,
                   -default_button => "Ok",
                   -buttons => ["Ok"])->Show();
+                  ###-image => $logo,
 }
 
 sub ui_bindings {
