@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/User.pm,v 1.20 1999/04/21 18:46:02 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/User.pm,v 1.21 1999/04/22 15:15:24 josh Exp $
 
 package TLily::User;
 
@@ -295,7 +295,7 @@ This is registered automatically by init().
 
 sub help_command {
     my($ui, $arg) = @_;
-    $arg = lc($arg);
+#    $arg = lc($arg);
     $arg = "help" if ($arg eq "");
     $arg =~ s/^%//;
 
