@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/program.pl,v 1.3 1999/09/19 20:26:07 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/program.pl,v 1.4 1999/09/19 20:48:44 mjr Exp $
 
 $perms = undef;
 
@@ -65,8 +65,9 @@ sub verb_set(%) {
               my($event,$handler) = @_;
               if ($event->{text} =~ /^Verb (not )?programmed\./) {
                 event_u($handler);
+                my $deadfile = $ENV{HOME}."/.lily/tlily/dead.verb.$verb_spec";
+                unlink($deadfile);
                 if ($1) {
-                  my $deadfile = $ENV{HOME}."/.lily/tlily/dead.verb";
                   local *DF;
                   my $rc = open(DF, ">$deadfile");
                   if (!$rc) {
@@ -77,7 +78,7 @@ sub verb_set(%) {
                   foreach my $l (@{$args{'data'}}) {
                       print DF $l, "\n";
                   }
-                  $ui->print("(Saved verb to dead.verb)\n");
+                  $ui->print("(Saved verb to dead.verb.$verb_spec)\n");
                 }
                 unlink($tmpfile);
               }
@@ -291,7 +292,7 @@ sub obj_cmd {
   }
   my $obj = $1;
 
-  if ($cmd eq 'show'/) {
+  if ($cmd eq 'show') {
     obj_show($cmd, $ui, $obj);
   } else {
     $ui->print("(unknown %obj command)\n");
@@ -337,6 +338,22 @@ sub verb_cmd {
     verb_show($cmd, $ui, $obj, $verb);
   } elsif ($cmd eq 'list') {
     verb_list($ui, $obj, $verb);
+  } elsif ($cmd eq 'reedit') {
+    my $deadfile = $ENV{HOME}."/.lily/tlily/dead.verb.$verb_spec";
+    local *DF;
+    my $rc = open(DF, "$deadfile");
+    if (!$rc) {
+      $ui->print("(Unable to recall verb: $!)\n");
+    } else {
+      my $lines = [];
+      @{$lines} = <DF>;
+      close DF;
+
+      verb_set(verb_spec=>$verb_spec,
+               data=>$lines,
+               edit=>1,
+               ui=>$ui);
+    }
   } elsif ($cmd eq 'edit') {
     my $sub = sub {
         my(%args) = @_;
