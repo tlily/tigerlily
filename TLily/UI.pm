@@ -58,62 +58,27 @@ sub DESTROY {
 	delete $ui{$self->{"name"}};
 }
 
-
 sub needs_terminal {
 	0;
 }
-
-
-sub suspend {
-	my($self) = @_;
-}
-
-
-sub resume {
-	my($self) = @_;
-}
-
-
-sub defstyle {
-	my($self, $style, @attrs) = @_;
-}
-
-
-sub defcstyle {
-	my($self, $style, $fg, $bg, @attrs) = @_;
-}
-
-
-sub clearstyle {
-	my($self) = @_;
-}
-
-
-sub style {
-	my($self, $style) = @_;
-}
-
-
-sub indent {
-	my($self, $s) = @_;
-}
-
-
-sub print {
-	my($self, $s) = @_;
-}
-
 
 sub printf {
 	my($self, $s, @args) = @_;
 	$self->print(sprintf($s, @args));
 }
 
+# Usage: $ui->prints(pubhdr => "From ", pubfrom => "damien");
+sub prints {
+	my($self, @args) = @_;
 
-sub printt {
-	my($self, $s) = @_;
+	while (@args) {
+	  my ($style) = shift @args;
+	  my ($text)  = shift @args;
+
+	  $self->style($style);
+	  $self->print($text);
+	}
 }
-
 
 sub command_r {
 	return if (ref($_[0])); # Don't do anything as an object method.
@@ -161,12 +126,6 @@ sub bind {
 		$ui->bind($key, $command);
 	}
 }
-
-
-sub command {
-	my($self, $command, $key, $line, $pos) = @_;
-}
-
 
 TLily::Registrar::class_r(global_ui_command => \&command_u);
 

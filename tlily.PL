@@ -160,7 +160,7 @@ while (1) {
 sub show_banner() {
 	$ui->print(<<END
      ("`-/")_.-'"``-._ 
-      . . `; -._    )-;-,_`)          Tigerlily $TLily::Version::TL_VERSION
+      . . `; -._    )-;-,_`)        Tigerlily $TLily::Version::TL_VERSION
      (v_,)'  _  )`-.\  ``-'          "Feel Free"
     _.- _..-_/ / ((.'
   ((,.-'   ((,/ 
