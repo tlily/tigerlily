@@ -6,7 +6,7 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Server/Attic/SLCP.pm,v 1.36 2000/02/08 01:18:23 tale Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Server/Attic/SLCP.pm,v 1.37 2000/05/10 04:41:19 mjr Exp $
 
 package TLily::Server::SLCP;
 
@@ -641,6 +641,7 @@ sub fetch {
     my $uiname;
     $uiname    = $ui->name() if ($ui);
 
+    $name =~ s/:/ /g if ($type =~ /help/);
     my @data = ();
     my $sub = sub {
         my($event) = @_;
@@ -682,7 +683,7 @@ sub fetch {
         $server->cmd_process("\@list $target:$name", $sub);
     } elsif ($type eq "help") {
         $ui->print("(fetching help $target $name from server $servername)\n") if ($ui);
-        $server->cmd_process("?gethelp $target $name", $sub);
+        $server->cmd_process("?gethelp $target \"$name\"", $sub);
     }
     elsif ($type eq "config") {
 #        $server->sendln("\#\$\# import_file config $name");
@@ -772,6 +773,7 @@ sub store {
     }
     elsif ($type eq "help") {
         my $target = defined($args{target}) ? $args{target} : "lily";
+        $name =~ s/:/ /g if ($type =~ /help/);
 
         if (@$text > 24) {
 	    $args{ui}->print("(Help \"$target $name\" is too long (max 24 lines), saving to deadfile)\n") if ($args{ui});
@@ -800,7 +802,7 @@ sub store {
             }
             return;
         };
-        $server->cmd_process("?sethelp $target $name", $sub);
+        $server->cmd_process("?sethelp $target \"$name\"", $sub);
     }
 
     return;

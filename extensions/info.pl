@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/info.pl,v 1.20 2000/01/03 08:07:06 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/info.pl,v 1.21 2000/05/10 04:41:20 mjr Exp $
 
 use strict;
 
@@ -412,18 +412,23 @@ Note: You can set your editor via \%set editor, or the VISUAL and EDITOR
 
 shelp_r("helper", "lily help management functions");
 help_r("helper", "
-%helper set index topic      - Loads your editor and allows you to write help
-                               text for the given topic in the given index. 
-%helper edit index topic     - Allows you to edit help text for the given
-                               topic in the given index. 
-%helper reedit index topic   - Recalls a dead help text from a previously
-                               failed edit.
-%helper clear index topic    - Clears the help text for the given topic in
-                               the given index. 
-%helper list [index [topic]] - Prints the index list if given no arguments.
-                               Prints the contents of a given index, or if
-                               and index and topic is given, will print the
-                               current help text for it.
+%helper set index:topic[:subtopic]
+   - Loads your editor and allows you to write help text for the given topic
+     in the given index. 
+
+%helper edit index:topic[:subtopic]
+   - Allows you to edit help text for the given topic in the given index. 
+
+%helper reedit index:topic[:subtopic]
+   - Recalls a dead help text from a previously failed edit.
+
+%helper clear index:topic[:subtopic]
+   - Clears the help text for the given topic in the given index. 
+
+%helper list [index[:topic][:subtopic]]
+   - Prints the index list if given no arguments.  Prints the contents of a
+     given index, or if and index and topic is given, will print the current
+     help text for it.
 
 Note: You can set your editor via \%set editor, or the VISUAL and EDITOR
       environment variables.
