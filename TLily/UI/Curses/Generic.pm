@@ -163,7 +163,6 @@ sub defstyle {
 	if ($w->{bg} eq $style) {
 	    $w->{W}->bkgdset
 	      (ord(' ') | $w->get_style_attr($style));
-	    $w->redraw();
 	}
     }
 }
@@ -177,7 +176,6 @@ sub defcstyle {
 	if ($w->{bg} eq $style) {
 	    $w->{W}->bkgdset
 	      (ord(' ') | $w->get_style_attr($style));
-	    $w->redraw();
 	}
     }
 }
