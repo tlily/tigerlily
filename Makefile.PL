@@ -7,7 +7,7 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/Makefile.PL,v 1.5 1999/04/11 22:16:33 albert Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/Makefile.PL,v 1.6 1999/04/23 05:44:45 albert Exp $
 
 use strict;
 use Config;
@@ -223,7 +223,7 @@ $(INST_ETC):
 	
 $(TL_SITE_CF): $(INST_ETC)
 	@$(RM_F) $(TL_SITE_CF)
-	@if [ -e $(INSTALLSITEETC)/tlily.site ] ; then \
+	@if [ -f "$(INSTALLSITEETC)/tlily.site" ] ; then \
 	    echo "Copying current tlily.site" ; \
 	    $(CP) $(INSTALLSITEETC)/tlily.site $(TL_SITE_CF) ; \
 	    $(CHMOD) 644 $(TL_SITE_CF) ; \
