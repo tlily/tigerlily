@@ -1,4 +1,4 @@
-Version 2.0-pre
+Version 2.0
   * Added %memo. [DPN]
   * Added GPL. [CWS, JDW]
   * New install w/ Makefile.PL (removed Build.PL) [CWS]
