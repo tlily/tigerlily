@@ -306,7 +306,8 @@ sub start_curses {
     noecho();
     raw();
     idlok(1);
-    idcok(1);
+    # How odd.  Jordan doesn't have idcok().
+    eval { idcok(1); };
     typeahead(-1);
 
     $SIG{WINCH} = sub { $sigwinch = 1; };
