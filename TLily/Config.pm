@@ -8,7 +8,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Config.pm,v 1.11 2001/01/26 03:01:48 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Config.pm,v 1.12 2001/11/02 23:08:06 tale Exp $
 
 package TLily::Config;
 
@@ -322,7 +322,7 @@ sub ask {
 
 sub Usage {
 	print STDERR qq(
-Usage: $0 [-m[ono]] [-zonedelta=<delta>] [-[s]erver servername] [-[p]ort number] [-pager=0|1] [-<configvar>[=<configvalue>]\n";
+Usage: $0 [-m[ono]] [-zonedelta=<delta>] [-[s]erver servername] [-[p]ort number] [-pager=0|1] [-<configvar>[=<configvalue>]\n
 );
 }
 
