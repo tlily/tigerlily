@@ -20,10 +20,6 @@ Before 2.0 release:
     - autoreview is untested!
 
   Bugs:
-    UI     - if UI is suspended (for example C-z), when it comes back, the 
-             cursor keys don't work.
-	     after C-z, %keyname tells me that left arrow is M-[. 
-  
     log.pl - doesn't do indenting/wrapping right.  damien will move the 
              wrapping/indenting code out of Curses.pm and into the UI.
 
