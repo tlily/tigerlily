@@ -113,7 +113,14 @@ sub prompt_handler {
 	my $ui = TLily::UI::name($event->{ui_name});
 	$ui->prompt_for(prompt   => $event->{text},
 			password => $event->{password},
-			call     => sub { $server->sendln($_[1]); });
+			call     => sub { 
+			    TLily::Event::send(type => 'user_input',
+					       ui   => $ui,
+					       text => $_[1]);
+			    # or, to bypass the normal handlers (and break
+			    # %commands)
+			    #$server->sendln($_[1]); 
+			});
 	return;
     }
     
