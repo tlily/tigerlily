@@ -11,6 +11,7 @@ use strict;
 #
 
 shelp_r("server_all" => "(boolean) run %command on -all- cores?", "variables");
+shelp_r("blurb_verbose" => "(boolean) show diag output for %blurb", "variables");
 command_r('blurb', \&blurb_cmd);
 command_r('here', \&here_cmd);
 command_r('away', \&away_cmd);
@@ -34,6 +35,8 @@ different cores.
 ");
 
 $config{"server_all"} = 0 if !exists($config{"server_all"});
+# print out the tries as we go.
+$config{"blurb_verbose"} = 0 if !exists($config{"blurb_verbose"});
 
 #
 # Abbrs: a hash of regexen and their abbreviations.
@@ -45,11 +48,6 @@ my %abbr = (
 	'\b(too?|two)' => "2",
 	'and' => "&",
 );
-
-#my %abbr_must = (
-	#'fuck' => "f***",
-	#'shit' => "sh*t",
-#);
 
 sub unload {
 	## Nothing to do here right now.
@@ -132,12 +130,6 @@ sub blurb_cmd {
 		return;
 	}
 
-	#Handle any -required- substitutions. (swear filter)
-
-	#foreach my $re (keys %abbr_must) {
-		#$blurb =~s /$re/$abbr_must{$re}/gi;
-	#}
-
 	## strip off exterior braces/quotes.
 
 	if ($blurb =~ /^"(.*)"$/) {
@@ -146,6 +138,7 @@ sub blurb_cmd {
 		$blurb = $1;
 	}
 
+	$ui->print("BRACES/QUOTES:" .$blurb. "\n") if $config{blurb_verbose};
         goto DONE if (check_blurb($blurb));
 
 	$modified = 1;
@@ -155,11 +148,13 @@ sub blurb_cmd {
 	$blurb =~ s/^(\s*)//;
 	$blurb =~ s/(\s*)$//;
 
+	$ui->print("LEADING/TRAILING SPACE:" .$blurb. "\n") if $config{blurb_verbose};
         goto DONE if (check_blurb($blurb));
 
 	#Reduce any multiple spaces to singletons.
 
 	$blurb =~ s/(\s+)/ /g;
+	$ui->print("MULTIPLE SPACES:" .$blurb. "\n") if $config{blurb_verbose};
 
         goto DONE if (check_blurb($blurb));
 
@@ -167,6 +162,7 @@ sub blurb_cmd {
 
 	foreach my $re (keys %abbr) {
 		while ($blurb =~s /$re/$abbr{$re}/i) {
+			$ui->print("ABBR ($re):" .$blurb. "\n") if $config{blurb_verbose};
         		goto DONE if (check_blurb($blurb));
 		}
 	}
@@ -176,44 +172,44 @@ sub blurb_cmd {
 
 	@words = map {ucfirst $_} (split(' ',$blurb));
 	$blurb = join('',@words);
+ 	$ui->print("ALL SPACES:" .$blurb. "\n") if $config{blurb_verbose};
         goto DONE if (check_blurb($blurb));
 
-	#Remove punctuation
+	#Remove punctuation 
+        my $punc = "'\""; # don't remove &, as it could be there intentionally
 
-	if (0) {
-	while (grep /\W/, @words) { #if -any- puncutation
+	while (grep /$punc/, @words) { #if -any- puncutation
 		foreach my $word (@words) { # remove from each word in turn.
-			if ($word =~ s/\W//) {
+			if ($word =~ s/$punc//) {
 				$blurb=join('',@words);
-				#$ui->print("TEST:" .$blurb. "\n");
+				$ui->print("PUNCTUATION:" .$blurb. "\n") if $config{blurb_verbose};
         			goto DONE if (check_blurb($blurb));
 			}
 		}
 	}
-	}
+
 	#Remove some vowels?
 
 	my $vowelRE = '([^AEIOUaeiou])[aeiou]([^AEIOUaeiou])';
 
 	while (grep /$vowelRE/, @words) { #if -any- cases,
-		foreach my $word (@words) { # remove from each word in turn.
+		foreach my $word (reverse @words) { # remove from each word in turn.
 			if ($word =~ s/$vowelRE/$1$2/) {
 				$blurb=join('',@words);
-				#$ui->print("TEST:" .$blurb. "\n");
+				$ui->print("VOWELS:" .$blurb. "\n") if $config{blurb_verbose};
         			goto DONE if (check_blurb($blurb));
 			}
 		}
 	}
 
 	FAIL:
-	#$ui->print("FAIL\n");
+        $ui->print("FAIL:\n") if $config{blurb_verbose};
 	$failed=1;
 	$blurb = substr(join('',@words),0,($max-length($psuedo)));
-	#$ui->print("(your compressed blurb is is " . abs($max - length($psuedo) - length($blurb)) . " chars too long)\n");
+	$ui->print("(your compressed blurb is is " . abs($max - length($psuedo) - length($blurb)) . " chars too long)\n") if $config{blurb_verbose};
 	#return;
 	
    	DONE:
-	#$ui->print("K'PLA!\n");
 	my @servers=();
 	if ($config{server_all}) {
 		@servers = TLily::Server::find();
@@ -227,7 +223,7 @@ sub blurb_cmd {
 			# I don't see how to get the output of the cmd back...
 		});
 	};
-	#$ui->print("BLURB: " . $blurb . "\n");
+	$ui->print("BLURB: " . $blurb . "\n") if $config{blurb_verbose};
 }
 
 #TRUE! They return TRUE!
