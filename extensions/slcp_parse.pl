@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_parse.pl,v 1.6 1999/04/09 22:48:30 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_parse.pl,v 1.7 1999/04/26 17:46:35 neild Exp $
 
 use strict;
 use vars qw(%config);
@@ -68,15 +68,6 @@ my %events =
    consult       => undef,
   );
 
-my @login_prompts   = ('.*\(Y\/n\)\s*$',  # ' (Emacs parser hack)
-		       '^--> ',
-		       '^login: ',
-		       '^password: ');
-
-my @connect_prompts = ('^\&password: ',
-		       '^--> ',
-		       '^\* ');
-
 my $SLCP_WARNING =
   "This server does not appear to support SLCP properly.  Tigerlily \
 now requires SLCP support to function properly.  Either upgrade your Lily \
@@ -92,19 +83,14 @@ sub parse_raw {
     $serv->{pending} .= $event->{data};
     my @lines = split /\r?\n/, $serv->{pending}, -1;
     $serv->{pending}  = pop @lines;
-    
-    # Try to handle prompts; a prompt is a non-newline terminated line.
-    # The difficulty is that we need to distinguish between prompts (which
-    # are lines lacking newlines) and partial lines (which are lines which
-    # we haven't completely read yet).
-    my $prompt;
-    for $prompt ($serv->{logged_in} ? @connect_prompts : @login_prompts) {
-	if ($serv->{pending} =~ /($prompt)/) {
-	    push @lines, $1;
-	    substr($serv->{pending}, 0, length($1)) = "";
-	}
+
+    # Catch the login and password prompts.  (The only things tlily will
+    # ever receive that are not \n-terminated.  Thank you, Christian!)
+    if (!$serv->{logged_in} &&
+        $serv->{pending} =~ s/^((?:login|password): )//) {
+	push @lines, $1;
     }
-    
+
     # For general efficiency reasons, I'm not sending these as
     # events.  Should I, perhaps?  This could easily be false
     # efficiency.  Parsing everything like this is definately
@@ -132,17 +118,20 @@ sub parse_line {
     my %event;
     my $cmdid = "";
     # prompts #############################################################
-    
-    my $p;
-    foreach $p ($serv->{logged_in} ? @connect_prompts : @login_prompts) {
-	if ($line =~ /$p/) {
+
+    if (!$serv->{logged_in}) {
+	if ($line eq "login: ") {
 	    %event = (type => 'prompt',
 		      text => $line);
-	    $event{password} = 1 if ($line =~ /password/);
+	    goto found;
+	} elsif ($line eq "password: ") {
+	    %event = (type     => 'prompt',
+		      password => 1,
+		      text     => $line);
 	    goto found;
 	}
     }
-    
+
     
     # prefixes ############################################################
     
@@ -282,6 +271,14 @@ sub parse_line {
     
     
     # other %server messages ##############################################
+
+    # %prompt
+    if ($line =~ /^%prompt2? (.*)/) {
+	%event = (type => 'prompt',
+		  text => $1);
+	$event{password} = 1 if (/password/);
+	goto found;
+    }
     
     # %begin (command leafing)
     if ($line =~ /^%begin \[(\d+)\] (.*)/) {
