@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/info.pl,v 1.17 1999/12/27 21:11:19 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/info.pl,v 1.18 1999/12/27 21:14:15 mjr Exp $
 
 use strict;
 
@@ -307,6 +307,8 @@ help_r("helper", "
                                text for the given topic in the given index. 
 %helper edit index topic     - Allows you to edit help text for the given
                                topic in the given index. 
+%helper reedit index topic   - Recalls a dead help text from a previously
+                               failed edit.
 %helper clear index topic    - Clears the help text for the given topic in
                                the given index. 
 %helper list [index [topic]] - Prints the index list if given no arguments.
