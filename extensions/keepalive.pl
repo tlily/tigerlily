@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/keepalive.pl,v 1.9 2001/11/12 05:00:14 tale Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/keepalive.pl,v 1.10 2001/11/14 02:49:49 tale Exp $
 #
 # keepalive -- periodically ping the server, just to verify our connection
 #              is still there.
@@ -19,7 +19,7 @@ the server every few minutes.  There are two configuration variables:
     $keepalive_interval - Specifies the frequency (in seconds) to send pings.
     $keepalive_debug    - Set this to be notified when a ping is sent.');
 
-my $pinging = 0;
+my %pinging;
 
 my %timer;
 
@@ -27,27 +27,31 @@ sub keepalive {
     my($server, $handler) = @_;
 
     my $ui = ui_name();
+    my $name = $server->name;
+
+    $pinging{$name} = 0 if ! defined($pinging{$name});
 
     if ($timer{interval} != $config{keepalive_interval}) {
         $timer{interval}  = $config{keepalive_interval};
     }
 
-    $ui->printf("(keepalive)\n") if ($config{keepalive_debug});
-    if ($pinging == 1) {
-	$ui->print("(server not responding)\n");
-	$pinging = 2;
-    } elsif ($pinging == 0) {
-	$pinging = 1;
+    $ui->print("(keepalive $name)\n") if ($config{keepalive_debug});
+    if ($pinging{$name} == 1) {
+	$ui->print("(server $name not responding)\n");
+	$pinging{$name} = 2;
+    } elsif ($pinging{$name} == 0) {
+	$pinging{$name} = 1;
 	$server->cmd_process("/why", sub {
-			my($event) = @_;
-			$event->{NOTIFY} = 0;
-			return unless ($event->{type} eq 'endcmd');
-			if ($pinging == 2) {
-			    $ui->print("(server is responding again)\n");
-			}
-			$pinging = 0;
-			return;
-		    });
+            my($event) = @_;
+            my $name = $event->{server}->name;
+            $event->{NOTIFY} = 0;
+            return unless ($event->{type} eq 'endcmd');
+            if ($pinging{$name} == 2) {
+                $ui->print("(server $name is responding again)\n");
+            }
+            $pinging{$name} = 0;
+            return;
+        });
     }
 
     return 0;
