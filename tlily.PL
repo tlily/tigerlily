@@ -8,7 +8,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/tlily.PL,v 1.33 1999/03/23 08:33:09 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/tlily.PL,v 1.34 1999/03/24 00:55:41 albert Exp $
 
 use strict;
 no strict qw(refs);
@@ -148,11 +148,11 @@ Library directory:  $LIBDIR
     my $LIBEXTDIR = './extensions';
     $DIRS_ARE_LOCAL = '1';
 
-    eval "mkpath('./blib/bin');";
-    if($@) { die "Error: $@\n" }
-    print "mkdir ./blib/bin\n";
+#    eval "mkpath('./blib/bin');";
+#    if($@) { die "Error: $@\n" }
+#    print "mkdir ./blib/bin\n";
     
-    my $file = './blib/bin/tlily';
+    my $file = 'tlily';
     print "Writing $file\n";
     if(-f $file) { unlink $file; }
 	

@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/Makefile.PL,v 1.3 1999/03/23 08:33:06 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/Makefile.PL,v 1.4 1999/03/24 00:55:38 albert Exp $
 
 use ExtUtils::MakeMaker;
 
@@ -28,6 +28,7 @@ WriteMakefile(
     DISTNAME        => 'tlily',
     VERSION_FROM    => 'TLily/Version.pm', # finds $VERSION
     PL_FILES        => { 'tlily.PL' => 'tlily'},
+    EXE_FILES       => [ 'tlily' ],
     PMLIBDIRS       => [qw(extensions TLily)],
     PREREQ_PM       => { 'Curses'         => 0,
 			 'Term::ReadLine' => 0 },
@@ -40,6 +41,7 @@ WriteMakefile(
     INSTALLMAN3DIR  => $TL_MANDIR."/man3",
     dist            => { COMPRESS => 'gzip -f', SUFFIX => 'gz' },
     realclean       => { FILES => 'MANIFEST.bak Makefile.old' },
+    clean           => { FILES => 'tlily' },
 );
 
 sub MY::install {
@@ -53,6 +55,19 @@ sub MY::install {
     $inherited =~ s|\$\(\S+\)/auto/\$\(\S+\)||mg;
     $inherited =~ s|\$\(INST_ARCHLIB\)\s+\$\(INSTALLSITEARCH\)\s+||m;
     $inherited;
+    return q(install:
+	@echo "'make install' is not implemented yet."
+);
+}
+
+sub MY::dist_core {
+    return q(
+dist:
+	@echo "'make dist' is not implemented yet."
+release:
+	@echo "'make release' is not implemented yet."
+
+);
 }
 
 sub MY::top_targets {
@@ -77,4 +92,10 @@ $(TL_GLOBAL_CF):
 	cp tlily.global $(TL_GLOBAL_CF)
 
 |;
+}
+
+sub MY::libscan {
+    my($self, $path) = @_;
+    return '' if $path =~ m:\bCVS/:;
+    $path;
 }

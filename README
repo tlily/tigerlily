@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/README,v 1.6 1999/03/23 08:33:07 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/README,v 1.7 1999/03/24 00:55:39 albert Exp $
 
      ("`-/")_.-'"``-._ 
       . . `; -._    )-;-,_`)          TigerLily 2.x
@@ -24,8 +24,9 @@ Curses.pm or Term::Readline::Gnu. (from CPAN)
 
 To create a usable tlily executable, run the command:
     perl Makefile.PL ; make
+
 Run it with the command:
-    ./blib/bin/tlily [options]
+    ./tlily [options]
 
 There is NO install yet.  There is no release yet.
 
