@@ -7,7 +7,7 @@ you see fit.   Not all of our code will fully adhere, but it probably
 should eventually.  Feel free to help out with cleaning things up..
 
 -------------------------------------------------------------------------------
-1) Memory Usage
+1) Memory usage
 
 Tigerlily is a memory hog.  It always will be.  However, we do have a
 few things to say on how to avoid making it trully horrendous:
@@ -21,10 +21,31 @@ few things to say on how to avoid making it trully horrendous:
      selectively import symbols.  Try to avoid it if you can.  In the
      above example, perl's lc() would be a much better choice :)
 
-   - Avoid @EXPORT in your modules.  Try to just use EXPORT_OK.
+   - The IO:: modules are also memory hogs, and slow to boot.  If you
+     want a filehandle with a restricted scope, try something like this:
+         local *FH;
+         open(FH, "foo");
+         $self->{fh} = \*FH;
+
+     For more information on filehandles, look at this handy tutorial:
+         http://language.perl.com/misc/fmindir
+
+   - If you want to check the comparative memory usage of tlily with
+     and without a module, try something like this:
+         perl -MIO::Handle -e 'system("ps auxww | grep $$")';
 
 -------------------------------------------------------------------------------
-2) Bracing
+2) Namespace pollution
+
+It is very rude for a module to stick symbols into the namespace of its
+callers.  Don't use @EXPORT; use @EXPORT_OK instead.
+
+Don't attempt to create your own namespace with prefixes to symbol names.
+Instead of event_raise, consider Event::raise.  Perl has a perfectly good
+namespace mechanism.  Use it. :>
+
+-------------------------------------------------------------------------------
+3) Bracing
 
 This is the bracing style we want to use:
 
@@ -54,7 +75,7 @@ This style wastes space.  I will mercilessly reformat code that I see
 that uses this.
 
 -------------------------------------------------------------------------------
-3) Indenting
+4) Indenting
 
 We have decided to use 4 space indents.  This means 4 spaces. 
 Don't change your tab stops no matter what.  A tab is 8 spaces.
@@ -68,7 +89,7 @@ your ~/.emacs file:
 (setq cperl-indent-level 4) 
 
 -------------------------------------------------------------------------------
-4) Prototypes
+5) Prototypes
 
 Perl permits you to define functions with prototypes (for example, sub
 foo($) defines foo to take a single scalar argument).  Perl function
@@ -83,7 +104,7 @@ prototypes on all your functions, you are probably wrong.
 See perlsub(1) for more information on prototypes.
 
 -------------------------------------------------------------------------------
-5) Help text
+6) Help text
 
 Every user command you register should have both a short description
 (shelp_r) and a help page (help_r) associated with it.  Help pages
@@ -109,7 +130,7 @@ newlines from the start and end of your help text, so feel free to add some
 if it makes things look nicer for you.  (Again, see above.)
 
 -------------------------------------------------------------------------------
-6) Object data
+7) Object data
 
 UI and server objects are hashrefs.  Occasionally, an extension author may
 want to stick a bit of private data into one of these objects.  This is
@@ -118,6 +139,6 @@ must be taken for different extensions to not accidentally use the same
 key.
 
 -------------------------------------------------------------------------------
-7) Other
+8) Other
 
 There's plenty of room for more stuff in here.. Go for it :)
