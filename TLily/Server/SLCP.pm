@@ -6,7 +6,7 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Server/Attic/SLCP.pm,v 1.37 2000/05/10 04:41:19 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Server/Attic/SLCP.pm,v 1.38 2000/12/12 19:48:37 neild Exp $
 
 package TLily::Server::SLCP;
 
@@ -343,24 +343,24 @@ sub expand_name {
     # Check for a prefix match.
     unless ($disc) {
 	@m = grep { index($_, $name) == 0 } @unames;
-	return $self->{NAME}->{$m[0]}->{NAME} if (@m == 1);
-	return undef if (@m > 1);
+	return if (@m > 1 && !wantarray);
+	return map($self->{NAME}->{$_}->{NAME}, @m) if (@m);
     }
     @m = grep { index($_, $name) == 0 } @dnames;
     return '-' . $self->{NAME}->{$m[0]}->{NAME} if (@m == 1);
-    return undef if (@m > 1);
+    return if (@m > 1);
         
     # Check for a substring match.
     unless ($disc) {
 	@m = grep { index($_, $name) != -1 } @unames;
-	return $self->{NAME}->{$m[0]}->{NAME} if (@m == 1);
-	return undef if (@m > 1);
+	return if (@m > 1 && !wantarray);
+	return map($self->{NAME}->{$_}->{NAME}, @m) if (@m);
     }
     @m = grep { index($_, $name) != -1 } @dnames;
-    return '-' . $self->{NAME}->{$m[0]}->{NAME} if (@m == 1);
-    return undef if (@m > 1);
+    return if (@m > 1 && !wantarray);
+    return map('-'.$self->{NAME}->{$_}->{NAME}, @m) if (@m);
 	
-    return undef;
+    return;
 }
 
 
