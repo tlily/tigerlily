@@ -1,4 +1,5 @@
 Version 2.3
+  * [tlily.PL] Use current perl when calling find_eagain.  [DPN]
   * [tlily.global] Changed default server to "rpi.lily.org".  [DPN]
   * [README] Added an example to (hopefully) clarify .cf usage. [WJC]
   * [TLily/Server.pm] Fixed error reporting on failed server connect.  [DPN]
