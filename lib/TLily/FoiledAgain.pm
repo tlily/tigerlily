@@ -50,11 +50,9 @@ Tears down the user interface.  Note that the UI can be restarted by
 re-calling start(), but no state needs to be preserved- it is up to the
 caller to re-draw the screen if this is done.
 
-=item sanity_poll()
+=item has_resized()
 
-This can be called arbitrarily often (normally upon user input) and may do
-whatever is necessary to ensure that the UI is in a sane state.  Its intended
-use under Curses is to resize the terminal if needed.
+Returns true if the terminal has been resized since the last call.
 
 =item suspend()
 
@@ -152,7 +150,7 @@ Return a character of input, if available.  Otherwise return undef.
 # screen operations
 sub start            { dispatch_classmethod(start            => @_); }
 sub stop             { dispatch_classmethod(stop             => @_); }
-sub sanity_poll      { dispatch_classmethod(sanity_poll      => @_); }
+sub has_resized      { dispatch_classmethod(has_resized      => @_); }
 sub suspend          { dispatch_classmethod(suspend          => @_); }
 sub resume           { dispatch_classmethod(resume           => @_); }
 sub screen_width     { dispatch_classmethod(screen_width     => @_); }

@@ -103,7 +103,7 @@ sub stop {
 }
 
 
-sub sanity_poll { }
+sub has_resized { }
 sub suspend {  }
 sub resume  {  }
 sub bell {

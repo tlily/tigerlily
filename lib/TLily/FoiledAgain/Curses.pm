@@ -145,8 +145,11 @@ BEGIN {
     }
 }
 
-sub sanity_poll {
+sub has_resized {
+    my $resized;
+
     while ($sigwinch) {
+        $resized = 1;
 	$sigwinch = 0;
 	if ($termsize_installed) {
 	    ($ENV{'COLUMNS'}, $ENV{'LINES'}) = Term::Size::chars();
@@ -166,9 +169,9 @@ sub sanity_poll {
 	stop();
         refresh;
 	start();
-# 	$self->layout();   XXX foiledagain
     }
 
+    return $resized;
 }
 
 sub suspend { endwin; }
