@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/gag.pl,v 1.4 1999/10/03 18:25:48 josh Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/gag.pl,v 1.5 2000/02/09 19:34:50 kazrak Exp $ 
 
 use strict;
 
@@ -101,6 +101,9 @@ sub load {
 	    order => 'before',
 	    call  => \&gagger);
     event_r(type  => 'public',
+	    order => 'before',
+	    call  => \&gagger);
+    event_r(type  => 'emote',
 	    order => 'before',
 	    call  => \&gagger);
 
