@@ -31,17 +31,14 @@ TLily::Event::init();
 my $ui = TLily::UI::Curses->new(name => 'main');
 
 # remove
-$ui->defstyle('status'          => 'reverse');
-$ui->defstyle('public_header'   => 'normal');
-$ui->defstyle('public_sender'   => 'bold');
-$ui->defstyle('public_recips'   => 'bold');
-$ui->defstyle('public_body'     => 'normal');
-$ui->defstyle('private_header'  => 'normal');
-$ui->defstyle('private_sender'  => 'bold');
-$ui->defstyle('private_recips'  => 'bold');
-$ui->defstyle('private_body'    => 'normal');
-$ui->defstyle('emote'           => 'normal');
-
+$ui->defstyle('status'  => 'reverse');
+$ui->defstyle('sender'  => 'bold');
+$ui->defstyle('dest'    => 'bold');
+$ui->defstyle('pubhdr'  => 'normal');
+$ui->defstyle('pubmsg'  => 'normal');
+$ui->defstyle('privhdr' => 'normal');
+$ui->defstyle('privmsg' => 'normal');
+$ui->defstyle('emote'   => 'normal');
 $ui->defcstyle('status' => 'yellow', 'blue', 'bold');
 
 show_banner();

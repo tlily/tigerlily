@@ -50,11 +50,11 @@ sub private_fmt {
 	$ui->prints(privhdr => ", to ",
 		    dest    => $e->{RECIPS});
     }
-    $ui->style("private_header");
+    $ui->style("privhdr");
     $ui->print(":\n");
     
     $ui->indent(" - ");
-    $ui->style("private_body");
+    $ui->style("privmsg");
     $ui->print($e->{VALUE}, "\n");
     $ui->indent("");
   
@@ -78,7 +78,7 @@ sub public_fmt {
 		pubhdr => ":\n");
     
     $ui->indent(" - ");
-    $ui->style("public_body");
+    $ui->style("pubmsg");
     $ui->print($e->{VALUE}, "\n");
     $ui->indent("");
     
