@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/Tk.pm,v 1.10 2002/05/20 14:31:18 coke Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/Tk.pm,v 1.11 2002/05/20 14:54:35 coke Exp $
 
 package TLily::UI::Tk;
 
@@ -43,11 +43,16 @@ my %commandmap =
    'delete-char'          => ['Delete'],
    'backward-delete-char' => ['Backspace'],
    'transpose-chars'      => ['Transpose'],
-   'kill-line'            => sub { 1 },
-   'backward-kill-line'   => sub { 1 },
-   'kill-word'            => sub { 1 },
-   'backward-kill-word'   => sub { 1 },
-   'yank'                 => sub { 1 },
+
+   # replacing the default behavior with sub{1} caused the default
+   # behavior, which is occasionally correct, to go away.
+   # commenting out kill-line fixes PR#919
+   #'kill-line'            => sub { 1 },
+   #'backward-kill-line'   => sub { 1 },
+   #'kill-word'            => sub { 1 },
+   #'backward-kill-word'   => sub { 1 },
+   #'yank'                 => sub { 1 },
+
    'page-up'              => sub {
        $_[0]->{stext}->yview(scroll => -1, "pages") },
    'page-down'            => sub {
