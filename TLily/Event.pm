@@ -334,7 +334,7 @@ sub idle_r {
     $h->{id} = $next_id++;
     push @e_idle, $h;
     TLily::Registrar::add("idle_event", $h->{id});
-    return;
+    return $h->{id};
 }
 
 
