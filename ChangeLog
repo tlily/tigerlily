@@ -1,4 +1,5 @@
 Version 2.3
+  * [TLily/Server.pm] Show all data sent to server if send_debug is set. [DCL]
   * [extensions/startup.pl] Startup file/memo processing would send extraneous
     (harmless) empty lines to the server.  [DCL]
   * [TLily/ExoSafe.pm] Add a __FILE__ identifier to each compartment

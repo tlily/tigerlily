@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Server.pm,v 1.29 2001/03/06 23:55:05 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Server.pm,v 1.30 2001/11/10 07:07:01 tale Exp $
 
 package TLily::Server;
 
@@ -303,6 +303,16 @@ sub send {
     my $s = join('', @_);
 
     $self->{bytes_out} += length($s);
+
+    if ($TLily::Config::config{send_debug}) {
+        my $t = $s;
+        $t =~ s/\n/\\n/g;
+        $t =~ s/\r/\\r/g;
+        $t =~ s/\t/\\t/g;
+        $t =~ s/([\x00-\x17\x7f-\xff])/"\\x " . printf("%x", $1)/ge;
+        TLily::UI::name($self->{ui_name})->print
+					("Send $self->{ui_name}: $t\n");
+    }
 
     my $written = 0;
     while ($written < length($s)) {
