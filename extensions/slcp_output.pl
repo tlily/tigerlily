@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_output.pl,v 1.14 1999/12/27 02:06:09 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_output.pl,v 1.15 1999/12/27 17:24:28 mjr Exp $
 
 use strict;
 
@@ -70,24 +70,24 @@ sub public_fmt {
     $ui->prints(public_header => $servname)
       if (defined $servname);
     $ui->prints(public_header => "${ts}From ",
-		public_sender => $e->{SOURCE});
+                public_sender => $e->{SOURCE});
     $ui->prints(public_header => " [$blurb]")
       if (defined $blurb && ($blurb ne ""));
     $ui->prints(public_header => ", to ",
-		public_dest   => $e->{RECIPS},
-		public_header => ":\n");
+                public_dest   => $e->{RECIPS},
+                public_header => ":\n");
     
     $ui->indent(public_body   => " - ");
     $ui->prints(public_body   => $e->{VALUE}."\n");
-    
+
     $ui->indent();
     $ui->style("default");
-    
+
     return;
 }
 event_r(type  => 'public',
-	order => 'before',
-	call  => sub { $_[0]->{formatter} = \&public_fmt; return });
+        order => 'before',
+        call  => sub { $_[0]->{formatter} = \&public_fmt; return });
 
 # Print emote sends.
 sub emote_fmt {
@@ -104,19 +104,19 @@ sub emote_fmt {
     $ui->prints(emote_body => $servname)
       if (defined $servname);
     $ui->prints(emote_body   => "(${ts}to ",
-		emote_dest   => $dest,
-		emote_body   => ") ",
-		emote_sender => $e->{SOURCE},
-		emote_body   => $e->{VALUE}."\n");
-    
+                emote_dest   => $dest,
+                emote_body   => ") ",
+                emote_sender => $e->{SOURCE},
+                emote_body   => $e->{VALUE}."\n");
+
     $ui->indent();
     $ui->style("default");
-    
+
     return;
 }
 event_r(type  => 'emote',
-	order => 'before',
-	call  => sub { $_[0]->{formatter} = \&emote_fmt; return });
+        order => 'before',
+        call  => sub { $_[0]->{formatter} = \&emote_fmt; return });
 
 
 # %U: source's pseudo and blurb
@@ -301,7 +301,7 @@ my $sub = sub {
 
         if (exists $flags{C}) {
             next if (!defined($e->{'SUBEVT'}) ||
-                    (defined($flags{C}) && ($flags{C} ne $e->{'SUBEVT'})));
+                    (defined($flags{C}) && ($flags{C}->[1] ne $e->{'SUBEVT'})));
         } elsif (exists $flags{c}) {
             next unless (!defined($e->{SUBEVT}));
         }
