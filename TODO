@@ -15,6 +15,7 @@ Before 2.0 release:
     I want to rewrite TLily::Command.  It needs to make more sense, I think.
     
   New functionality:
+    %GROUP, if xian likes it..
     - Makefile.PL   (albert is working on this)  
     - when the last open server connection is closed, provide a exit/reconnect
       option. (integrate with smartexit feature)
