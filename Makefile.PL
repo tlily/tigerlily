@@ -7,12 +7,13 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/Makefile.PL,v 1.23 2003/11/04 03:28:55 albert Exp $
+# $Header: /data/cvs/lily/tigerlily2/Makefile.PL,v 1.25 2003/11/28 18:57:07 josh Exp $
 
 use strict;
 use Config;
 use ExtUtils::MakeMaker;
 use Getopt::Long;
+use lib qw(lib);
 use TLily::Version;
 
 use vars qw($current $opt_p $opt_w 
@@ -42,7 +43,7 @@ sub ask_dirs {
 	print "Configuring for use in the current directory.\n";
 	$TL_PREFIX = ".";
 	$TL_BINDIR = $TL_PREFIX;
-	$TL_LIBDIR = $TL_PREFIX;
+	$TL_LIBDIR = "$TL_PREFIX/lib";
 	$TL_ETCDIR = $TL_PREFIX;
 	$TL_MANDIR = $TL_PREFIX;
 	return;
@@ -76,7 +77,7 @@ to configure tlily for use in the current directory only.
 		print "Configuring for use in the current directory.\n";
 		$TL_PREFIX = ".";
 		$TL_BINDIR = $TL_PREFIX;
-		$TL_LIBDIR = $TL_PREFIX;
+		$TL_LIBDIR = "$TL_PREFIX/lib";
 		$TL_ETCDIR = $TL_PREFIX;
 		$TL_MANDIR = $TL_PREFIX;
 		return;
@@ -183,9 +184,9 @@ if($ExtUtils::MakeMaker::VERSION >= 6) {
 WriteMakefile(
     NAME	    => 'TLily',
     DISTNAME        => 'tlily',
-    VERSION_FROM    => 'TLily/Version.pm',
+    VERSION_FROM    => 'lib/TLily/Version.pm',
     EXE_FILES       => [ 'tlily' ],
-    PMLIBDIRS       => [qw(extensions TLily)],
+    PMLIBDIRS       => [qw(extensions lib/TLily)],
     PREREQ_PM       => $prereq,
     
     PL_FILES        => { 'tools/build_tlily' => [ 'tlily', 
@@ -261,7 +262,7 @@ $(TL_SITE_CF): $(INST_ETC)
 
 $(TL_GLOBAL_CF):
 	-$(RM_F) $(TL_GLOBAL_CF)
-	$(CP) tlily.global $(TL_GLOBAL_CF)
+	$(CP) lib/tlily.global $(TL_GLOBAL_CF)
 
 release:
 	@echo "Please use tools/makerelease to make a release."

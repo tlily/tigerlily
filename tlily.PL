@@ -7,22 +7,35 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/tlily.PL,v 1.62 2003/08/13 22:14:03 coke Exp $
+# $Header: /data/cvs/lily/tigerlily2/tlily.PL,v 1.63 2003/11/28 18:57:07 josh Exp $
 
 require 5.00307;
 use strict;
-use vars qw($EAGAIN);
-use TLily::Event;
-use TLily::Config;
-use TLily::UI;
-use TLily::Server;
-use TLily::Server::SLCP;
-use TLily::User;
-use TLily::Extend;
-use TLily::Version;
-use TLily::Utils;
+use vars qw($EAGAIN $TL_ETCDIR $TL_LIBDIR $TL_TMPDIR $TL_LIBMODDIR);
 
-BEGIN {
+sub directory_init {
+    $::TL_ETCDIR = "."          unless defined($::TL_ETCDIR);
+    $::TL_LIBDIR = "lib"        unless defined($::TL_LIBDIR);
+    $::TL_EXTDIR = "extensions" unless defined($::TL_EXTDIR);
+    
+    $::TL_TMPDIR = "/tmp";
+    if ($^O =~ /cygwin/) {
+        $::TL_TMPDIR = $ENV{TEMP} || 'C:\WINDOWS\TEMP';
+        $::TL_TMPDIR =~ s/^.://g;
+        $::TL_TMPDIR =~ s/\\/\//g;
+    }
+    
+    if ($^O eq 'MSWin32') {
+        $::TL_TMPDIR = $ENV{TEMP} || 'C:\WINDOWS\TEMP';
+    }
+    
+    if (!defined($::TL_LIBMODDIR) ||
+	($::TL_LIBMODDIR ne "//INTERNAL")) {
+	unshift @INC, $::TL_LIBMODDIR;
+    }    
+}
+
+sub platform_init {   
     if ($TLily::Version::VERSION =~ /-aqua$/) {
         eval {
             require Foundation;
@@ -37,67 +50,63 @@ BEGIN {
         push @INC,$::TL_LIBDIR;
     }
 
-    if (!defined($::TL_LIBMODDIR) ||
-	($::TL_LIBMODDIR ne "//INTERNAL")) {
-	unshift @INC, $::TL_LIBMODDIR;
-    }
-
     if ($^O eq 'MSWin32') {
         $TLily::Version::VERSION .= "-ap";
     }
+    
+    if ($^O =~ /cygwin/) {
+        $EAGAIN = $::fallback_EAGAIN;
+    } else {
+        $EAGAIN = eval { require "Errno.pm"; Errno::EAGAIN(); };
+        $EAGAIN = eval { require "errno.ph"; EAGAIN(); } if $@;
+        if ($@) { 
+            if (defined $::fallback_EAGAIN) {
+    	        print STDERR "WARNING: Using fallback EAGAIN.\n";
+                $EAGAIN = $::fallback_EAGAIN;
+            } elsif ($::TL_LIBMODDIR !~ m|^//INTERNAL|) {
+                if (! -f ".tlily-eagain") {
+                    $EAGAIN = `$^X tools/find_eagain`;
+                    if ($EAGAIN =~ /^(\d+)/) {
+                        print STDERR "Saving EAGAIN to .tlily-eagain.\n";
+                        $EAGAIN = $1;
+                        local *FH;
+                        open(FH, "> .tlily-eagain") or die ".tlily-eagain: $!\n";
+                        print FH $EAGAIN, "\n";
+                    } else {
+                        die "Cannot determine value for EAGAIN.\n";
+                    }
+                } else {
+                    local *FH;
+                    open(FH, ".tlily-eagain") or die ".tlily-eagain: $!\n";
+                    $EAGAIN = <FH>;
+                    if ($EAGAIN =~ /^(\d+)/) {
+                        $EAGAIN = $1;
+                    } else {
+                        die ".tlily-eagain seems to be corrupt; delete it and try again.\n";
+                    }
+                }
+            } else {
+                die "Cannot determine value for EAGAIN.\n";
+            }
+        }
+    }
 }
 
-$::TL_ETCDIR = "."          unless defined($::TL_ETCDIR);
-$::TL_LIBDIR = "."          unless defined($::TL_LIBDIR);
-$::TL_EXTDIR = "extensions" unless defined($::TL_EXTDIR);
+BEGIN { directory_init(); }
 
-$::TL_TMPDIR = "/tmp";
-if ($^O =~ /cygwin/) {
-    $::TL_TMPDIR = $ENV{TEMP} || 'C:\WINDOWS\TEMP';
-    $::TL_TMPDIR =~ s/^.://g;
-    $::TL_TMPDIR =~ s/\\/\//g;
-}
+use lib $TL_LIBDIR;
+use TLily::Event;
+use TLily::Config;
+use TLily::UI;
+use TLily::Server;
+use TLily::Server::SLCP;
+use TLily::User;
+use TLily::Extend;
+use TLily::Version;
+use TLily::Utils;
 
-if ($^O eq 'MSWin32') {
-    $::TL_TMPDIR = $ENV{TEMP} || 'C:\WINDOWS\TEMP';
-}
+BEGIN { platform_init(); }
 
-if ($^O =~ /cygwin/) {
-    $EAGAIN = $::fallback_EAGAIN;
-} else {
-    $EAGAIN = eval { require "Errno.pm"; Errno::EAGAIN(); };
-    $EAGAIN = eval { require "errno.ph"; EAGAIN(); } if $@;
-    if ($@) { 
-	if (defined $::fallback_EAGAIN) {
-	    print STDERR "WARNING: Using fallback EAGAIN.\n";
-	    $EAGAIN = $::fallback_EAGAIN;
-	} elsif ($::TL_LIBMODDIR !~ m|^//INTERNAL|) {
-	    if (! -f ".tlily-eagain") {
-		$EAGAIN = `$^X tools/find_eagain`;
-		if ($EAGAIN =~ /^(\d+)/) {
-		    print STDERR "Saving EAGAIN to .tlily-eagain.\n";
-		    $EAGAIN = $1;
-		    local *FH;
-		    open(FH, "> .tlily-eagain") or die ".tlily-eagain: $!\n";
-		    print FH $EAGAIN, "\n";
-		} else {
-		    die "Cannot determine value for EAGAIN.\n";
-		}
-	    } else {
-		local *FH;
-		open(FH, ".tlily-eagain") or die ".tlily-eagain: $!\n";
-		$EAGAIN = <FH>;
-		if ($EAGAIN =~ /^(\d+)/) {
-		    $EAGAIN = $1;
-		} else {
-		    die ".tlily-eagain seems to be corrupt; delete it and try again.\n";
-		}
-	    }
-	} else {
-	    die "Cannot determine value for EAGAIN.\n";
-	}
-    };
-}
 TLily::Config::init();
 TLily::Event::init();
 
@@ -321,6 +330,7 @@ sub show_banner() {
 # ` This comment with the backquote is here merely to let cperl work again.
     $ui->style("default");
 }
+
 
 =head1 NAME
 
