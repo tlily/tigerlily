@@ -1,3 +1,6 @@
+# -*- Perl -*-
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/Attic/output.pl,v 1.14 1999/03/01 00:47:28 steve Exp $
+
 use strict;
 
 use TLily::UI;
@@ -99,8 +102,11 @@ event_r(type  => 'emote',
 # A: always use this message
 # V: use this message if VALUE is defined.
 # E: use this message if VALUE is empty.
+# D: use this message if RECIP is defined. (hack for EVENT=info)
 # v: use this message if the source of the event is "me" and VALUE is defined
 # e: use this message if the source of the event is "me" and the VALUE is empty
+# d: use this message if the source of the event is "me" and RECIP is defined
+#    (hack for EVENT=info)
 
 # the first matching message is always used.
 
@@ -121,8 +127,10 @@ my @infomsg = ('connect'  => 'A *** %U has entered lily ***',
 	       blurb      => 'v (your blurb has been set to [%V])',
 	       blurb      => 'V *** %u has changed their blurb to [%V] ***',
 	       blurb      => 'E *** %u has turned their blurb off ***',
+           info       => 'd (you have changed the info for %R)',
 	       info       => 'e (your info has been cleared)',
 	       info       => 'v (your info has been changed)',
+           info       => 'D *** Discussion %R has changed info ***',
 	       info       => 'V *** %u has changed their info ***',
 	       info       => 'E *** %u has cleared their info ***',
 	       ignore     => 'A *** %u is now ignoring you %V ***',
@@ -179,6 +187,9 @@ my $sub = sub {
 	if ($flags =~ /E/ && ($e->{VALUE} !~ /\S/)) {
 	    $found = $msg; last;
 	}
+	if ($flags =~ /D/ && (defined ($e->{RECIPS}))) {
+		$found = $msg; last;
+	}
 	if ($flags =~ /v/ && ($e->{SOURCE} eq $Me)
 	    && (defined($e->{VALUE}) && length($e->{VALUE}))) {
 	    $found = $msg; last;
@@ -186,6 +197,10 @@ my $sub = sub {
 	if ($flags =~ /e/ && ($e->{SOURCE} eq $Me)
 	    && (!defined($e->{VALUE}) || !length($e->{VALUE}))) {
 	    $found = $msg; last;
+	}
+	if ($flags =~ /d/ && ($e->{SOURCE} eq $Me)
+		&& (defined ($e->{RECIPS}))) {
+		$found = $msg; last;
 	}
     }
     
