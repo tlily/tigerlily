@@ -13,6 +13,7 @@ sub new {
 	my $self  = $class->SUPER::new(@_);
 
 	$self->{text}        = "";
+	$self->{password}    = 0;
 	$self->{point}       = 0;
 	$self->{Y}           = 0;
 	$self->{X}           = 0;
@@ -28,9 +29,18 @@ sub new {
 }
 
 
+sub password {
+	my($self, $v) = @_;
+	$self->{password} = $v;
+	$self->rationalize();
+	$self->redraw();
+}
+
+
 sub find_coords {
 	my($self, $point) = @_;
-	$point = $self->{point} unless (defined($point));
+	$point = $self->{password} ? 0 : $self->{point}
+		unless (defined($point));
 	$point += length($self->{prefix});
 
 	my $y = int($point / $self->{cols}) - $self->{topln};
@@ -43,7 +53,8 @@ sub drawlines {
 	my($self, $start, $count) = @_;
 	$count = $self->{lines} if (!$count || $count > $self->{lines});
 
-	my $text = $self->{prefix} . $self->{text};
+	my $text = $self->{prefix};
+	$text   .= $self->{text} unless ($self->{password});
 	my $i = ($start && $start > 0) ? $start : 0;
 	my $ti = (($i + $self->{topln}) * $self->{cols});
 
@@ -76,8 +87,10 @@ sub position_cursor {
 sub rationalize {
 	my($self) = @_;
 
-	my $text_lines = int((length($self->{prefix})+length($self->{text})) /
-			     $self->{cols}) + 1;
+	my $text_len  = length($self->{prefix});
+	my $text_len += length($self->{text}) unless ($self->{password});
+
+	my $text_lines = int($text_len / $self->{cols}) + 1;
 	if ($text_lines != $self->{text_lines}) {
 		$self->{text_lines} = $text_lines;
 		$self->req_size($text_lines, $self->{cols});
@@ -205,6 +218,9 @@ sub addchar {
 	substr($self->{text}, $self->{point}, 0) = $c;
 	$self->{point}++;
 
+	$self->{kill_reset} = 1;
+	return if ($self->{password});
+
 	$self->{W}->insch($self->{Y}, $self->{X}, $c);
 
 	for (my $i = $self->{Y}+1; $i < $self->{lines}; $i++) {
@@ -214,7 +230,6 @@ sub addchar {
 	}
 
 	$self->rationalize();
-	$self->{kill_reset} = 1;
 }
 
 
@@ -223,6 +238,9 @@ sub del {
 	return if ($self->{point} >= length($self->{text}));
 
 	substr($self->{text}, $self->{point}, 1) = "";
+
+	$self->{kill_reset} = 1;
+	return if ($self->{password});
 
 	$self->{W}->move($self->{Y}, $self->{X});
 	for (my $i = $self->{Y}; $i < $self->{lines}; $i++) {
@@ -235,7 +253,6 @@ sub del {
 	}
 
 	$self->rationalize();
-	$self->{kill_reset} = 1;
 }
 
 
@@ -300,7 +317,6 @@ sub backward_word {
 
 sub transpose_chars {
 	my($self) = @_;
-	$self->{kill_reset} = 1;
 	return if ($self->{point} == 0);
 
 	my($c1, $c2);
@@ -312,6 +328,9 @@ sub transpose_chars {
 
 	(substr($self->{text}, $c1, 1), substr($self->{text}, $c2, 1)) =
 	  (substr($self->{text}, $c2, 1), substr($self->{text}, $c1, 1));
+
+	$self->{kill_reset} = 1;
+	return if ($self->{password});
 
 	for my $c ($c1, $c2) {
 		my($y, $x) = $self->find_coords($c);

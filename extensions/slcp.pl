@@ -1,4 +1,4 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/Attic/slcp.pl,v 1.3 1999/02/24 21:51:59 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/Attic/slcp.pl,v 1.4 1999/02/25 01:06:10 neild Exp $
 
 use strict;
 
@@ -145,6 +145,7 @@ sub parse_line {
 			set_client_options($serv) if (!$serv->{OPTIONS_SET});
 			%event = (type => 'prompt',
 				  text => $line);
+			$event{password} = 1 if ($line =~ /password/);
 			goto found;
 		}
 	}

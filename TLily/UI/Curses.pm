@@ -3,6 +3,7 @@ package LC::UI::Curses::Proxy;
 use strict;
 use vars qw($AUTOLOAD);
 use Curses;
+use Carp;
 
 sub new {
 	my($proto, $ui, $win) = @_;
@@ -80,12 +81,41 @@ sub accept_line {
 	my($ui) = @_;
 	my $text = $ui->{input}->accept_line();
 	$ui->{text}->{main}->{text}->seen();
-	$ui->style("user_input");
-	$ui->print($text, "\n");
-	$ui->style("normal");
-	$ui->{event}->send(type => 'user_input',
-			   text => $text,
-			   ui   => $ui);
+
+	if (@{$ui->{prompt}} > 0) {
+		my $args = shift @{$ui->{prompt}};
+		if (defined $args->{prompt}) {
+			$ui->prompt("");
+			$ui->print($args->{prompt}, " ");
+		}
+
+		if ($args->{password}) {
+			$ui->{input}->password(0);
+		} else {
+			$ui->style("user_input");
+			$ui->print($text);
+			$ui->style("normal");
+		}
+
+		$ui->print("\n");
+		$args->{call}->($ui, $text);
+
+		if (@{$ui->{prompt}} > 0) {
+			$args = $ui->{prompt}->[0];
+			$ui->prompt($args->{prompt})
+				if (defined $args->{prompt});
+			$ui->{input}->password(1) if ($args->{password});
+		}
+	}
+	else {
+		$ui->style("user_input");
+		$ui->print($text, "\n");
+		$ui->style("normal");
+
+		$ui->{event}->send(type => 'user_input',
+				   text => $text,
+				   ui   => $ui);
+	}
 }
 
 
@@ -182,6 +212,8 @@ sub new {
 	$self->{command}  = { %commandmap };
 	$self->{bindings} = { %bindmap };
 
+	$self->{prompt}   = [];
+
 	$self->layout();
 
 	$self->{event}->io_r(handle => \*STDIN,
@@ -191,6 +223,19 @@ sub new {
 	$self->inherit_global_bindings();
 
 	return $self;
+}
+
+
+sub prompt_for {
+	my($self, %args) = @_;
+	croak("required parameter \"call\" missing.") unless ($args{call});
+
+	push @{$self->{prompt}}, \%args;
+	return if (@{$self->{prompt}} > 1);
+
+	$self->prompt($args{prompt}) if (defined($args{prompt}));
+	$self->{input}->password(1) if ($args{password});
+	return;
 }
 
 

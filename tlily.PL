@@ -39,7 +39,6 @@ LC::Extend::load("server", $ui);
 LC::Extend::load("output", $ui);
 
 LC::User::command_r(quit => sub { exit; });
-LC::User::command_r(foo  => sub { $ui->print("Foo you too!\n"); });
 
 # remove
 $ui->defcstyle("status" => 'yellow', 'blue', 'bold');
@@ -98,6 +97,31 @@ sub output_handler {
 $event->event_r(type  => "all",
 		order => "after",
 		call  => \&output_handler);
+
+sub prompt_handler {
+	my($event, $handler) = @_;
+	my $server = $event->{server};
+
+	if (defined($event->{value})) {
+		$server->sendln($event->{value});
+		return;
+	}
+
+	if ($event->{ui_name}) {
+		my $ui = LC::UI::name($event->{ui_name});
+		$ui->prompt_for(prompt   => $event->{text},
+				password => $event->{password},
+		                call     => sub { $server->sendln($_[1]); });
+		return;
+	}
+
+	# This should never happen.
+	warn "Unanswerable prompt: $event->{text}\n";
+	return;
+}
+$event->event_r(type  => "prompt",
+		order => "after",
+		call  => \&prompt_handler);
 
 show_banner();
     
