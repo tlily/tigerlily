@@ -1,5 +1,5 @@
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/autoreview.pl,v 1.6 1999/10/02 02:58:26 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/autoreview.pl,v 1.7 1999/10/03 08:09:20 neild Exp $
 
 use strict;
 
@@ -64,7 +64,7 @@ sub review_handler {
     my($event) = @_;
     if ($event->{type} eq 'begincmd') {
     } elsif ($event->{type} eq 'endcmd') {
-	review();
+	review($event->{server});
     } elsif ($event->{text} =~ /^\(Beginning review of.*\)/) {
 	$rev_start = $event->{text};
 	$event->{NOTIFY} = 0;
