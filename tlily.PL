@@ -7,7 +7,7 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/tlily.PL,v 1.54 2001/03/05 08:32:31 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/tlily.PL,v 1.55 2001/03/20 21:51:47 neild Exp $
 
 require 5.00307;
 use strict;
@@ -55,7 +55,7 @@ if ($^O =~ /cygwin/) {
 	    $EAGAIN = $::fallback_EAGAIN;
 	} elsif ($::TL_LIBMODDIR !~ m|^//INTERNAL|) {
 	    if (! -f ".tlily-eagain") {
-		$EAGAIN = `tools/find_eagain`;
+		$EAGAIN = `$^X tools/find_eagain`;
 		if ($EAGAIN =~ /^(\d+)/) {
 		    print STDERR "Saving EAGAIN to .tlily-eagain.\n";
 		    $EAGAIN = $1;
