@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/on.pl,v 1.4 2000/03/20 08:07:34 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/on.pl,v 1.5 2000/03/20 08:33:15 neild Exp $
 
 use strict;
 use Text::ParseWords qw(quotewords);
@@ -127,6 +127,12 @@ sub on_cmd {
 
     $ui->print($str);
 
+    my $attr;
+    if ($args[0] eq '%attr') {
+	shift @args;
+	$attr = shift @args;
+    }
+
     my $handler = event_r(type => $event_type,
 			  call => sub {
 			      my ($e,$h) = @_;
@@ -155,15 +161,8 @@ sub on_cmd {
 			      }
 
 			      if ($match) {
-				  my $cmd;
-				  my $attr;
+				  my $cmd = "@args";
 				  my ($sender, $value);
-
-				  if ($args[0] eq '%attr') {
-				      shift @args;
-				      $attr = shift @args;
-				  }
-				  $cmd = "@args";
 
 				  $cmd =~ s/\$sender/$e->{SOURCE}/g;
 				  $cmd =~ s/\$value/$e->{VALUE}/g;
