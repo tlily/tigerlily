@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_parse.pl,v 1.14 1999/11/19 06:07:19 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_parse.pl,v 1.15 1999/12/06 08:00:48 mjr Exp $
 
 use strict;
 use vars qw(%config);
@@ -246,6 +246,14 @@ sub parse_line {
 	      join(", ",
 		   map { $serv->get_name(HANDLE => $_) }
 		   @{$event{RHANDLE}});
+	}
+	
+	if ($event{TARGETS}) {
+	    $event{THANDLE} = [ split /,/, $event{TARGETS} ];
+	    $event{TARGETS}  =
+	      join(", ",
+		   map { $serv->get_name(HANDLE => $_) }
+		   @{$event{THANDLE}});
 	}
 	
 	# Um.  Undef?  Don't set it at all?
