@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_state.pl,v 1.3 1999/04/09 22:48:32 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_state.pl,v 1.4 1999/04/18 19:55:59 josh Exp $
 
 # This hash keeps track of what fields from %USER and %DISC are stored in 
 # the state database.  We need to ensure that every one of these state 
@@ -48,8 +48,8 @@ foreach (keys %keep) {
 	};
 	
 	event_r(type  => $keep{$_}{$s},
-			      order => 'after',
-			      call  => $sub);
+                order => 'during',
+	        call  => $sub);
     }
 }
 
@@ -77,8 +77,8 @@ my $sub = sub {
     return;
 };
 event_r(type  => 'here',
-		      order => 'before',
-		      call  => $sub);
+        order => 'before',
+        call  => $sub);
 
 $sub = sub {
     my ($e) = @_;
@@ -100,8 +100,8 @@ $sub = sub {
     return;
 };
 event_r(type  => 'away',
-		      order => 'before',
-		      call  => $sub);
+        order => 'before',
+        call  => $sub);
 
 # DISC/destroy
 # (need to add one.. not that it matters really)

@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/expand.pl,v 1.14 1999/03/31 03:47:38 mjr Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/expand.pl,v 1.15 1999/04/18 19:55:58 josh Exp $ 
 
 use strict;
 
@@ -151,7 +151,7 @@ sub rename_handler {
 	foreach my $k (keys %expansions) {
 		$expansions{$k} =~ s/\Q$event->{SOURCE}\E/$event->{VALUE}/;
 	}
-	return;
+	return 0;
 }
 
 event_r(type => 'rename',

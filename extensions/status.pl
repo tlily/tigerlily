@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/status.pl,v 1.10 1999/04/09 22:48:34 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/status.pl,v 1.11 1999/04/18 19:56:01 josh Exp $
 
 use strict;
 
@@ -33,7 +33,7 @@ sub set_serverstatus {
     my $ui     = ui_name("main");
     my $server = server_name();
     return unless ($server);
-    
+
     my $sname = $server->state(DATA => 1,
 			       NAME => "NAME");
     $ui->set(server => $sname) if (defined $sname);
@@ -48,7 +48,7 @@ sub set_serverstatus {
     $ui->set(nameblurb => $name);
     $ui->set(state => $state{STATE}) if defined($state{STATE});
     
-    return;
+    return 0;
 }
 
 
@@ -71,15 +71,19 @@ sub load {
 	set_serverstatus();
     } else {
 	event_r(type => 'userstate',
-			      call => \&set_serverstatus);
+  	       order => 'after',	
+		call => \&set_serverstatus);
 	
 	event_r(type => 'rename',
-			      call => \&set_serverstatus);
+  	       order => 'after',
+		call => \&set_serverstatus);
 	
 	event_r(type => 'blurb',
-			      call => \&set_serverstatus);
+  	       order => 'after',	
+		call => \&set_serverstatus);
 
 	event_r(type => 'connected',
-			      call => \&set_serverstatus);
+  	       order => 'after',	
+		call => \&set_serverstatus);
     }
 }
