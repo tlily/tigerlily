@@ -1,6 +1,8 @@
 use strict;
+use FileHandle;
 
-my $last_inc;
+my $dict;
+
 sub spellcheck_input {
     my($text) = @_;
 
@@ -75,7 +77,15 @@ sub lookup_word {
 	return $look_cache{$word};
     }
 
-    if (`look -f $word` =~ m/\b${word}\b/i) {
+    my $lookout;
+    if ($dict) {
+	look($dict, $word, 1, 1);
+	$lookout = <$dict>;	
+    } else {
+	$lookout = `look -f $word`;
+    }
+
+    if ($lookout =~ m/\b${word}\b/i) {
        $look_cache{$word}=1;
     } else {
        $look_cache{$word}=0;	
@@ -90,7 +100,19 @@ sub spellcheck_cmd {
 
     if ($command =~ /on/i) {
 	TLily::UI::istyle_fn_r(\&spellcheck_input);
-	$ui->print("(spellcheck enabled)\n");
+	my $dictfile;
+	if (%Search::Dict::) {       
+	    foreach (qw(/usr/dict/words /usr/share/dict/words)) {
+		if ( -f $_ ) { $dictfile = $_; }
+	    }
+
+	    $dict = new FileHandle($dictfile);
+	}
+	if ($dict) {
+	    $ui->print("(spellcheck enabled, using Search::Dict on $dictfile)\n");
+	} else {
+	    $ui->print("(spellcheck enabled, using \`look\`)\n");
+	}
 	$state="enabled";
     } elsif ($command =~ /off/i) {
 	TLily::UI::istyle_fn_u(\&spellcheck_input);
@@ -102,8 +124,10 @@ sub spellcheck_cmd {
     }
 }
 
-
+sub unload { undef $dict; }
 sub load {    
+    eval { use Search::Dict; };
+
     command_r("spellcheck" => \&spellcheck_cmd);
 
     TLily::UI::command_r("look" => \&look_cmd);
