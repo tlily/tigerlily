@@ -1,4 +1,6 @@
 Version 2.1.1-post
+  * [tlily.PL, extensions/on.pl] Changed the formatting of SLCP sends to
+    allow event attributes to modify presentation.  [RBJ]
   * [extensions/slcp_output.pl] Changed the formatting of sends to allow
     event attributes to modify presentation.  [DPN]
   * [extensions/on.pl] Added the ability to set event attributes from a
