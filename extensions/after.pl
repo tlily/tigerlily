@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/after.pl,v 1.7 1999/04/18 19:38:41 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/after.pl,v 1.8 1999/05/04 21:48:12 danaf Exp $
 
 use strict;
 
@@ -15,7 +15,7 @@ help_r("interval" => $interval_help);
 
 my $cron_help = qq(
 Usage: %cron [after|every] <offset> <command>
-       %cron cancel <id> ...
+       %cron [cancel|delete] <id> ...
        %cron
        %after <offset> <command>
        %every <offset> <command>
@@ -27,7 +27,8 @@ periodically afterwards.  "%cron at" is not implemented, but probably should \
 be.
 
 All current tasks may be listed by running "%cron" with no arguments, and \
-an existing task may be cancelled with "%cron cancel".
+an existing task may be cancelled with "%cron cancel" or "%cron delete". \
+(The two forms are equivalent.)
 
 %after and %every act like %cron, but they set the recurrance type by default.
 
@@ -77,7 +78,7 @@ sub cron_command {
     }
 
     # Cancel one or more tasks.
-    if ($args[0] eq "cancel") {
+    if ($args[0] eq "cancel" || $args[0] eq "delete") {
 	shift @args;
 	while (@args) {
 	    my $tbc = shift @args;
