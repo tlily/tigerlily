@@ -1,4 +1,6 @@
 Version 2.3-post
+  * [TLily/UI/Curses/StatusLine.pm] When the window's width is changed,
+    redraw the status line correctly. [BEW]
   * [TLily/UI/Curses.pm] Fix for window resizing from Mike Sawyer. [DPN]
   * [extensions/autohere.pl] Added autohere, which will automatically 
     '/here' the user when they send a message.

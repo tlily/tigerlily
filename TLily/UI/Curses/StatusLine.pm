@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Curses/Attic/StatusLine.pm,v 1.8 2001/01/26 03:01:54 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Curses/Attic/StatusLine.pm,v 1.9 2002/06/06 17:29:46 bwelling Exp $
 
 package TLily::UI::Curses::StatusLine;
 
@@ -86,7 +86,6 @@ sub set {
 	return if (!defined($val) || ($self->{var}->{$name} eq $val));
     }
     $self->{var}->{$name} = $val;
-    $self->build_string();
     $self->redraw();
 }
 
@@ -94,6 +93,7 @@ sub set {
 sub redraw {
     my($self) = @_;
     
+    $self->build_string();
     $self->{W}->clrtoeol(0, 0);
     $self->{W}->addstr($self->{str});
     $self->{W}->noutrefresh();
