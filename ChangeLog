@@ -1,7 +1,9 @@
 Version 2.1.1-post
+  * [TLily/Server/SLCP.pm] Don't try to use $ui->print when reporting
+    an error with export if $ui is not defined.
   * [TLily/UI.pm, TLily/UI/Curses.pm, extensions/ui.pl] %bind with
     one argument will print the binding for the key, and with no
-    arguments will print all of the bindings.
+    arguments will print all of the bindings. [DCL]
   * [TLily/Server/Event.pm] Configurable event_timeout. [DCL]
   * [extensions/url.pl] Capture URLs in text events (but still needs a
     little work to figure out wrapped URLs).  Length of default list
