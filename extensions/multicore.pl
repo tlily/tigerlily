@@ -1,4 +1,4 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/multicore.pl,v 1.4 2001/07/31 19:33:41 coke Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/multicore.pl,v 1.5 2001/08/01 13:16:17 coke Exp $
 
 use strict;
 
@@ -33,17 +33,21 @@ sub input_handler {
 
     my @servers;
 
-    my $die=0;
-    foreach my $server (split/,/,$servers) {
-  	my $s = TLily::Server::find($server);
- 	if (!$s) {
-	  $e->{ui}->print("(could find no server to match to \"$server\")\n");
-          $die = 1;
-	} else {
-	  push @servers,$s;
-        }
+    if ($servers ne "*")  {
+      my $die=0;
+      foreach my $server (split/,/,$servers) {
+  	  my $s = TLily::Server::find($server);
+ 	  if (!$s) {
+	    $e->{ui}->print("(could find no server to match to \"$server\")\n");
+            $die = 1;
+	  } else {
+	    push @servers,$s;
+          }
+      }
+      return 1 if $die;
+    } else {
+      @servers = TLily::Server::find();
     }
-    return 1 if $die;
 
     foreach my $server (@servers) {
       $server->cmd_process($command, sub {;});
@@ -57,11 +61,14 @@ sub expand_slash {
     my($pos, $line) = $ui->get_input;
     my $partial = substr($line, 0, $pos);
 
+    if (0) {
+    # We tried expanding servers, people didn't like it.
     if ($partial eq "*") {
 	my $servers =
 	  join(",",map(scalar $_->name, TLily::Server::find));
 	$ui->set_input(length($servers) + 1, $servers . "/");
 	return;
+    }
     }
 
     if (length($partial) && $partial !~ m|[/@;:= ]|) {
