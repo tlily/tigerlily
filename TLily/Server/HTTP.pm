@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Server/Attic/HTTP.pm,v 1.3 2000/05/07 00:38:17 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Server/Attic/HTTP.pm,v 1.4 2000/10/26 20:59:07 coke Exp $
 
 package TLily::Server::HTTP;
 
@@ -24,12 +24,13 @@ sub new {
     my $class = ref($proto) || $proto;
 	
     $args{port}   ||= 80;
-    $args{protocol} = "http";
+    $args{protocol} = "http" unless defined $args{protocol};
 	
     croak "required parameter \"url\" missing"
       unless (defined $args{url});
-	
-    if ($args{url} =~ m|^http://([^:]+)(?::(\d+))?(/[/\S]+)$|) {  # A full url
+
+    # WJC: "fixed" re so that urls with path info are preserved.
+    if ($args{url} =~ m|^http://([^/:]+)(?::(\d+))?(/[/\S]+)$|) {  # A full url
 	$args{port} = $2 if defined $2;
 	$args{url} = $3;
 	$args{host} = $1;
@@ -46,7 +47,8 @@ sub new {
     
     $self->{filename} = $args{filename};
     $self->{url} = $args{url};
-    
+    $self->{callback} = $args{callback} if (defined($args{callback}));
+        
     bless $self, $class;
 }
 
