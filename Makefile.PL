@@ -7,7 +7,7 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/Makefile.PL,v 1.19 2003/11/04 01:19:14 albert Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/Makefile.PL,v 1.20 2003/11/04 01:31:54 albert Exp $
 
 use strict;
 use Config;
@@ -252,16 +252,8 @@ $(TL_GLOBAL_CF):
 	-$(RM_F) $(TL_GLOBAL_CF)
 	$(CP) tlily.global $(TL_GLOBAL_CF)
 
-announce announcement:
-	@tools/announcement
-
-release: prerelease dist postrelease
-
-prerelease:
-	@tools/prerelease $(VERSION)
-
-postrelease:
-	@tools/postrelease
+release:
+	@echo "Please use tools/makerelease to make a release."
 |;
 }
 
