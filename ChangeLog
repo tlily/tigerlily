@@ -1,3 +1,7 @@
+Version 2.1.1
+  * Bugfix release - Release 2.1 had several old files that should have
+    been included.
+
 Version 2.1
   * [TLily/UI/{Curses,Tk}.pm] Enable/disable output based on
     $config{quiet}. [CWS]
