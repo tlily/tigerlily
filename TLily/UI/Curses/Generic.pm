@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Curses/Attic/Generic.pm,v 1.19 2000/02/05 21:05:43 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Curses/Attic/Generic.pm,v 1.20 2000/02/07 01:06:21 tale Exp $
 
 package TLily::UI::Curses::Generic;
 
@@ -273,6 +273,8 @@ sub read_char {
     return if ($c eq "-1" || !defined $c);
 
     #print STDERR "c: '$c' (", ord($c), ")\n";
+    return $c if $self->{quoted_insert};
+
     if (ord($c) == 27) {
 	$meta = 1;
 	return $self->read_char();
