@@ -6,7 +6,6 @@ Before 2.0 release:
   The following need to be ported/written.  Most should be pretty easy to do
   based on the ones we've already finished.
 
-  helper.pl     (waiting for coke's patches)
   pipes.pl      (medium)
   program.pl    (medium)
   ctc.pl/httpd.pl/Httpd.pm  (steve is working on this)
@@ -20,7 +19,7 @@ Before 2.0 release:
     - when the last open server connection is closed, provide a exit/reconnect
       option. (integrate with smartexit feature)
 
- autologin - doesn't work after the first use
+   autologin - doesn't work after the first use
 
 Later:
   multiserver, multiui
