@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/keepalive.pl,v 1.5 1999/10/03 18:25:51 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/keepalive.pl,v 1.6 2000/02/14 23:19:19 tale Exp $
 #
 # keepalive -- periodically ping the server, just to verify our connection
 #              is still there.
@@ -19,11 +19,18 @@ the server every few minutes.  There are two configuration variables:
 
 my $pinging = 0;
 
+my %timer;
+
 sub keepalive {
     my($server, $handler) = @_;
 
     my $ui = ui_name();
 
+    if ($timer{interval} != $config{keepalive_interval}) {
+        $timer{interval}  = $config{keepalive_interval};
+    }
+
+    $ui->print(time . "\n");
     $ui->printf("(keepalive)\n") if ($config{keepalive_debug});
     if ($pinging == 1) {
 	$ui->print("(server not responding)\n");
@@ -45,10 +52,12 @@ sub keepalive {
     return 0;
 }
 
-
 if ($config{keepalive_interval} <= 0) {
     $config{keepalive_interval} = 600;
 }
 
-TLily::Event::time_r(interval => $config{keepalive_interval},
-		     call => sub { keepalive(active_server(),@_) });
+$timer{interval} = $config{keepalive_interval};
+$timer{after} = $config{keepalive_interval};
+$timer{call} = sub { keepalive(active_server(), @_) };
+
+TLily::Event::time_r(\%timer);
