@@ -1,4 +1,4 @@
-Version 2.0-post
+Version 2.1
   * [TLily/UI/{Curses,Tk}.pm] Enable/disable output based on
     $config{quiet}. [CWS]
   * [extensions/status.pl] changed the clock format to remove the
