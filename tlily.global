@@ -8,7 +8,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/Attic/tlily.global,v 1.37 1999/12/15 20:50:11 albert Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/Attic/tlily.global,v 1.38 1999/12/21 07:47:33 neild Exp $
 
 # Global defaults for tlily
 # PLEASE DO NOT EDIT EXCEPT FOR DEVELOPMENT!
@@ -74,7 +74,7 @@ if ($^O =~ /cygwin/) {
    'yellow'          => [qw(yellow  -       bold  )],
    'green'           => [qw(green   -       bold  )],
    'bwhite'          => [qw(-       -       bold  )],   
-   'user_input'      => [qw(white   -       normal)],
+   'user_input'      => [qw(-       -       normal)],
   );
 
 %color_attrs = %traditional_color_attrs;
