@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Server/Attic/SLCP.pm,v 1.13 1999/03/23 08:33:25 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Server/Attic/SLCP.pm,v 1.14 1999/04/09 21:34:26 josh Exp $
 
 package TLily::Server::SLCP;
 
@@ -96,15 +96,16 @@ sub expand_name {
 	return $self->user_name || 'me';
     }
 
-	# Groups support won't work until SLCP sends group information.
-#	if ($Groups{$name}) {
-#		if ($config{expand_group}) {
-#			return join(',', @{$Groups{$name}->{Members}});
-#		} else {
-#			return $Groups{$name}->{Name};
-#		}
-#	}
-
+    # Check for a group match.
+    if ($self->{NAME}->{$name}->{MEMBERS}) {
+    	if ($config{expand_group}) {
+	    return join ',', map { $self->get_name(HANDLE => $_) }
+ 	                         split /,/,$self->{NAME}->{$name}->{MEMBERS};
+	} else {
+	    return $self->{NAME}->{$name}->{NAME};
+	}
+    }
+    
     # Check for an exact match.
     if ($self->{NAME}->{$name}) {
 	if ($self->{NAME}->{$name}->{LOGIN} && !$disc) {

@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_parse.pl,v 1.4 1999/04/03 05:06:17 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_parse.pl,v 1.5 1999/04/09 21:34:28 josh Exp $
 
 use strict;
 use vars qw(%config);
@@ -187,7 +187,16 @@ sub parse_line {
 	
 	return;
     }
-    
+
+    # SLCP "%GROUP" messages.
+    if ($line =~ /^%GROUP /) {
+	my %args = SLCP_parse($line);	
+	$serv->state(%args);
+	
+	return;
+    }
+
+	
     # SLCP "%DATA" messages. 
     if ($line =~ /^%DATA /) {
 	my %args = SLCP_parse($line);

@@ -10,7 +10,6 @@ Before 2.0 release:
   ctc.pl/httpd.pl/Httpd.pm  (steve is working on this)
 			    (steve is almost done with this)
   New functionality:
-    %GROUP, if xian likes it..
     - Makefile.PL   (albert is working on this)  
     - when the last open server connection is closed, provide a exit/reconnect
       option. (integrate with smartexit feature)
