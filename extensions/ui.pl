@@ -1,4 +1,4 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/ui.pl,v 1.32 2001/11/15 05:33:23 tale Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/ui.pl,v 1.33 2001/11/15 05:45:16 tale Exp $
 use strict;
 
 =head1 NAME
@@ -494,12 +494,27 @@ zap_to_char {
 }
 
 TLily::UI::command_r("zap-to-char" => \&zap_to_char);
-TLily::UI::command_r("zap-to-char" => \&zap_to_char);
 TLily::UI::bind("M-z" => "zap-to-char");
 shelp_r("zap-to-char" =>
         "Kill the input buffer through the next character typed.");
+help_r("zap-to-char" => $zap_help);
 
+sub
+kill_sentence {
+    my $ui = shift;
+    my $input = $ui->{input};
+    my $end = $input->end_of_sentence();
 
+    $input->kill_append($input->{point}, $end - $input->{point});
+
+    $input->update_style();
+    $input->rationalize();
+    $input->redraw();
+}
+
+TLily::UI::command_r("kill-sentence" => \&kill_sentence);
+TLily::UI::bind("M-k" => "kill-sentence");
+shelp_r("kill-sentence" => "Kill the remainder of the sentence.");
 
 #
 # Styles.

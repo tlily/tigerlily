@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/Curses.pm,v 1.53 2001/11/15 04:35:25 tale Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/Curses.pm,v 1.54 2001/11/15 05:45:17 tale Exp $
 
 package TLily::UI::Curses::Proxy;
 
@@ -249,7 +249,7 @@ sub mark_output {
  # 'M-h'        is UNBOUND
  # 'M-i'        is UNBOUND
  # 'M-j'        is UNBOUND
- # 'M-k'        is UNBOUND
+ # 'M-k'        is 'kill-sentence', extensions/ui.pl
    'M-l'        => 'down-case-word',
  # 'M-l'        is _also_ 'toggle-leet-mode', extensions/leet.pl
    'M-m'        => 'mark-output',
@@ -265,7 +265,7 @@ sub mark_output {
  # 'M-w'        is UNBOUND
  # 'M-x'        is UNBOUND
  # 'M-y'        is UNBOUND
- # 'M-z'        is UNBOUND
+ # 'M-z'        is 'zap-to-char', extensions/ui.pl
    'bs'         => 'backward-delete-char',
    'del'        => 'backward-delete-char',
    'down'       => 'next-history',
