@@ -3,13 +3,14 @@
 require 5.00307;
 
 #$TL_ETCDIR=".";
-#$TL_LIBDIR="LC";
+$TL_LIBDIR="@@LIBDIR@@";
 $TL_EXTDIR="@@LIBEXTDIR@@";
 
 use strict;
 use lib qw(@@LIBMODDIR@@);
 
 use TLily::Event;
+use TLily::Config;
 use TLily::UI;
 use TLily::UI::Curses;
 use TLily::Server;
@@ -27,6 +28,7 @@ if ( -f 'tlily.PL' ) {
 	}
 }
 
+TLily::Config::init();
 TLily::Event::init();
 my $ui = TLily::UI::Curses->new(name => 'main');
 
@@ -128,11 +130,12 @@ TLily::Event::event_r(type  => "prompt",
 		order => "after",
 		call  => \&prompt_handler);
 
-TLily::Extend::load("server", $ui, 1);
-TLily::Extend::load("output", $ui, 1);
-TLily::Extend::load("expand", $ui, 1);
-TLily::Extend::load("status", $ui, 1);
-TLily::Extend::load("state", $ui, 1);
+TLily::Extend::load_extensions($ui);
+
+$ui->print("\n");
+
+TLily::Event::send(type => 'user_input',
+		   text => "%connect");
 
 while (1) {
 	eval { TLily::Event::loop; };
