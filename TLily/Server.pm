@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Server.pm,v 1.28 2001/03/05 08:32:32 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Server.pm,v 1.29 2001/03/06 23:55:05 neild Exp $
 
 package TLily::Server;
 
@@ -113,9 +113,9 @@ sub new {
 #    $self->{sock} = IO::Socket::INET->new(PeerAddr => $self->{host},
 #					  PeerPort => $self->{port},
 #					  Proto    => 'tcp');
-    $self->{sock} = contact($self->{host}, $self->{port});
-    if (!defined $self->{sock}) {
-	$ui->print("failed: $!\n");
+    eval { $self->{sock} = contact($self->{host}, $self->{port}); };
+    if ($@) {
+	$ui->print("failed: $@");
 	return;
     }
 
@@ -164,10 +164,12 @@ sub contact {
     croak "No port" unless $port;
 
     $iaddr = inet_aton($serv);
+    die "No such host or address\n" unless defined($iaddr);
+
     $paddr = sockaddr_in($port, $iaddr);
     $proto = getprotobyname('tcp');
-    socket(SOCK, PF_INET, SOCK_STREAM, $proto) or return;
-    connect(SOCK, $paddr) or return;
+    socket(SOCK, PF_INET, SOCK_STREAM, $proto) or die "$!\n";
+    connect(SOCK, $paddr) or die "$!\n";
     return *SOCK;
 }
 
