@@ -1,4 +1,4 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/autologin.pl,v 1.1 1999/02/26 20:21:33 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/autologin.pl,v 1.2 1999/02/26 22:45:35 josh Exp $
 #
 # Handle autologins.
 #
@@ -10,8 +10,8 @@ unshift @files, $config{'autologin_file'} if ($config{'autologin_file'});
 
 init() unless $config{noauto};
 
-TLily::User::shelp_r("autologin", "Module for automating the login process.");
-TLily::User::help_r("autologin", 
+shelp_r("autologin", "Module for automating the login process.");
+help_r("autologin", 
 "Reads files containing lines of the format: <green>alias host port login passwd</green> in order to automate your login process to the specified server.  Unlike lclient, all fields must be present or the line will be ignored. (FIXME!)
 Config options for autologin:
     \$autologin_file = 'filename';
@@ -39,7 +39,7 @@ sub init {
 		    my($event, $handler) = @_;
 		    return 0 unless ($event->{Text} =~ /^login:/);
 		    ui_output("(using autologin information)");
-		    my $server = TLily::Server::name();
+		    my $server = server_name();
 		    $server->sendln("${user} ${pass}");
 		    TLily::Event::time_u($handler->{Id});
 		    return 1;

@@ -1,4 +1,4 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Extend.pm,v 1.5 1999/02/26 21:29:05 josh Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Extend.pm,v 1.6 1999/02/26 22:45:25 josh Exp $ 
 
 # initial version, 10/24/97, Josh Wilmes
 
@@ -12,10 +12,12 @@ use vars qw(%config);
 use TLily::ExoSafe;
 use TLily::Config qw(%config);
 use TLily::Registrar;
-use TLily::User;
+use TLily::User  qw(&help_r &shelp_r &command_r);
+use TLily::Event qw(&event_r &event_u);
 
 my %extensions = ();
-my @share=qw(%config);
+my @share=qw(%config &help_r &shelp_r &command_r &event_r &event_u
+	     &ui_name &server_name);
 
 sub load {
     my ($name, $ui, $verbose)=@_;
@@ -162,5 +164,13 @@ usage: %extension list
 ");
 }
 
+# Convenience functions for the extensions
+sub ui_name {
+    TLily::UI::name(@_);
+}
+
+sub server_name {
+    TLily::Server::name(@_);
+}
 
 1;

@@ -1,4 +1,4 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/expand.pl,v 1.8 1999/02/26 03:54:40 josh Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/expand.pl,v 1.9 1999/02/26 22:45:36 josh Exp $ 
 
 use strict;
 
@@ -124,7 +124,7 @@ sub private_handler {
     
     return;
 }
-TLily::Event::event_r(type => 'private',
+event_r(type => 'private',
 		      call => \&private_handler);
 
 sub user_send_handler {
@@ -139,5 +139,5 @@ sub user_send_handler {
 
 	return;
 }
-TLily::Event::event_r(type => 'user_send',
+event_r(type => 'user_send',
 		      call => \&user_send_handler);

@@ -1,8 +1,8 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/after.pl,v 1.1 1999/02/26 20:21:33 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/after.pl,v 1.2 1999/02/26 22:45:33 josh Exp $
 
-TLily::User::command_r('after' => \&after_handler);
-TLily::User::shelp_r('after' => "Run a lily command after a delay");
-TLily::User::help_r('after', qq(Usage:
+command_r('after' => \&after_handler);
+shelp_r('after' => "Run a lily command after a delay");
+help_r('after', qq(Usage:
 %after (offset) (command)
 Runs (command) after (offset) amount of time.
 
@@ -77,7 +77,7 @@ sub after_handler {
     my $sub = sub {
 	$ui->print("($F[0] of time have passed, running '$F[1]'.)" . "\n");
 	TLily::Event::send(type => 'user_input',
-			   text => "$F[1]");
+			   text => "$F[1]\r\n");
 	delete $after{$id};
     };
     $after_id{$id} = TLily::Event::time_r(after => $T,

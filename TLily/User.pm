@@ -3,6 +3,11 @@ package TLily::User;
 use strict;
 use Carp;
 use Text::Abbrev;
+use Exporter;
+use vars qw(@ISA @EXPORT_OK);
+
+@ISA = qw(Exporter);
+@EXPORT_OK = qw(&help_r &shelp_r &command_r);
 
 =head1 NAME
 

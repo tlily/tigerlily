@@ -7,7 +7,7 @@ sub server_command {
     my($ui, $arg) = @_;
     my(@argv) = split /\s+/, $arg;
 
-    $ui ||= TLily::UI::name();
+    $ui ||= ui_name();
 
     my($host, $port) = @argv;
     $host ||= $config{server};
@@ -21,18 +21,18 @@ sub server_command {
 				       port    => $port,
 				       ui_name => $ui->name);
 }
-TLily::User::command_r(connect => \&server_command);
+command_r(connect => \&server_command);
 
 sub send_handler {
     my($e, $h) = @_;
     $e->{server}->sendln(join(",",@{$e->{RECIPS}}),$e->{dtype},$e->{text});
 }
-TLily::Event::event_r(type => 'user_send',
+event_r(type => 'user_send',
 		      call => \&send_handler);
 
 sub to_server {
     my($e, $h) = @_;
-    my $server = TLily::Server::name();
+    my $server = server_name();
 
     if (! $server) {
 	# we're not connected to a server
@@ -51,6 +51,6 @@ sub to_server {
     $server->sendln($e->{text});
     return 1;
 }
-TLily::Event::event_r(type  => "user_input",
+event_r(type  => "user_input",
 		      order => "after",
 		      call  => \&to_server);

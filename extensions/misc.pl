@@ -1,4 +1,4 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/misc.pl,v 1.7 1999/02/26 03:54:41 josh Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/misc.pl,v 1.8 1999/02/26 22:45:38 josh Exp $ 
 
 use strict;
 use TLily::Version;
@@ -36,14 +36,14 @@ sub bang_handler {
     return;
 }
 
-TLily::User::shelp_r('shell' => 'run shell command');
-TLily::User::help_r('shell' => '
+shelp_r('shell' => 'run shell command');
+help_r('shell' => '
 Usage: %shell <command>
        ! <command>
 ');
-TLily::Event::event_r(type => 'user_input',
+event_r(type => 'user_input',
 		      call => \&bang_handler);
-TLily::User::command_r('shell' => \&shell_handler);
+command_r('shell' => \&shell_handler);
 
 
 #
@@ -73,9 +73,9 @@ sub eval_handler {
     return;
 }
 	     
-TLily::User::command_r('eval' => \&eval_handler);
-TLily::User::shelp_r('eval' => 'run perl code');
-TLily::User::help_r('eval' => '
+command_r('eval' => \&eval_handler);
+shelp_r('eval' => 'run perl code');
+help_r('eval' => '
 Usage: %eval [list] <code>
 
 Evaluates the given perl code.  The code is evaluated in a scalar context,
@@ -93,18 +93,18 @@ The results of the eval, if any, will be printed.
 sub version_handler {
     my($ui, $args) = @_;
     $ui->print("(Tigerlily version $TLily::Version::TL_VERSION)\n");
-    my $server = TLily::Server::name();
+    my $server = server_name();
     $server->sendln("/display version");
     return;
 }
 
-TLily::User::shelp_r('version' => 'Display the Tigerlily and server versions');
-TLily::User::help_r('version' => '
+shelp_r('version' => 'Display the Tigerlily and server versions');
+help_r('version' => '
 Usage: %version
 
 Displays the version of Tigerlily and the server.
 ');
-TLily::User::command_r('version' => \&version_handler);
+command_r('version' => \&version_handler);
 
 
 #
@@ -118,8 +118,8 @@ sub echo_handler {
     return;
 }
 
-TLily::User::shelp_r('echo' => 'Echo text to the screen.');
-TLily::User::help_r('echo' => '
+shelp_r('echo' => 'Echo text to the screen.');
+help_r('echo' => '
 Usage: %echo [-n] <text>
 ');
-TLily::User::command_r('echo' => \&echo_handler);
+command_r('echo' => \&echo_handler);

@@ -2,7 +2,6 @@ package TLily::Event::Core;
 
 use strict;
 
-
 sub new {
 	my $proto = shift;
 	my $class = ref($proto) || $proto;
@@ -50,7 +49,11 @@ package TLily::Event;
 use strict;
 use Carp;
 use TLily::Registrar;
+use Exporter;
+use vars qw(@ISA @EXPORT_OK);
 
+@ISA = qw(Exporter);
+@EXPORT_OK = qw(&event_r &event_u);
 
 # Queue of waiting events.
 my @queue;

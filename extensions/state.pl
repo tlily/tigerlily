@@ -43,7 +43,7 @@ foreach (keys %keep) {
 	    return;
 	};
 	
-	TLily::Event::event_r(type  => $keep{$_}{$s},
+	event_r(type  => $keep{$_}{$s},
 			      order => 'after',
 			      call  => $sub);
     }
@@ -72,7 +72,7 @@ my $sub = sub {
     
     return;
 };
-TLily::Event::event_r(type  => 'here',
+event_r(type  => 'here',
 		      order => 'before',
 		      call  => $sub);
 
@@ -95,7 +95,7 @@ $sub = sub {
     
     return;
 };
-TLily::Event::event_r(type  => 'away',
+event_r(type  => 'away',
 		      order => 'before',
 		      call  => $sub);
 

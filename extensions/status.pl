@@ -1,13 +1,7 @@
 use strict;
-use vars qw(%config);
-
-use TLily::UI;
-use TLily::Server;
-use TLily::Config qw(%config);
-
 
 sub set_clock {
-    my $ui = TLily::UI::name("main");
+    my $ui = ui_name("main");
     
     my @a = localtime;
     if($config{clockdelta}) {
@@ -33,16 +27,16 @@ sub set_clock {
 }    
 
 sub init_bandwidth {
-    my $ui = TLily::UI::name("main");
-    my $server = TLily::Server::name();
+    my $ui = ui_name("main");
+    my $server = server_name();
     my $last_in  = $server->{bytes_in};
     
     $ui->define(bandwidth => 'right');
     my $update = 10;		# seconds
     
     my $sub = sub {
-	my $ui = TLily::UI::name("main");
-	my $server = TLily::Server::name();
+	my $ui = ui_name("main");
+	my $server = server_name();
 	return unless ($server);
 	
 	my $in       = $server->{bytes_in} - $last_in;
@@ -66,8 +60,8 @@ sub init_bandwidth {
 }
 
 sub set_serverstatus {
-    my $ui     = TLily::UI::name("main");
-    my $server = TLily::Server::name();
+    my $ui     = ui_name("main");
+    my $server = server_name();
     return unless ($server);
     
     my $sname = $server->state(DATA => 1,
@@ -89,8 +83,8 @@ sub set_serverstatus {
 
 
 sub load {
-    my $ui = TLily::UI::name("main");
-    my $server = TLily::Server::name();
+    my $ui = ui_name("main");
+    my $server = server_name();
     
     $ui->define(nameblurb => 'left');
     $ui->define(clock     => 'right');
@@ -107,19 +101,19 @@ sub load {
 	set_serverstatus();
 	init_bandwidth();
     } else {
-	TLily::Event::event_r(type => 'userstate',
+	event_r(type => 'userstate',
 			      call => \&set_serverstatus);
 	
-	TLily::Event::event_r(type => 'rename',
+	event_r(type => 'rename',
 			      call => \&set_serverstatus);
 	
-	TLily::Event::event_r(type => 'blurb',
+	event_r(type => 'blurb',
 			      call => \&set_serverstatus);
 
-	TLily::Event::event_r(type => 'connected',
+	event_r(type => 'connected',
 			      call => \&set_serverstatus);
 	
-	TLily::Event::event_r(type => 'connected',
+	event_r(type => 'connected',
 			      call => \&init_bandwidth);
     }
 }

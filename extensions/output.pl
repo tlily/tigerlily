@@ -18,7 +18,7 @@ that the parser module (slcp.pl) send into appopriate output for the user.
 my $sub = sub {
     my($e, $h) = @_;
     
-    my $ui = TLily::UI::name("main");
+    my $ui = ui_name("main");
     $ui->print("Event: $e->{type}\n");
     foreach (sort keys %$e) {
 	next if ($_ eq "type");
@@ -35,7 +35,7 @@ my $sub = sub {
     $ui->print("\n");
     return;
 };
-#TLily::Event::event_r(type => 'all', call => $sub);
+#event_r(type => 'all', call => $sub);
 
 
 sub private_fmt {
@@ -61,7 +61,7 @@ sub private_fmt {
     $ui->style("default");
   return;
 }
-TLily::Event::event_r(type  => 'private',
+event_r(type  => 'private',
 		      order => 'before',
 		      call  => sub { $_[0]->{formatter} = \&private_fmt; return });
 
@@ -86,7 +86,7 @@ sub public_fmt {
     
     return;
 }
-TLily::Event::event_r(type  => 'public',
+event_r(type  => 'public',
 		      order => 'before',
 		      call  => sub { $_[0]->{formatter} = \&public_fmt; return });
 
@@ -101,7 +101,7 @@ sub emote_fmt {
     
     return;
 }
-TLily::Event::event_r(type  => 'emote',
+event_r(type  => 'emote',
 		      order => 'before',
 		      call  => sub { $_[0]->{formatter} = \&emote_fmt;
 				     return });
@@ -231,7 +231,7 @@ $sub = sub {
     return;
 };
 
-TLily::Event::event_r(type  => 'all',
+event_r(type  => 'all',
 		      order => 'before',
 		      call  => $sub);
 

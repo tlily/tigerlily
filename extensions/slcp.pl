@@ -1,4 +1,4 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/Attic/slcp.pl,v 1.9 1999/02/26 03:54:43 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/Attic/slcp.pl,v 1.10 1999/02/26 22:45:43 josh Exp $
 
 use strict;
 use vars qw(%config);
@@ -124,7 +124,7 @@ sub parse_line {
     chomp $line;
     
     my $ui;
-    $ui = TLily::UI::name($serv->{ui_name}) if ($serv->{ui_name});
+    $ui = ui_name($serv->{ui_name}) if ($serv->{ui_name});
     
     #$ui->print("=", $line, "\n") if ($config{parser_debug});
     #print STDERR "=", $line, "\n";
@@ -353,7 +353,7 @@ sub parse_line {
 
 
 sub load {
-    TLily::Event::event_r(type => 'slcp_data',
+    event_r(type => 'slcp_data',
 			  call => \&parse_raw);
 }
 
