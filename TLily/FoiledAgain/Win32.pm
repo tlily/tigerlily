@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/FoiledAgain/Attic/Win32.pm,v 1.3 2003/02/13 23:49:56 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/FoiledAgain/Attic/Win32.pm,v 1.4 2003/02/14 00:30:07 josh Exp $
 
 package TLily::FoiledAgain::Win32;
 
@@ -74,7 +74,6 @@ sub bell {
 sub screen_width  { ($SCREEN->Size())[0]; }
 sub screen_height { ($SCREEN->Size())[1]; }
 sub update_screen { 
-    
     foreach my $window (@windows) {
         my ($width, $height) = ($window->{cols}, $window->{lines});
 
@@ -104,7 +103,6 @@ sub new {
     my $self = {};
 
     $self->{buffer} = new Win32::Console;
-    $self->{buffer}->Alloc();
 
     $self->{begin_x} = $begin_x;
     $self->{begin_y} = $begin_y;
@@ -120,6 +118,7 @@ sub new {
 
     push @windows, $self;
     $self->{windownum} = @windows;
+    uidebug("[window #$self->{windownum}] allocated.\n");
 
     return $self;
 }
@@ -202,7 +201,10 @@ sub destroy {
     my ($self) = @_;
     DEBUG(@_);
 
-    $self->{buffer}->Free();
+    undef $self->{Buffer};
+    
+    # and remove this window from the list..
+    @windows = grep { $_ ne $self } @windows;
 }
 
 
