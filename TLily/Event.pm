@@ -7,12 +7,13 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Event.pm,v 1.36 2003/02/28 01:48:45 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Event.pm,v 1.37 2003/08/12 03:42:10 coke Exp $
 
 package TLily::Event::Core;
 
 use strict;
 use TLily::Config qw(%config);
+use TLily::Version;
 
 sub new {
     print STDERR ": TLily::Event::Core::new\n" if $config{ui_debug};
@@ -50,6 +51,13 @@ sub io_u {
 sub run {
     print STDERR ": TLily::Event::Core::run\n" if $config{ui_debug};
     my($self, $timeout) = @_;
+
+    if ($TLily::Version::VERSION =~ /-aqua$/) {
+      # This is a bit of a hack, though it seems to work.
+      # Eventually, I think that Event.pm in aqua will JUST be
+      # the cocoa events, and not have to resort to this trickery --WJC
+      $timeout = 0.1;
+    }
 
     my($rout, $wout, $eout) =
       ($self->{rbits}, $self->{wbits}, $self->{ebits});
