@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/server.pl,v 1.26 2000/09/09 06:07:26 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/server.pl,v 1.27 2000/09/09 20:13:44 jordan Exp $
 
 use strict;
 
@@ -189,5 +189,17 @@ sub to_server {
 event_r(type  => "user_input",
 	order => "after",
 	call  => \&to_server);
+
+sub smartexit_message {
+  my ($e,$h)=@_;
+  my $ui=TLily::UI::name();
+  if (TLily::Server::find==0 && $config{smartexit}) {
+    $ui->print("(Smartexit is on; press enter to exit tigerlily.)\n");
+  }
+  return 1;
+}
+event_r(type  => 'server_disconnected',
+	order => 'after',
+	call  => \&smartexit_message);
 
 1;
