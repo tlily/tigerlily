@@ -1,8 +1,7 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/xmms.pl,v 1.2 2000/09/09 22:21:10 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/xmms.pl,v 1.3 2000/09/10 06:23:19 mjr Exp $
 
 use strict;
-use Xmms::Remote;
 eval 'use Xmms::Remote;';
 if ($@) {
     die "xmms.pl requires Xmms::Remote to be installed.\n";

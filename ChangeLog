@@ -1,4 +1,10 @@
 Version 2.1.1-post
+  * [extensions/xmms.pl] Fixes, added ability to play a URL. [MJR]
+  * [extensions/xmms.pl] New extension; allows user to control Xmms from
+    within tlily. [WJC]
+  * [TLily/User.pm] Fixed so that the POD indexer only looks at files ending
+    in .pl, .pm, or .pod. [MJR]
+  * [extensions] Added POD docs to more extensions. [MJR]
   * [UI/Tk] Added dump_to_file method for %dumpscrollback. [CWS]
   * [UI] Added %dumpscrollback, which lets you dump the scrollback buffer to 
     a file. [JDW]
