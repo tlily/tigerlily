@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_parse.pl,v 1.21 2000/01/28 19:02:47 steve Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_parse.pl,v 1.22 2000/01/28 19:13:22 steve Exp $
 
 use strict;
 use vars qw(%config);
@@ -431,6 +431,8 @@ sub unwind_queue {
 
 	my $serv = $event->{server};
 
+	$serv->{process_queue} = 1;
+
 	foreach my $line (@{$serv->{_queue}}) {
 		parse_line ($serv, $line);
 	}
@@ -439,7 +441,7 @@ sub unwind_queue {
 	$serv->{logged_in} = 1;
 	$serv->{process_queue} = 0;
 
-
+	$serv->{_queue} = undef;
 }
 
 sub load {
