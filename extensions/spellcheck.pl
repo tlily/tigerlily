@@ -55,9 +55,48 @@ sub spelled_correctly {
     my ($word) = @_;
 
     return 1 if lookup_word($word);
-    $word =~ s/(?:s|ed|ing)$//g;
-    return 1 if lookup_word($word);
 
+    # try stripping some obvious suffixes
+    $word =~ s/(?:s|ed|ing|\'s)$//g;
+    return 1 if $1 && lookup_word($word);
+
+    $word =~ s/([^ey]e)st$/$1/g;
+    return 1 if $1 && lookup_word($word);
+
+    $word =~ s/([^ey])er$/$1/g;
+    return 1 if $1 && lookup_word($word);
+
+    $word =~ s/([^ey])ed$/$1/g;
+    return 1 if $1 && lookup_word($word);
+
+    $word =~ s/([^e])ing$/$1/g;
+    return 1 if $1 && lookup_word($word);
+    
+    # now try adding some things.
+    # prefixes
+    foreach (qw(re in un)) {
+	return 1 if lookup_word("$_${word}");
+    }
+    
+    # ispell also checks a bunch of suffixes.  They mostly have special rules 
+    # though, so I don't implement them properly here.   We will support ispell
+    # directly, and it will do a better job.  
+    # here, we just make some guesses which may lead to false positives..
+
+    return 1 if lookup_word("${word}s");
+    return 1 if ($word =~ /e$/         && lookup_word("${word}d"));
+    return 1 if ($word =~ /e$/         && lookup_word("${word}rs"));
+    return 1 if ($word =~ /e$/         && lookup_word("${word}r"));
+    return 1 if ($word =~ /[^ey]$/     && lookup_word("${word}ers"));
+    return 1 if ($word =~ /[^ey]$/     && lookup_word("${word}er"));
+    return 1 if ($word =~ /[^e]$/      && lookup_word("${word}ings"));
+    return 1 if ($word =~ /[^e]$/      && lookup_word("${word}ing"));
+    return 1 if ($word =~ /[^aeiou]y$/ && lookup_word("${word}ed"));
+    return 1 if ($word =~ /[^ey]$/     && lookup_word("${word}ed"));
+    return 1 if ($word =~ /[^aeiou]y$/ && lookup_word("${word}est"));
+    return 1 if ($word =~ /[^ey]$/     && lookup_word("${word}est"));
+    return 1 if ($word =~ /e$/         && lookup_word("${word}st"));
+    
     return 0;
 }
 
