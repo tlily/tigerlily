@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/on.pl,v 1.6 2000/03/24 21:23:43 kazrak Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/on.pl,v 1.7 2000/05/02 01:14:02 josh Exp $
 
 use strict;
 use Text::ParseWords qw(quotewords);
@@ -40,6 +40,10 @@ are the "header_fmt", "sender_fmt", "dest_fmt", "body_fmt", and
 that these attributes take styles as arguments -- see %help style for
 more information.)
 
+You may also use "%eval <code>" to run arbitrary code in reaction to some
+event.  The result of the code will be sent to the initiator of that event,
+if defined.
+
 Examples:
 
   %on unidle from appleseed "appleseed;[autonag] Gimme my scsi card!"
@@ -47,7 +51,9 @@ Examples:
   %on emote to beener like "ping (.*)" "$1;ping!"
   %on public to news %attr dest_fmt significant
   %on attach from SignificantOther %attr slcp_fmt significant
+  %on attach from JoshTest "%eval `banner wazzup?`"  
 ]);
+
 
 
 my @on_handlers;
@@ -185,12 +191,19 @@ sub on_cmd {
 					  return;				  
 				      }
 			      
-				      foreach (split /\\n/, $cmd) {
-					  TLily::Event::send({type => 'user_input',
-							      ui   => $e->{ui},
-							      text => "$_\n"});
-				      }
-				  }
+                                      if ($cmd =~ /^%eval (.*)/) {
+                                          $cmd = eval "$1;";
+                                          $cmd .= "ERROR: $@" if $@;
+                                          $cmd = "$e->{'SOURCE'};" .
+                                            TLily::Bot::wrap_lines($cmd);
+                                      }
+                                      
+                                      foreach (split /\\n/, $cmd) {
+                                          TLily::Event::send({type => 'user_input',
+                                                              ui   => $e->{ui},
+                                                              text => "$_\n"});
+                                      }
+                                  }
 			      }
 
 			      return(0);
