@@ -154,7 +154,7 @@ sub infobot_init {
 
     # and put some things into main:: which the "extras" expect.
     # (oy)
-    Util::import_export($this_package, 'main', qw(status getparam));
+    Util::import_export($this_package, 'main', qw(status getparam update));
     
     
     opendir DIR, $param{'extradir'}
