@@ -1,5 +1,5 @@
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/namethatblurb.pl,v 1.3 2001/12/18 23:23:45 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/namethatblurb.pl,v 1.4 2001/12/18 23:42:20 neild Exp $
 #
 
 use strict;
@@ -37,7 +37,7 @@ sub blurbcheck {
 		    @match = grep(!/^-/, $server->expand_name($_));
 		    last if @match;
 	    }
-    } elsif ($text =~ /(his|her|its)\s*blurb/i) {
+    } elsif ($text =~ /(my|his|her|its)\s*blurb/i) {
 	    @match = ($event->{SOURCE});
     }
     return unless @match;
