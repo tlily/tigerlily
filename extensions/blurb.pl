@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/blurb.pl,v 1.8 2000/12/14 14:51:11 coke Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/blurb.pl,v 1.9 2000/12/14 16:30:21 coke Exp $
 
 use strict;
 
@@ -10,16 +10,24 @@ use strict;
 # Ping me if you think this is happening.
 #
 
+shelp_r("blurb_all" => "(boolean) update blurb on ALL cores or just local", "variables");
 command_r('blurb', \&blurb_cmd);
 shelp_r('blurb', "Format your blurb so it fits.");
 help_r( 'blurb',"%blurb <blurb> will try to wedge your blurb into the available space
 if it won't fit. There is, by default, a 35 character limit on the length
 of your psuedo + the length of your blurb. (Toss in another 3 for the ' []',
 and the total of 38 is what's allowed to satisfy those lame old telnet
-clients. 
+clients.) 
 
 The extension will use a variety of techniques to try to cut your blurb
-down to size, and failing those, will lop off the end of your blurb.");
+down to size, and failing those, will lop off the end of your blurb.
+
+The multi-core version of %blurb calculates things based on your current
+psuedo. This might cause problems if you use psuedos of various lengths on
+different cores.
+");
+
+$config{"blurb_all"} = 0 if !exists($config{"blurb_all"});
 
 #
 # Abbrs: a hash of regexen and their abbreviations.
@@ -68,9 +76,19 @@ sub blurb_cmd {
 	my $failed=1;
 
 	if ($blurb eq "off") {
-		TLily::Server->active()->cmd_process("/blurb off", sub {
-			# I don't see how to get the output of the cmd back...
-		});
+		my @servers=();
+		if ($config{blurb_all}) {
+			@servers = TLily::Server::find();
+		} else {
+			$servers[0] = TLily::Server->active();
+		}
+	
+		foreach my $core (@servers) {	
+			next if !defined $core;
+			$core->cmd_process("/blurb off", sub {
+				# I don't see how to get the output of the cmd back...
+			});
+		};
 		return;
 	}
 
@@ -156,9 +174,19 @@ sub blurb_cmd {
 	
    	DONE:
 	#$ui->print("K'PLA!\n");
-	TLily::Server->active()->cmd_process("/blurb [" . $blurb . "]", sub {
-		# I don't see how to get the output of the cmd back...
-	});
+	my @servers=();
+	if ($config{blurb_all}) {
+		@servers = TLily::Server::find();
+	} else {
+		$servers[0] = TLily::Server->active();
+	}
+
+	foreach my $core (@servers) {	
+		next if !defined $core;
+		$core->cmd_process("/blurb [" . $blurb . "]", sub {
+			# I don't see how to get the output of the cmd back...
+		});
+	};
 	#$ui->print("BLURB: " . $blurb . "\n");
 }
 
