@@ -7,7 +7,7 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/tools/build_tlily,v 1.1 2003/10/19 00:06:43 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/tools/build_tlily,v 1.2 2003/10/28 21:29:29 albert Exp $
 
 use strict;
 use Config;
@@ -157,7 +157,7 @@ sub get_tlily_plx {
     
     $script .= "{\n";
     $script .= "package main;\n";
-    $script .= embedperl("tlily", 1);
+    $script .= embedperl("tlily.PL", 1);
     $script .= "}\n";
     
     $script .= "__END__\n";
