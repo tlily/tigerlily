@@ -5,6 +5,7 @@ use strict;
 
 use TLily::UI;
 use TLily::Server::SLCP;
+use TLily::Server::AIM;
 use TLily::Event;
 
 =head1 NAME
@@ -90,11 +91,23 @@ sub connect_command {
     }
 
     my $server;
-    $server = TLily::Server::SLCP->new(host      => $host,
-				       port      => $port,
-				       user      => $user,
-				       password  => $pass,
-				       'ui_name' => $ui->name);
+    my $class = 'TLily::Server::SLCP';
+
+    if ($host =~ /^aim$/i) {
+        $host = "host not used";
+        $class = 'TLily::Server::AIM';
+
+    } elsif ($host =~ /^aim:([^\:]+):([^\:]+)/i) {
+        $host = "host not used";
+        $class = 'TLily::Server::AIM';
+        $user = $1; $pass = $2;
+    }
+
+    $server = $class->new(host      => $host,
+                          port      => $port,
+                          user      => $user,
+                          password  => $pass,
+                          'ui_name' => $ui->name);
     return unless $server;
 
     $server->activate();
@@ -211,10 +224,8 @@ sub send_handler {
     }
 
     $e->{server} = $server;
- 
     $server->send_message(join(",",@{$e->{RECIPS}}),$e->{dtype},$e->{text});
 }
-
 event_r(type => 'user_send',
 	call => \&send_handler);
 

@@ -14,7 +14,7 @@
 # PLEASE DO NOT EDIT EXCEPT FOR DEVELOPMENT!
 # EDIT YOUR SITE CONFIG FILE INSTEAD!
 # Begin defaults
-@load = qw(server slcp_parse slcp_output slcp_state ui expand status
+@load = qw(server slcp_parse slcp_output slcp_state toc_parse ui expand status
 	   after alias autologin autoreply countdown gag info misc paste pipes
 	   set startup source spellcheck submit url view vinfo log http_parse
 	   on blurbless dumpscrollback);
