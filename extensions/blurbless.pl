@@ -1,4 +1,4 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/blurbless.pl,v 1.2 2000/09/09 06:07:26 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/blurbless.pl,v 1.3 2001/11/02 23:13:03 tale Exp $
 
 use strict;
 
@@ -24,6 +24,8 @@ blurb.
 
 =cut
 
+# ' This comment with the single quote is here merely to let cperl work again.
+
 shelp_r('enter_blurbless' => 'Whether or not to enter blurbless', 'variables');
 help_r('variables enter_blurbless' => q{
 If set to true, and blurbless.pl is in your extension autoload list (See
@@ -33,14 +35,22 @@ skip the blurb prompt, entering you without a blurb.
 
 my $saw_blurb_prompt_text;
 
-if ($config{enter_blurbless}) {
-    event_r(type => 'text',
-            order => 'before',
-            call => \&text_handler);
+event_r(type => 'server_connected',
+	order => 'during',
+        call => \&connected_handler);
 
-    event_r(type => 'prompt',
-            order => 'before',
-            call => \&prompt_handler);
+sub connected_handler {
+    if ($config{enter_blurbless}) {
+        event_r(type => 'text',
+                order => 'before',
+                call => \&text_handler);
+
+        event_r(type => 'prompt',
+                order => 'before',
+                call => \&prompt_handler);
+    }
+
+    return 0;
 }
 
 sub text_handler {
@@ -52,7 +62,7 @@ sub text_handler {
         return 1;
     }
 
-    return;
+    return 0;
 }
 
 sub prompt_handler {
@@ -65,4 +75,8 @@ sub prompt_handler {
         event_u($handler);
         return 1;
     }
+
+    return 0;
 }
+
+1;

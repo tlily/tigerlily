@@ -1,4 +1,7 @@
 Version 2.3
+  * [extensions/blurbless.pl] Changed the handlers around a little so
+    that a server_connected event triggers registering of the text/prompt
+    handlers, allowing blurbless to work for connections beyond the first one.
   * [extensions/autoreview.pl] Don't unregister the connected_handler, so
     that autoreview will work for connections beyond the first one.
   * [extensions/multicore.pl] Add support for @SERVER/Command and 
