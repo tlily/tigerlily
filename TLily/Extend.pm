@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Extend.pm,v 1.22 2001/07/31 19:55:40 neild Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Extend.pm,v 1.23 2002/04/18 01:13:38 josh Exp $ 
 
 package TLily::Extend;
 use strict;
@@ -184,7 +184,9 @@ sub load_extensions {
     my $ext;
     foreach $ext (@{$config{'load'}}) {
 	load($ext,$ui);
-    }   
+    }
+    
+    load($config{'bot'}, $ui) if exists($config{'bot'});
     
     extension_cmd($ui,"list");
 }

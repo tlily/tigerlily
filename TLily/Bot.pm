@@ -21,7 +21,7 @@
 # cmd's whose only output is a %NOTIFY don't respond. (i.e. /here, /away, /bl)
 
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Bot.pm,v 1.7 2001/01/26 03:01:48 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Bot.pm,v 1.8 2002/04/18 01:13:38 josh Exp $
 
 package TLily::Bot;
 
@@ -100,13 +100,13 @@ sub init {
 		my($event, $handler) = @_;
 
 		if ($event->{text} =~ /^login:/) {
-		    print "(sending username)\n";
+		    print "(sending username '$username')\n";
 		    $event->{server}->sendln($username);
 		    return 1;
 		}
 		
 		if ($event->{text} =~ /^password:/) {
-		    print "(sending password)\n";
+		    print "(sending password '$password')\n";
 		    $event->{server}->sendln($password);
 		    return 1;
 		}
@@ -141,13 +141,7 @@ sub init {
 			     
 			 } );
 		return 1;
-	    });
-
-    # load extension pointed to by $config{'bot'}.
-    my $ui = TLily::UI::name();
-
-    TLily::Extend::load($config{'bot'},$ui,1) ||
-      realdie("can't load $config{bot} extension!");
+	    });	   
 }
 
 
@@ -166,9 +160,11 @@ sub import {
     
     if (@options) {
 	# this needs work ;)
-	print "Username: ";	chomp($username=<STDIN>);
-	print "Password: ";	chomp($password=<STDIN>);
-
+	unless ($username =~ /\S/) {
+	    print "Username: ";	chomp($username=<STDIN>);
+	    print "Password: ";	chomp($password=<STDIN>);
+        }
+	
 	foreach (@options) {
 	    if ($_ eq "standard") {
 		# a "standard" bot has a default message handler, and common 
