@@ -1,4 +1,4 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/after.pl,v 1.4 1999/03/06 17:48:31 steve Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/after.pl,v 1.5 1999/03/17 02:42:21 josh Exp $
 
 use strict;
 
@@ -30,7 +30,7 @@ an existing task may be cancelled with "%cron cancel".
 
 %after and %every act like %cron, but they set the recurrance type by default.
 
-(see also: intervals)
+(see also: interval)
 );
 
 my %cron;
@@ -139,7 +139,9 @@ command_r("after" => \&cron_command);
 command_r("every" => \&cron_command);
 shelp_r("cron" => "Run a command at a designated time.");
 help_r("cron" => $cron_help);
+shelp_r("after" => "Run a command after a given amount of time.");
 help_r("after" => $cron_help);
+shelp_r("every" => "Run a command every given amount of time.");
 help_r("every" => $cron_help);
 
 sub unload() {
