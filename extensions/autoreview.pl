@@ -71,6 +71,7 @@ my $rev_args;
 sub connected_handler {
     my($event, $handler) = @_;
 
+    $rev_args = "detach";
     review_start($event->{server});
     return 0;
 }
