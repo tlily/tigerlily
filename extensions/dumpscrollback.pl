@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/dumpscrollback.pl,v 1.3 2000/09/09 06:07:26 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/dumpscrollback.pl,v 1.4 2002/01/03 14:24:44 coke Exp $
 
 use strict;
 
@@ -42,7 +42,7 @@ sub command {
     my $count = $ui->dump_to_file($args);
     TLily::Event::keepalive(5);
 
-    $ui->print("($count lines written to $args)");
+    $ui->print("($count lines written to $args)\n");
 
     return;
 }
