@@ -1,5 +1,5 @@
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/autoreview.pl,v 1.9 2000/09/09 06:07:26 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/autoreview.pl,v 1.10 2001/11/02 23:11:15 tale Exp $
 
 use strict;
 
@@ -65,8 +65,7 @@ my $rev_start;
 
 sub connected_handler {
     my($event, $handler) = @_;
-    event_u($handler);
-    
+
     review_start($event->{server});
     return 0;
 }
