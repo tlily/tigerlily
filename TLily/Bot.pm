@@ -21,7 +21,7 @@
 # cmd's whose only output is a %NOTIFY don't respond. (i.e. /here, /away, /bl)
 
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Bot.pm,v 1.3 1999/10/02 02:59:15 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Bot.pm,v 1.4 1999/10/02 04:45:54 albert Exp $
 
 package TLily::Bot;
 
@@ -161,10 +161,10 @@ sub import {
     # do some special initialization stuff to get the bot extension
     # bootstrapped.
 
-    my @a = ($module);
+    #my @a = ($module);
+    my @a;
     
     if (@options) {
-    	
 	# this needs work ;)
 	print "Username: ";	chomp($username=<STDIN>);
 	print "Password: ";	chomp($password=<STDIN>);
