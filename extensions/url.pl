@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/url.pl,v 1.27 2003/03/16 14:37:40 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/url.pl,v 1.28 2003/05/10 19:25:11 coke Exp $
 
 #
 # URL handling
@@ -15,7 +15,7 @@ sub handler {
     my($event, $handler) = @_;
 
     my $type;
-    foreach $type ('http', 'https', 'ftp') {
+    foreach $type ('http', 'https', 'ftp', 'daap') {
         $event->{VALUE} =~ s|($type://$url_base)|
             if ($1 ne $urls[$#urls])
             {
