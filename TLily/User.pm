@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/User.pm,v 1.16 1999/04/03 05:06:05 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/User.pm,v 1.17 1999/04/03 05:31:49 josh Exp $
 
 package TLily::User;
 
@@ -62,6 +62,9 @@ my %help;
 # Short help text for commands.
 my %shelp;
 
+# Short help text for TLily::* modules:
+my %shelp_modules;
+
 =item init
 
 Initializes the user command and help subsystems.  This command should be 
@@ -83,13 +86,34 @@ sub init {
     command_r(help => \&help_command);
     shelp_r(help => "Display help pages.");
     help_r(commands => \&command_help);
+    help_r(internals => \&internals_help);
     help_r(help => '
 Welcome to Tigerlily!
 
 Tigerlily is a client for the lily CMC, written entirely in 100% pure Perl.
 
 For a list of commands, try "%help commands".
+
+If you\'re interested in tlily\'s guts, try "%help internals".
 ');
+    
+    my $f;
+    foreach $f (glob("$::TL_LIBDIR/TLily/*.pm")) {
+	my ($module) = ($f =~ /\/([^\/]*)$/);
+	local(*F);
+	open(F,"<$f");
+	my $namehead=0;
+	while(<F>) {
+	    if (/=head1 NAME/) { $namehead = 1; next }
+	    if (/=head1/) { $namehead = 0; last; }
+	    next unless $namehead;
+	    next if (/^\s*$/);
+	    my ($desc) = /-\s*(.*)\s*$/; 
+	    $shelp_modules{$module}=$desc;
+	    help_r($module => "POD:$f");
+	    last;
+	}
+    }
 }
 
 
@@ -252,6 +276,26 @@ sub command_help {
     $ui->indent("");
 }
 
+=item internals_help
+
+Help handler to display the "/help internals" help page.
+This is registered automatically by init().    
+
+=cut
+sub internals_help {
+    my($ui, $arg) = @_;
+
+    $ui->indent("? ");
+    $ui->print("Tigerlily modules:\n");
+    
+    my $c;
+    foreach $c (sort keys %shelp_modules) {
+	$ui->printf("  %-15s %s\n", $c, $shelp_modules{$c});
+    }
+
+    $ui->indent("");
+}
+
 
 =item help_command
 
@@ -270,6 +314,12 @@ sub help_command {
 
     elsif (ref($help{$arg}) eq "CODE") {
 	$help{$arg}->($ui, $arg);
+    } 
+    
+    elsif ($help{$arg} =~ /^POD:(\S+)/) {
+	$ui->indent("? ");
+	$ui->print(`pod2text $1`);
+	$ui->indent("");	
     }
 
     else {
