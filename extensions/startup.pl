@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/startup.pl,v 1.3 1999/04/14 03:03:24 albert Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/startup.pl,v 1.4 1999/04/18 19:45:31 albert Exp $
 
 use strict;
 
@@ -27,10 +27,11 @@ sub startup_handler ($$) {
 	}
 	close(SUP);
     } else {
-        $ui->print("(No Setup file found.)\n");
+        $ui->print("(No startup file found.)\n");
         $ui->print("(If you want to install one, call it ~/.lily/tlily/Startup)\n");
     }
 
+    # Run server-side startup memo
     my $server = server_name();
     my $sub = sub {
 	my(%args) = @_;
@@ -43,7 +44,7 @@ sub startup_handler ($$) {
 	    foreach (@{$args{text}}) { $f = 1 and last if not /^\s*$/ }
 
             unless($f) {
-		$args{ui}->print("(No Setup memo found.)\n",
+		$args{ui}->print("(No startup memo found.)\n",
 		    "(If you want to install one, ",
 		    "call it tlilyStartup or *tlilyStartup)\n");
 		return 0;
