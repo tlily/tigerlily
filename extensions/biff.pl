@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/biff.pl,v 1.5 2000/09/09 06:07:26 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/biff.pl,v 1.6 2001/11/07 02:55:14 tale Exp $
 
 #
 # A Biff module
@@ -356,6 +356,7 @@ maildir, please be considerate, and keep the interval above 5 minutes.
 (That's 300 seconds for you non-math types.)
 });
 
+# ' This comment with the single quote is to get [c]perl-mode back on track.
 
 shelp_r('biff', 'Monitor mail spool for new mail');
 help_r('biff', q{
