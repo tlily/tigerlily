@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/expand.pl,v 1.17 1999/10/03 18:25:47 josh Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/expand.pl,v 1.17.4.1 2000/01/05 10:26:19 albert Exp $ 
 
 use strict;
 
@@ -72,6 +72,10 @@ sub exp_complete {
     if ($pos == 0) {
 	return unless @past_sends;
 	$full = $past_sends[0] . ';';
+    } elsif ($partial =~ /^\%(\S+)/) {
+	if(exists $TLily::User::cmd_abbrevs{$1}) {
+	    $full = '%'.$TLily::User::cmd_abbrevs{$1}." ";
+	}
     } elsif ($partial !~ /[\@\[\]\;\:\=\"\?\s]/) {
 	my($fore, $aft) = ($partial =~ m/^(.*,)?(.*)/);
 	$aft = TLily::Server::SLCP::expand_name($aft);
