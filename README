@@ -164,14 +164,14 @@ The TigerLily sources are stored in a CVS repository.  Anyone working on
 TigerLily development can get access by contacting Damien (neild@acm.rpi.edu)
 or Albert (albert@acm.rpi.edu).
 
-The repository is currently located on einstein.to.
+The repository is currently located on einstein.org.
 
 To access the repository remotely, you will need to set two environment
 variables:
-  export CVSROOT=:ext:neild@einstein.to:/usr/src/cvs
+  export CVSROOT=:ext:neild@einstein.org:/usr/src/cvs
   export CVS_RSH=ssh
 
-Obviously, replace the `neild' with your own userid on einstein.to.  CVS_RSH
+Obviously, replace the `neild' with your own userid on einstein.org.  CVS_RSH
 need not necessarily be ssh, but this is likely to be the simplest method to
 use.
 
