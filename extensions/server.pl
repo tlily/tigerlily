@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/server.pl,v 1.31 2000/12/22 01:20:07 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/server.pl,v 1.32 2002/08/27 03:12:43 coke Exp $
 
 use strict;
 
@@ -180,6 +180,11 @@ sub send_handler {
     my $active = TLily::Server::active();
     my $server;
 
+    # be defensive
+    if (! @{$e->{RECIPS}}) {
+      $server = $active;
+    }
+
     for my $recip (@{$e->{RECIPS}}) {
 	my($name, $serv) = split /@/, $recip, 2;
 	if (defined($serv)) {
@@ -206,7 +211,7 @@ sub send_handler {
     }
 
     $e->{server} = $server;
-
+ 
     $e->{server}->sendln(join(",",@{$e->{RECIPS}}),$e->{dtype},$e->{text});
 }
 event_r(type => 'user_send',
