@@ -7,7 +7,7 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/Makefile.PL,v 1.20 2003/11/04 01:31:54 albert Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/Makefile.PL,v 1.21 2003/11/04 02:12:39 mjr Exp $
 
 use strict;
 use Config;
@@ -185,10 +185,10 @@ WriteMakefile(
     INSTALLSITEARCH => $TL_LIBDIR,
 
     INSTALLSCRIPT   => $TL_BINDIR,
-    INSTALLSITEBIN  => $TL_BINDIR,
+    INSTALLBIN  => $TL_BINDIR,
 
-    INSTALLSITEMAN1DIR  => $TL_MANDIR."/man1",
-    INSTALLSITEMAN3DIR  => $TL_MANDIR."/man3",
+    INSTALLMAN1DIR  => $TL_MANDIR."/man1",
+    INSTALLMAN3DIR  => $TL_MANDIR."/man3",
 
     dist            => { COMPRESS => 'gzip -9 -f', SUFFIX => 'gz' },
     realclean       => { FILES => 'MANIFEST.bak Makefile.old' },
