@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/spellcheck.pl,v 1.21 2000/12/14 21:49:25 tale Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/spellcheck.pl,v 1.22 2000/12/14 21:53:23 tale Exp $
 
 use strict;
 use IPC::Open2;
@@ -31,11 +31,6 @@ Spellchecks the word underneath the cursor.  Bound to ^G by default.
 
 my $dict;
 my $ispell;
-
-# XXXDCL it is my intention to use these to keep track of what has already
-# been done, so that only the area around the new input need be checked.
-my $last_parsed;
-my @last_styled;
 
 sub spellcheck_input {
     my($text) = @_;
