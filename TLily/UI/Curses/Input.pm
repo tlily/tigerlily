@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Curses/Attic/Input.pm,v 1.14 1999/04/09 22:48:25 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Curses/Attic/Input.pm,v 1.15 1999/12/15 12:12:07 mjr Exp $
 
 package TLily::UI::Curses::Input;
 
@@ -274,6 +274,29 @@ sub accept_line {
     return $text;
 }
 
+# Search through the history for a given string
+sub search_history {
+    my $self = shift;
+    my $string = shift;
+    my $dir = shift || -1;
+    my $dir = ($dir >= 0)?1:-1;
+
+    return unless ($string);
+    my $hist_idx = $self->{history_pos};
+
+    while (($hist_idx >= 0) && ($hist_idx <= $#{$self->{history}}) ) {
+        last if ($self->{history}->[$hist_idx] =~ /$string/);
+        $hist_idx += $dir;
+    }
+    return unless (($hist_idx >= 0) && ($hist_idx <= $#{$self->{history}}));
+
+    $self->{history_pos} = $hist_idx;
+    $self->{text} = $self->{history}->[$hist_idx];
+    $self->{point} = index($self->{text}, $string);
+    $self->update_style();
+    $self->rationalize();
+    $self->redraw();
+}
 
 # Move back one entry in the history.
 sub previous_history {

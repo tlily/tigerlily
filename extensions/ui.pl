@@ -1,4 +1,4 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/ui.pl,v 1.15 1999/08/04 20:37:56 neild Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/ui.pl,v 1.16 1999/12/15 12:12:07 mjr Exp $ 
 use strict;
 
 
@@ -187,6 +187,39 @@ TLily::UI::bind("C-x" => "next-input-context");
 shelp_r("icontext" => "Input contexts let you defer sends until later.",
         "concepts");
 help_r("icontext" => $icontext_help);
+
+#
+# Input history searching
+#
+
+sub input_search_mode {
+    my($ui, $command, $key) = @_;
+    if (length($key) == 1) {
+        $ui->{_search_text} .= $key;
+        $ui->{input}->search_history($ui->{_search_text});
+        $ui->prompt("(rev-i-search)'$ui->{_search_text}':");
+        return 1;
+    } else {
+        $ui->command("toggle-input-search-mode");
+    }
+    return;
+}
+
+sub toggle_input_search_mode {
+    my($ui) = @_;
+    $ui->{_search_text} = "";
+    $ui->{_search_idx} = $#{$ui->{input}->{history}};
+    if ($ui->intercept_u("input-search-mode")) {
+        $ui->prompt("");
+    }
+    elsif ($ui->intercept_r("input-search-mode")) {
+        $ui->prompt("(rev-i-search):");
+    }
+}
+
+TLily::UI::command_r("toggle-input-search-mode" => \&toggle_input_search_mode);
+TLily::UI::command_r("input-search-mode" => \&input_search_mode);
+TLily::UI::bind("C-r" => "toggle-input-search-mode");
 
 #
 # Styles.

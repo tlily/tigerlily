@@ -1,4 +1,6 @@
 Version 2.0-post
+  * [TLily/UI/Curses/Input.pm, extensions/ui.pl]  Added input history
+    searching!  [MJR]
   * [TLily/UI/Curses.pm] Changed the key bindings for scroll up/down.
     M-[ was a pretty bone-headed choice on my part.
     They're now M-, & M-. [MJR]
