@@ -1,78 +1,121 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/stock.pl,v 1.2 1999/03/23 08:34:03 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/stock.pl,v 1.3 2000/09/11 21:15:52 coke Exp $
 
 use strict;
+
+#Author: Will "Coke" Coleda
+
+### Create a user Agent for web processing.
+require LWP::UserAgent;
+my $ua = new LWP::UserAgent;
 
 my @timer_ids;
 my $info = "STOCK";
 my $ticker = "";
-my $freq = 15;
+my $freq = 300;
 
 command_r('stock', \&stock_cmd);
 shelp_r('stock', "Show stock ticker updates in your status bar");
-help_r( 'stock','%stock stop                   stop ticker,
-%stock <TICKER SYMBOL list>   display oneshot update for stocks. (NYI)
+help_r( 'stock',"%stock stop                   stop ticker,
+%stock <TICKER SYMBOL list>   display oneshot update for stocks.
 %stock -t <TICKER SYMBOL>     start tracking stock (default is $ticker)
 %stock -f <frequency>         frequency in seconds to update statusbar
-                              (defaults to $freq)
+                              (defaults to $freq seconds)
 %stock -l                     show current settings.
-');
-
+");
 
 #
-# return stock quote information for the given stocks..
-# (although we only ever use -one-, this is more extensible)
+# There's got to be a module to do this for me. =-)
+#
+sub cleanHTML {
+
+  $a = join(" ",@_);
+
+  $a =~ s/\n/ /;
+  $a =~ s/<[^>]*>/ /g;
+  $a =~ s/&lt;/</gi;
+  $a =~ s/&gt;/>/gi;
+  $a =~ s/&amp;/&/gi;
+  $a =~ s/&#46;/./g;
+  $a =~ s/&quot;/"/ig;
+  $a =~ s/&nbsp;/ /ig;
+  $a =~ s/&uuml;/u"/ig;
+  $a =~ s/\s+/ /g;
+  $a =~ s/^\s+//;
+
+  return $a;
+}
+
+#
+# print out stock quote information for the given stocks..
 #
 
 sub disp_stock {
-    my ($ui,@stock) = @_;
-    my $cmd = "wget -O- -q 'http://quote.yahoo.com/q?s=" . join("+",@stock) . "&d=v1'
-";
-    open (N,"$cmd|") or return "Quote for @stock failed";
-    
-    my @retval = () ;
-    my $cnt = 0;
-    while (<N>) {
-	if (! m:^(</tr>)?<tr align=right>:) {next};
-	<N>;			#discard symbol line
-	my ($last_time, $last_value, $change_frac, $change_perc, $volume);
-	chomp( $last_time = <N> ) ;
-	chomp( $last_value = <N> ) ;
-	chomp( $change_frac = <N> ) ;
-	chomp( $change_perc = <N> ) ;
-	chomp( $volume = <N> ) ;
-	$last_time =~ s/(<[^>]*>)//g;
-	$last_value =~ s/(<[^>]*>)//g;
-	$change_frac =~ s/(<[^>]*>)//g;
-	$change_perc =~ s/(<[^>]*>)//g;
-	$volume =~ s/(<[^>]*>)//g;
-	
-	$ui->print("($stock[$cnt]: last trade: $last_time, $last_value. Change: $change_frac ($change_perc). Volume: $volume)\n");
-	$cnt++;
-    }
-    close(N);
+	my ($ui,@stock) = @_;
+
+	my $url = "http://finance.yahoo.com/q?s=" . join("+",@stock) . "&d=v1";
+	my $response = $ua->request(HTTP::Request->new(GET => $url));
+	if (!$response->is_success) {
+		$ui->print("(stock request for @stock failed.)\n");
+		return;
+	}
+
+	my $cnt=0;
+
+	my @chunks = ($response->content =~ /^<td nowrap align=left>.*/mg);
+
+	foreach (@chunks) {
+                my $retval="";
+		my ($time,$value,$frac,$perc,$volume) = (split(/<\/td>/,$_,))[1..5];
+
+		if (/No such ticker symbol/) {
+			$ui->print("($stock[$cnt]: Oops. No such ticker symbol. Try stock lookup.)\n");
+		} else {
+                        $retval = "($stock[$cnt]: Last $time, $value: Change $frac ($perc): Vol $volume)";
+			$retval = cleanHTML($retval);
+			$retval =~ s:(\d) / (\d):$1/$2:g;
+			$retval =~ s:\( :(:g;
+			$retval =~ s: \):):g;
+			$retval =~ s: ,:,:g;
+			$ui->print("$retval\n");
+		}
+		$cnt++;
+	}
 }
 
+#
+# return a short string about the given stock...
+#  (this should be part of disp_stock)
+#
+
 sub track_stock {
-    my @stock = @_;
-    
-    my $cmd = "wget -O- -q 'http://quote.yahoo.com/q?s=" . join("+",@stock) . "&d=v1'";
-    open (N,"$cmd|") or return "Quote for @stock failed";
-    my @retval = () ;
-    my $cnt = 0;
-    while (<N>) {
-	if (! m:^(</tr>)?<tr align=right>:) {next};
-	<N>; <N>;		#toss 2 lines
-	my ($last_value, $change_frac);
-	chomp( $last_value = <N> ) ;
-	chomp( $change_frac = <N> ) ;
-	$last_value =~ s/(<[^>]*>)//g;
-	$change_frac =~ s/(<[^>]*>)//g;
-	push @retval, "$stock[$cnt]: $last_value ($change_frac)";
-	$cnt++;
-    }
-    close(N);
-    return join("",@retval);
+	my ($stock) = @_;
+
+	my $url = "http://finance.yahoo.com/q?s=" . join("+",$stock) . "&d=v1";
+	my $response = $ua->request(HTTP::Request->new(GET => $url));
+	if (!$response->is_success) {
+		return "$stock: no data";
+	}
+
+	my @chunks = ($response->content =~ /^<td nowrap align=left>.*/mg);
+	if (scalar (@chunks) != 1) {
+		return "$stock: bad data";
+	}
+
+	my ($time,$value,$frac,$perc,$volume) = (split(/<\/td>/,$chunks[0],))[1..5];
+
+	if ($chunks[0] =~ /No such ticker symbol/) {
+		return "$stock: bad symbol";
+	} else {
+        	my $retval="";
+		$retval = "$stock: $value ($frac)";
+		$retval = cleanHTML($retval);
+		$retval =~ s:(\d) / (\d):$1/$2:g;
+		$retval =~ s:\( :(:g;
+		$retval =~ s: \):):g;
+		$retval =~ s: ,:,:g;
+		return $retval;
+	}
 }
 
 #
@@ -81,7 +124,7 @@ sub track_stock {
 
 sub unload {
     foreach (@timer_ids) {
-	TLily::Event::time_u($_);
+			TLily::Event::time_u($_);
     }
     @timer_ids = ();
 }
@@ -135,4 +178,5 @@ sub stock_cmd {
     }
 }
 
+#TRUE! They return TRUE!
 1;
