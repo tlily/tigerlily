@@ -131,6 +131,7 @@ TLily::Extend::load_extensions($ui);
 $ui->print("\n");
 
 TLily::Event::send(type => 'user_input',
+		   ui   => $ui,
 		   text => "%connect");
 
 while (1) {
