@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/set.pl,v 1.3 1999/03/23 08:33:56 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/set.pl,v 1.4 1999/06/23 14:27:12 neild Exp $
 
 use strict;
 
@@ -52,7 +52,7 @@ sub set_handler($) {
 	return 0;
     }
 
-    if($args =~ m/^([\w\-_]+)\{?([\w_]+)?\}?\s*=\s*(\S+)\s*$/) {
+    if($args =~ m/^([\w\-_]+)\{?([\w_]+)?\}?\s*=\s*([^\(\)\s]+)\s*$/) {
 	my($var,$key,$val) = ($1,$2,$3);
 	if($key) {
 	    if(!defined($config{$var}) || (ref($config{$var}) eq 'HASH' && ref($config{$var}{$key}) eq '')) {
