@@ -1,6 +1,7 @@
 Version 2.3-post
+  * [TLily/Server/SLCP.pm] Added support for '~' to match only users. [SMC]
   * [extensions/keepalive.pl] When re-connecting to a lost connection, fixed
-    bug that prevented keepalive pings.
+    bug that prevented keepalive pings. [SMC]
   * [extensions/gag.pl] Add '%gag topic <foo>', which will gag based on the
     content of sends instead of the sender.
   * [TLily/UI/Curses.pm,TLily/UI/Curses/StatusLine.pm,TLily/UI/Curses/Text.pm,

@@ -6,7 +6,7 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Server/Attic/SLCP.pm,v 1.45 2003/03/07 02:16:01 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Server/Attic/SLCP.pm,v 1.46 2003/05/01 17:18:22 steve Exp $
 
 package TLily::Server::SLCP;
 
@@ -293,10 +293,12 @@ sub expand_name {
     unshift @_, scalar(TLily::Server::active()) if (@_ < 2);
     my($self, $name, %opts) = @_;
     my $disc;
+    my $user;
 
     $name = lc($name);
     $name =~ tr/_/ /;
     $disc = 1 if ($name =~ s/^-//);
+    $user = 1 if ($name =~ s/^~//);
 
     # Check for "me".
     if (!$disc && $name eq 'me') {
@@ -304,7 +306,7 @@ sub expand_name {
     }
 
     # Check for a group match.
-    if (!$disc && $self->{NAME}->{$name}->{MEMBERS}) {
+    if (!$user && !$disc && $self->{NAME}->{$name}->{MEMBERS}) {
     	if ($config{expand_group}) {
 	    return join ',', map { $self->get_name(HANDLE => $_) }
  	                         split /,/,$self->{NAME}->{$name}->{MEMBERS};
@@ -351,10 +353,12 @@ sub expand_name {
 	return if (@m > 1 && !wantarray);
 	return map($self->{NAME}->{$_}->{NAME}, @m) if (@m);
     }
-    @m = grep { index($_, $name) == 0 } @dnames;
-    return if (@m > 1 && !wantarray);
-    return map('-'.$self->{NAME}->{$_}->{NAME}, @m) if (@m);
-    return if (@m > 1);
+    unless ($user) {
+	@m = grep { index($_, $name) == 0 } @dnames;
+	return if (@m > 1 && !wantarray);
+	return map('-'.$self->{NAME}->{$_}->{NAME}, @m) if (@m);
+	return if (@m > 1);
+    }
 
     # Check for a substring match.
     unless ($disc) {
@@ -362,9 +366,11 @@ sub expand_name {
 	return if (@m > 1 && !wantarray);
 	return map($self->{NAME}->{$_}->{NAME}, @m) if (@m);
     }
-    @m = grep { index($_, $name) != -1 } @dnames;
-    return if (@m > 1 && !wantarray);
-    return map('-'.$self->{NAME}->{$_}->{NAME}, @m) if (@m);
+    unless ($user) {
+	@m = grep { index($_, $name) != -1 } @dnames;
+	return if (@m > 1 && !wantarray);
+	return map('-'.$self->{NAME}->{$_}->{NAME}, @m) if (@m);
+    }
 
     return;
 }
