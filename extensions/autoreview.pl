@@ -1,5 +1,5 @@
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/autoreview.pl,v 1.5 1999/07/02 08:06:23 albert Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/autoreview.pl,v 1.6 1999/10/02 02:58:26 josh Exp $
 
 use strict;
 
@@ -27,7 +27,7 @@ sub connected_handler {
     my($event, $handler) = @_;
     event_u($handler);
     
-    review_start();
+    review_start($event->{server});
     return 0;
 }
 
@@ -37,22 +37,27 @@ sub review_cmd {
 	$ui->print("(You are currently autoreviewing)\n");
 	return 0;
     }
-    review_start();
+    my $server = TLily::Server::active();
+    review_start($server);
     return 0;
 }
 
 sub review_start {
+    my ($server) = @_;       
+
     eval { @to_review = @{$config{autoreview}} };
     return unless (@to_review); 
-    review();
+    review($server);
 }
 
 sub review {
+    my ($server) = @_;
+    
     return unless (@to_review);
     my $target = shift @to_review;
     $rev_interesting = 0;
     $rev_start = undef;
-    cmd_process("/review " . $target . " detach", \&review_handler);
+    $server->cmd_process("/review " . $target . " detach", \&review_handler);
 }
 
 sub review_handler {
