@@ -76,7 +76,6 @@ sub size {
 sub set_pager {
     my($self, $handler) = @_;
 
-print STDERR "pager\n";
     if ($handler) {
 	TLily::Event::idle_u($handler);
 	$self->{pager_on_idle} = undef;
