@@ -74,7 +74,5 @@ $(TL_GLOBAL_CF):
 	-rm -f $(TL_GLOBAL_CF)
 	cp tlily.global $(TL_GLOBAL_CF)
 
-fooc:
-	./foo
 |;
 }

@@ -140,8 +140,10 @@ Library directory:  $LIBDIR
     my $BINDIR = '.';
     my $LIBDIR = '.';
     my $ETCDIR = '.';
-    my $LIBMODDIR = './blib/lib';
-    my $LIBEXTDIR = './blib/lib/extensions';
+#    my $LIBMODDIR = './blib/lib';
+#    my $LIBEXTDIR = './blib/lib/extensions';
+    my $LIBMODDIR = '.';
+    my $LIBEXTDIR = './extensions';
     $DIRS_ARE_LOCAL = '1';
 
     eval "mkpath('./blib/bin');";
