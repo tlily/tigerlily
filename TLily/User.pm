@@ -169,7 +169,7 @@ sub input_handler {
 		return 1;
 	}
 
-	$commands{$command}->($e->{ui}, $2);
+	$commands{$command}->($e->{ui}, $2, $command);
 	return 1;
 }
 
