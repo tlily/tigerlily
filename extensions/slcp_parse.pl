@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_parse.pl,v 1.8 1999/04/28 16:00:14 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_parse.pl,v 1.9 1999/06/17 22:54:04 josh Exp $
 
 use strict;
 use vars qw(%config);
@@ -330,7 +330,7 @@ sub parse_line {
 	if (! ($line =~ /\+leaf-notify/ &&
 	       $line =~ /\+leaf-cmd/ &&
 	       $line =~ /\+connected/) ) {
-	    warn $SLCP_WARNING;
+	    warn $SLCP_WARNING . "[Error Code -1]\n";
 	} else {
 	    $serv->{SLCP_OK} = 1;
 	}
@@ -340,7 +340,7 @@ sub parse_line {
     
     # check for old cores
     if  ($line =~ /type \/HELP for an introduction/) {
-	warn $SLCP_WARNING unless $serv->{SLCP_OK};
+	warn $SLCP_WARNING . "[Error Code -2]\n" unless $serv->{SLCP_OK};
     }
     
     # login stuff #########################################################
