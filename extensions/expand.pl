@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/expand.pl,v 1.21 2000/12/14 00:33:30 neild Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/expand.pl,v 1.22 2000/12/19 20:10:33 neild Exp $ 
 
 use strict;
 use TLily::UI;
@@ -53,6 +53,8 @@ sub mserv_expand_name {
 sub exp_expand {
     my($ui, $command, $key) = @_;
     my($pos, $line) = $ui->get_input;
+
+    goto end if (!TLily::Server::active());
     
     if ($pos == 0) {
 	my $exp;
