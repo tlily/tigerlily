@@ -16,9 +16,8 @@ make clean
 perl Makefile.PL -p /tigerlily
 make
 
-ts=`date +%y%m%d`
 perl -p -i -e "s/-post//;" blib/lib/TLily/Version.pm                   
-perl -p -i -e "s/\';/-win32-$ts\';/;" blib/lib/TLily/Version.pm                   
+perl -p -i -e "s/\';/-win32\';/;" blib/lib/TLily/Version.pm                   
 
 grep VERSION blib/lib/TLily/Version.pm
 
