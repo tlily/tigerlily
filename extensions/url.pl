@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/url.pl,v 1.20 2001/05/09 18:16:55 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/url.pl,v 1.21 2001/05/09 18:18:21 neild Exp $
 
 #
 # URL handling
@@ -91,7 +91,7 @@ sub url_cmd {
 	if ($cmd =~ /%URL%/) {
 	    $cmd=~s/%URL%/$url/g;
 	} else {
-	    $cmd .= " $url";
+	    $cmd .= " '$url'";
  	}
  	if ($config{browser_textmode}) {
 	    TLily::Event::keepalive();
