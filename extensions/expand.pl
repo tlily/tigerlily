@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/expand.pl,v 1.28 2002/03/22 22:26:14 neild Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/expand.pl,v 1.29 2003/07/11 00:23:39 coke Exp $ 
 
 use strict;
 use TLily::UI;
@@ -176,8 +176,11 @@ sub private_handler {
     return unless (defined $me);
     
     my $serv_name = $event->{server}->name();
-    $expansions{sender} = $event->{SOURCE} . "@" . $serv_name
-      unless ($event->{SOURCE} eq $me);
+  
+    if ($event->{SOURCE} ne $me) {
+        # recalc from SHANDLE, since some extensions may muck with the SOURCE 
+        $expansions{sender} = $event->{server}->{HANDLE}->{$event->{SHANDLE}}->{NAME} . "@" . $serv_name;
+    }
     
     my @group = split /, /, $event->{RECIPS};
     if (@group > 1) {
