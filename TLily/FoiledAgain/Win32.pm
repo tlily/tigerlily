@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/FoiledAgain/Attic/Win32.pm,v 1.8 2003/02/14 03:36:18 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/FoiledAgain/Attic/Win32.pm,v 1.9 2003/02/14 03:47:57 josh Exp $
 
 package TLily::FoiledAgain::Win32;
 
@@ -16,6 +16,14 @@ use vars qw(@ISA);
 use TLily::Version;
 use TLily::FoiledAgain;
 @ISA = qw(TLily::FoiledAgain);
+
+# If enabled, an intermediate buffer will be added, similar to what curses
+# uses.  It will be written to until update_screen is called, where it will
+# be copied to the physical screen in one go.   In practice, this doesn't seem
+# to make any difference, and it's just an extra step.. so we can disable it
+# here.
+my $USE_VSCREEN = 0;
+
 
 my $USING_COLOR = 1;
 
@@ -109,15 +117,25 @@ sub uidebug {
     close(F);
 }
 
-my ($SCREEN, $INPUT);
+my ($SCREEN, $VSCREEN, $INPUT);
 my @windows;
 
 sub start {
+    # Physical screen
     $SCREEN = new Win32::Console();    
     $SCREEN->Alloc();
     $SCREEN->Title("TigerLily $TLily::Version::VERSION");
     $SCREEN->Display();
 
+    if ($USE_VSCREEN) {
+        # Virtual screen where all changes are made prior to copying to the 
+        # real screen, $SCREEN.
+        $VSCREEN = new Win32::Console();    
+    } else {
+        $VSCREEN = $SCREEN;
+    }
+
+    # Input channel
     $INPUT = new Win32::Console(STD_INPUT_HANDLE);
     $INPUT->Mode(ENABLE_WINDOW_INPUT);  # notify us when the size changes
 }
@@ -137,19 +155,16 @@ sub bell {
 sub screen_width  { ($SCREEN->Size())[0]; }
 sub screen_height { ($SCREEN->Size())[1]; }
 sub update_screen { 
-    foreach my $window (@windows) {
-        my ($width, $height) = ($window->{cols}, $window->{lines});
 
-        # copy the windows' data into place on the main screen.
-        my $rect = $window->{buffer}->ReadRect(0, 0, $width, $height);
-        defined($SCREEN->WriteRect($rect,
-                                   $window->{begin_x},
-                                   $window->{begin_y}, 
-                                   $window->{begin_x} + $width,
-                                   $window->{begin_y} + $height - 1)) ||
+    if ($USE_VSCREEN) {
+        my ($width, $height) = $SCREEN->Size();
+        
+        # copy everything from the virtual screen to the real one.
+        my $rect = $VSCREEN->ReadRect(0, 0, $width, $height);
+        defined($SCREEN->WriteRect($rect, 0, 0, $width, $height)) ||
             die "Error in WriteRect";
     }
-
+    
     # place the cursor as it is in the last window.
     my ($col, $line) =  $windows[-1]->{buffer}->Cursor();
     $col  += $windows[-1]->{begin_x};
@@ -401,6 +416,18 @@ sub commit {
     my ($self) = @_;
     DEBUG(@_);
 
+    foreach my $window (@windows) {
+        my ($width, $height) = ($window->{cols}, $window->{lines});
+
+        # copy the windows' data into place on the virtual screen.
+        my $rect = $window->{buffer}->ReadRect(0, 0, $width, $height);
+        defined($VSCREEN->WriteRect($rect,
+                                   $window->{begin_x},
+                                   $window->{begin_y}, 
+                                   $window->{begin_x} + $width,
+                                   $window->{begin_y} + $height - 1)) ||
+            die "Error in WriteRect";
+    }
 }
 
 sub want_color {
