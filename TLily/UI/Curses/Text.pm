@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Curses/Attic/Text.pm,v 1.25 2001/07/31 19:55:40 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Curses/Attic/Text.pm,v 1.26 2001/11/30 20:20:53 kazrak Exp $
 
 package TLily::UI::Curses::Text;
 
@@ -337,13 +337,17 @@ sub print {
            $self->{idx_anchor} > $self->{lines}) {
         $self->{idx_anchor}--;
         $self->{idx_unseen}--;
-        my $linelen += $self->{indexes}->[1];
+        $linelen = $self->{indexes}->[1];
         shift @{$self->{indexes}};
     }
 
-    if ($linelen) {
+
+    if ($linelen > 0) {
         $self->{text} = substr($self->{text}, $linelen);
         my $style = undef;
+
+	# Note: yes, this loop does not autoincrement.  We increment later, 
+	# if we are keeping these elements.
         for (my $i = 0; $i < $#{$self->{styles}}; ) {
             $self->{styles}->[$i] -= $linelen;
             if ($self->{styles}->[$i] < 0) {
