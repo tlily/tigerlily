@@ -1,4 +1,6 @@
 Version 2.0-post
+  * [extensions/status.pl] changed the clock format to remove the
+    leading 0. [CWS]
   * [TLily/UI/Curses/Input.pm, extensions/ui.pl]  Added input history
     searching!  [MJR]
   * [TLily/UI/Curses.pm] Changed the key bindings for scroll up/down.
@@ -7,7 +9,7 @@ Version 2.0-post
   * [extensions/status.pl] Made the statusline clearly indicate when not
     connected to any servers. [MJR]
   * [extensions/info.pl] Added lily help editing [MJR]
-  * [TLily/UI/Tk.pm] Tk UI. [CWS]
+  * [TLily/UI/Tk.pm] First shot at a Tk UI. [CWS]
   * [various] Fixed bug in columnize_list, converted program.pl and
     spellcheck.pl to use it.
   * [various] Changed calls to old cmd_process to the new per-server one.

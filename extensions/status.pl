@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/status.pl,v 1.19 1999/12/14 05:30:34 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/status.pl,v 1.20 1999/12/20 23:18:27 albert Exp $
 
 use strict;
 
@@ -25,7 +25,7 @@ sub set_clock {
 	}
     }
 	
-    $ui->set(clock => sprintf("%02d:%02d%s", $a[2], $a[1], $ampm));
+    $ui->set(clock => sprintf("%2d:%02d%s", $a[2], $a[1], $ampm));
     return 0;
 }    
 
