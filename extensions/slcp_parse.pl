@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_parse.pl,v 1.13 1999/10/13 02:38:39 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_parse.pl,v 1.14 1999/11/19 06:07:19 josh Exp $
 
 use strict;
 use vars qw(%config);
@@ -120,11 +120,11 @@ sub parse_line {
     # prompts #############################################################
 
     if (!$serv->{logged_in}) {
-	if ($line eq "login: ") {
+	if ($line =~ /^login: /) {
 	    %event = (type => 'prompt',
 		      text => $line);
 	    goto found;
-	} elsif ($line eq "password: ") {
+	} elsif ($line =~ /^password: /) {
 	    %event = (type     => 'prompt',
 		      password => 1,
 		      text     => $line);
@@ -322,11 +322,21 @@ sub parse_line {
     }
     
     # The options notification.
-    if ($line =~ /^%options\s+(.*?)\s*$/) {
+    if (! $serv->{SEEN_OPTIONS} and $line =~ /%options\s+(.*?)\s*$/) {
+        $serv->{SEEN_OPTIONS}=1;       
+    
 	my @o = split /\s+/, $1;
 	%event = (type    => 'options',
 		  options => \@o);
 	
+	# flush out any pending send data at this point.  We queue the initial
+	# sends from the user for a bit so that the options negotiation can
+	# happen properly.       
+        foreach (@{$serv->{send_buffer}}) {
+            $serv->sendln($_);
+        }
+	undef $serv->{send_buffer};
+		
 	goto found if $serv->{SLCP_OK};
 	
 	if (! ($line =~ /\+leaf-notify/ &&

@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Server.pm,v 1.22 1999/10/03 21:13:31 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Server.pm,v 1.23 1999/11/19 06:07:19 josh Exp $
 
 package TLily::Server;
 
@@ -294,6 +294,7 @@ sub send {
     my $written = 0;
     while ($written < length($s)) {
 	my $bytes = syswrite($self->{sock}, $s, length($s), $written);
+	
 	if (!defined $bytes) {
 	    # The following is broken, and must be fixed.
 	    #next if ($errno == $::EAGAIN);
@@ -371,6 +372,7 @@ sub reader {
     # Data as usual.
     else {
 	$self->{bytes_in} += length($buf);
+	
 	TLily::Event::send(type   => "$self->{proto}_data",
 			   server => $self,
 			   data   => $buf);

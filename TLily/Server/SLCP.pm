@@ -6,7 +6,7 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Server/Attic/SLCP.pm,v 1.29 1999/10/02 02:45:11 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Server/Attic/SLCP.pm,v 1.30 1999/11/19 06:07:19 josh Exp $
 
 package TLily::Server::SLCP;
 
@@ -136,7 +136,10 @@ sub new {
 	TLily::Event::event_u($h->{id});
 
 	$self->set_client_options();
-
+	
+	# allow the user's input to go to the server now.
+	$self->{ALLOW_SEND} = 1;
+	
 	if (defined $self->{user}) {
 	    $ui->print("(using autologin information)\n") if ($ui);
 	    $self->send($self->{user});
@@ -162,9 +165,24 @@ sub command {
     # Check global command bindings.
     $self->SUPER::command($ui, $text) && return 1;
 
-    # Send the line on to the server.
-    $self->sendln($text);
+    # We don't allow any the user to send any text to the server until
+    # The options sent.   This prevents the "Error -2" condition with slow
+    # links.
+    
+    if ($self->{ALLOW_SEND}) {
+        foreach (@{$self->{send_buffer}}) {
+            $self->sendln($_);
+        }
+	undef $self->{send_buffer};
+	
+        # Send the line on to the server.
+        $self->sendln($text);
 
+    } else {
+        $self->{send_buffer} ||= [];
+        push @{$self->{send_buffer}}, $text;
+    }
+    
     return 1;
 }
 
