@@ -1,3 +1,6 @@
+Version 2.3
+  * [TLily/UI/Curses.pm] Fixed resize bug (PR#550).  Finally.  [RBJ]
+
 Version 2.2
   * [everything] Updated hostnames and copyright dates. [DPN]
   * [extensions/program.pl] Fixed PR#848 & 850 (reedit & indented comments)[CWS]
