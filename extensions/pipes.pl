@@ -1,4 +1,4 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/pipes.pl,v 1.1 1999/04/09 23:30:36 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/pipes.pl,v 1.2 1999/04/09 23:34:10 neild Exp $
 #
 # Piped command processing.
 #
@@ -51,9 +51,6 @@ sub pipe_handler {
 	sysopen(FD, $tmpfile, O_RDWR|O_CREAT, 0600);
 	close(FD);
     }
-
-$ui->print("RUN: $run\n");
-$ui->print("CMD: $lcmd\n");
 
     my $fd = "pipes--fd--" . $counter;
     my $rc = open($fd, $run);
@@ -108,7 +105,7 @@ event_r(type => 'user_input',
 command_r("pipe", \&pipe_handler);
 shelp_r("pipe", "Pipe lily commands through shell commands");
 help_r("pipe", "
-Usage: &/who | grep foo
+Usage: %pipe /who | grep foo
        &/review detach > output
 
 A piped command is begun with a \"&\".  The first component should be a lily \
@@ -116,4 +113,9 @@ command.  The command output may be filtered through shell commands, \
 separated by pipes.  The final output may be redirected through a file \
 with \"> file\".  If the output is not sent to a file, it is printed to the \
 screen upon command termination.
+
+WARNING!  This command will NOT work properly with anything that generates \
+text that needs to be formatted by the client.  This extension needs a \
+complete redesign.  It's main use, however, is to deal with /review, which \
+should work without problems.
 ");
