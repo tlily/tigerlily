@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/expand.pl,v 1.26 2001/07/31 21:49:13 neild Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/expand.pl,v 1.27 2001/10/22 16:55:38 neild Exp $ 
 
 use strict;
 use TLily::UI;
@@ -92,7 +92,7 @@ sub exp_expand {
 	my $fore = substr($line, 0, $pos);
 	my $aft  = substr($line, $pos);
 	
-	goto end if ($fore =~ /[:;]/);
+	goto end if ($fore =~ /[:;\/]/);
 	goto end if ($fore =~ /^\s*[\/\$\?%]/);
 	
 	my @dests = split(/,/, $fore);
