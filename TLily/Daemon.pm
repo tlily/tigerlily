@@ -8,7 +8,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Daemon.pm,v 1.6 1999/04/06 17:32:01 steve Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Daemon.pm,v 1.7 1999/04/06 19:12:01 steve Exp $
 
 package TLily::Daemon;
 
@@ -195,7 +195,7 @@ sub acceptor {
     my $sock = *NEWSOCK;
     
     my $newobj = 
-      eval "${obj}->new('sock' => \$sock , 'proto' => '$self->{proto}')";
+      eval "${obj}->new('sock' => $sock , 'proto' => '$self->{proto}')";
     if (!defined($newobj)) {
 	if ($@) {
 	    warn $@;

@@ -7,7 +7,7 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Daemon/Attic/HTTP.pm,v 1.5 1999/04/06 17:32:02 steve Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Daemon/Attic/HTTP.pm,v 1.6 1999/04/06 19:12:03 steve Exp $
 
 package TLily::Daemon::HTTP::Connection;
 
@@ -35,6 +35,8 @@ sub send {
 			   head  => $args{head} );
 	return 0;
     }
+
+    $self->{filealias} = $args{file};
     
     local *IN;
     if ((! -r $filename) || !(open IN, $filename)) {
@@ -45,7 +47,7 @@ sub send {
 	return 0;
     }
     
-    $self->{filedes} = \*IN;
+    $self->{filedes} = *IN;
     
     print {$self->{sock}} "HTTP/1.0 200 OK\r\n";
     print {$self->{sock}} "Date: " . TLily::Daemon::HTTP::date() . "\r\n";
@@ -92,19 +94,24 @@ sub send_error {
 sub send_raw {
     my ($self, $mode, $handler) = @_;
     my $buf;
-    
+
     if (read $self->{filedes}, $buf, 4096) {
 	print {$self->{sock}} $buf;
     } else {
+	# File's done.  Tell the client.
+	TLily::Event::send(type   => "$self->{proto}_filedone",
+			   daemon => $self);
 	$self->close();
     }
 }
 
 sub close {
     my ($self, @args) = @_;
-    
+
     close $self->{filedes} if defined($self->{filedes});
     $self->{filedes} = undef;
+    TLily::Event::io_u ($self->{output_id});
+
     return $self->SUPER::close(@args);
 }
 

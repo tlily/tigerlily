@@ -7,7 +7,7 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Daemon/Attic/Connection.pm,v 1.2 1999/03/23 08:05:25 albert Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Daemon/Attic/Connection.pm,v 1.3 1999/04/06 19:12:02 steve Exp $
 
 package TLily::Daemon::Connection;
 
@@ -57,13 +57,14 @@ sub receive {
 
 sub close {
     my $self = shift;
-    
+
+    TLily::Event::io_u($self->{io_id});    
+
     close $self->{sock};
     
     TLily::Event::send(type   => "$self->{proto}_close",
 		       daemon => $self);
     
-    TLily::Event::io_u($self->{io_id});
     $self->{daemon}->cxn_u($self);
 }
 
