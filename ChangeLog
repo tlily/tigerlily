@@ -1,5 +1,5 @@
 Version 2.3-post
-  * [extensions/status.pm] If $clockseconds is set, the statusline clock
+  * [extensions/status.pl] If $clockseconds is set, the statusline clock
     will display seconds. [BEW]
   * [TLily/UI/Curses/StatusLine.pm] When the window's width is changed,
     redraw the status line correctly. [BEW]
