@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/url.pl,v 1.22 2001/11/16 06:33:57 tale Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/url.pl,v 1.23 2001/11/16 06:37:07 tale Exp $
 
 #
 # URL handling
@@ -27,9 +27,11 @@ sub handler {
     return 0;
 }
 
-# This handler attempts to detect wrapped URLs, but might suffer from false
-# positives.  Let Tale know if you spot one and he'll try to figure out if
-# there was any possible way to avoid it.
+# This handler attempts to detect wrapped URLs, but it suffers from false
+# positives, and I don't think there is a way to resolve that.  The problem
+# will happen when a URL ends in exactly column 79; the first word of the
+# next line, if it starts immediately after the "* ", "# - " or "# > " prefix,
+# will get appended to the URL.
 sub text_handler {
     my($event, $handler) = @_;
     # XXXDCL Need to get real screen width from server, since that controls
@@ -184,15 +186,6 @@ event_r(type  => 'emote',
 	call  => \&handler,
 	order => 'before');
 
-# XXX The handling of finding URLs in raw text messages (ie, /review output)
-# is imperfect, because it can't tell when a URL has spilled over from one
-# text line to the next.  It could be improved on by having the handler note
-# when the URL ends at column 79 and then add the start of the the next
-# line (repeating as long as the URL reaches column 79).  This method would
-# have a different shortcoming, because it would not necessarily be the
-# case that the start of the next line is still part of the URL.  The chances
-# of that happening, however, are almost certainly less than the chances that
-# a URL will have wrapped onto multiple lines.
 event_r(type  => 'text',
 	call  => \&text_handler,
 	order => 'before');
