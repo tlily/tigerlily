@@ -503,6 +503,8 @@ sub run {
     my($self) = @_;
 
     TLily::FoiledAgain::sanity_poll();
+    $self->layout();
+    $self->force_redraw();
 
     my $key = $self->{input}->read_char();
     return unless defined($key);
