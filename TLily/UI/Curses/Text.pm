@@ -3,6 +3,7 @@ package TLily::UI::Curses::Text;
 use strict;
 use vars qw(@ISA);
 use TLily::UI::Curses::Generic;
+use TLily::Event;
 
 @ISA = qw(TLily::UI::Curses::Generic);
 
@@ -73,7 +74,13 @@ sub size {
 
 # Internal function to set the more prompt in the status window.
 sub set_pager {
-    my($self) = @_;
+    my($self, $handler) = @_;
+
+print STDERR "pager\n";
+    if ($handler) {
+	TLily::Event::idle_u($handler);
+	$self->{pager_on_idle} = undef;
+    }
 
     return unless ($self->{status});
     my $r = $#{$self->{indexes}} - $self->{idx_anchor};
@@ -82,6 +89,16 @@ sub set_pager {
     } else {
 	$self->{status}->set(t_more => "-- MORE ($r) --");
     }
+}
+
+
+# Update the pager when next idle.
+sub set_pager_on_idle {
+    my($self) = @_;
+    return if ($self->{pager_on_idle});
+    $self->{pager_on_idle} = TLily::Event::idle_r(obj => $self,
+						  call => \&set_pager);
+    return;
 }
 
 
@@ -307,7 +324,7 @@ sub print {
     }
 
     if ($self->{idx_anchor} < $#{$self->{indexes}} - @lines + 1) {
-	$self->set_pager();
+	$self->set_pager_on_idle();
 	return;
     }
 
@@ -340,7 +357,7 @@ sub print {
 	$self->draw_line($base + $i, 0, $lines[$i]);
     }
 
-    $self->set_pager();
+    $self->set_pager_on_idle();
     $self->{W}->noutrefresh;
 };
 
