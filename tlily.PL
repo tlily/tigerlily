@@ -7,7 +7,7 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/tlily.PL,v 1.55 2001/03/20 21:51:47 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/tlily.PL,v 1.56 2001/11/02 23:07:26 tale Exp $
 
 require 5.00307;
 use strict;
@@ -280,6 +280,7 @@ sub show_banner() {
                 yellow => qq[    _.- _..-_/ / ((.'\n],
                 yellow => qq[  ((,.-'   ((,/ \n],
                 bwhite => qq[------------------------------------------------------------------------------\n]);
+# ` This comment with the backquote is here merely to let cperl work again.
     $ui->style("default");
 }
 
