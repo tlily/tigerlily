@@ -8,7 +8,6 @@ Before 2.0 release:
   The following need to be ported/written.  Most should be pretty easy to do
   based on the ones we've already finished.
   
-  autoreply.pl  (easy)
   run_command.pl(easy)  
   mirror.pl     (easy)
   countdown.pl  (easy)
@@ -25,6 +24,7 @@ Before 2.0 release:
   log.pl
   gag.pl
   Paging.  (Part of ui.pl.)
+  autoreply.pl
   
 Later:
   multiserver, multiui
