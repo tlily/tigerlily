@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/keepalive.pl,v 1.6 2000/02/14 23:19:19 tale Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/keepalive.pl,v 1.7 2000/02/16 02:36:02 tale Exp $
 #
 # keepalive -- periodically ping the server, just to verify our connection
 #              is still there.
@@ -30,7 +30,6 @@ sub keepalive {
         $timer{interval}  = $config{keepalive_interval};
     }
 
-    $ui->print(time . "\n");
     $ui->printf("(keepalive)\n") if ($config{keepalive_debug});
     if ($pinging == 1) {
 	$ui->print("(server not responding)\n");
