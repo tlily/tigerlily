@@ -1,17 +1,21 @@
 # -*- Perl -*-
-# $Id$
+# $Header: /data/cvs/lily/tigerlily2/extensions/cj.pl,v 1.2 2000/12/01 19:22:54 coke Exp $
 
 use strict;
 use CGI qw/escape unescape/;
+use lib qw(/Users/cjsrv/lib);
 
-# TODO:
+use TLily::Server::HTTP;
+use URI;
+use XML::RSS::Parser;
+use Config::IniFiles;
+use DB_File; # get rid of this now that we have Config::IniFiles...
 
-# o Add in all previous CJ functionality.
-# o Add in all acceptable requested functionality
-# o need a way to modify chatty/quiet on a per discussion basis.
-# o fix "STOP" processing so that it makes sense. (Currently it concats.)
+# Should probably make it optional to run with these.
+use Chatbot::Eliza;
+#use Net::IRC
 
-# AUTHOR:
+# AUTHOR: (Podify this)
 
 # Will "Coke" Coleda
 
@@ -47,10 +51,17 @@ use CGI qw/escape unescape/;
 #########################################################################
 my %response; #Container for all response handlers. 
 my %throttle; #Container for all throttling information. 
+#my $irc_obj = new Net::IRC;
+#my %irc; #Container for all irc channel information
 my $throttle_interval = 1; #seconds
 my $throttle_safety   = 5; #seconds
-my %prefs; #dbmopen'd hash of lily user prefs.
+my %prefs; #dbmopen'd hash of lily user prefs. (XXX KILL THIS)
+my $config; # Config::IniFiles object storing preferences.
 my $disc="cj-admin"; #where we keep our memos.
+my %disc_feed; # A cached copy of which discussions each feed goes to
+my %disc_annotations; # A cached copy of which discussions each annotation goes to.
+my %annotations; # A cached copy of what our annotations do.
+my %annotation_code; # ala response, but for annotations.
 
 # some array refs of sayings...
 my $sayings;   # pithy 8ball-isms.
@@ -62,12 +73,22 @@ my $unified;   # special handling for the unified discussion.
 my $name = active_server()->user_name();
 
 # we'll use Eliza to handle any commands we don't understand, so set her up.
-use Chatbot::Eliza;
 my $eliza = new Chatbot::Eliza {name=>$name,prompts_on=>0};
 
-use TLily::Server::HTTP;
+# register a complaint
+sub bleat {
+ TLily::Server->active()->cmd_process("$disc: @_");
+}
 
-### If someone is an admin, perform a task.
+# XXX use File::*
+my $config_file = $ENV{HOME} . "/.lily/tlily/CJ.ini";
+
+=head1
+
+If someone is an admin, perform a task.
+
+=cut
+
 sub asAdmin {
 
 #
@@ -77,7 +98,7 @@ sub asAdmin {
 #
 	my ($event,$sub) = @_;
 
-  TLily::Server->active()->cmd_process("/what cj-admin", sub {
+  TLily::Server->active()->cmd_process("/what $disc", sub {
 		my ($newevent) = @_;
 
 		my $oldevent=$event;
@@ -100,59 +121,180 @@ sub random {
 	return $list[int(rand(scalar(@list)))];
 }
 
-### Process stock requests
+# URL => {headline,provider,summary,age,headlines,short_url}
 
-### XXX - for some reason, get_stock only works ONCE when loading cj.
-###       subsequent loads show only a fraction of the appropriate HTML
-###       are arriving!!!
-### Reloading THIS EXTENSION fixes the problem. reloading http_parse 
-### does NOT!!
+sub get_feeds {
+  my @feeds = $config->GroupMembers("feed");
+  foreach my $feed (@feeds) {
+    my $url = $config->val($feed,"url");
+    get_feed($feed,$url);
+  }
+}
+
+# Get a feed.
+my %rss_feeds;
+sub get_feed {
+  my ($source,$url) = @_;
+  add_throttled_HTTP(url => $url,
+                    ui_name => 'main',
+                    callback => sub { 
+
+  my ($response) = @_; 
+  my $parser = new XML::RSS::Parser;
+  my $feed = $parser->parse($response->{_content});
+  foreach my $item ($feed->items()) {
+    my $data = {};
+    map { $data->{$_->name} = $_->value} $item->children;
+    my $url = $data->{link};
+    foreach my $key (keys %$data) {
+      $rss_feeds{$source}{$url}{$key} = cleanHTML($data->{$key});
+    }
+  }
+});
+}
+
+# emit an RSS headline.
+sub send_headline {
+  my ($feed,$target,$url,$title,$description) = @_;
+
+  next if $url eq "";
+  next if $title eq "";
+
+  if (length($description) > 512 ) {
+    $description = substr($description,0,512) . " ...";
+  }
+  my $uri = URI->new($url);
+  shorten($url, sub {
+    my ($shorty) = @_;
+
+    my $line = $target . ":";
+    if ($shorty eq "") {
+      # shortening failed for some reason.
+      $line .= $url;
+    } else {
+      $line .= "$shorty (". $uri->host  .")";
+    }
+    $line .= " :: ";
+    #my $tmp = "$title--NADA--$description" ;
+    #bleat("target: $target");
+    #if ($tmp =~ s/(.*)\.+?\s*--NADA--\s*\1/$1 :: ... /) {
+      #bleat("the RE matched...");
+    #} else {
+      #bleat("the RE did not match...");
+    #}  
+    #$tmp =~ s/ :: \.\.\. $//;
+    #bleat("temp is '$tmp'");
+    #$line .= $tmp;
+   
+    $line .= "$title :: $description";
+    TLily::Server->active()->cmd_process($line);
+
+    #and, now that we've displayed it, save this fact in the config.
+    my @shown = split/\n/,$config->val($feed,"shown");
+    push @shown, $url;
+    save_value($feed,"shown",join("\n",@shown));
+  });
+}
+
+# come up with a more efficient way to do this. 
+sub broadcast_feeds {
+   foreach my $feed (keys %rss_feeds) {
+     foreach my $item (keys %{$rss_feeds{$feed}}) {
+      my $story = $rss_feeds{$feed}{$item};
+      my @shown = split/\n/,$config->val($feed,"shown");
+      if (!grep {$_ eq $item} @shown) {
+        # What discussions does this go to?
+        foreach my $disc (@{$disc_feed{$feed}}) {
+          send_headline($feed,$disc,$story->{link},$story->{title},$story->{description});
+        }
+      return;
+      }
+     }
+   }
+} 
+
+sub save_value {
+  my ($section,$var,@values) = @_;
+  if (! $config->setval($section,$var,@values) ) {
+    $config->AddSection($section);
+    $config->newval($section,$var,@values);
+  }
+}
+
+
+### Process stock requests
 
 my $wrapline = 76; # This is where we wrap lines...
 sub get_stock {
+  my ($event,@stock)=@_;
+  my %stock = ();
+  my %purchased = ();
+  my $cnt=0;
+  my $wrap = 76;
+  my @retval;
 
-	my ($event, @stock) = @_;
-	my $url = 'http://finance.yahoo.com/q?s=' . join('+',@stock) . '&d=v1';
-	dispatch($event,$url);
-	TLily::Server::HTTP-> new(url => $url,
-	                          ui_name => 'main',
-                                  callback => sub { 
-		my ($response) = @_;
-		dispatch($event,length($response->{_content}) . " bytes");
-		#foreach my $foo (split(/\n/, $response->{_content})) {
-			#dispatch($event,$foo);
-		#}
-		my @chunks = ($response->{_content} =~ /^<td nowrap align=left>.*/mg);
+  if ($stock[0] =~ /^[\d@.]+$/) {
+    while (@stock) {
+      my $num = shift @stock;
+      my $stock = uc (shift @stock);
+      $num =~ /^(\d+)(@([\d.])+)?$/;
+      my $shares = $1;
+      my $purchase = $3;
+      $stock{$stock} = $shares;
+      $purchased{$stock} = $purchase;
+      #push @retval ,"$shares shares of $stock at $purchase";
+    }
+    @stock = keys %stock;
+  }
 
-		dispatch($event,scalar(@chunks). " chunks found");
+  my $total = 0;
+  my $gain = 0;
 
-		my (@retval, $cnt);
-		$response->{_content} =~ s/\n/ /g;
-		foreach (@chunks) {
-			my ($time,$value,$frac,$perc,$volume) = (split(/<\/td>/,$_,))[1..5];
+  my $url = "http://finance.yahoo.com/d/quotes.csv?s=" . join (",",@stock) . "&f=sl1d1t1c2v";
+  add_throttled_HTTP(url => $url,
+	                    ui_name => 'main',
+                            callback => sub { 
 
-			if (/No such ticker symbol/) {
-				push @retval, "$stock[$cnt]: Oops. No such ticker symbol. Try stock lookup .";
-			} else {
-				push @retval, "$stock[$cnt]: Last $time, $value: Change $frac ($perc): Vol $volume";
-			}
-			$cnt++;
-		}
+  my ($response) = @_;
+  #return "Quote for @stock failed." unless $response->is_success();
+  my @chunks = split(/\n/,$response->{_content});
+  foreach (@chunks) {
+    my ($stock,$value,$date,$time,$change,$volume) = map { s/^"(.*)"$/$1/;$_} split(/,/,$_);
+    $change =~ s/^(.*) - (.*)$/$1 ($2)/;
+    if (%stock) {
+      my $sub = $value * $stock{$stock};
+      $total += $sub;
+      if ($purchased{$stock}) {
+        my $subgain = ($value - $purchased{$stock}) * $stock{$stock};
+        $gain += $subgain;
+        push @retval, "$stock: Last $date $time, $value: Change $change: Gain: $
+subgain";
+      } else {
+        push @retval, "$stock: Last $date $time, $value: Change $change: Tot: $sub";  
+      }
+    } else {
+      push @retval, "$stock: Last $date $time, $value: Change $change: Vol $volume";
+   }
+  } 
 
 
-		my $retval;
-		foreach my $tmp (@retval) {
-			$tmp = cleanHTML($tmp);
-			$tmp =~ s:(\d) / (\d):$1/$2:g;
-			$tmp =~ s:\( :(:g;
-			$tmp =~ s: \):):g;
-			$tmp =~ s: ,:,:g;
-			
-			my $pad = " " x ($wrapline - ((length $tmp) % $wrapline)) ;
-			$retval .= $tmp . $pad;
-		}
-		$retval =~ s/\s*$//;
-		dispatch($event,$retval);
+   if (%stock && @stock > 1  ) {
+     if ($gain) {
+       push @retval, "Total gain:  $gain";
+     }
+     push @retval, "Total value: $total";
+   }
+
+  my $retval = "";
+  foreach my $tmp (@retval) {
+    $tmp = cleanHTML($tmp);
+
+    my $pad = " " x ($wrap - ((length $tmp) % $wrap)) ;
+    $retval .= $tmp . $pad;
+  }
+
+  $retval =~ s/\s*$//;
+  dispatch($event,$retval);
 	});
 }
 
@@ -170,20 +312,115 @@ sub get_stock {
 #  desire. The default behavior is silence, because that's how Priz would
 #  have wanted it.
 
-$response{help} = {
-	CODE   => sub { 
+sub wrap {
+  my $wrap = 76;
+  my $retval;
+  foreach my $tmp (@_) {
+    my $pad = " " x ($wrap - ((length $tmp) % $wrap)) ;
+    $retval .= $tmp . $pad;
+  }
+  return $retval;
+}
+
+# Provide a mechanism to throttle outgoing HTTP requests.
+# These events are queued up and then run - at a very quick interval, but
+# not immediately.
+
+my @throttled_events;
+sub add_throttled_HTTP {
+  my (%options) = @_;
+
+  push @throttled_events, \%options;
+}
+
+sub do_throttled_HTTP {
+  return unless @throttled_events;
+  my $options = shift @throttled_events;
+  TLily::Server::HTTP-> new(%$options);
+}
+
+# Given a URL and a callback, find out the shortened version
+# of the URL and pass it to the callback.
+# XXX (Add in the hostname to the response)
+
+sub shorten {
+  my ($short, $callback) = @_; 
+
+  my $url = 'http://metamark.net/api/rest/simple?long_url=' . escape($short);
+
+                add_throttled_HTTP(
+         url => $url,
+	                    ui_name => 'main',
+                            callback => sub { 
+
+			my ($response) = @_;
+
+                $response->{_content} =~ m/(http.*)/;
+		my $ans = $1;
+                $ans =~ s/\s//g;
+                &$callback($ans);
+             });
+  return;
+}
+
+# Should find a better place to put this.
+$annotation_code{shorten} = {
+  CODE => sub {
+    my ($event) = shift;
+    my ($shorten) = shift;
+
+    if (length($shorten) <=32) { return; }
+
+    if ($shorten !~ m|^http://xrl.us|) {
+      shorten($shorten, sub { 
+        my ($short_url) = shift;
+        if ($short_url eq "") {
+          bleat ("Error shortening $shorten")
+        } else {
+          dispatch ($event,"$event->{SOURCE}'s url is $short_url");
+        }
+      });
+    }
+  }
+};
+   
+$response{shorten} = {
+	CODE   => sub {
 		my ($event) = @_;
 		my $args = $event->{VALUE};
-		if (! ($args =~ s/.*help\s*(.*)\s*$/$1/i)) {
+		if (! ($args =~ s/shorten*\s*(.*)\s*$/$1/i)) {
+			return "ERROR: Expected RE not matched!";
+		}
+                my $shorten = $1;
+	       if ($shorten =~ m|^http://xrl.us|) {
+                 dispatch($event,"Who shortens the shortening?");
+               } else {
+                 shorten($shorten, sub { dispatch ($event,shift)});
+               }
+               return "";
+	},
+	HELP   => sub { return "Given a URL, return an xrl.us shortened version of the url. Or, vice verse";},
+	TYPE   => [qw/private/],
+	POS    => '-1', 
+	STOP   => 1,
+	RE      => qr/\bshorten\b/i
+};
+
+$response{help} = {
+	CODE   => sub {
+		my ($event) = @_;
+		my $args = $event->{VALUE};
+		if (! ($args =~ s/help\s*(.*)\s*$/$1/i)) {
 			return "ERROR: Expected RE not matched!";
 		}
 		if ($args eq "") {		
 			return "Hello. I'm a bot. I don't do much right now. Try 'help' followed by one of the following for more information: " . join (", ", sort grep {! /^help/} keys %response) . ". In general, commands can appear anywhere in private sends, but must begin public sends.";
 		}
-		my @help = split(/\s+/, $args);
-		my $topic = shift @help;	
-		if (exists ${response}{$topic}) {
-			return &{$response{$topic}{HELP}}(@help);
+		#my @help = split(/\s+/, $args);
+		#my $topic = shift @help;	
+		#Subtopics don't work
+		if (exists ${response}{$args}) {
+			return &{$response{$args}{HELP}}();
 		}
 		return "ERROR: \'$args\' , unknown help topic.";
 	},
@@ -193,6 +430,34 @@ $response{help} = {
 	STOP   => 1,
 	RE      => qr/\bhelp\b/i,
 };
+
+my $year = qr/\d{4}/;
+my $month = qr/(?:[1-9]|10|11|12)/;
+
+$response{cal} = {
+	CODE   => sub { 
+        	my ($event) = @_;
+		my ($args) = $event->{VALUE};
+		my $retval;
+		
+		if ($args =~ m/cal\s+($month)\s+($year)/i) {
+ 			$retval = `cal $1 $2 2>&1`;
+		} elsif ($args =~ m/cal\s+($year)/i) {
+ 			$retval = "A fine year. Nice vintage. Too much output, though, pick a month.";
+		} elsif ($args =~ m/\bcal\s*$/) {
+ 			$retval = `cal 2>&1`;
+		} else {
+			$retval = "I can't find my watch.";
+		}
+		return wrap(split(/\n/,$retval));
+	}, 
+	HELP   => sub { return "like the unix command";},
+	TYPE   => [qw/private/],
+	POS    => '0', 
+	STOP   => 1,
+	RE      => qr/\bcal\b/i,
+};
+
 
 $response{"unset"} = {
 	CODE   => sub {
@@ -323,24 +588,26 @@ $response{"set"} = {
 	RE     => qr(\bset\b),
 };
 
+$response{"ping"} = {
+	CODE   => sub {
+		return "pong";
+	},
+	HELP   => sub { return "stats";},
+	TYPE   => [qw/private/],
+	POS    => '0', 
+	STOP   => 1,
+	RE     => qr/ping/,
+};
+
 $response{"stomach pump"} = {
 	CODE   => sub {
 		return "Eeeek!";
 	},
-	HELP   => sub { return "stomach pump.";},
+	HELP   => sub { return "stomach pumps scare me.";},
 	TYPE   => [qw/private public emote/],
 	POS    => '0', 
 	STOP   => 1,
 	RE     => qr/stomach pump/,
-};
-
-$response{grope} = {
-	CODE   => sub { return "Me grope Good!"; },
-	HELP   => sub { return "It's... groperific."; },
-	TYPE   => [qw/private public emote/],
-	POS    => '0', 
-	STOP   => 0,
-	RE     => qr/\bgrope\b/,
 };
 
 $response{cmd} = {
@@ -374,7 +641,7 @@ $response{buzz} = {
 		return join (" ",@tmp) . "!";
 	},
 	HELP   => sub { return "random buzzword generator. Active with keyword \"buzz\"";},
-	TYPE   => [qw/public emote/],
+	TYPE   => [qw/private/],
 	POS    => '1', 
 	STOP   => 1,
 	RE     => qr/\bbuzz\b/,
@@ -398,20 +665,44 @@ $response{stock} = {
 	RE     => qr/\bstock\b/,
 };
 
+=pod 
+
+$response{drink} = {
+	CODE   => sub {
+		my ($event) = @_;
+		my $args=$event->{VALUE};
+		if (! ($args =~ m/slides a\s+(.*)\s+down the bar to CJ\.$1/)) {
+			return "";
+		} else {
+			TLily::Server->active()->cmd_process("/drink $1",
+			   sub {$_[0]->{NOTIFY} = 0;});
+			return "";
+		}
+	},
+	HELP   => sub { return "/slide me a drink, I'm game.";},
+	TYPE   => [qw/emote/],
+	POS    => '0', 
+	STOP   => 1,
+	RE     => qr/down the bar to CJ\.$/,
+};
+
+=cut
+
 $response{kibo} = {
 	CODE   => sub {
 		my ($event) = @_;
 		my $list = $sayings;
-		if ($event->{RECIPS} eq "unified") {
+		if ($event->{RECIPS} eq "unified" or $event->{RECIPS} eq "bar") {
 			$list = $unified;
 		}
-		return sprintf(random($list),$event->{SOURCE});
+		my ($message) = sprintf(random($list),$event->{SOURCE});
+		return $message;
 	},
 	HELP   => sub { return "I respond to public questions addressed to me.";},
 	TYPE   => [qw/public emote/],
 	POS    => '1', 
 	STOP   => 1,
-	RE     => qr/\b$name\b.*\?/,
+	RE     => qr/\b$name\b.*\?/i,
 };
 
 
@@ -422,11 +713,102 @@ $response{eliza} = {
 	},
 	HELP   => sub { return "I've been doing some research into psychotherapy, I'd be glad to help you work through your agression.";},
 	TYPE   => ["private"],
-	POS    => '1', 
+	POS    => '2', 
 	STOP   => 1,
 	RE     => qr/.*/,
 };
 
+sub scrape_webster {
+  my ($term,$content) = @_;
+
+
+  if ($content =~ /The word you've entered isn't in the dictionary/) {
+    return "Could find no definition for '$term'";
+  }
+
+  # Was there more than one match?
+  my (@see_also,@other_forms);
+  if ($content =~/(\d+) words found/) {
+    # all the words will appear in a dropdown, get the options.
+
+    my @options = grep {/^<option.*>(.*)$/} split(/\n/, $content);
+
+    foreach my $option (@options) {
+      $option =~ s/<option.*>//;
+      (my $tmp = $option) =~ s/\[.*\]//g;
+      if ($tmp eq $term) {
+        # we get the first term for free already...
+        my $blah = quotemeta "[1,";
+        if ($option !~ /$blah/) {
+          push @other_forms, $option;
+        }
+      } else {
+        push @see_also, $option;
+      }
+    }
+  }
+
+  # process the main form.
+  (my $retval = cleanHTML($content)) =~ s/^.*Main Entry: (.*)Get the Top 10.*/$1/;
+   $retval =~ s/For More Information on ".*//;
+
+  # Is there another form of the same name?
+
+=for later
+
+  if (scalar(@other_forms) >= 1) {
+    #Need to figure out the magic incation to get the secondary data...
+    #http://www.m-w.com/cgi-bin/dictionary?hdwd=murder&jump=a&list=a=700349
+    #<input type=hidden name=list value="murder[1,noun]=700416;murder[2,verb]=700439;bloody murder=109479;self-murder=972362">
+
+    $content =~ /<input type=hidden name=list value="(.*)">/;
+    $list = $1;
+ 
+    foreach $other_term (@other_forms) { 
+      my $sub_url = "http://www.m-w.com/cgi-bin/dictionary?hdwd=" . $term . "&jump=" . $other_term . "&list=" . $list; 
+      my $sub_response = $ua->request(HTTP::Request->new(GET => $sub_url));
+      if ($sub_response->is_success) {
+        ($sub_content= cleanHTML($sub_response->content)) =~ s/^.*Main Entry: (.*)Get the Top 10.*/$1/;
+        $retval .= "; " . $sub_content;
+      }
+    }
+  }
+
+=cut
+ # tack on any other items that turned up on the main list, for kicks.
+  if (scalar(@see_also)) {
+    $retval .= "| SEE ALSO: " . join(", ", @see_also);
+  }
+  return "According to Webster: " . $retval; 
+
+}
+
+$response{define} = {
+	CODE   => sub {
+		my ($event) = @_;
+		my $args = $event->{VALUE};
+		if (! ($args =~ m/define*\s*(.*)\s*$/i)) {
+			return "ERROR: Expected RE not matched!";
+		}
+		my $term = $1;
+                my $url = "http://www.m-w.com/cgi-bin/dictionary?$term";
+  add_throttled_HTTP(url => $url,
+	                    ui_name => 'main',
+                            callback => sub { 
+
+    my ($response) = @_;
+    dispatch($event,scrape_webster($term,$response->{_content}));
+  });
+    ""; #muahaah
+	},
+	HELP   => sub { return "Look up a word on m-w.com";},
+	TYPE   => [qw/private/],
+	POS    => '-1', 
+	STOP   => 1,
+	RE     => qr/\bdefine\b/i
+};
+
+if (0) {
 $response{foldoc} = {
 	CODE   => sub {
 		my ($event)= @_;
@@ -434,7 +816,7 @@ $response{foldoc} = {
 		if (! ($args =~ s/.*foldoc\s+(.*)/$1/i)) {
 			return "ERROR: Expected RE not matched!";
 		};
-		TLily::Server::HTTP-> new( url => 'http://www.nightflight.com/foldoc-bin/foldoc.cgi?query=' . $args , host => 'www.nightflight.com', ui_name => 'main', protocol=> 'http', callback => sub { 
+		add_throttled_HTTP( url => 'http://www.nightflight.com/foldoc-bin/foldoc.cgi?query=' . $args , host => 'www.nightflight.com', ui_name => 'main', protocol=> 'http', callback => sub { 
 
 			my ($response) = @_;
 
@@ -466,7 +848,8 @@ $response{foldoc} = {
 	STOP   => 1,
 	RE     => qr/foldoc/,
 };
-
+}
+if (0) {
 $response{lynx} = {
 	CODE   => sub {
 		my ($event)= @_;
@@ -474,7 +857,7 @@ $response{lynx} = {
 		if (! ($args =~ s/.*lynx\s+(.*)/$1/i)) {
 			return "ERROR: Expected RE not matched!";
 		};
-		TLily::Server::HTTP-> new( url => $args, host => 'www.cnn.com', ui_name => 'main', protocol=> 'http', callback => sub { 
+		add_throttled_HTTP( url => $args, host => 'www.cnn.com', ui_name => 'main', protocol=> 'http', callback => sub { 
 
 			my ($response) = @_;
 	    my $message;
@@ -494,6 +877,7 @@ $response{lynx} = {
 	POS    => '0', 
 	STOP   => 1,
 	RE     => qr/lynx/,
+}
 };
 
 my @ascii = qw/NUL SOH STX ETX EOT ENQ ACK BEL BS HT LF VT FF CR SO SI DLE DC1 DC2 DC3 DC4 NAK SYN ETB CAN EM SUB ESC FS GS RS US SPACE/;
@@ -543,7 +927,7 @@ $response{rot13} = {
 		return $args;
 	},
 	HELP   => sub { return "Usage: rot13 <val>";},
-	TYPE   => [qw/private public emote/],
+	TYPE   => [qw/private/],
 	POS    => '0', 
 	STOP   => 1,
 	RE     => qr/\brot13\b/i,
@@ -560,7 +944,7 @@ $response{urldecode} = {
 		return unescape $args;
 	},
 	HELP   => sub { return "Usage: urldecode <val>";},
-	TYPE   => [qw/private public emote/],
+	TYPE   => [qw/private/],
 	POS    => '0', 
 	STOP   => 1,
 	RE     => qr/\burldecode\b/i,
@@ -577,7 +961,7 @@ $response{urlencode} = {
 		return escape $args;
 	},
 	HELP   => sub { return "Usage: urlencode <val>";},
-	TYPE   => [qw/private public emote/],
+	TYPE   => [qw/private/],
 	POS    => '0', 
 	STOP   => 1,
 	RE     => qr/\burlencode\b/i,
@@ -614,7 +998,7 @@ $response{ascii} = {
 		}
 	},
 	HELP   => sub { return "Usage: ascii <val>, where val can be a char ('a'), hex (0x1), octal (01), decimal (1) an emacs (C-A) or perl (\\cA) control sequence, or an ASCII control name (SOH).";},
-	TYPE   => [qw/private public emote/],
+	TYPE   => [qw/private/],
 	POS    => '0', 
 	STOP   => 1,
 	RE     => qr/\bascii\b/i,
@@ -629,14 +1013,14 @@ $response{country} = {
 		};
 		if ( $args =~ m/^(..)$/) {
 			
-			my $a = `grep -i '\|$1\$' /home/wjc/research/CJ/countries.txt`;
+			my $a = `grep -i '\|$1\$' /Users/cjsrv/CJ/countries.txt`;
 			$a =~ m/^([^\|]*)/;
 			return $1 unless ($1 eq "");
 			return "No Match."
 		} else {
-			my @a = split(/\n/, `grep -i \'$args\' /home/wjc/research/CJ/countries.txt`);
+			my @a = split(/\n/, `grep -i \'$args\' /Users/cjsrv/CJ/countries.txt`);
 			if (scalar(@a) > 10) {
-				return "Your search found " . scalar(@a) . " characters. Be more specific.";
+				return "Your search found " . scalar(@a) . " countries. Be more specific (I can only show you 10).";
 			} elsif (scalar(@a) > 0) {
 				my $tmp = join ("\'; ", @a);
 				$tmp =~ s/\|/=\'/g;
@@ -647,12 +1031,12 @@ $response{country} = {
 		}
 	},
 	HELP   => sub { return "Usage: country <val>, where val is either a 2 character country code, or a string to match against possible countries.";} ,
-	TYPE   => [qw/private public emote/],
+	TYPE   => [qw/private/],
 	POS    => '0', 
 	STOP   => 1,
 	RE     => qr/\bcountry\b/i,
 };
-if(0) {
+
 $response{utf8} = {
 	CODE   => sub {
 		my ($event) = @_;
@@ -661,13 +1045,13 @@ $response{utf8} = {
 			return "ERROR: Expected RE not matched!";
 		};
 		if ( $args =~ m/^[Uu]\+([0-9A-Fa-f]*)$/) {
-			my $a = `grep -i '^$1\|' /home/wjc/research/CJ/unicode2.txt`;
+			my $a = `grep -i '^$1\|' /Users/cjsrv/CJ/unicode2.txt`;
 			$a =~ s/^[^|]+\|(.*)/$1/;
 			return $a;
 		} else {
-			my @a = split(/\n/, `grep -i \'\|\.\*$args\' /home/wjc/research/CJ/unicode2.txt`);
+			my @a = split(/\n/, `grep -i \'\|\.\*$args\' /Users/cjsrv/CJ/unicode2.txt`);
 			if (scalar(@a) > 10) {
-				return "Your search found " . scalar(@a) . " countries. Be more specific.";
+				return "Your search found " . scalar(@a) . " glyphs. Please be more specific.";
 			} elsif (scalar(@a) > 0) {
 				my $tmp = join ("\'; ", @a);
 				$tmp =~ s/\|/=\'/g;
@@ -678,14 +1062,15 @@ $response{utf8} = {
 		}
 	},
 	HELP   => sub { return "Usage: utf8 <val>, where val is either U+<hex> or a string to match against possible characters.";} ,
-	TYPE   => [qw/private public emote/],
+	TYPE   => [qw/private/],
 	POS    => '0', 
 	STOP   => 1,
 	RE     => qr/\butf8\b/i,
 };
-}
+
 # This is already pretty unweidly.
 #
+# XXX - http://www.electriceditors.net/langline/accents.php
 sub cleanHTML {
 
   $a = join(" ",@_);
@@ -696,12 +1081,13 @@ sub cleanHTML {
   $a =~ s/&gt;/>/gi;
   $a =~ s/&amp;/&/gi;
   $a =~ s/&#46;/./g;
-  $a =~ s/&#039;/'/g;
+  $a =~ s/&#0?39;/'/g;
   $a =~ s/&quot;/"/ig;
   $a =~ s/&nbsp;/ /ig;
   $a =~ s/&uuml;/u"/ig;
   $a =~ s/\s+/ /g;
   $a =~ s/^\s+//;
+  $a =~ s/\s+$//;
 
   return $a;
 }
@@ -716,9 +1102,19 @@ sub dispatch {
 		$message = '"' . $message;
 	}
 	my $line = $event->{_recips} . ":" .$message;
-
 	TLily::Server->active()->cmd_process($line, sub {$_[0]->{NOTIFY} = 0;});
 };
+
+# keep myself busy.
+sub away_event {
+	my ($event, $handler) = @_;
+	
+	if ($event->{SOURCE} eq $name) {
+          my $line = "/here";
+	  TLily::Server->active()->cmd_process($line, sub {$_[0]->{NOTIFY} = 0;});
+        }
+
+}
 
 sub cj_event {
 	my($event, $handler) = @_;
@@ -777,7 +1173,7 @@ sub cj_event {
 
 	# Workhorse for responses:
 	my $message="";
-	HANDLE_OUTER: foreach my $order (qw/-1 0 1/) {
+	HANDLE_OUTER: foreach my $order (qw/-1 0 1 2/) {
 		HANDLE_INNER: foreach my $handler (keys %response) {
 			if ($response{$handler}->{POS} eq $order) {
 				next if ! grep {/$event->{type}/} @{$response{$handler}{TYPE}};
@@ -794,8 +1190,33 @@ sub cj_event {
 			}	
 		} 
 	}
-
-  dispatch($event, $message);
+        dispatch($event, $message);
+        # Handle Discussion Annotations
+        
+        #convert our event (by target) into a hash (by type)
+        my @targets = split /,/, $event->{_recips};
+        my $notations ; # -> type -> {TARGETS => [], VALUES => []}
+        foreach my $target (@targets) {
+          foreach my $annotation (keys %{$disc_annotations{$target}}) {
+            my $RE = $annotations{$annotation}{RE};
+	    my $VAL = $event->{VALUE};
+            push @{$notations->{$annotation}->{TARGETS}}, $target; 
+            next if $notations->{$annotation}->{VALUES};
+            while ($VAL =~ m/$RE/g) {
+              push @{$notations->{$annotation}->{VALUES}}, $1;
+            }
+          }
+        }
+        foreach my $annotation (keys %{$notations}) {
+          my $ds = $notations->{$annotation};
+          next unless $ds->{VALUES};
+          my $local_event = $event;
+          $local_event->{_recips} = join(",",@{$ds->{TARGETS}});
+          foreach my $value (@{$ds->{VALUES}}) {
+            &{$annotation_code{$annotation}{CODE}}($local_event,$value);
+          }
+        }
+   
 }
 
 #
@@ -804,28 +1225,85 @@ sub cj_event {
 for (qw/public private emote/) {
 	event_r(type => $_, order=>'before', call => \&cj_event);
 }
+event_r(type=>"away", order=>'after', call=> \&away_event);
 
-my $once_a_minute;
+my ($every_10m, $every_30s,$frequently);
+
+
 sub load {
-	my $server = TLily::Server->active();
-#	TLily::Server->active()->cmd_process("/blurb HUP", sub {$_[0]->{NOTIFY} = 0;});
-#	TLily::Server->active()->cmd_process("/blurb off", sub {$_[0]->{NOTIFY} = 0;});
-	use DB_File;
-	dbmopen(%prefs,"/home/wjc/private/CJ_prefs.db",0666) or die "couldn't open DBM file!";
-	$server->fetch(call=>sub {my %event=@_;  $sayings = $event{text}}, type=>"memo", target=>$disc, name=>"sayings");
-	$server->fetch(call=>sub {my %event=@_;  $overhear = $event{text}}, type=>"memo", target=>$disc, name=>"overhear");
-	$server->fetch(call=>sub {my %event=@_;  $buzzwords = $event{text}}, type=>"memo", target=>$disc, name=>"buzzwords");
-	$server->fetch(call=>sub {my %event=@_;  $unified= $event{text}}, type=>"memo", target=>$disc, name=>"-unified");
+  my $server = TLily::Server->active();
+  dbmopen(%prefs,"/Users/cjsrv/CJ_prefs.db",0666) or die "couldn't open DBM file!";
+  $config = new Config::IniFiles(-file=>$config_file) or die @Config::IniFiles::errors;
 
-	#$once_a_minute= TLily::Event::time_r( call => sub { pointcast_stocks();} , interval => 60);
+  foreach my $disc ($config->GroupMembers("discussion")) {
+    my $discname = $disc;
+    $discname =~ s/^discussion //;
+
+    my @feeds = split /\n/, $config->val($disc,"feeds");
+    foreach my $feed (@feeds) {
+      push @{$disc_feed{"feed $feed"}}, $discname;
+    }
+    my @annotations = split /\n/, $config->val($disc,"annotations");
+    foreach my $annotation (@annotations) {
+      $disc_annotations{$discname}{$annotation} = 1;
+    }
+    #my $irc = $config->val($disc,"irc");
+    #if (defined($irc)) {
+       #$irc{$discname} = $irc;
+    #}
+  }
+  foreach my $annotation ($config->GroupMembers("annotation")) {
+    my $ann_name = $annotation;
+    $ann_name =~ s/^annotation //;
+    $annotations{$ann_name}{RE} = $config->val($annotation,"regexp");
+    $annotations{$ann_name}{action} = $config->val($annotation,"action");
+  }
+  #foreach my $irc_cxn ($config->GroupMembers("irc")) {
+    #my $irc_name = $irc_cxn;
+    #$irc_name =~ s/^irc //;
+    #my $server = $config->val($irc_cxn,"server");  
+    #my $port = $config->val($irc_cxn,"port");  
+    #my $nick = $config->val($irc_cxn,"nick");  
+    #my $channel= $config->val($irc_cxn,"channel");  
+    #$irc_cxn{$channel} = $irc_obj->newconn(Nick=>$nick,
+				#Server=>$server,
+				#Port=>$port,
+				#Server=>$server,
+				#Ircname => "Lily/IRC Bridge");
+		#}
+		#TLily::Event::event_r("idle", "after", sub {
+			#$irc_obj->do_one_loop() });
+
+  
+  $server->fetch(call=>sub {my %event=@_;  $sayings = $event{text}}, type=>"memo", target=>$disc, name=>"sayings");
+  $server->fetch(call=>sub {my %event=@_;  $overhear = $event{text}}, type=>"memo", target=>$disc, name=>"overhear");
+  $server->fetch(call=>sub {my %event=@_;  $buzzwords = $event{text}}, type=>"memo", target=>$disc, name=>"buzzwords");
+  $server->fetch(call=>sub {my %event=@_;  $unified= $event{text}}, type=>"memo", target=>$disc, name=>"-unified");
+
+  $every_10m= TLily::Event::time_r( call => sub { 
+    get_feeds(); } , interval => 60*10);
+  $every_30s= TLily::Event::time_r( call => sub { 
+    broadcast_feeds();checkpoint();dump_stats() } , interval => 60*.5);
+  $frequently= TLily::Event::time_r( call => sub { 
+    do_throttled_HTTP();} , interval => 2.0);
+  TLily::Server->active()->cmd_process("/blurb off");
 }
 
+sub dump_stats {
+  #print out the size of all of our globals.
+}
+
+sub checkpoint {
+  $config->RewriteConfig() ;
+}
 
 sub unload {
-#	TLily::Server->active()->cmd_process("/blurb OFFLINE", sub {$_[0]->{NOTIFY} = 0;});
-	dbmclose(%prefs);
-	TLily::Event->time_u($once_a_minute);
+  dbmclose(%prefs);
+  checkpoint();
+  #TLily::Server->active()->cmd_process("/blurb asleep");
+  TLily::Event->time_u($every_10m);
+  TLily::Event->time_u($every_30s);
+  TLily::Event->time_u($frequently);
 }
 
-TLily::UI->name("main")->print("(loaded)");
 1;
