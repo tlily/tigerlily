@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/User.pm,v 1.33 2000/12/14 01:17:37 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/User.pm,v 1.34 2000/12/16 01:32:59 neild Exp $
 
 package TLily::User;
 
@@ -108,10 +108,12 @@ If you\'re interested in tlily\'s guts, try "%help internals".
     
     rebuild_file_help_idx("$::TL_LIBDIR/TLily",
                           index => "internals",
-                          prefix => "TLily::");
+                          prefix => "TLily::")
+      unless ($::TL_LIBDIR =~ m|^//INTERNAL|);
 
     rebuild_file_help_idx("$::TL_EXTDIR",
-                          index => "extensions");
+                          index => "extensions")
+      unless ($::TL_LIBDIR =~ m|^//INTERNAL|);
 }
 
 =item rebuild_file_help_idx($directory [, index => "indexname"] [, prefix => "prefix")

@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Extend.pm,v 1.17 2000/02/10 03:31:09 tale Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Extend.pm,v 1.18 2000/12/16 01:32:59 neild Exp $ 
 
 package TLily::Extend;
 use strict;
@@ -20,6 +20,7 @@ use TLily::User  qw(&help_r &shelp_r &command_r);
 use TLily::Event qw(&event_r &event_u);
 use TLily::Utils qw(&edit_text &diff_text &columnize_list);
 
+my %extdata;
 my %extensions = ();
 my @share=qw(%config &help_r &shelp_r &command_r &event_r &event_u 
 	     &ui_name &active_server &edit_text &diff_text &columnize_list);
@@ -93,27 +94,27 @@ sub load {
 	$ui->print("(extension \"$name\" already loaded)\n") if ($ui);
 	return 1;
     }
-    
-    if (!defined $filename) {
+
+    if (!defined($filename)) {
 	my @ext_dirs = ("$ENV{HOME}/.lily/tlily/extensions",
 			$main::TL_EXTDIR);
 	my $dir;
 	foreach $dir (@ext_dirs) {
-	    if (-f "${dir}/${name}.pl") {
+	    if (-f "${dir}/${name}.pl" || $dir =~ m|^//INTERNAL|) {
 		$filename = "${dir}/${name}.pl";
 		last;
 	    }
 	}
     }
     
-    if (!defined $filename) {
+    if (!defined($filename)) {
 	$ui->print("(cannot locate extension \"$name\")\n") if ($ui);
 	return 0;
     }
     
     $ui->print("(loading \"$name\" from \"$filename\")\n")
-      if ($ui && $verbose);
-    
+      if ($ui && $verbose && defined($filename));
+
     my $reg  = TLily::Registrar->new($name)->push_default;
     my $safe = ExoSafe->new;
     

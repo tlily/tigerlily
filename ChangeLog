@@ -1,4 +1,7 @@
 Version 2.1.1-post
+  * [Makefile.PL, tlily.PL, TLily/Config.pm, TLily/ExoSafe.pm, TLily/Extend.pm,
+    TLily/User.pm] Changed build system; the new one has less features,
+    but builds tlily as a single, movable file. [DPN]
   * [extensions/blurb.pl] Removed #@$#@ filter, added multi-server support [WJC]
   * [extensions/slcp_output.pl,extensions/ui.pl,tlily.global]  Add new
     styles to tag server names in pub,priv,emote messages. [RBJ]

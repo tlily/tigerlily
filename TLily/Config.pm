@@ -8,11 +8,11 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Config.pm,v 1.9 1999/10/02 04:48:17 albert Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Config.pm,v 1.10 2000/12/16 01:32:59 neild Exp $
 
 package TLily::Config;
 
-use Safe;
+use TLily::ExoSafe;
 use Exporter;
 #require "TLily/dumpvar.pl";
 
@@ -162,7 +162,8 @@ sub init {
 sub read_init_files {
     my $ifile;
 
-    if(! -f $main::TL_LIBDIR."/tlily.global") {
+    if($main::TL_LIBDIR !~ m|^//INTERNAL| &&
+       ! -f $main::TL_LIBDIR."/tlily.global") {
 	print STDERR "Warning: Global configuration file ",
 	    $main::TL_LIBDIR."/tlily.global", "\nnot found.  ";
 	print STDERR "TigerLily may not be properly installed.\n";
@@ -173,19 +174,20 @@ sub read_init_files {
 		    $main::TL_ETCDIR."/tlily.site",
 		    $ENV{HOME}."/.lily/tlily/tlily.cf")
     {
-	if(-f $ifile) {
+	if($ifile =~ m|^//INTERNAL/| || -f $ifile) {
 #	    print STDERR "Loading $ifile\n";
 
-	    my $safe=new Safe;
+	    my $safe=new ExoSafe;
 	    snarf_file($ifile, $safe);
 
-	    local(*stab) = $safe->reval("*::");
+	    #local(*stab) = $safe->reval("*::");
+	    local(*stab) = $safe->symtab;
 	    my $key;
 #	    print STDERR "*** Examining ", $safe->root, "\n";
 	    foreach $key (keys %stab) {
 		next if($key =~ /^_/ || $key =~ /::/ || $key eq ENV || $key eq VERSION);
 #		print STDERR "KEY: $key\n";
-		local(*entry) = $stab{$key};
+		local *entry = $stab{$key};
 		if(defined $entry) {
 #		    print STDERR "TYPE: SCALAR\n";
 		    $config{$key} = $entry;
@@ -224,12 +226,12 @@ sub snarf_file {
     my($filename, $safe) = @_;
 
     # Copied from Expand.pm
-    if ($Safe::VERSION >= 2) {
-	$safe->deny_only("system");
-	$safe->permit("system");
-    } else {
-	$safe->mask($safe->emptymask());
-    }
+#    if ($Safe::VERSION >= 2) {
+#	$safe->deny_only("system");
+#	$safe->permit("system");
+#    } else {
+#	$safe->mask($safe->emptymask());
+#    }
 
     $safe->share_from('main', [ qw(%ENV) ]);
 

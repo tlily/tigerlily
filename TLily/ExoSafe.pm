@@ -8,7 +8,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/ExoSafe.pm,v 1.5 1999/03/23 08:33:17 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/ExoSafe.pm,v 1.6 2000/12/16 01:32:59 neild Exp $
 
 package ExoSafe;
 
@@ -25,6 +25,7 @@ no strict 'refs';
 # _ pseudo filehandle.
 
 my $default_root = 0;
+my %internal_files;
 
 sub new {
     my $class = shift;
@@ -68,15 +69,60 @@ sub share_from {
 sub rdo {
     my ($self, $file) = @_;
     my $root = $self->{Root};
-    my $subref = eval "package $root; sub { do \$file }";
+    my $subref;
+
+    if ($file =~ s|^//INTERNAL/||) {
+	load_internal_files();
+	die "cannot open \"$file\"" unless defined($internal_files{$file});
+	my $evalcode = sprintf('package %s; sub { eval $internal_files{$file}; }', $root);
+	{ no strict; $subref = eval $evalcode; }
+    } else {
+	$subref = eval "package $root; sub { do \$file }";
+    }
+
     return &$subref;
 }
 
 sub reval {
     my ($self, $expr) = @_;
     my $root = $self->{Root};
-    my $subref = eval "package $root; sub { eval \$expr }";
+    my $evalcode = sprintf('package %s; sub { eval $expr; }', $root);
+    my $subref = eval $evalcode;
     return &$subref;
+}
+
+sub symtab {
+    my ($self) = @_;
+    my $root = $self->{Root};
+    #print "package $root; sub { eval '*${root}::' }\n";
+    #my $subref = eval "package $root; sub { eval '*${root}::' }";
+    #return &$subref;
+    return eval "package $root; *${root}::";
+}
+
+sub load_internal_files {
+    if (keys %internal_files == 0) {
+	local *FH;
+	my $rc = open(FH, $0) or die "$0: $!";
+	
+	my $name;
+	my $data = "";
+	while (<FH>) {
+	    if (defined($name)) {
+		if (/^\#\#\#\# END/) {
+		    $internal_files{$name} = $data;
+		    $data = "";
+		    undef $name;
+		} else {
+		    $data .= $_;
+		}
+	    } else {
+		if (/^\#\#\#\# EMBEDDED \"([^\"]+)\"/) {
+		    $name = $1;
+		}
+	    }
+	}
+    }
 }
 
 1;

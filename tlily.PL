@@ -7,120 +7,11 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/tlily.PL,v 1.48 2000/03/24 21:23:42 kazrak Exp $
-
-use strict;
-use Config;
-use TLily::Version;
-
-# Find perl
-my $PERL = $Config{'startperl'} ? $Config{'startperl'}     : 
-           $Config{'perlpath'}  ? "#!".$Config{'perlpath'} :
-                                  "#/usr/bin/perl";
-
-my $perl_exec = $Config{'perl'};
-
-# On broken systems like RPI's, try to locate perl in the user's path
-if(length $PERL > 32) {
-    my $P;
-    foreach $P (split(/:/,$ENV{PATH})) {
-	$PERL = "$P/$perl_exec";
-	last if -x $PERL;
-    }
-    $PERL = '#!'.$PERL;
-}
-
-$PERL .= " -w" if $ENV{DASH_W};
-
-# If the length is still too long, complain
-if(length $PERL > 32) {
-    warn "WARNING: Path to perl interpreter is long;",
-	" tlily may not work right.\n";
-}
-
-# calculate a fallback value for EAGAIN in case errno.ph does not work.
-local(*F);
-open(F,">/tmp/en.c") || die "Can't write to /tmp/en.c: $!\n";
-print F <<EOF;
-#include <stdio.h>
-#include <sys/errno.h>
-
-int main (int argc, char* argv[]) {
-   printf("EAGAIN=\%d\\n",EAGAIN);
-   return(0);
-}
-EOF
-close(F);
-system("$Config{cc} /tmp/en.c -o /tmp/en");
-`/tmp/en` =~ /EAGAIN=(\d+)/;
-my $fallback_EAGAIN = $1 || "undef";
-unlink("/tmp/en.c","/tmp/en");
-
-my $PREFIX = '.';
-    my $LIBDIR    = $ENV{TL_LIBDIR} || '.';
-    my $LIBMODDIR = $ENV{TL_LIBDIR} || '.';
-    my $LIBEXTDIR = "$ENV{TL_LIBDIR}/extensions" || './extensions';
-    my $ETCDIR    = $ENV{TL_ETCDIR} || '.';
-
-    my $file = 'tlily';
-    print "Writing $file\n";
-
-
-if(-f $file) { unlink $file; }
-	
-    local(*OFH);
-    open(OFH, ">$file") or die "Cannot open $file: $!\n";
-	
-    while(<DATA>) {
-	s|\@\@PERL\@\@|$PERL|;
-	s|\@\@LIBDIR\@\@|$LIBDIR|;
-	s|\@\@LIBMODDIR\@\@|$LIBMODDIR|;
-	s|\@\@LIBEXTDIR\@\@|$LIBEXTDIR|;
-	s|\@\@ETCDIR\@\@|$ETCDIR|;
-	s|\@\@EAGAIN\@\@|$fallback_EAGAIN|;	
-	print OFH $_;
-    }
-    close(OFH);
-    chmod(0555, $file); # To discourage editing
-
-__END__
-@@PERL@@
-#    TigerLily:  A client for the lily CMC, written in Perl.
-#    Copyright (C) 1999  The TigerLily Team, <tigerlily@einstein.org>
-#                                http://www.hitchhiker.org/tigerlily/
-#
-#  This program is free software; you can redistribute it and/or modify it
-#  under the terms of the GNU General Public License version 2, as published
-#  by the Free Software Foundation; see the included file COPYING.
-#
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/tlily.PL,v 1.49 2000/12/16 01:32:59 neild Exp $
 
 require 5.00307;
-
-$TL_ETCDIR = "@@ETCDIR@@";
-$TL_LIBDIR = "@@LIBDIR@@";
-$TL_EXTDIR = "@@LIBEXTDIR@@";
-$TL_TMPDIR = "/tmp";
-if ($^O =~ /cygwin/) {
-    $TL_TMPDIR = $ENV{TEMP} || 'C:\WINDOWS\TEMP';
-    $TL_TMPDIR =~ s/^.://g;
-    $TL_TMPDIR =~ s/\\/\//g;
-}
-
-$fallback_EAGAIN = @@EAGAIN@@;
-
 use strict;
-use lib qw(@@LIBMODDIR@@);
 use vars qw($EAGAIN);
-
-if ( -f 'tlily.PL' ) {
-    my @tstat = stat('tlily.PL');
-    my @mstat = stat($0);
-    if ($tstat[9] > $mstat[9]) {
-	print "tlily.PL is newer than $0 -- rerun make.\n";
-	exit;
-    }
-}
-
 use TLily::Event;
 use TLily::Config;
 use TLily::UI;
@@ -130,6 +21,24 @@ use TLily::User;
 use TLily::Extend;
 use TLily::Version;
 use TLily::Utils;
+
+BEGIN {
+    if (!defined($::TL_LIBMODDIR) ||
+	($::TL_LIBMODDIR ne "//INTERNAL")) {
+	unshift @INC, $::TL_LIBMODDIR;
+    }
+}
+
+$::TL_ETCDIR = "."          unless defined($::TL_ETCDIR);
+$::TL_LIBDIR = "."          unless defined($::TL_LIBDIR);
+$::TL_EXTDIR = "extensions" unless defined($::TL_EXTDIR);
+
+$::TL_TMPDIR = "/tmp";
+if ($^O =~ /cygwin/) {
+    $::TL_TMPDIR = $ENV{TEMP} || 'C:\WINDOWS\TEMP';
+    $::TL_TMPDIR =~ s/^.://g;
+    $::TL_TMPDIR =~ s/\\/\//g;
+}
 
 if ($^O =~ /cygwin/) {
     $EAGAIN = $::fallback_EAGAIN;
@@ -280,6 +189,18 @@ while (1) {
 
 
 sub load_ui {
+    if ($::TL_LIBDIR =~ m|^//INTERNAL|) {
+	return TLily::UI::Curses->new(name => 'main');
+
+	my $ui = eval "TLily::UI::$config{UI}->new(name => 'main');";
+	if ($@) {
+	    print STDERR "ERROR: Unable to load UI \"$config{UI}\".\n$@\n";
+	    exit;
+	}
+
+	return $ui;
+    }
+
     my %available;
 
     $config{UI} ||= "Curses";
