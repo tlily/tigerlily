@@ -124,6 +124,12 @@ sub url_cmd {
 	    $cmd .= " '$url'";
  	}
 	if ($^O =~ /MSWin32/) {
+	    # There's no good way on Win32 to quote URLs in a
+	    # bulletproof fashion in the shell that I've found, but
+	    # for now we'll handle the single case of escaping
+	    # ampersands.  This is not a complete fix, though.
+	    $url=~s/\&/"\&"/g;  # Isn't Windows COOL!?! (Isn't CPerl-mode?)
+
             system("start", $url);
 
 	} elsif ($config{browser_textmode}) {
