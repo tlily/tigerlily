@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_output.pl,v 1.24 2002/06/11 01:55:48 bwelling Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_output.pl,v 1.25 2002/08/21 03:41:20 neild Exp $
 
 use strict;
 
@@ -267,20 +267,30 @@ my @infomsg = (
     'sysmsg'     => 'V'     => '%v',
     'pa'         => 'V'     => '** %S%TPublic address message from %U: %V **',
 
-    # these are present in release > 2.6 or so.
-    'appoint'    => 'MC="owner";' => "(you have accepted ownership of discussion %R)",
-    'appoint'    => 'C="owner";'  => "(you have offered %P ownership of discussion %R)",
-    'appoint'    => 'tC="speaker";' => "(%R is now a moderated discussion)",    
-    'appoint'    => 't'           => "(all members of %R are now %Es)",    
-    'appoint'    => 'C="author";' => "(%P is now an author for %R)",
-    'appoint'    => 'C="moderator";' => "(%P is now a moderator of %R)",
-    'appoint'    => ''            => "(%P is now a %E for %R)",
-    'unappoint'  => 'MC="owner";' => "(you have declined ownership of discussion %R)",
-    'unappoint'  => 'C="owner";'  => "(you have rescinded your ownership offer to %P of discussion %R)",
-    'unappoint'  => 'tC="speaker";' => "(%R is no longer a moderated discussion)",
-    'unappoint'  => 'C="author";' => "(%P is no longer an author for %R)",
-    'unappoint'  => 'C="moderator";' => "(%P is no longer a moderator of %R)",
-    'unappoint'  => ''            => "(%P is no longer a %E for %R)",    
+    # appoint/unappoint, as of 2.6.4-cr3.
+    'appoint'    => 'SMC="owner";'  => "(you have accepted ownership of discussion %R)",
+    'appoint'    => 'SC="owner";'  => "(you have offered %P ownership of discussion %R)",
+    'appoint'    => 'MC="owner";'  => "*** %S%T%u has offered you ownership of discussion %R ***",
+    'appoint'    => 'C="owner";'  => "*** %S%T%u is now the owner of discussion %R ***",
+    'unappoint'  => 'MC="owner";' => "*** %S%T%u has rescinded %p offer of ownership of discussion %R ***",
+    'unappoint'  => 'SC="owner";'  => "(you have rescinded your ownership offer to %P of discussion %R)",
+
+    'appoint'    => 'tC="speaker";' => "*** Discussion %R is now moderated ***",    
+    'appoint'    => 'MC="speaker";' => "*** You have been made a speaker for discussion %R ***",
+    'appoint'    => 'C="speaker";' => "*** %P is now a speaker for discussion foo ***",
+    'unappoint'  => 'tC="speaker";' => "*** Discussion %R is no longer moderated ***",
+    'unappoint'  => 'MC="speaker";' => "*** You are no longer a speaker for discussion %R ***",
+    'unappoint'  => 'C="speaker";' => "*** %P is no longer a speaker for discussion foo ***",
+
+    'appoint'    => 'MC="author";' => "*** You have been made an author for discussion %R ***",
+    'appoint'    => 'C="author";' => "*** %P is now an author for discussion foo ***",
+    'unappoint'  => 'MC="author";' => "*** You are no longer an author for discussion %R ***",
+    'unappoint'  => 'C="author";' => "*** %P is no longer an author for discussion foo ***",
+
+    'appoint'    => 'M'            => "*** You are now a %E for %R ***",
+    'appoint'    => ''            => "*** %P is now a %E for %R ***",
+    'unappoint'  => 'M'            => "*** You are no longer a %E for %R ***",    
+    'unappoint'  => ''            => "*** %P is no longer a %E for %R ***",    
     
     # need to handle review, sysalert, pa, game, and consult.
 );
