@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_output.pl,v 1.4 1999/04/11 02:35:34 steve Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_output.pl,v 1.5 1999/05/05 01:28:39 steve Exp $
 
 use strict;
 
@@ -192,10 +192,12 @@ my $sub = sub {
 	if ($flags =~ /A/) {
 	    $found = $msg; last;
 	}
-	if ($flags =~ /V/ && ($e->{VALUE} =~ /\S/)) { 
+	if ($flags =~ /V/ && (defined ($e->{VALUE})) &&
+	    ($e->{VALUE} =~ /\S/)) { 
 	    $found = $msg; last; 
 	}
-	if ($flags =~ /E/ && ($e->{VALUE} !~ /\S/)) {
+	if ($flags =~ /E/ && ((!(defined ($e->{VALUE}))) || 
+			      ($e->{VALUE} !~ /\S/))) {
 	    $found = $msg; last;
 	}
 	if ($flags =~ /D/ && (defined ($e->{RECIPS}))) {
