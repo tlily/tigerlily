@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Config.pm,v 1.2 1999/02/26 21:29:04 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Config.pm,v 1.3 1999/02/27 22:02:14 josh Exp $
 package TLily::Config;
 
 use Safe;
@@ -7,7 +7,6 @@ use Exporter;
 #require "TLily/dumpvar.pl";
 
 @ISA = qw(Exporter);
-@EXPORT_OK = qw(&config_register_callback &config_init &config_ask);
 @EXPORT = qw(%config);
 
 my %obj;
@@ -94,7 +93,7 @@ sub DESTROY {
     my($self) = @_;
 }
 
-sub config_register_callback {
+sub callback_r {
     my %args = @_;
     $args{Id} = $nextid++;
     if(!$args{List}) { $args{List} = 'config'; }
@@ -103,7 +102,7 @@ sub config_register_callback {
     return $args{Id};
 }
 
-sub config_remove_callback {
+sub callback_u {
     1;
 #    my $id = @_;
 #    my($lst,$mode,$var);
@@ -137,14 +136,14 @@ sub init {
     $config{color_attrs} = \%color_attrs;
     $config{mono_attrs}  = \%mono_attrs;
 
-    config_register_callback(Variable => 'load',
-                             List => 'config',
-                             State => 'STORE',
-                             Call => \&collapse_tr);
-    config_register_callback(Variable => 'slash',
-                             List => 'config',
-                             State => 'STORE',
-                             Call => \&collapse_tr);
+    callback_r(Variable => 'load',
+	       List => 'config',
+	       State => 'STORE',
+	       Call => \&collapse_tr);
+    callback_r(Variable => 'slash',
+	       List => 'config',
+	       State => 'STORE',
+	       Call => \&collapse_tr);
 
     read_init_files();
     parse_command_line();
@@ -326,12 +325,12 @@ TLily::Config - Configuration Handling
 
     TLily::Config::init();
 
-    $id = config_register_callback(State => STORE,
-				   Variable => mono,
-                                   List => 'config'
-				   Call => \&set_colors);
+    $id = TLily::Config::callback_r(State => STORE,
+				    Variable => mono,
+                                    List => 'config'
+				    Call => \&set_colors);
 
-    if(config_ask('info')) {
+    if(TLily::Config::config_ask('info')) {
 	&do_something();
     }
 

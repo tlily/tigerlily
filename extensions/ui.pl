@@ -1,4 +1,4 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/ui.pl,v 1.2 1999/02/27 21:05:21 neild Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/ui.pl,v 1.3 1999/02/27 22:02:17 josh Exp $ 
 use strict;
 
 my $style_help = "
@@ -52,3 +52,48 @@ sub cstyle_command {
 command_r(cstyle => \&cstyle_command);
 shelp_r(cstyle => "Set the color and attributes of a text style.");
 help_r(cstyle => $style_help);
+
+TLily::Config::callback_r(Variable => '-ALL-',
+			  List => 'color_attrs',
+			  State => 'STORE',
+			  Call => sub {
+			      my($tr, %ev) = @_;
+			      my $ui = ui_name();
+
+			      if(! $config{mono}) {
+				  $ui->defcstyle(${$ev{Key}}, @{${$ev{Value}}});
+ 			          $ui->redraw();
+			      }
+		          });
+
+
+TLily::Config::callback_r(Variable => '-ALL-',
+			  List => 'mono_attrs',
+			  State => 'STORE',
+			  Call => sub {
+			      my($tr, %ev) = @_;
+			      my $ui = ui_name();
+
+			      if($config{mono}) {
+				  $ui->defstyle(${$ev{Key}}, @{${$ev{Value}}});
+  			          $ui->redraw();
+			      }
+		          });
+
+# Set colors from what the config files read
+if($config{mono}) {
+    my($k,$v);
+    my $ui = ui_name();
+    while (($k,$v) = each %{$config{'mono_attrs'}}) {
+	$ui->defstyle($k, @{$v});
+    }
+    $ui->redraw;
+} else {
+    my($k,$v);
+    my $ui = ui_name();
+    while (($k,$v) = each %{$config{'color_attrs'}}) {
+	$ui->defcstyle($k, @{$v});
+    }
+    $ui->redraw;
+}
+

@@ -44,11 +44,11 @@ sub private_fmt {
     $ui->print("\n");
     
     $ui->indent(" >> ");
-    $ui->prints(privhdr => "Private message from ",
-		sender  => $e->{SOURCE});
+    $ui->prints(privhdr     => "Private message from ",
+		privsender  => $e->{SOURCE});
     if ($e->{RECIPS} =~ /,/) {
-	$ui->prints(privhdr => ", to ",
-		    dest    => $e->{RECIPS});
+	$ui->prints(privhdr  => ", to ",
+		    privdest => $e->{RECIPS});
     }
     $ui->prints(privhdr => ":\n");
     
@@ -70,11 +70,11 @@ sub public_fmt {
     $ui->print("\n");
     
     $ui->indent(" -> ");
-    $ui->prints(pubhdr => "From ",
-		sender => $e->{SOURCE},
-		pubhdr => ", to ",
-		dest   => $e->{RECIPS},
-		pubhdr => ":\n");
+    $ui->prints(pubhdr    => "From ",
+		pubsender => $e->{SOURCE},
+		pubhdr    => ", to ",
+		pubdest   => $e->{RECIPS},
+		pubhdr    => ":\n");
     
     $ui->indent(" - ");
     $ui->style("pubmsg");
@@ -223,13 +223,14 @@ $sub = sub {
 	    $found =~ s/\%T/$title/g;
 	}
 	
-	$e->{text} = "SLCP: $found";
+	$e->{text} = $found;
+	$e->{slcp} = 1;
     }
     
     return;
 };
 
 event_r(type  => 'all',
-		      order => 'before',
-		      call  => $sub);
+	order => 'before',
+	call  => $sub);
 

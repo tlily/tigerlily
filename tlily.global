@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/Attic/tlily.global,v 1.5 1999/02/27 21:01:26 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/Attic/tlily.global,v 1.6 1999/02/27 22:02:11 josh Exp $
 # Global defaults for tlily
 # PLEASE DO NOT EDIT EXCEPT FOR DEVELOPMENT!
 # EDIT YOUR SITE CONFIG FILE INSTEAD!
@@ -11,26 +11,23 @@
 
 @slash = (undef);
 @prefer = (undef);
-$terminal = "LC::CTerminal";
-%color_attrs = ( 'sender' => ['bold'],
-		'dest' => ['bold'],
-		'b' => ['bold'],
-		'status_line' => ['fg:yellow',  'bg:blue',  'bold'],
-		'input_line'  => ['fg:white',   'bg:black'],
-		'text_window' => ['fg:white',   'bg:black', 'normal'],
-		'privhdr'     => ['fg:green',   'bg:black'],
-		'privmsg'     => ['fg:green',   'bg:black'],
-		'pubhdr'      => ['fg:cyan',    'bg:black'],
-		'pubmsg'      => ['fg:white',   'bg:black'],
-		'emote'       => ['fg:cyan',    'bg:black'],
-		'review'      => ['fg:magenta', 'bg:black'],
-		'usersend'    => ['fg:red',     'bg:black'],
-		'subc'        => ['fg:blue',    'bg:black'],
-		'whiteblue'   => ['fg:white',   'bg:blue'],
-		'greenblue'   => ['fg:green',   'bg:blue',   'bold'],
-		'yellow'      => ['fg:yellow',  'bg:black',  'bold'],
-		'green'       => ['fg:green',   'bg:black',  'bold'],
-		'notify'      => ['fg:yellow',  'bg:black',  'normal']
+%color_attrs = ('pubsender'   => ['cyan',    'black', 'bold'],
+		'pubdest'     => ['cyan',    'black', 'bold'],
+		'privsender'  => ['green',   'black', 'bold'],
+		'privdest'    => ['green',   'black', 'bold'],
+		'status'      => ['yellow',  'blue',  'bold'],
+		'input_line'  => ['white',   'black', 'normal'],
+		'text_window' => ['white',   'black', 'normal'],
+		'privhdr'     => ['green',   'black', 'normal'],
+		'privmsg'     => ['green',   'black', 'normal'],
+		'pubhdr'      => ['cyan',    'black', 'normal'],
+		'pubmsg'      => ['white',   'black', 'normal'],
+		'emote'       => ['cyan',    'black', 'normal'],
+		'review'      => ['magenta', 'black', 'normal'],
+		'yellow'      => ['yellow',  'black', 'bold'],
+		'green'       => ['green',   'black', 'bold'],
+		'bwhite'      => ['white',   'black', 'bold'],
+		'slcp'        => ['yellow',  'black', 'normal']
 		);
 
 %mono_attrs = ('sender'      => ['bold'],
@@ -41,7 +38,6 @@ $server='lily.acm.rpi.edu';
 $port=7777;
 $mono=0;
 $pager=1;
-$options_after_connect=1;
 $editor = $ENV{VISUAL} || $ENV{EDITOR} || 'vi';
 
 #$browser_textmode=1;
@@ -64,8 +60,8 @@ $debughttpd=0;
 # Examples FOR YOUR SITE AND/OR USER CONFIG FILES! PLEASE DO NOT PUT THESE HERE
 #@load = ('-expand', 'hack', '-log');
 
-#%color_attrs = ('pubhdr' => 'bg:black fg:red bold reverse');
-#%mono_attrs = ('_default_' => ['bg:white', 'fg:black'],
+#%color_attrs = ('pubhdr' => 'black red bold reverse');
+#%mono_attrs = ('_default_' => ['white', 'black'],
 #	 'privdhr' => ['reverse']);
 
 #@slash = ('-info', 'oops', 'also');
