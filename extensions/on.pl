@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/on.pl,v 1.15 2002/01/14 18:04:52 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/on.pl,v 1.16 2002/04/12 17:11:21 coke Exp $
 
 use strict;
 use Text::ParseWords qw(quotewords);
@@ -14,6 +14,8 @@ use TLily::Bot;
 my $usage = "(/on list | clear <id> | <event> <action>)";
 
 command_r(on => \&on_cmd);
+shelp_r(attr=> "see %on");
+help_r(attr=> "see %on");
 shelp_r(on => "execute a command when a specific event occurs");
 help_r('on', qq[
    %on list
