@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/url.pl,v 1.28 2003/05/10 19:25:11 coke Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/url.pl,v 1.29 2003/05/10 19:56:11 coke Exp $
 
 #
 # URL handling
@@ -58,7 +58,7 @@ sub text_handler {
     # Note that the (.)? is ok even in the presence of \G because it will
     # match whatever character (if any) terminated the search, which couldn't
     # be the first character of the next URI protocol on the line (if any).
-    while ($event->{text} =~ m!\G.*?((https?|ftp)://$url_base)(.)?!g) {
+    while ($event->{text} =~ m!\G.*?((https?|ftp|daap)://$url_base)(.)?!g) {
         if (! defined($3) && length($event->{text}) == $wrap_width) {
             push @urls, $1;
             $text_wrapping = 1;
