@@ -1,5 +1,5 @@
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/namethatblurb.pl,v 1.4 2001/12/18 23:42:20 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/namethatblurb.pl,v 1.5 2002/01/16 19:21:57 neild Exp $
 #
 
 use strict;
@@ -22,7 +22,15 @@ sub blurbcheck {
     my $ui     = TLily::UI::name($event->{ui_name});
 
     my @match;
-    if ($text =~ /(.*)\'s\s*blurb/i) {
+    if ($text =~ /^\'s\s*blurb/i) {
+	    for my $rhandle (@{$event->{RHANDLE}}) {
+		    my %attrs = $server->state(HANDLE => $rhandle);
+		    if ($attrs{ATTRIB} && $attrs{ATTRIB} =~ /emote/) {
+			    push @match, $event->{SOURCE};
+			    last;
+		    }
+	    }
+    } elsif ($text =~ /(.*)\'s\s*blurb/i) {
 	    my @name = split /\s+/, $1;
 	    return unless @name;
 
