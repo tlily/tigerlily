@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Curses/Attic/Text.pm,v 1.23 2001/02/09 00:24:10 kazrak Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Curses/Attic/Text.pm,v 1.24 2001/02/12 19:18:09 kazrak Exp $
 
 package TLily::UI::Curses::Text;
 
@@ -328,14 +328,18 @@ sub print {
 
     # rbj =-= Adding expiry here.  Check if we've passed our maximum
     # length; if so, expire the first line.
+    my $linelen = 0;
     while ($#{$self->{indexes}} > $config{max_scrollback} &&
            $config{max_scrollback} > 0 &&
            $self->{idx_anchor} > $self->{lines}) {
         $self->{idx_anchor}--;
         $self->{idx_unseen}--;
-        my $linelen = $self->{indexes}->[1];
-        $self->{text} = substr($self->{text}, $linelen);
+        my $linelen += $self->{indexes}->[1];
         shift @{$self->{indexes}};
+    }
+
+    if ($linelen) {
+        $self->{text} = substr($self->{text}, $linelen);
         my $style = undef;
         for (my $i = 0; $i < $#{$self->{styles}}; ) {
             $self->{styles}->[$i] -= $linelen;
@@ -347,9 +351,9 @@ sub print {
                     # Insert the last style with offset 0 when we otherwise
                     # wouldn't have a style that starts there.
                     unshift @{$self->{styles}}, (0, $style);
-                    undef $style;
                     $i += 2;
                 }
+                undef $style;
                 $i += 2;
             }
         }
@@ -369,10 +373,10 @@ sub print {
                     # Insert the last style/indent with offset 0 when we
                     # otherwise wouldn't have a style/offset that starts there.
                     unshift @{$self->{indents}}, (0, $style, $indent);
-                    undef $style;
-                    undef $indent;
                     $i += 3;
                 }
+                undef $style;
+                undef $indent;
                 $i += 3;
             }
         }
