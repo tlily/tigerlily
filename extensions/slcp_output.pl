@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_output.pl,v 1.19 2000/12/13 19:29:10 kazrak Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_output.pl,v 1.20 2001/01/26 03:02:21 josh Exp $
 
 use strict;
 
@@ -213,10 +213,10 @@ my @infomsg = (
     'ignore'     => 'A'    => '*** %S%T%u is now ignoring you %V ***',
     'unignore'   => 'A'    => '*** %S%T%u is no longer ignoring you ***',
     'unidle'     => 'A'    => '*** %S%T%u is now unidle ***',
-    'create'     => 'DSU'   => '(you have created discussion %R "%D")',
+    'create'     => 'DSU'  => '(you have created discussion %R "%D")',
     'create'     => 'U'    => '*** %S%T%u has created discussion %R "%D" ***',
-    'destroy'    => 'DSU'   => '(you have destroyed discussion %R)',
-    'destroy'    => 'DU'    => '*** %S%T%u has destroyed discussion %R ***',
+    'destroy'    => 'DSU'  => '(you have destroyed discussion %R)',
+    'destroy'    => 'DU'   => '*** %S%T%u has destroyed discussion %R ***',
     'destroy'    => 'U'    => '*** %S%T%u has destroyed a discussion (server didn\'t say which) ***',
     'permit'     => 'DSMC="owner";' => '(You have accepted ownership of discussion %R)',
     'permit'     => 'DSTC="owner";' => '(You have offered %P ownership of discussion %R)',
@@ -227,7 +227,7 @@ my @infomsg = (
     'permit'     => 'DTC'   => '*** %S%T%u has given %P %E privileges to discussion %R ***',
     'permit'     => 'DMc'   => '*** %S%T%u has permitted you to discussion %R ***',
     'permit'     => 'DTc'   => '*** %S%T%u has permitted %P to discussion %R ***',
-# The following two messages should only be used on 2.4 or later cores.
+# The following two messages should only be used on 2.4 or 2.5 cores.
 # Earlier cores gave the same notify for [un]appoints as well as a discussion
 # going public/private.
     'permit'     => 'DSUtcL>="2.4";'  => '(%R is now public)',
@@ -244,7 +244,7 @@ my @infomsg = (
     'depermit'   => 'DTC'   => '*** %S%T%u has removed %P\'s %E privileges on discussion %R ***',
     'depermit'   => 'DMc'   => '*** %S%T%u has depermitted you from discussion %R ***',
     'depermit'   => 'DTc'   => '*** %S%T%u has depermitted %P from discussion %R ***',
-# The following two messages should only be used on 2.4 or later cores.
+# The following two messages should only be used on 2.4 or 2.5 cores.
 # Earlier cores gave the same notify for [un]appoints as well as a discussion
 # going public/private.
     'depermit'   => 'DSUtcL>="2.4";'  => '(%R is now private)',
@@ -259,8 +259,24 @@ my @infomsg = (
     'quit'       => 'DU'    => '*** %S%T%u is no longer a member of %R ***',
     'retitle'    => 'DSV'   => '(you have changed the title of %R to "%V")',
     'retitle'    => 'DV'    => '*** %S%T%u has changed the title of %R to "%V" ***',
-    'sysmsg'     => 'V'    => '%v',
-    'pa'         => 'V'    => '** %S%TPublic address message from %U: %V **'
+    'sysmsg'     => 'V'     => '%v',
+    'pa'         => 'V'     => '** %S%TPublic address message from %U: %V **',
+
+    # these are present in release > 2.6 or so.
+    'appoint'    => 'MC="owner";' => "(you have accepted ownership of discussion %R)",
+    'appoint'    => 'C="owner";'  => "(you have offered %P ownership of discussion %R)",
+    'appoint'    => 'tC="speaker";' => "(%R is now a moderated discussion)",    
+    'appoint'    => 't'           => "(all members of %R are now %Es)",    
+    'appoint'    => 'C="author";' => "(%P is now an author for %R)",
+    'appoint'    => 'C="moderator";' => "(%P is now a moderator of %R)",
+    'appoint'    => ''            => "(%P is now a %E for %R)",
+    'unappoint'  => 'MC="owner";' => "(you have declined ownership of discussion %R)",
+    'unappoint'  => 'C="owner";'  => "(you have rescinded your ownership offer to %P of discussion %R)",
+    'unappoint'  => 'tC="speaker";' => "(%R is no longer a moderated discussion)",
+    'unappoint'  => 'C="author";' => "(%P is no longer an author for %R)",
+    'unappoint'  => 'C="moderator";' => "(%P is no longer a moderator of %R)",
+    'unappoint'  => ''            => "(%P is no longer a %E for %R)",    
+    
     # need to handle review, sysalert, pa, game, and consult.
 );
 

@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_parse.pl,v 1.25 2000/09/09 06:07:26 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_parse.pl,v 1.26 2001/01/26 03:02:21 josh Exp $
 
 use strict;
 use vars qw(%config);
@@ -58,6 +58,8 @@ my %events =
    destroy       => undef,
    permit        => undef,
    depermit      => undef,
+   appoint       => undef,
+   unappoint     => undef,   
    'join'        => undef,
    quit          => undef,
    retitle       => 'TITLE',
