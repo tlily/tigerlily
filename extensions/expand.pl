@@ -1,4 +1,4 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/expand.pl,v 1.3 1999/02/25 08:40:04 neild Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/expand.pl,v 1.4 1999/02/25 09:07:55 neild Exp $ 
 
 use strict;
 
@@ -29,7 +29,7 @@ sub exp_expand {
 		} elsif ($key eq ';') {
 			$exp = $expansions{'recips'};
 		} else {
-			return;
+			return $ui->command("insert-self", $key);
 		}
 
 		$exp =~ tr/ /_/;
@@ -38,8 +38,9 @@ sub exp_expand {
 		my $fore = substr($line, 0, $pos);
 		my $aft  = substr($line, $pos);
 		
-		return if ($fore =~ /[:;]/);
-		return if ($fore =~ /^\s*[\/\$\?%]/);
+		return $ui->command("insert-self", $key) if ($fore =~ /[:;]/);
+		return $ui->command("insert-self", $key)
+		  if ($fore =~ /^\s*[\/\$\?%]/);
 		
 		my @dests = split(/,/, $fore);
 		foreach (@dests) {
@@ -52,7 +53,7 @@ sub exp_expand {
 		$fore = join(',', @dests);
 		$ui->set_input(length($fore) + 1, $fore . $key . $aft);
 	}
-	
+
 	return;
 }
 
