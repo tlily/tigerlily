@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/Curses.pm,v 1.45 2000/04/02 09:23:56 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/Curses.pm,v 1.46 2000/04/10 19:27:01 josh Exp $
 
 package TLily::UI::Curses::Proxy;
 
@@ -343,6 +343,7 @@ sub start_curses {
     # Work around a bug in certain curses implementations where raw() does
     # not appear to clear the "lnext" setting.
     ($STTY_LNEXT) = (`stty -a 2> /dev/null` =~ /lnext = (\S+);/);
+    $STTY_LNEXT =~ s/<undef>/undef/g;
     system("stty lnext undef") if ($STTY_LNEXT);
 
     initscr;
