@@ -56,7 +56,7 @@ sub public_fmt {
 		public_header => ":\n");
     
     $ui->indent(public_body   => " - ");
-    $ui->prints(public_body   => $e->{VALUE}, "\n");
+    $ui->prints(public_body   => $e->{VALUE}."\n");
 
     $ui->indent();
     $ui->style("default");
