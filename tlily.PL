@@ -7,7 +7,7 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/tlily.PL,v 1.53 2001/02/24 23:04:29 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/tlily.PL,v 1.54 2001/03/05 08:32:31 josh Exp $
 
 require 5.00307;
 use strict;
@@ -26,6 +26,10 @@ BEGIN {
     if (!defined($::TL_LIBMODDIR) ||
 	($::TL_LIBMODDIR ne "//INTERNAL")) {
 	unshift @INC, $::TL_LIBMODDIR;
+    }
+
+    if ($^O eq 'MSWin32') {
+        $TLily::Version::VERSION .= "-ap";
     }
 }
 

@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Server.pm,v 1.27 2001/02/24 23:04:29 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Server.pm,v 1.28 2001/03/05 08:32:32 josh Exp $
 
 package TLily::Server;
 
@@ -367,15 +367,8 @@ IO Handler to process input from the server.
 sub reader {
     my($self, $mode, $handler) = @_;
 
-Win32Hack:
     my $buf;
     my $rc = sysread($self->{sock}, $buf, 1024);
-
-    if (($^O eq "MSWin32") && ($! == &EWOULDBLOCK)) {
-        sleep(1); 
-        print STDERR "STUPID WIN32 HACK WHICH SHOULD BE REMOVED ONCE TK EVENTLOOP STARTS WORKING RIGHT FOR IO\n";
-        goto Win32Hack; 
-    }
 
     # Interrupted by a signal or would block
     return if (!defined($rc) && $! == $::EAGAIN);

@@ -7,10 +7,11 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Tk/Attic/Event.pm,v 1.3 2001/02/24 23:04:30 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Tk/Attic/Event.pm,v 1.4 2001/03/05 08:32:32 josh Exp $
 
 package TLily::UI::Tk::Event;
 
+use IO::Select;
 use strict;
 use vars qw($inMainLoop);
 use TLily::Config qw(%config);
@@ -54,18 +55,33 @@ sub io_r {
     print STDERR "fileno: ", $fileno, "\n" if $config{ui_debug};
     print STDERR "mode: ", $mode, "\n" if $config{ui_debug};
 
-    if($mode =~ /(e|r)/) {
-	$self->{readable}->{$handle} = $fileno;
-	$self->{mainwin}->fileevent(\$handle, "readable",
-				    [ $self, "callback", "readable", $handle ]);
-    }
-    if($mode =~ /w/) {
-	$self->{writable}->{$handle} = $fileno;
-	$self->{mainwin}->fileevent(\$handle, "writable",
-				    [ $self,"callback", "writable", $handle ]);
+    $self->{rselect} ||= IO::Select->new;
+    $self->{eselect} ||= IO::Select->new;
+    $self->{wselect} ||= IO::Select->new;    
+    
+    if ($^O eq 'MSWin32') {
+        if($mode =~ /r/) { $self->{rselect}->add($handle); }
+        if($mode =~ /e/) { $self->{eselect}->add($handle); }
+        if($mode =~ /w/) { $self->{wselect}->add($handle); }
+        
+        if (! $self->{_callback_installed}) {
+            $self->{mainwin}->repeat(50 => sub { $self->callback() } );
+            $self->{_callback_installed} = 1;
+        }
+
+    } else {
+        if($mode =~ /(e|r)/) {
+            $self->{readable}->{$handle} = $fileno;
+            $self->{mainwin}->fileevent(\$handle, "readable",
+                                        [ $self, "callback", "readable", $handle ]);
+        }
+        if($mode =~ /w/) {
+            $self->{writable}->{$handle} = $fileno;
+            $self->{mainwin}->fileevent(\$handle, "writable",
+                                        [ $self,"callback", "writable", $handle ]);
+        }
     }
 }
-
 
 sub io_u {
     print STDERR ": TLily::UI::Tk::Event::io_u\n" if $config{ui_debug};
@@ -75,13 +91,19 @@ sub io_u {
     print STDERR "fileno: ", $fileno, "\n" if $config{ui_debug};
     print STDERR "mode: ", $mode, "\n" if $config{ui_debug};
 
-    if($mode =~ /(e|r)/) {
-	delete $self->{readable}->{$handle};
-	$self->{mainwin}->fileevent($handle, "readable", "");
-    }
-    if($mode =~ /w/) {
-	delete $self->{writable}->{$handle};
-	$self->{mainwin}->fileevent($handle, "writable", "");
+    if ($^O eq 'MSWin32') {
+        if($mode =~ /r/) { $self->{rselect}->remove($handle); }
+        if($mode =~ /e/) { $self->{eselect}->remove($handle); }
+        if($mode =~ /w/) { $self->{wselect}->remove($handle); }
+    } else {
+        if($mode =~ /(e|r)/) {
+            delete $self->{readable}->{$handle};
+            $self->{mainwin}->fileevent($handle, "readable", "");
+        }
+        if($mode =~ /w/) {
+            delete $self->{writable}->{$handle};
+            $self->{mainwin}->fileevent($handle, "writable", "");
+        }
     }
 }
 
@@ -122,14 +144,22 @@ sub run {
 }
 
 sub callback {
-    my($self, $mode, $handle) = @_;
-    print STDERR ": TLily::UI::Tk::Event::callback ($handle is $mode)\n";# if $config{ui_debug};
-    if($mode eq "readable") {
-	vec($rout, $self->{$mode}->{$handle}, 1) = 1;
-	$nfound++;
-    } elsif($mode eq "writable") {
-	vec($wout, $self->{$mode}->{$handle}, 1) = 1;
-	$nfound++;
+    if ($^O eq 'MSWin32') {
+        my ($self) = @_;
+
+        print STDERR ": TLily::UI::Tk::Event::callback\n" if $config{ui_debug};
+        $nfound = select($rout=$self->{rselect}->bits, $wout=$self->{wselect}->bits, $eout=$self->{eselect}->bits, 0);
+
+    } else {
+        my($self, $mode, $handle) = @_;
+        print STDERR ": TLily::UI::Tk::Event::callback ($handle is $mode)\n" if $config{ui_debug};
+        if($mode eq "readable") {
+            vec($rout, $self->{$mode}->{$handle}, 1) = 1;
+            $nfound++;
+        } elsif($mode eq "writable") {
+            vec($wout, $self->{$mode}->{$handle}, 1) = 1;
+            $nfound++;
+        }
     }
 }
 
