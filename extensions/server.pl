@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/server.pl,v 1.22 1999/10/03 18:25:55 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/server.pl,v 1.23 1999/12/11 21:40:49 mjr Exp $
 
 use strict;
 
@@ -140,7 +140,7 @@ event_r(type => 'user_send',
 
 sub to_server {
     my($e, $h) = @_;
-    my $server = active_server();
+    my $server = $e->{server} || active_server();
 
     if (! $server) {
 	# we aren't connected to a server

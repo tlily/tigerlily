@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_output.pl,v 1.11 1999/10/13 02:38:38 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_output.pl,v 1.12 1999/12/11 21:40:49 mjr Exp $
 
 use strict;
 
@@ -26,14 +26,15 @@ sub private_fmt {
     
     $ui->print("\n");
     
-    my $source = $e->{SOURCE};
-    $source .= "\@" . $e->{server}->name()
+    my $servname = "(" . $e->{server}->name() . ") "
       if (scalar(TLily::Server::find()) > 1);
 
     $ts = timestamp($e->{TIME}) if ($e->{STAMP});
     $ui->indent(private_header => " >> ");
+    $ui->prints(private_header => $servname)
+      if (defined $servname);
     $ui->prints(private_header => "${ts}Private message from ",
-		private_sender => $source);
+		private_sender => $e->{SOURCE});
     $ui->prints(private_header => " [$blurb]")
       if (defined $blurb && ($blurb ne ""));
     if ($e->{RECIPS} =~ /,/) {
@@ -61,14 +62,15 @@ sub public_fmt {
     
     $ui->print("\n");
     
-    my $source = $e->{SOURCE};
-    $source .= "\@" . $e->{server}->name()
+    my $servname = "(" . $e->{server}->name() . ") "
       if (scalar(TLily::Server::find()) > 1);
 
     $ts = timestamp ($e->{TIME}) if ($e->{STAMP});
     $ui->indent(public_header => " -> ");
+    $ui->prints(public_header => $servname)
+      if (defined $servname);
     $ui->prints(public_header => "${ts}From ",
-		public_sender => $source);
+		public_sender => $e->{SOURCE});
     $ui->prints(public_header => " [$blurb]")
       if (defined $blurb && ($blurb ne ""));
     $ui->prints(public_header => ", to ",
