@@ -7,7 +7,7 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Utils.pm,v 1.9 2001/01/26 03:01:48 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Utils.pm,v 1.10 2002/06/11 01:55:48 bwelling Exp $
 package TLily::Utils;
 
 use strict;
@@ -180,6 +180,46 @@ sub get_deadfile {
     unlink($deadfile);
 
     return $text;
+}
+
+sub format_time {
+  my ($time, %args) = @_;
+
+  my $delta = $args{delta};
+  my $type = $args{type};
+  my $seconds = $args{seconds};
+
+  if ($delta && $config{$delta}) { 
+    my($t) = ($time->[2] * 60) + $time->[1] + $config{$delta};
+    $t += (60 * 24) if ($t < 0);
+    $t -= (60 * 24) if ($t >= (60 * 24));
+    $time->[2] = int($t / 60);
+    $time->[1] = $t % 60;
+  }
+
+  my ($ampm, $format, $secs);
+  if ($type && $config{$type} eq '12') {
+    if ($time->[2] >= 12) {
+      $ampm = 'p';
+      $time->[2] -= 12 if $time->[2] > 12;
+    }
+    elsif ($time->[2] < 12) {
+      $time->[2] = 12 if $time->[2] == 0;
+      $ampm = 'a';
+    }
+    $format = "%d:%02d%s%s";
+  } else {
+    $ampm = '';
+    $format = "%02d:%02d%s%s";
+  }
+
+  if ($seconds && $config{$seconds}) {
+    $secs = sprintf(":%02d", $time->[0]);
+  } else {
+    $secs = '';
+  }
+
+  return sprintf($format, $time->[2], $time->[1], $secs, $ampm);
 }
 
 1;

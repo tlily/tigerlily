@@ -57,24 +57,10 @@ my %fmt_cache = ();
 sub timestamp {
     my ($time) = @_;
     
-    my ($min, $hour) = (localtime($time))[1,2];
-    my $t = ($hour * 60) + $min;
-    my $ampm = '';
-    $t += $config{zonedelta} if defined($config{zonedelta});
-    $t += (60 * 24) if ($t < 0);
-    $t -= (60 * 24) if ($t >= (60 * 24));
-    $hour = int($t / 60);
-    $min  = $t % 60;
-    if (defined($config{zonetype}) and ($config{zonetype} eq '12')) {
-        if ($hour >= 12) {
-            $ampm = 'p';
-            $hour -= 12 if $hour > 12;
-        } else {
-	    $hour = 12 if $hour == 0;
-            $ampm = 'a';
-        }
-    }
-    return sprintf("%02d:%02d%s", $hour, $min, $ampm);
+    my @a = localtime($time);
+    return TLily::Utils::format_time(\@a,
+    				     delta => "zonedelta",
+    				     type => "zonetype");
 }
 
 sub compile_fmt {

@@ -1,38 +1,16 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/status.pl,v 1.24 2002/06/06 22:23:41 bwelling Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/status.pl,v 1.25 2002/06/11 01:55:48 bwelling Exp $
 
 use strict;
 
 sub set_clock {
     my $ui = ui_name("main");
-    
+
     my @a = localtime;
-    if ($config{clockdelta}) {
-	my($t) = ($a[2] * 60) + $a[1] + $config{clockdelta};
-	$t += (60 * 24) if ($t < 0);
-	$t -= (60 * 24) if ($t >= (60 * 24));
-	$a[2] = int($t / 60);
-	$a[1] = $t % 60;
-    }
-    my $ampm = "";
-    my $seconds = "";
-    my $format = "%02d:%02d%s%s";
-    if ($config{clocktype} eq '12') {
-	if ($a[2] >= 12) {
-	    $ampm = 'p';
-	    $a[2] -= 12 if $a[2] > 12;
-	}
-	elsif ($a[2] < 12) {
-            $a[2] = 12 if $a[2] == 0;
-	    $ampm = 'a';
-	}
-        $format = "%2d:%02d%s%s";
-    }
-    if ($config{clockseconds}) {
-        $seconds = sprintf(":%02d", $a[0]);
-    }
-	
-    $ui->set(clock => sprintf($format, $a[2], $a[1], $seconds, $ampm));
+    
+    $ui->set(clock => TLily::Utils::format_time(\@a, delta => "clockdelta",
+    						type => "clocktype",
+						seconds => "clockseconds"));
     return 0;
 }    
 
