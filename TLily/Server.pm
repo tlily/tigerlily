@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Server.pm,v 1.30 2001/11/10 07:07:01 tale Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Server.pm,v 1.31 2001/11/14 02:58:51 tale Exp $
 
 package TLily::Server;
 
@@ -212,7 +212,7 @@ sub ui_name {
 
 =item name()
 
-If given an arguement, will attempt to add that name as an alias for
+If given an argument, will attempt to add that name as an alias for
 this server.  It returns 1 if it was successful, 0 otherwise.
 
 If no argument is given, in a scalar context it will return the primary
