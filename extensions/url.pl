@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/url.pl,v 1.11 2000/02/07 05:30:24 tale Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/url.pl,v 1.12 2000/02/08 01:44:42 tale Exp $
 
 #
 # URL handling
@@ -16,8 +16,8 @@ sub handler {
     foreach $type ('http', 'https', 'ftp') {
         $event->{text} =~ s|($type://\S+[^\s\(\)\[\]\{\}\"\'\?\,\;\:\.])|
             push @urls, $1;
-            my $t=$config{tag_urls}?'['.scalar(@urls).']':"";
-            "<url>$1$t</url>";|ge;
+            my $t=$config{tag_urls} ? '['.scalar(@urls).']' : "";
+            "$1$t";|ge;
     }
     return 0;
 }
@@ -138,6 +138,10 @@ event_r(type  => 'emote',
 # case that the start of the next line is still part of the URL.  The chances
 # of that happening, however, are almost certainly less than the chances that
 # a URL will have wrapped onto multiple lines.
+#
+# There is an additional problem if $config{tag_urls} is set.  Since
+# %memo edit and %info edit both get their initial information via text
+# messages, the memo/info will end up tagged with the URL number.
 event_r(type  => 'text',
 	call  => \&handler,
 	order => 'before');
