@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/spellcheck.pl,v 1.17 1999/04/09 22:48:33 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/spellcheck.pl,v 1.18 1999/04/21 21:02:29 josh Exp $
 
 use strict;
 use IPC::Open2;
@@ -166,7 +166,7 @@ sub spellcheck_cmd {
 	TLily::UI::istyle_fn_r(\&spellcheck_input);
 	my $dictfile;
 
-	$ispell = init_ispell();
+	$ispell = init_ispell() unless $config{no_ispell};
 
 	if ($ispell) {
 	    $ui->print("(spellcheck enabled, using \'ispell\')\n");
