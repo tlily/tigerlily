@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/Curses.pm,v 1.28 1999/03/23 23:36:11 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/Curses.pm,v 1.29 1999/03/24 01:32:46 neild Exp $
 
 package TLily::UI::Curses::Proxy;
 
@@ -37,6 +37,7 @@ sub style {
 
 sub indent {
     my $self = shift;
+    $self->SUPER::indent(@_);
     $self->{text}->indent(@_);
 }
 
@@ -496,6 +497,7 @@ sub style {
 
 sub indent {
     my $self = shift;
+    $self->SUPER::indent(@_);
     $self->{text}->indent(@_);
 }
 

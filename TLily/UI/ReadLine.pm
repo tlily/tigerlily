@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/ReadLine.pm,v 1.5 1999/03/24 01:17:33 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/ReadLine.pm,v 1.6 1999/03/24 01:32:48 neild Exp $
 
 package TLily::UI::ReadLine;
 
@@ -215,12 +215,14 @@ sub style {
 
 sub indent {
     my($self, $indent) = @_;
+    $self->SUPER::indent($indent);
     $self->{indent} = defined($indent) ? $indent : "";
 }
 
 
 sub print {
     my $self = shift;
+    $self->SUPER::print(@_);
     $self->{queued} .= join('', @_);
     return unless ($self->{queued} =~ s/^(.*\n)//s);
     my $s = $1;

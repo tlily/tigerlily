@@ -7,13 +7,14 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/UI.pm,v 1.16 1999/03/23 08:33:21 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/UI.pm,v 1.17 1999/03/24 01:32:43 neild Exp $
 
 package TLily::UI;
 
 use strict;
 use Carp;
 
+use TLily::UI::Util qw(wrap);
 use TLily::Registrar;
 
 
@@ -106,21 +107,33 @@ sub prints {
 
 sub print {
     my $self = shift;
-    print {$self->{log_fh}} @_ if ($self->{log_fh});
+    return unless ($self->{log_fh});
+    $self->{log_queued} .= join('', @_);
+    return unless ($self->{log_queued} =~ s/^(.*\n)//s);
+    my $s = $1;
+    foreach my $l (wrap($s, cols => 80, 'indent' => $self->{log_indent})) {
+        print {$self->{log_fh}} $l, "\n";
+    }
     return;
 };
+
+sub indent {
+    my($self, $indent) = @_;
+    $self->{log_indent} = defined($indent) ? $indent : "";
+}
 
 sub log {
     my $self = shift;
     return $self->{log_file} if (@_ == 0);
 
     my($file) = @_;
-    $self->{log_file} = undef;
-    $self->{log_fh}   = undef;
+    $self->{log_file}   = undef;
+    $self->{log_fh}     = undef;
+    $self->{log_queued} = "";
 
     if (defined $file) {
 	local *FH;
-	open(FH, ">$file") or die "$file: $!\n";
+	open(FH, ">>$file") or die "$file: $!\n";
 	my $fh = select(FH); $|=1; select($fh);
 	$self->{log_file} = $file;
 	$self->{log_fh}   = *FH;
