@@ -1,13 +1,13 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/Attic/tlily.global,v 1.20 1999/03/16 19:19:28 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/Attic/tlily.global,v 1.21 1999/03/16 19:24:07 neild Exp $
 # Global defaults for tlily
 # PLEASE DO NOT EDIT EXCEPT FOR DEVELOPMENT!
 # EDIT YOUR SITE CONFIG FILE INSTEAD!
 # Begin defaults
 @load = qw(server slcp_parse slcp_output slcp_state ui expand status
 	   autologin url after misc info paste set startup source spellcheck
-	   submit vinfo);
-#	   autoreply gag help irc log pager
+	   submit vinfo log);
+#	   autoreply gag help irc pager
 #	   pipes run_command view);
 
 @slash = (undef);
