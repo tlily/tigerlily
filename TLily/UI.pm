@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/UI.pm,v 1.28 2001/11/15 04:23:34 tale Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/UI.pm,v 1.29 2002/06/07 06:39:20 neild Exp $
 
 package TLily::UI;
 
@@ -300,7 +300,8 @@ sub bind {
 
 
 sub istyle_fn_r {
-    shift if (@_ > 2);      # Lose the package, if called as a class method.
+    return if (@_ > 2 && ref(shift)); # Lose the package, if called as a class
+                                      # method.  Don't act as an object method.
     my($style_fn) = @_;
 
     $gstyle_fn = $style_fn;
