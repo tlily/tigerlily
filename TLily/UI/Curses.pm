@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/Curses.pm,v 1.54 2001/11/15 05:45:17 tale Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/Curses.pm,v 1.55 2002/06/01 02:56:55 neild Exp $
 
 package TLily::UI::Curses::Proxy;
 
@@ -94,7 +94,7 @@ use TLily::Config qw(%config);
 #
 
 my $termsize_installed;
-my $sigwinch;
+our $sigwinch;
 BEGIN {
     eval { require Term::Size; import Term::Size; };
     if ($@) {
@@ -396,11 +396,6 @@ sub start_curses {
     TLily::UI::Curses::Generic::start_curses();
 
     $SIG{WINCH} = sub { $sigwinch = 1; };
-}
-
-
-sub sigwinch {
-    $sigwinch = 1;
 }
 
 
