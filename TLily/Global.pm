@@ -1,9 +1,9 @@
 package LC::Global;
 
 use strict;
-use vars qw(@ISA @EXPORT_OK $event $user);
+use vars qw(@ISA @EXPORT_OK $event);
 
 @ISA = qw(Exporter);
-@EXPORT_OK = qw($event $user);
+@EXPORT_OK = qw($event);
 
 1;

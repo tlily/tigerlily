@@ -1,13 +1,13 @@
 use strict;
 
-use LC::Global qw($event $user);
+use LC::Global qw($event);
 use LC::UI;
 use LC::Server::SLCP;
 
 my $server;
 
 sub server_command {
-	my($user, $ui, $arg) = @_;
+	my($ui, $arg) = @_;
 	my @argv = split /\s+/, $arg;
 
 	#@argv = qw(pauline.einstein.org 7777);
@@ -35,7 +35,7 @@ sub server_command {
 			call  => \&to_server);
 }
 
-$user->command_r(server => \&server_command);
+LC::User::command_r(server => \&server_command);
 
 sub send_handler {
 	my($e, $h) = @_;

@@ -1,7 +1,7 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/misc.pl,v 1.2 1999/02/24 01:01:46 neild Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/misc.pl,v 1.3 1999/02/24 23:36:42 neild Exp $ 
 
 use strict;
-use LC::Global qw($event $user);
+use LC::Global qw($event);
 
 
 #
@@ -10,7 +10,7 @@ use LC::Global qw($event $user);
 
 my $last_command = '';
 sub shell_handler {
-	my($user, $ui, $command) = @_;
+	my($ui, $command) = @_;
 
 	$command = $last_command if ($command =~ /^\!/);
 	$last_command = $command;
@@ -36,14 +36,14 @@ sub bang_handler {
 	return;
 }
 
-$user->shelp_r('shell' => 'run shell command');
-$user->help_r('shell' => '
+LC::User::shelp_r('shell' => 'run shell command');
+LC::User::help_r('shell' => '
 Usage: %shell <command>
        ! <command>
 ');
 $event->event_r(type => 'user_input',
 		call => \&bang_handler);
-$user->command_r('shell' => \&shell_handler);
+LC::User::command_r('shell' => \&shell_handler);
 
 
 #
@@ -51,7 +51,7 @@ $user->command_r('shell' => \&shell_handler);
 #
 
 sub eval_handler($) {
-	my($user, $ui, $args) = @_;
+	my($ui, $args) = @_;
 	if ($args =~ /^(?:list|l|array|a)\s+(.*)/) {
 		$args = $1;
 		my @rc = eval($args);
@@ -73,9 +73,9 @@ sub eval_handler($) {
 	return;
 }
 
-$user->command_r('eval' => \&eval_handler);
-$user->shelp_r('eval' => 'run perl code');
-$user->help_r('eval' => '
+LC::User::command_r('eval' => \&eval_handler);
+LC::User::shelp_r('eval' => 'run perl code');
+LC::User::help_r('eval' => '
 Usage: %eval [list] <code>
 
 Evaluates the given perl code.  The code is evaluated in a scalar context,
@@ -91,19 +91,19 @@ The results of the eval, if any, will be printed.
 #
 
 sub version_handler {
-	my($user, $ui, $args) = @_;
+	my($ui, $args) = @_;
 	#$ui->print("(Tigerlily version $TL_VERSION)\n");
 	#server_send("/display version\r\n");
 	return;
 }
 
-$user->shelp_r('version' => 'Display the Tigerlily and server versions');
-$user->help_r('version' => '
+LC::User::shelp_r('version' => 'Display the Tigerlily and server versions');
+LC::User::help_r('version' => '
 Usage: %version
 
 Displays the version of Tigerlily and the server.
 ');
-$user->command_r('version' => \&version_handler);
+LC::User::command_r('version' => \&version_handler);
 
 
 #
@@ -117,8 +117,8 @@ sub echo_handler {
 	return;
 }
 
-$user->shelp_r('echo' => 'Echo text to the screen.');
-$user->help_r('echo' => '
+LC::User::shelp_r('echo' => 'Echo text to the screen.');
+LC::User::help_r('echo' => '
 Usage: %echo [-n] <text>
 ');
-$user->command_r('echo' => \&echo_handler);
+LC::User::command_r('echo' => \&echo_handler);

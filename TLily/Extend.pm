@@ -1,4 +1,4 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Extend.pm,v 1.2 1999/02/22 22:15:56 neild Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Extend.pm,v 1.3 1999/02/24 23:36:38 neild Exp $ 
 
 # initial version, 10/24/97, Josh Wilmes
 
@@ -12,6 +12,7 @@ use vars qw(%config);
 use LC::ExoSafe;
 use LC::Config qw(%config);
 use LC::Registrar;
+use LC::User;
 
 
 my %extensions = ();
@@ -110,7 +111,7 @@ sub load_extensions {
 
 
 sub extension_cmd {
-	my($ucmd, $ui, $args) = @_;
+	my($ui, $args) = @_;
 	my @argv = split /\s+/, $args;
 
 	my $cmd = shift @argv || "";
@@ -148,11 +149,9 @@ sub extension_cmd {
 
 
 sub cmd_init {
-	my($ucmd) = @_;
-
-	$ucmd->command_r(extension => \&extension_cmd);
-	$ucmd->shelp_r  (extension => "manage tlily extensions");
-	$ucmd->help_r   (extension => "
+	LC::User::command_r(extension => \&extension_cmd);
+	LC::User::shelp_r  (extension => "manage tlily extensions");
+	LC::User::help_r   (extension => "
 usage: %extension list
        %extension load <extension>
        %extension unload <extension>

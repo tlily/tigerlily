@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w
+#!/site/t/gnu/bin/perl -w
 
 require 5.00307;
 
@@ -16,7 +16,7 @@ use LC::UI::Curses;
 use LC::Server;
 use LC::User;
 use LC::Extend;
-use LC::Global qw($event $user);
+use LC::Global qw($event);
 
 if ( -f 'tlily.PL' ) {
 	my @tstat = stat('tlily.PL');
@@ -29,15 +29,15 @@ if ( -f 'tlily.PL' ) {
 
 $event = LC::Event->new();
 my $ui = LC::UI::Curses->new(name => 'main', event => $event);
-$user  = LC::User->new(event => $event);
 
-LC::Extend::cmd_init($user);
+LC::User::init;
+LC::Extend::cmd_init;
 
 LC::Extend::load("server", $ui);
 LC::Extend::load("output", $ui);
 
-$user->command_r(quit => sub { exit; });
-$user->command_r(foo  => sub { $ui->print("Foo you too!\n"); });
+LC::User::command_r(quit => sub { exit; });
+LC::User::command_r(foo  => sub { $ui->print("Foo you too!\n"); });
 
 # remove
 $ui->defcstyle("status" => 'yellow', 'blue', 'bold');
