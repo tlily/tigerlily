@@ -6,7 +6,7 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/README,v 1.15 2003/11/03 19:16:14 coke Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/README,v 1.16 2003/11/03 20:10:14 coke Exp $
 
      ("`-/")_.-'"``-._ 
       . . `; -._    )-;-,_`)          TigerLily 2.x
@@ -24,15 +24,22 @@ Curses.pm or Term::Readline::Gnu. (from CPAN)
 You can run tlily directly from the source directory, by running
 "perl tlily.PL".
 
-If you run Makefile.PL with "perl Makefile.PL", you will generate a
-single-file version of tlily, named "tlily.plx".  This may be copied
-wherever you wish.
+To create an assortment of single file versions of tlily, run:
 
-To do a "real" install:
+perl Makefile.PL
+make
+
+Pick the .plx you want to use (depends on the UI you wish to use, it's part
+of the file name), and copy it wherever you wish.
+
+To do a standard installation:
 
 perl Makefile.PL
 make
 make install
+
+And "tlily" will be installed in the directory you specify during the first
+step.
 
 
 Colors
