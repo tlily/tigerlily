@@ -161,19 +161,40 @@ while (1) {
 
 sub load_ui {
     opendir(D,"$::TL_LIBDIR/TLily/UI");
-    my @u = grep /\.pm$/, readdir(D);
+    my @u = map { s/.pm$//; $_; } grep /\.pm$/, readdir(D);
     closedir D;
 
-    ($config{UI}) = grep { /$config{UI}\.pm/i } @u;
-    $config{UI} =~ s/\.pm$//g;
-    $config{UI} ||= "Curses";
+    my @try;
+    my ($desired_ui) = grep { /$config{UI}/i } @u;
+    $desired_ui =~ s/\.pm$//g;
+    $desired_ui ||= "Curses";
+    push @try, $desired_ui;
+    foreach (@u) { push @try,$_ unless /$desired_ui/; }
+    if ($desired_ui ne $config{UI}) {
+	print "UI \"$config{UI}\" was not found.\n";
+	print "Press ENTER to try the $desired_ui UI, or Control-C to quit.\n";
+	<STDIN>;
+    }
 
     my $ui;    
-    my $u = join ', ', (sort map { s/.pm$//; $_ } @u);
-    eval "use TLily::UI::$config{UI}; \$ui = TLily::UI::$config{UI}->new(name => 'main');";
-    die "ERROR: Unable to load UI \"$config{UI}\".  Available UI's: $u.\n$@\n" 
-      if ($@);
+    foreach (@try) {
+	$config{UI} = $_;
+	if (! /$desired_ui/) {
+	    print "Press ENTER to try the $_ UI, or Control-C to quit.\n";
+	    <STDIN>;
+	}
+	eval "use TLily::UI::$config{UI}; \$ui = TLily::UI::$config{UI}->new(name => 'main');";
+	if ($@) {
+	    warn "ERROR: Unable to load UI \"$config{UI}\".\n$@\n";
+	    # sometimes they die() in the new(), leaving a half-allocated UI.
+	    TLily::UI::purge("main");
+	} else { 
+	    last; 
+	}
+    }
     
+    die "FATAL: Unable to load a UI module.  Exiting.\n" unless $ui;
+
     return $ui;
 }
 

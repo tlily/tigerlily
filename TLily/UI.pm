@@ -23,7 +23,7 @@ sub new {
     my $class = ref($proto) || $proto;
     
     croak "Required UI parameter \"name\" missing."  unless ($a{"name"});
-    croak "UI \"name\" already exists." if ($ui{$a{"name"}});
+    croak "UI \"$a{name}\" already exists." if (exists $ui{$a{"name"}});
 
     my $self        = {};
     $self->{"name"} = $a{"name"};
@@ -31,6 +31,10 @@ sub new {
     $ui{$a{"name"}} = $self;
 
     bless($self, $class);
+}
+
+sub purge {
+    delete $ui{$_[0]};
 }
 
 
