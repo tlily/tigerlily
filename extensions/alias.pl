@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/alias.pl,v 1.10 2000/09/09 06:07:26 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/alias.pl,v 1.11 2001/08/21 18:05:24 albert Exp $
 
 use strict;
 
@@ -98,7 +98,7 @@ sub alias_cmd {
     }
 
     $alias{$key} = $val;
-    $ui->print("(\%$key is now aliased to '$val')\n");
+    $ui->print("(\%$key is now aliased to '$val')\n") if not $config{alias_quiet};
 }
 
 sub aliaser {
