@@ -1,4 +1,6 @@
 Version 2.1.1-post
+  * [TLily/UI.pm, README] Use $config{bindings} in inherit_global_bindings,
+    in addition to %gbind. [DCL]
   * [extensions/source.pl, extensions/startup.pl] '#' is now a comment
     character when it starts a line. [DCL]
   * [extensions/url.pl] Do not bound urls with <url>...</url>. [DCL]

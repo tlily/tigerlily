@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/UI.pm,v 1.23 2000/02/07 06:02:52 tale Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/UI.pm,v 1.24 2000/02/09 05:00:05 tale Exp $
 
 package TLily::UI;
 
@@ -15,6 +15,7 @@ use strict;
 use Carp;
 
 use TLily::UI::Util qw(wrap);
+use TLily::Config qw(%config);
 use TLily::Registrar;
 
 =head1 NAME
@@ -91,7 +92,10 @@ sub inherit_global_bindings {
 	$self->command_r($command, $func);
     }
 
-    while (my($key, $command) = each %gbind) {
+    # The pile of punctuation here just joins to the two hashes into one.
+    my %bindings = %{{(%{$config{bindings}}, %gbind)}};
+
+    while (my($key, $command) = each %bindings) {
 	$self->bind($key, $command);
     }
 
@@ -182,7 +186,7 @@ Sends the text to the UI.
 
 sub print {
     my $self = shift;
-    return if $TLily::Config::config{quiet};
+    return if $config{quiet};
     return unless ($self->{log_fh});
     $self->{log_queued} .= join('', @_);
     return unless ($self->{log_queued} =~ s/^(.*\n)//s);

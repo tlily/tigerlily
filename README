@@ -6,7 +6,7 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/README,v 1.9 1999/12/18 20:33:06 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/README,v 1.10 2000/02/09 05:00:05 tale Exp $
 
      ("`-/")_.-'"``-._ 
       . . `; -._    )-;-,_`)          TigerLily 2.x
@@ -168,6 +168,18 @@ $emote_oops
           "dam" will expand to "damien_clone".  "damien" exactly matches
           a user, and will not expand.
 	
+%bindings
+        Set %bindings to install global key bindings.  For example:
+                %bindings = { 'M-g' => 'look' };
+        or
+                $bindings{'M-g'} = 'look';
+        will both set the M-g key to do the "look" function, which
+        provides a simple lookup mechanism to the Unix "words" file.
+        (Note that the look function is bound to C-g by default, and
+        %bindings does not change that.)  Bindings set this way will
+        be available before you are even connected to the server,
+        which can't be accomplished by using %bind in a Startup file/memo.
+
 Extensions can each have options to configure them; see the documentation
 for the specific module to see what options can be set.
 
