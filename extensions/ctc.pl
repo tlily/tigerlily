@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/ctc.pl,v 1.6 1999/08/31 00:04:33 steve Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/ctc.pl,v 1.7 1999/08/31 19:39:04 steve Exp $
 
 use Net::Domain qw(hostfqdn);
 use Socket qw(inet_ntoa inet_aton);
@@ -40,7 +40,7 @@ sub ctc_cmd {
 	}
 
 	if (!defined($http)) {
-		$ui->print("HTTP service not started.  Try %ctc start)\n");
+		$ui->print("(HTTP service not started.  Try %ctc start)\n");
 		return;
 	}
 
