@@ -6,7 +6,7 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Server/Attic/SLCP.pm,v 1.35 2000/01/02 10:36:17 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Server/Attic/SLCP.pm,v 1.36 2000/02/08 01:18:23 tale Exp $
 
 package TLily::Server::SLCP;
 
@@ -96,17 +96,19 @@ sub init () {
         my $ex = shift @{$event->{server}->{_export_queue}};
         return 0 unless $ex;
 
-        my $ui;
-        $ui = ui_name($ex->{ui_name}) if (defined $ex->{ui_name});
+        my $ui = ui_name($ex->{ui_name}) if (defined $ex->{ui_name});
 
         if ($event->{response} eq 'OKAY') {
             foreach my $l (@{$ex->{text}}) {
                 $event->{server}->sendln($l);
             }
         } else {
-            $ui->print("(Unable to set $ex->{type} \"$ex->{name}\")\n");
-            unless (save_deadfile($ex->{type}, $event->{server}, $ex->{name}, $ex->{text})) {
-	        $ui->print("(Unable to save \"$ex->{name}\"; changes lost)\n");
+            $ui->print("(Unable to set $ex->{type} \"$ex->{name}\")\n")
+                unless ! $ui;
+            unless (save_deadfile($ex->{type}, $event->{server},
+                                  $ex->{name}, $ex->{text})) {
+	        $ui->print("(Unable to save \"$ex->{name}\"; changes lost)\n")
+                    unless ! $ui;
             }
         }
 
