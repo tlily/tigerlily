@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/blurb.pl,v 1.9 2000/12/14 16:30:21 coke Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/blurb.pl,v 1.10 2001/04/23 18:50:06 tale Exp $
 
 use strict;
 
@@ -34,15 +34,15 @@ $config{"blurb_all"} = 0 if !exists($config{"blurb_all"});
 #
 
 my %abbr = (
-	qr/fou?r/i => "4",
-	qr/ate|eight/i => "8",
-	qr/\b(too?|two)/i => "2",
-	qr/and/i => "&",
+	'fou?r' => "4",
+	'ate|eight' => "8",
+	'\b(too?|two)' => "2",
+	'and' => "&",
 );
 
 #my %abbr_must = (
-	#qr/fuck/i => "f***",
-	#qr/shit/i => "sh*t",
+	#'fuck' => "f***",
+	#'shit' => "sh*t",
 #);
 
 sub unload {
@@ -95,7 +95,7 @@ sub blurb_cmd {
 	#Handle any -required- substitutions. (swear filter)
 
 	#foreach my $re (keys %abbr_must) {
-		#$blurb =~s /$re/$abbr_must{$re}/g;
+		#$blurb =~s /$re/$abbr_must{$re}/gi;
 	#}
 
 	## strip off exterior braces/quotes.
@@ -126,7 +126,7 @@ sub blurb_cmd {
 	#Handle any abbreviations;
 
 	foreach my $re (keys %abbr) {
-		while ($blurb =~s /$re/$abbr{$re}/) {
+		while ($blurb =~s /$re/$abbr{$re}/i) {
         		goto DONE if (check_blurb($blurb));
 		}
 	}
@@ -153,7 +153,7 @@ sub blurb_cmd {
 	}
 	#Remove some vowels?
 
-	my $vowelRE = qr/([^AEIOUaeiou])[aeiou]([^AEIOUaeiou])/;
+	my $vowelRE = '([^AEIOUaeiou])[aeiou]([^AEIOUaeiou])';
 
 	while (grep /$vowelRE/, @words) { #if -any- cases,
 		foreach my $word (@words) { # remove from each word in turn.
