@@ -1,7 +1,8 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/cj.pl,v 1.1 2000/10/27 20:48:34 coke Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/cj.pl,v 1.2 2000/12/01 19:22:54 coke Exp $
 
 use strict;
+use CGI qw/escape unescape/;
 
 # TODO:
 
@@ -104,16 +105,26 @@ sub random {
 ### XXX - for some reason, get_stock only works ONCE when loading cj.
 ###       subsequent loads show only a fraction of the appropriate HTML
 ###       are arriving!!!
+### Reloading THIS EXTENSION fixes the problem. reloading http_parse 
+### does NOT!!
 
-my $stock_cnt;
+my $wrapline = 76; # This is where we wrap lines...
 sub get_stock {
 
 	my ($event, @stock) = @_;
-	my $wrap = 76;
-		dispatch($event,'http://finance.yahoo.com/q?s=' . join ("+",@stock) . "&d=v1");
-	TLily::Server::HTTP-> new( url => 'http://finance.yahoo.com/q?s=' . join("+",@stock). "&d=v1" , ui_name => 'main', host=>'finance.yahoo.com', protocol=> 'http2', callback => sub { 
+	my $url = 'http://finance.yahoo.com/q?s=' . join('+',@stock) . '&d=v1';
+	dispatch($event,$url);
+	TLily::Server::HTTP-> new(url => $url,
+	                          ui_name => 'main',
+                                  callback => sub { 
 		my ($response) = @_;
+		dispatch($event,length($response->{_content}) . " bytes");
+		#foreach my $foo (split(/\n/, $response->{_content})) {
+			#dispatch($event,$foo);
+		#}
 		my @chunks = ($response->{_content} =~ /^<td nowrap align=left>.*/mg);
+
+		dispatch($event,scalar(@chunks). " chunks found");
 
 		my (@retval, $cnt);
 		$response->{_content} =~ s/\n/ /g;
@@ -128,6 +139,7 @@ sub get_stock {
 			$cnt++;
 		}
 
+
 		my $retval;
 		foreach my $tmp (@retval) {
 			$tmp = cleanHTML($tmp);
@@ -136,7 +148,7 @@ sub get_stock {
 			$tmp =~ s: \):):g;
 			$tmp =~ s: ,:,:g;
 			
-			my $pad = " " x ($wrap - ((length $tmp) % $wrap)) ;
+			my $pad = " " x ($wrapline - ((length $tmp) % $wrapline)) ;
 			$retval .= $tmp . $pad;
 		}
 		$retval =~ s/\s*$//;
@@ -223,7 +235,7 @@ $response{"poll"} = {
 		# This should be configable.
 		my %polls = ( "pres"  => "2000 Presidential Campaign",
 		              "ny"    => "2000 NYS Senate Campaign",
-									"spice" => "Your Favorite Spice Girl");
+		              "spice" => "Your Favourite Spice Girl");
 
 		if (scalar @args == 0) {
 			my @tmp;
@@ -244,7 +256,7 @@ $response{"poll"} = {
 				if (exists $prefs{$key}) {
 					$personal = "You voted for '" . $prefs{$key} ."'";
 				}
-				return "Results: " . join (", ", map {$_ . ": " . $results{$_} . " vote(s)"} (keys %results)) . ". " . $personal;
+				return "Results: " . join (", ", map {$_ . ": " . $results{$_} . " vote" . (($results{$_}==1)?"":"s")} (keys %results)) . ". " . $personal;
 			} else {
 				return $args[0] . " is not an active poll";
 			}
@@ -374,11 +386,12 @@ $response{stock} = {
 		my $args=$event->{VALUE};
 		if (! ($args =~ s/stock\s+(.*)/$1/i)) {
 			return "ERROR: Expected RE not matched!";
-		};
-		get_stock($event,split(/[, ]+/,$args));
-		return;
+		} else {
+			get_stock($event,split(/[, ]+/,$args));
+			return "";
+		}
 	},
-	HELP   => sub { return "Give a list of ticker symbols, I'll be your webserver to finance.yahoo.com";},
+	HELP   => sub { return "Give a list of ticker symbols, I'll be your web proxy to finance.yahoo.com";},
 	TYPE   => [qw/private/],
 	POS    => '0', 
 	STOP   => 1,
@@ -421,7 +434,7 @@ $response{foldoc} = {
 		if (! ($args =~ s/.*foldoc\s+(.*)/$1/i)) {
 			return "ERROR: Expected RE not matched!";
 		};
-		TLily::Server::HTTP-> new( url => 'http://www.nightflight.com/foldoc-bin/foldoc.cgi?query=' . $args , host => 'www.nightflight.com', ui_name => 'main', protocol=> 'http2', callback => sub { 
+		TLily::Server::HTTP-> new( url => 'http://www.nightflight.com/foldoc-bin/foldoc.cgi?query=' . $args , host => 'www.nightflight.com', ui_name => 'main', protocol=> 'http', callback => sub { 
 
 			my ($response) = @_;
 
@@ -437,7 +450,10 @@ $response{foldoc} = {
 			my @chunks = split("<HR>",$response->{_content});
 
 			if (scalar(@chunks) == 3)  {
-				dispatch($event,"According to FOLDOC: " . cleanHTML((split("</FORM>",$chunks[0]))[1]));
+				my $tmp = cleanHTML((split("</FORM>",$chunks[0]))[1]);
+				$tmp =~ s/Try this search on OneLook \/ Google//;
+			
+				dispatch($event,"According to FOLDOC: " . $tmp );
 			} else {
 				dispatch($event,"foldoc: Screen Scrape failed!");
 			}
@@ -458,7 +474,7 @@ $response{lynx} = {
 		if (! ($args =~ s/.*lynx\s+(.*)/$1/i)) {
 			return "ERROR: Expected RE not matched!";
 		};
-		TLily::Server::HTTP-> new( url => $args, host => 'www.cnn.com', ui_name => 'main', protocol=> 'http2', callback => sub { 
+		TLily::Server::HTTP-> new( url => $args, host => 'www.cnn.com', ui_name => 'main', protocol=> 'http', callback => sub { 
 
 			my ($response) = @_;
 	    my $message;
@@ -514,6 +530,60 @@ sub format_ascii {
 	return sprintf($format,$chr,$val,$val,$val). $control;
 }
 
+$response{rot13} = {
+	CODE   => sub {
+		my ($event) = @_;
+		my $args = $event->{VALUE};
+		if (! ($args =~ s/.*rot13\s+(.*)/$1/i)) {
+			return "ERROR: Expected RE not matched!";
+		};
+
+		$args =~ tr/[A-Za-z]/[N-ZA-Mn-za-m]/;
+
+		return $args;
+	},
+	HELP   => sub { return "Usage: rot13 <val>";},
+	TYPE   => [qw/private public emote/],
+	POS    => '0', 
+	STOP   => 1,
+	RE     => qr/\brot13\b/i,
+};
+
+$response{urldecode} = {
+	CODE   => sub {
+		my ($event) = @_;
+		my $args = $event->{VALUE};
+		if (! ($args =~ s/.*urldecode\s+(.*)/$1/i)) {
+			return "ERROR: Expected RE not matched!";
+		};
+
+		return unescape $args;
+	},
+	HELP   => sub { return "Usage: urldecode <val>";},
+	TYPE   => [qw/private public emote/],
+	POS    => '0', 
+	STOP   => 1,
+	RE     => qr/\burldecode\b/i,
+};
+
+$response{urlencode} = {
+	CODE   => sub {
+		my ($event) = @_;
+		my $args = $event->{VALUE};
+		if (! ($args =~ s/.*urlencode\s+(.*)/$1/i)) {
+			return "ERROR: Expected RE not matched!";
+		};
+
+		return escape $args;
+	},
+	HELP   => sub { return "Usage: urlencode <val>";},
+	TYPE   => [qw/private public emote/],
+	POS    => '0', 
+	STOP   => 1,
+	RE     => qr/\burlencode\b/i,
+};
+
+
 $response{ascii} = {
 	CODE   => sub {
 		my ($event) = @_;
@@ -521,7 +591,7 @@ $response{ascii} = {
 		if (! ($args =~ s/.*ascii\s+(.*)/$1/i)) {
 			return "ERROR: Expected RE not matched!";
 		};
-		if ( $args =~ m/^'([\S])'$/) {
+		if ( $args =~ m/^'(.)'$/) {
 			return format_ascii(ord($1));
 		} elsif ($args =~ m/^0[Xx][0-9A-Fa-f]+$/) {
 			return format_ascii(oct($args));
@@ -543,13 +613,46 @@ $response{ascii} = {
 			return "Sorry, $args doesn't make any sense to me.";
 		}
 	},
-	HELP   => sub { return "Usage: ascii <val>, where val can be a char ('a'), hex (0x1), octal (01), decimal (1) an emacs (C-A) or perl (\cA) control sequence, or an ASCII control name (SOH).";},
+	HELP   => sub { return "Usage: ascii <val>, where val can be a char ('a'), hex (0x1), octal (01), decimal (1) an emacs (C-A) or perl (\\cA) control sequence, or an ASCII control name (SOH).";},
 	TYPE   => [qw/private public emote/],
 	POS    => '0', 
 	STOP   => 1,
 	RE     => qr/\bascii\b/i,
 };
 
+$response{country} = {
+	CODE   => sub {
+		my ($event) = @_;
+		my $args = $event->{VALUE};
+		if (! ($args =~ s/.*country\s+(.*)/$1/i)) {
+			return "ERROR: Expected RE not matched!";
+		};
+		if ( $args =~ m/^(..)$/) {
+			
+			my $a = `grep -i '\|$1\$' /home/wjc/research/CJ/countries.txt`;
+			$a =~ m/^([^\|]*)/;
+			return $1 unless ($1 eq "");
+			return "No Match."
+		} else {
+			my @a = split(/\n/, `grep -i \'$args\' /home/wjc/research/CJ/countries.txt`);
+			if (scalar(@a) > 10) {
+				return "Your search found " . scalar(@a) . " characters. Be more specific.";
+			} elsif (scalar(@a) > 0) {
+				my $tmp = join ("\'; ", @a);
+				$tmp =~ s/\|/=\'/g;
+				return $tmp . "'";
+			} else {
+				return "Found no matches.";
+			}
+		}
+	},
+	HELP   => sub { return "Usage: country <val>, where val is either a 2 character country code, or a string to match against possible countries.";} ,
+	TYPE   => [qw/private public emote/],
+	POS    => '0', 
+	STOP   => 1,
+	RE     => qr/\bcountry\b/i,
+};
+if(0) {
 $response{utf8} = {
 	CODE   => sub {
 		my ($event) = @_;
@@ -564,7 +667,7 @@ $response{utf8} = {
 		} else {
 			my @a = split(/\n/, `grep -i \'\|\.\*$args\' /home/wjc/research/CJ/unicode2.txt`);
 			if (scalar(@a) > 10) {
-				return "Your search found " . scalar(@a) . " characters. Be more specific.";
+				return "Your search found " . scalar(@a) . " countries. Be more specific.";
 			} elsif (scalar(@a) > 0) {
 				my $tmp = join ("\'; ", @a);
 				$tmp =~ s/\|/=\'/g;
@@ -580,7 +683,7 @@ $response{utf8} = {
 	STOP   => 1,
 	RE     => qr/\butf8\b/i,
 };
-
+}
 # This is already pretty unweidly.
 #
 sub cleanHTML {
