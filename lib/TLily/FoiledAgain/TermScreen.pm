@@ -33,38 +33,49 @@ TLily::FoiledAgain::TermScreen - Term::Screen implementation of the FoiledAgain 
 
 # The cnamemap hash maps English color names to Term::ScreenColor color attrs.
 my %fg_cnamemap = (
-   '-'              => -1,
-   mask             => -1
+    '-'        => "black",    
+    mask       => "black",    
+    black      => "black",    
+    red        => "red",   
+    green      => "green",  
+    yellow     => "yellow", 
+    blue       => "blue",
+    magenta    => "magenta",
+    cyan       => "cyan",
+    white      => "white"
 );
-$fg_cnamemap{$_}=$_ foreach qw(black red green yellow
-                               blue magenta cyan white);
 
 my %bg_cnamemap = (
-   '-'              => -1,
-   mask             => -1,
+    '-'     => "on_black",
+    mask    => "on_black",
+    black   => "on_black",
+    red     => "on_red",
+    green   => "on_green",
+    yellow  => "on_yellow",
+    blue    => "on_blue",
+    magenta => "on_magenta",
+    cyan    => "on_cyan",
+    white   => "on_white"
 );
-$bg_cnamemap{$_}="on_$_" foreach qw(black red green yellow 
-                                    blue magenta cyan white);
-
 
 # The snamemap hash maps English style names to Term::ScreenColor style attrs.
 my %snamemap = (
-   '-'             => 0,
-   'normal'        => 'clear',
-   'standout'      => 'ansibold',
-   'underline'     => 'underline',
-   'reverse'       => 'inverse',
-   'blink'         => 'blink',
-   'dim'           => 0,
-   'bold'          => 'ansibold',
-   'altcharset'    => 0
+   '-'             => "clear",
+   'normal'        => "clear",
+   'standout'      => "ansibold",
+   'underline'     => "underline",
+   'reverse'       => "inverse",
+   'blink'         => "blink",
+   'dim'           => "",  
+   'bold'          => "ansibold",
+   'altcharset'    => ""
 );
 
 
 # The stylemap and cstylemap hashes map style names to color attributes
 # Term::Screencolor can use.
-my %stylemap   = (default => 'reset');
-my %cstylemap  = (default => 'reset');
+my %stylemap   = (default => "white on black");
+my %cstylemap  = (default => "white on black");
 
 sub DEBUG { 
     my ($self) = shift;
@@ -88,13 +99,18 @@ my @windows;
 
 sub start {
     # Physical screen
-    $SCREEN = new Term::ScreenColor();    
+    $SCREEN = new Term::ScreenColor();
+
+    # Term::ScreenColor's detection of whether a terminal supports color
+    # is stupid.   Instead, we force it to always think it can, and then 
+    # allow tlily to control this via the want_color method below.
+
+    $SCREEN->{is_colorizable} = 1;
+    
     $SCREEN->clrscr();
     $SCREEN->at(0,0);
     $SCREEN->raw();
     $SCREEN->noecho();
-
-    $USING_COLOR = $SCREEN->colorizable();
 }
 
 sub stop {
@@ -103,7 +119,6 @@ sub stop {
 }
 
 
-sub has_resized { }
 sub suspend {  }
 sub resume  {  }
 sub bell {
@@ -112,6 +127,8 @@ sub bell {
 
 sub screen_width  { 80; }
 sub screen_height { 24; }
+sub has_resized { 0; }
+
 sub update_screen { 
     
     # place the cursor as it is in the last window.
@@ -131,6 +148,12 @@ sub new {
 
     $self->{events} = [];
     $self->{lineevents} = [];    
+    $self->{linecontents} = []; 
+    if ($SCREEN->dc_exists && $SCREEN->ic_exists) {
+        $self->{need_linecontents} = 0;
+    } else {
+        $self->{need_linecontents} = 1;
+    }
 
     $self->{cursor_x} = 0;
     $self->{cursor_y} = 0;
@@ -141,13 +164,15 @@ sub new {
     $self->{cols} = $cols;
     $self->{lines} = $lines;
 
-    $self->{stylemap} = ($USING_COLOR ? \%cstylemap : \%stylemap);
+    $self->{stylemap} = ($SCREEN->colorizable() ? \%cstylemap : \%stylemap);
 
     bless($self, $class);
 
     push @windows, $self;
     $self->{windownum} = @windows;
-    uidebug("[window #$self->{windownum}] allocated.\n");
+    uidebug("[window #$self->{windownum}] allocated. (begin_y=$begin_y, lines=$lines)\n");
+
+    $self->clear();
 
     return $self;
 }
@@ -171,8 +196,13 @@ sub read_char {
     
     sysread(STDIN, $cbuf, 1024, length $cbuf);
     return undef unless (length $cbuf);
+
+    uidebug("read_char cbuf=$cbuf (" . length($cbuf) . " bytes)\n");
+
     my $c = substr($cbuf, 0, 1);
     $cbuf = substr($cbuf, 1);
+
+    uidebug("ord(c) = " . ord($c) . "\n");
 
     if (ord($c) == 27) {
         $metaflag = !$metaflag;
@@ -193,10 +223,17 @@ sub read_char {
         $ctrlflag = 1;
     }
 
+    if (ord($c) == 127) {
+        $c = "?";
+        $ctrlflag = 1;        
+    }
+
     my $res = (($metaflag ? "M-" : "") . ($ctrlflag ? "C-" : "") . $c);
 
     $metaflag = 0;
     $ctrlflag = 0;
+
+    uidebug("read_char returning $res\n");
 
     return $res;
 }
@@ -224,10 +261,9 @@ sub clear_background {
     DEBUG(@_);
 
     $self->{background_style} = $style;
-    $self->move_point(0, 0);
+    $self->set_style($style);
 
     for my $line (0..$self->{lines}) {
-        $self->set_style($self->get_attr_for_style($style));
         $self->clear_line($line);
     }
     
@@ -239,8 +275,10 @@ sub set_style {
     my($self, $style) = @_;
     DEBUG(@_);
 
-    $self->_queue_event(undef,undef,'color', 
-                          $self->get_attr_for_style($style));
+    my $color = $self->{stylemap}{$style} || $self->{stylemap}{default};
+
+    $self->_queue_event(undef,undef,'color',$color);
+                        
 }
 
 
@@ -248,7 +286,11 @@ sub clear_line {
     my ($self, $y) = @_;
     DEBUG(@_);
 
-    $self->_queue_event(0, $y, 'clreol');
+    if ($self->{need_linecontents}) {
+        $self->{linecontents}[$y] = (" " x $self->{cols} + 1);
+    }
+
+    $self->_queue_event(0, $y, 'clreol'); 
 }
 
 
@@ -265,6 +307,13 @@ sub addstr_at_point {
     my ($self, $string) = @_;
     DEBUG(@_);
 
+    if ($self->{need_linecontents}) {
+        my $x = $self->{cursor_x};
+        my $y = $self->{cursor_y};
+
+        substr($self->{linecontents}[$y], $x) = $string;
+    }
+
     $self->_queue_event(undef, undef, "puts", $string);
     $self->{cursor_x} += length($string);
 }
@@ -273,6 +322,10 @@ sub addstr_at_point {
 sub addstr {
     my ($self, $y, $x, $string) = @_;
     DEBUG(@_);
+
+    if ($self->{need_linecontents}) {
+        substr($self->{linecontents}[$y], $x) = $string;
+    }
 
     $self->_queue_event($x, $y, "puts", $string);
     $self->{cursor_x} = $x;
@@ -284,8 +337,18 @@ sub addstr {
 sub insch {
     my ($self, $y, $x, $character) = @_;
     DEBUG(@_);
+    
+    if ($SCREEN->ic_exists) {
+        $self->_queue_event($x, $y, "ic", $character);
+    } else {
+        die "linecontents not set up?" unless $self->{need_linecontents};
 
-    $self->_queue_event($x, $y, "ic", $character);
+        # gah.  oh well, fall back on stupid behavior
+        my $restofline = substr($self->{linecontents}[$y], $x, -1);
+        substr($self->{linecontents}[$y], $x) = "$character$restofline";
+
+        $self->_queue_event($x, $y, "puts", "$character$restofline");
+    }
 }
 
 
@@ -293,7 +356,17 @@ sub delch_at_point {
     my ($self) = @_;
     DEBUG(@_);
 
-    $self->_queue_event(undef, undef, "dc");
+    if ($SCREEN->dc_exists) {
+        $self->_queue_event(undef, undef, "dc");
+    } else {
+        my $x = $self->{cursor_x};
+        my $y = $self->{cursor_y};
+
+        my $restofline = substr($self->{linecontents}[$y], $x+1);
+        $restofline .= " ";
+        substr($self->{linecontents}[$y], $x) = $restofline;
+        $self->_queue_event($x, $y, "puts", $restofline);
+    }
 }
 
 
@@ -333,6 +406,9 @@ sub commit {
                 uidebug("commit - at(" . ($y + $window->{begin_y}) . ",".
                                          ($x + $window->{begin_x}) . ")\n");
             }
+
+            next unless defined($command);
+
 	    uidebug("commit - $command(@args)\n");
             $SCREEN->$command(@args);
 	    
@@ -352,53 +428,56 @@ sub commit {
 }
 
 sub want_color {
-    ($USING_COLOR) = @_;
+    my ($want_color) = @_;
+
+    # This is a hack, see new() for details.
+    $SCREEN->{is_colorizable} = $want_color;
 }
 
 sub reset_styles {
     DEBUG(@_);
 
-    %stylemap   = (default => $main::ATTR_NORMAL);
-    %cstylemap  = (default => $main::ATTR_NORMAL);
+    %stylemap   = ();
+    %cstylemap  = ();
 }
 
 
 sub defstyle {
     my($style, @attrs) = @_;
-    
+    my @style;
+    foreach (@attrs) { push @style, $snamemap{$_}; }
+
     if (grep { $_ eq "reverse" } @attrs) {
-        $stylemap{$style} = parsestyle(@attrs) | $fg_cnamemap{black} | $bg_cnamemap{white};
+        push @style, $fg_cnamemap{'black'}, $bg_cnamemap{'white'};        
     } else {
-        $stylemap{$style} = parsestyle(@attrs) | $fg_cnamemap{white} | $bg_cnamemap{black};
+        push @style, $fg_cnamemap{'white'}, $bg_cnamemap{'black'};        
     }
+    $stylemap{$style} = join ' ', @style;
+
+    uidebug("stylemap[$style] = $stylemap{$style}\n");
 }
 
 
 sub defcstyle {
     my($style, $fg, $bg, @attrs) = @_;
+    uidebug("defcstyle(@_)");
+
+    my @style;
+    foreach (@attrs) { push @style, $snamemap{$_}; }
 
     if (grep { $_ eq "reverse" } @attrs) {
         my $oldfg = $fg;
         $fg = $bg; $bg = $oldfg;
     }
 
-    $cstylemap{$style} = parsestyle(@attrs) | $fg_cnamemap{$fg} | $bg_cnamemap{$bg};
+    push @style, $fg_cnamemap{$fg}, $bg_cnamemap{$bg};        
+    $cstylemap{$style} = join ' ', @style;
+
+    uidebug("cstylemap[$style] = $cstylemap{$style}\n");
 }
 
 ###############################################################################
 # Private functions
-
-sub get_attr_for_style {
-    my ($self, $style) = @_;
-
-    $self->{stylemap}{$style} || 'clear';
-}
-
-sub parsestyle {
-    my $style = 0;
-    foreach (@_) { $style |= $snamemap{$_} if $snamemap{$_} };
-    return $style;
-}
 
 sub _queue_event {
     my ($self, $x, $y, $command, @args) = @_;
@@ -408,4 +487,6 @@ sub _queue_event {
     $self->{cursor_x} = $x if defined($x);
     $self->{cursor_y} = $y if defined($y);
 }
+
+
 1;
