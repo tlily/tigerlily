@@ -68,6 +68,33 @@ your ~/.emacs file:
 (setq cperl-indent-level 4) 
 
 -------------------------------------------------------------------------------
-4) Other
+
+4) Help text
+
+Every user command you register should have both a short description
+(shelp_r) and a help page (help_r) associated with it.  Help pages
+for commands should follow this form:
+
+| help_r("command" => "
+| Usage: %command options
+|        %command other options
+| 
+| Description of how to use the command, possibly spanning \
+| multiple lines.
+| 
+| (see also %othercommand)
+| ";
+
+Note that you should not word wrap paragraphs which span more than one line:
+the UI is quite capable of doing this for you, and will get it right on
+different screen widths.  You may wish to separate lines with a \\n (as
+above) to keep things nice and tidy in your code.
+
+On the same note, the help manager will automatically remove any unneeded
+newlines from the start and end of your help text, so feel free to add some
+if it makes things look nicer for you.  (Again, see above.)
+
+-------------------------------------------------------------------------------
+5) Other
 
 There's plenty of room for more stuff in here.. Go for it :)
