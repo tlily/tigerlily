@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/status.pl,v 1.20 1999/12/20 23:18:27 albert Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/status.pl,v 1.21 1999/12/29 08:20:04 mjr Exp $
 
 use strict;
 
@@ -7,25 +7,27 @@ sub set_clock {
     my $ui = ui_name("main");
     
     my @a = localtime;
-    if($config{clockdelta}) {
+    if ($config{clockdelta}) {
 	my($t) = ($a[2] * 60) + $a[1] + $config{clockdelta};
 	$t += (60 * 24) if ($t < 0);
 	$t -= (60 * 24) if ($t >= (60 * 24));
 	$a[2] = int($t / 60);
 	$a[1] = $t % 60;
     }
-    my($ampm) = "";
-    if(defined $config{clocktype}) {
-	if($a[2] >= 12 && $config{clocktype} eq '12') {
+    my $ampm = "";
+    my $format = "%02d:%02d%s";
+    if ($config{clocktype} eq '12') {
+	if ($a[2] >= 12) {
 	    $ampm = 'p';
 	    $a[2] -= 12 if $a[2] > 12;
 	}
-	elsif($a[2] < 12 && $config{clocktype} eq '12') {
+	elsif ($a[2] < 12) {
 	    $ampm = 'a';
 	}
+        $format = "%2d:%02d%s";
     }
 	
-    $ui->set(clock => sprintf("%2d:%02d%s", $a[2], $a[1], $ampm));
+    $ui->set(clock => sprintf($format, $a[2], $a[1], $ampm));
     return 0;
 }    
 
