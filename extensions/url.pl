@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/url.pl,v 1.15 2000/02/16 01:11:05 kazrak Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/url.pl,v 1.16 2000/02/16 02:28:30 tale Exp $
 
 #
 # URL handling
@@ -141,10 +141,6 @@ event_r(type  => 'emote',
 # case that the start of the next line is still part of the URL.  The chances
 # of that happening, however, are almost certainly less than the chances that
 # a URL will have wrapped onto multiple lines.
-#
-# There is an additional problem if $config{tag_urls} is set.  Since
-# %memo edit and %info edit both get their initial information via text
-# messages, the memo/info will end up tagged with the URL number.
 event_r(type  => 'text',
 	call  => \&handler,
 	order => 'before');
