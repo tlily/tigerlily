@@ -11,9 +11,14 @@ sub spellcheck_input {
     $last_inc = 0 if (length($message) <= 1);
 
     # strip off any partial words at the end.
-    $message =~ s/\w+\s*$//g;
+    $message =~ s/\S+\s*$//g;
 
     my $m = $message;
+
+    # strip out contractions (perl doesn't break them right)
+    # just assume that they're spelled ok.
+    $m =~ s/\S+\'\S+//g;
+
     my $word;
     my $inc;
     foreach $word (split /\W/, $m) {
@@ -88,7 +93,7 @@ sub load {
     command_r("spellcheck" => \&spellcheck_cmd);
 
     foreach (qw(i a about an and are as at by for from in is of on or
-		the to with ok foo bar baz)) {
+		the to with ok foo bar baz perl)) {
 	$stop_list{$_}=1;
     }
 }
