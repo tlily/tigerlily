@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/misc.pl,v 1.22 2000/03/10 07:31:09 mjr Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/misc.pl,v 1.23 2000/09/12 03:58:26 coke Exp $ 
 
 use strict;
 use TLily::Version;
@@ -30,14 +30,19 @@ Runs a shell command from within tlily.  See "%help shell" for details.
 
 =cut
 
+$config{shell_quiet}=0 if (!exists $config{shell_quiet}); 
+$config{shell_silent}=0 if (!exists $config{shell_silent}); 
+
 my $last_command = '';
 sub shell_handler {
     my($ui, $command) = @_;
-    
+   
     $command = $last_command if ($command =~ /^\!/);
     $last_command = $command;
-    
-    $ui->print("[beginning of command output]\n");
+   
+    if (! $config{shell_quiet} && ! $config{shell_silent}) {
+    	$ui->print("[beginning of command output]\n");
+    }
     
     local *FD;
     if ($^O =~ /cygwin/) {
@@ -45,11 +50,14 @@ sub shell_handler {
     } else {
         open(FD, "$command 2>&1 |");
     }
-    $ui->print(<FD>);
+    if (! $config{shell_silent}) {
+      $ui->print(<FD>);
+    }
     close(FD);
     
-    $ui->print("[end of command output]\n");
-    
+    if (! $config{shell_quiet} && ! $config{shell_silent}) {
+    	$ui->print("[end of command output]\n");
+    } 
     return;
 }
 
@@ -62,10 +70,20 @@ sub bang_handler {
     return;
 }
 
+shelp_r('shell_quiet' => 'Don\'t display %shell tags', 'variables');
+shelp_r('shell_silent' => 'Don\'t display any %shell output', 'variables');
+
 shelp_r('shell' => 'run shell command');
 help_r('shell' => '
 Usage: %shell <command>
        ! <command>
+
+       There are two configuration variables, shell_quiet and shell_silent. 
+       If shell_quiet is set to a true value, then only the output from 
+       the shell is returned.  If shell_quiet is set to false (the default), 
+       then the output is wrapped with beginning/ending tags. shell_silent
+       acts as shell_quiet, but also suppresses the command\'s output.
+
 ');
 event_r(type => 'user_input',
 		      call => \&bang_handler);
