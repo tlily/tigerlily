@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Server.pm,v 1.21 1999/10/02 02:45:08 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Server.pm,v 1.22 1999/10/03 21:13:31 mjr Exp $
 
 package TLily::Server;
 
@@ -75,14 +75,18 @@ sub new {
 
     # Generate a unique name for this server object.
     my $name = $args{name};
-    $name = "$args{host}:$args{port}" if (!defined($name));
+
+    if (!defined($name)) {
+        $name = "$args{host}";
+        $name =~ s/^([^\.]+).*$/\1/;
+    }
     if ($server{$name}) {
 	my $i = 2;
 	while ($server{$name."#$i"}) { $i++; }
 	$name .= "#$i";
     }
 
-    $self->{name}      = $name; # Deprecated; use $self->{names}
+    $self->{name}      = $name if (defined($args{name}));
     # NOTE: If you add other names, make _sure_ that those names aren't
     # already taken by other server objects, otherwise bad stuff will happen.
     @{$self->{names}}  = ($name);
@@ -208,9 +212,18 @@ sub name {
     my($self, $name) = @_;
 
     if (defined($name)) {
-        return 0 if (defined($server{$name}));
+        if (defined($server{$name})) {
+            my $i = 2;
+            while ($server{$name."#$i"}) { $i++; }
+            $name .= "#$i";
+        }
         $server{$name} = $self;
-        push @{$self->{names}}, $name;
+        if (!defined($self->{name})) {
+            $self->{name} = $name;
+            unshift @{$self->{names}}, $name;
+        } else {
+            push @{$self->{names}}, $name;
+        }
         return 1;
     } else {
         return $self->{names}[0] if (!wantarray);
