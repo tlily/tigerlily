@@ -1,7 +1,9 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/program.pl,v 1.2 1999/09/19 06:21:37 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/program.pl,v 1.3 1999/09/19 20:26:07 mjr Exp $
 
 $perms = undef;
+
+use Data::Dumper;
 
 sub edit_text {
     my($ui, $text) = @_;
@@ -89,21 +91,231 @@ sub verb_set(%) {
 
 sub verb_list {
   my $ui = shift;
+  my $obj = shift;
+  my $verb = shift;
 
-  if (scalar(@_) != 1) {
+  unless (defined($obj)) {
     $ui->print("Usage: %verb list (object):(verb)\n");
     return 0;
   }
 
-  my $verb_spec = shift;
+  if (defined($verb)) {
+    $server->sendln("\@list $obj:$verb");
+  }
+}
 
-  # Do a minimal check of the verb spec here.
-  unless ($verb_spec =~ /[^:]+:.+/) {
-    $ui->print("Usage: %verb list (object):(verb)\n");
+sub verb_show {
+  my $cmd = shift;
+  my $ui = shift;
+  my $obj = shift;
+  my $verb = shift;
+
+  unless (defined($obj)) {
+    $ui->print("Usage: %verb show object[:verb]\n");
     return 0;
   }
 
-  $server->sendln("\@list $verb_spec");
+  my @lines = ();
+  if (defined($verb)) {
+    $server->sendln("\@show $obj:$verb");
+  } else {
+    cmd_process("\@show $obj", sub {
+        my($event) = @_;
+        $event->{NOTIFY} = 0;
+        if ($event->{type} eq 'endcmd') {
+          my $objRef = parse_show_obj(@lines);
+          if (scalar(@{$objRef->{verbdefs}}) > 0) {
+            $ui->print(join("\n", (@{$objRef->{verbdefs}},"")));
+          } else {
+            $ui->print("(No verbs defined on $obj)\n");
+          }
+        } elsif ( $event->{type} ne 'begincmd' ) {
+          my $l = $event->{text};
+          if ( $l =~ /^Can\'t find anything named \'$obj\'\./ ) {
+            $event->{NOTIFY} = 1;
+            return 1;
+          }
+          push @lines, $l;
+        }
+        return 0;
+    });
+  }
+}
+
+sub obj_show {
+  my $cmd = shift;
+  my $ui = shift;
+  my $obj = shift;
+
+  unless (defined($obj)) {
+    $ui->print("Usage: %obj show[all] object[.prop]\n");
+    return 0;
+  }
+
+  cmd_process("\@show $obj", sub {
+      my($event) = @_;
+      # User doesn't want to see output of @show
+      $event->{NOTIFY} = 0;
+      if ($event->{type} eq 'endcmd') {
+        # We've received all the output from @show. Now call parse_show_obj()
+        # to parse the output for @show into something more easily usable.
+        my $objRef = parse_show_obj(@lines);
+
+        # OK - now to make a list of properties.  We have two lists to
+        # choose from: properties directly defined on the object, or
+        # all properties (including inherited ones).
+        my @propList = ();
+        if ($cmd eq 'show') {
+          @propList = sort(@{$objRef->{propdefs}});
+        }
+      } elsif ( $event->{type} ne 'begincmd' ) {
+        my $l = $event->{text};
+        if ( $l =~ /^Can\'t find anything named \'$obj\'\./ ) {
+          $event->{NOTIFY} = 1;
+          return 1;
+        }
+        push @lines, $l;
+      }
+      return 0;
+  });
+}
+
+
+sub prop_show {
+  my $cmd = shift;
+  my $ui = shift;
+  my $obj = shift;
+  my $prop = shift;
+
+  unless (defined($obj)) {
+    $ui->print("Usage: %prop show[all] object[.prop]\n");
+    return 0;
+  }
+
+  my @lines = ();
+
+  # If $prop is defined, we were given a specific property to look at.  Do so.
+  if (defined($prop)) {
+    $ui->print("(\@show $obj.$prop)\n");
+    $server->sendln("\@show $obj.$prop");
+  } else {
+    # We need to list the properties on the object.  We will fire off
+    # a @show cmd, and process the output to get the info we need.
+    cmd_process("\@show $obj", sub {
+        my($event) = @_;
+        # User doesn't want to see output of @show
+        $event->{NOTIFY} = 0;
+        if ($event->{type} eq 'endcmd') {
+          # We've received all the output from @show. Now call parse_show_obj()
+          # to parse the output for @show into something more easily usable.
+          my $objRef = parse_show_obj(@lines);
+
+          # OK - now to make a list of properties.  We have two lists to
+          # choose from: properties directly defined on the object, or
+          # all properties (including inherited ones).
+          my @propList = ();
+          if ($cmd eq 'show') {
+            @propList = sort(@{$objRef->{propdefs}});
+          } elsif ($cmd eq 'showall') {
+            # User wants inherited properties too.
+            @propList = sort(keys %{$objRef->{props}});
+          }
+          if (scalar(@propList) > 0) {
+            $ui->print(join("\n", @propList,""));
+          } else {
+            $ui->print("(No properties on $obj)\n");
+          }
+        } elsif ( $event->{type} ne 'begincmd' ) {
+          my $l = $event->{text};
+          if ( $l =~ /^Can\'t find anything named \'$obj\'\./ ) {
+            $event->{NOTIFY} = 1;
+            return 1;
+          }
+          push @lines, $l;
+        }
+        return 0;
+    });
+  }
+}
+
+sub parse_show_obj(@) {
+  my $obj = {};
+
+  foreach $l (@_) {
+    chomp $l;
+    if ( $l =~ /^Object ID:\s*#(\d+)/ ) {
+      $obj->{objid} = $1;
+    } elsif ( $l =~ /^Name:\s*(.*)/ ) {
+      $obj->{name} = $1;
+    } elsif ( $l =~ /^Parent:\s*([^\s]*)\s+#\((\d+)\)/ ) {
+      $obj->{parent} = $1;
+      $obj->{parentid} = $2;
+    } elsif ( $l =~ /^Location:\s*(.*)/ ) {
+      $obj->{location} = $1;
+    } elsif ( $l =~ /^Owner:\s*([^\s]*)\s+#\((\d+)\)/ ) {
+      $obj->{owner} = $1;
+      $obj->{ownerid} = $1;
+    } elsif ( $l =~ /^Flags:\s*(.*)/ ) {
+      $obj->{flags} = $1;
+    } elsif ( $l =~ /^Verb definitions:/ ) {
+      $mode = "verbdef";
+    } elsif ( $l =~ /^Property definitions:/ ) {
+      $mode = "propdef";
+    } elsif ( $l =~ /^Properties:/ ) {
+      $mode = "prop";
+    } elsif ( $l =~ /^\s+/g ) {
+      if ($mode eq "verbdef") {
+        $l =~ /\G(.+)$/g;
+        push @{$obj->{verbdefs}}, $1;
+      } elsif ($mode eq "propdef") {
+        $l =~ /\G(.+)$/g;
+        push @{$obj->{propdefs}}, $1;
+      } elsif ($mode eq "prop") {
+        $l =~ /\G([^:]+):\s+(.*)$/g;
+        $obj->{props}{$1} = $2;
+      }
+    } 
+  } 
+  return $obj;
+} 
+
+sub obj_cmd {
+  my $ui = shift;
+  my ($cmd,@args) = split /\s+/, "@_";
+  my $obj_spec = shift @args;
+
+  # Do a minimal check of the prop spec here.
+  unless ($obj_spec =~ /([^\.\:]+)/) {
+    $ui->print("Usage: %prop $cmd object\n");
+    return 0;
+  }
+  my $obj = $1;
+
+  if ($cmd eq 'show'/) {
+    obj_show($cmd, $ui, $obj);
+  } else {
+    $ui->print("(unknown %obj command)\n");
+  }
+}
+
+sub prop_cmd {
+  my $ui = shift;
+  my ($cmd,@args) = split /\s+/, "@_";
+  my $prop_spec = shift @args;
+
+  # Do a minimal check of the prop spec here.
+  unless ($prop_spec =~ /([^\.]+)(?:\.(.+))?/) {
+    $ui->print("Usage: %prop $cmd (object).(verb)\n");
+    return 0;
+  }
+  my $obj = $1;
+  my $prop = $2;
+
+  if ($cmd =~ /^show(?:all)?$/) {
+    prop_show($cmd, $ui, $obj, $prop);
+  } else {
+    $ui->print("(unknown %prop command)\n");
+  }
 }
 
 sub verb_cmd {
@@ -114,13 +326,17 @@ sub verb_cmd {
   local $server = server_name();
 
   # Do a minimal check of the verb spec here.
-  unless ($verb_spec =~ /[^:]+:.+/) {
+  unless ($verb_spec =~ /([^:]+)(?::(.+))?/) {
     $ui->print("Usage: %verb $cmd (object):(verb)\n");
     return 0;
   }
+  my $obj = $1;
+  my $verb = $2;
 
-  if ($cmd eq 'list') {
-    verb_list($ui, $verb_spec, @args);
+  if ($cmd eq 'show') {
+    verb_show($cmd, $ui, $obj, $verb);
+  } elsif ($cmd eq 'list') {
+    verb_list($ui, $obj, $verb);
   } elsif ($cmd eq 'edit') {
     my $sub = sub {
         my(%args) = @_;
@@ -148,7 +364,6 @@ sub verb_cmd {
                    call   => $sub);
 
   } else {
-    $ui->print("(perms = $perms)\n");
     $ui->print("(unknown %verb command)\n");
   }
 }
@@ -197,10 +412,14 @@ event_r(type => 'options',
 $server->sendln("\#\$\# options +usertype");
 
 command_r('verb', \&verb_cmd);
+command_r('prop', \&prop_cmd);
 
 shelp_r("verb", "MOO verb manipulation functions");
+shelp_r("prop", "MOO property manipulation functions");
 help_r("verb", "
-%verb list <verb_spec>    - Lists a verb.
+%verb show <verb_spec>    - Given an object, shows the verbs defined on it.
+                            Given an object:verb, shows the verb properties.
+%verb list <verb_spec>    - Lists the code of a verb.
 %verb edit <verb_spec>    - Edit a verb.
 
 ");
