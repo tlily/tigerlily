@@ -8,7 +8,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Config.pm,v 1.8 1999/05/15 03:58:27 albert Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Config.pm,v 1.9 1999/10/02 04:48:17 albert Exp $
 
 package TLily::Config;
 
@@ -264,7 +264,6 @@ sub parse_command_line {
 #	print STDERR "$ARGV[0]\n";
 	if($ARGV[0] =~ /^-(\w+)=(\S+)$/) {
 	    my($var,$val) = ($1,$2);
-	    print STDERR "$var => $val\n";
 	    $config{$var} = $val;
 	    shift @ARGV; next;
 	}
