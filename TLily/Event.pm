@@ -211,7 +211,6 @@ sub loop_once {
 				$h->{'time'} += $h->{interval};
 				$sort = 1;
 			} else {
-				warn "autoremove: $h->{registrar}\n";
 				$h->{registrar}->remove("event", $h->{id})
 				  if ($h->{registrar});
 			}
