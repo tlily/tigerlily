@@ -14,8 +14,10 @@ sub spellcheck_input {
 	return @f;
     }
 
-    # strip off any partial words at the end.
-    $message =~ s/\S+\s*$//g;
+    # strip off any partial words at the end, unless there's a space there.
+    if ($message =~ /[^\s\.\?\!]$/) {
+	$message =~ s/\S+\s*$//g;
+    }
 
     my $m = $message;
 
