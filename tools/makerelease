@@ -18,16 +18,17 @@ die "You do not appear to be a developer.  You cannot use this function\n"
 die "The tlily2 directory must not be present"
   if (-e "tlily2");
 
-if ($opt && $opt eq "announce") {
-	do_announcement($version);
-	exit(0);
-}
-
 if ($opt && $opt eq "confirm") {
 	$forreal = 1;
+	$opt = shift;
 } else {
 	print "Doing a dry run; run \"$0 $version confirm\" to release.\n";
 	$forreal = undef;
+}
+
+if ($opt && $opt eq "announce") {
+	do_announcement($version);
+	exit(0);
 }
 
 
