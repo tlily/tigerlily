@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/Attic/output.pl,v 1.16 1999/03/01 19:08:11 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/Attic/output.pl,v 1.17 1999/03/03 23:18:22 josh Exp $
 
 use strict;
 
@@ -103,6 +103,7 @@ event_r(type  => 'emote',
 # %R: RECIPS
 # %O: name of thingy whose OID is in VALUE.
 # %S: timestamp, if STAMP is defined, empty otherwise.
+# %B: if SOURCE has a blurb " with the blurb [blurb]", else "".
 #
 # leading characters (up to first space) define behavior as follows: 
 # A: always use this message
@@ -122,9 +123,9 @@ my @infomsg = ('connect'  => 'A *** %S%U has entered lily ***',
 	       disconnect => 'E *** %S%U has left lily ***',
 	       detach     => 'E *** %S%U has detached ***',
 	       detach     => 'V *** %S%U has been detached %V ***',
-	       here       => 'e (you are now here)',
+	       here       => 'e (you are now here%B)',
 	       here       => 'E *** %S%U is now "here" ***',
-	       away       => 'e (you are now away)',
+	       away       => 'e (you are now away%B)',
 	       away       => 'E *** %S%U is now "away" ***',
 	       away       => 'V *** %S%U has idled "away" ***', # V=idled really.
 	       'rename'   => 'v (you are now named %V)',
@@ -227,6 +228,13 @@ my $sub = sub {
 	if ($found =~ m/\%T/) {
 	    my $title = $serv->get_title(NAME => $e->{RECIPS});
 	    $found =~ s/\%T/$title/g;
+	}
+	if ($found =~ m/\%B/) {
+	    if ($blurb) {
+		$found =~ s/\%B/ with the blurb [$blurb]/g;
+	    } else {
+		$found =~ s/\%B//g;
+	    }
 	}
 	
 	$e->{text} = $found;
