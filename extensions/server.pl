@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/server.pl,v 1.30 2000/12/17 15:53:30 coke Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/server.pl,v 1.31 2000/12/22 01:20:07 neild Exp $
 
 use strict;
 
@@ -162,7 +162,8 @@ sub next_server {
 			server     => $new_server});
 
     $ui->print("(switching to server \"",
-	       scalar($new_server->name()), "\")\n");
+	       scalar($new_server->name()), "\")\n")
+      unless $config{switch_quiet};
     return;
 }
 TLily::UI::command_r("next-server" => \&next_server);
@@ -241,5 +242,7 @@ sub smartexit_message {
 event_r(type  => 'server_disconnected',
 	order => 'after',
 	call  => \&smartexit_message);
+
+shelp_r('smartexit' => 'Automatically quit after disconnecting.', 'variables');
 
 1;
