@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/biff.pl,v 1.6 2001/11/07 02:55:14 tale Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/biff.pl,v 1.7 2001/11/12 05:07:45 tale Exp $
 
 #
 # A Biff module
@@ -73,7 +73,7 @@ sub check_mbox(\%) {
     my $mtime = -M $mboxRef->{path};
     my $atime = -A _;
     my $size = -s _;
-    
+
     $mboxRef->{status} = 0;	# Default is no unread mail.
     if (-f _ && -s _ && ($mtime < -A _) ) {
 	if (($mboxRef->{mtime} == 0) || ($mtime < $mboxRef->{mtime})) {
@@ -107,7 +107,7 @@ sub check_maildir(\%) {
 
 sub check_rpimchk(\%) {
     my $mchkRef = shift;
-    
+
     # Send a check request to the server.
     $mchkRef->{sock}->send($mchkRef->{request});
 }
@@ -144,7 +144,7 @@ sub handle_rpimchk {
 sub print_drop {
     my $ui = shift;
     my %drop = %{shift()};
-    
+
     if ($drop{type} eq 'mbox' || $drop{type} eq 'maildir') {
 	$ui->print("($drop{type} $drop{path})\n");
     } elsif ($drop{type} eq 'rpimchk') {
@@ -181,7 +181,7 @@ sub update_biff {
     } else {
 	$biff = '';
 	$ui->set(biff => $biff);
-    }    
+    }
 }
 
 =item %biff
@@ -192,7 +192,7 @@ Turn mail drop checks on or off, or list drops.
 
 sub biff_cmd {
     my($ui,$args) = @_;
-    
+
     if ($args eq 'off') {
 	if ($active) {
 	    event_u($check_eventid) if ($check_eventid);
@@ -211,14 +211,14 @@ sub biff_cmd {
 	$ui->print("(Mail notification off)\n");
 	return 0;
     }
-    
+
     if ($args eq 'on') {
 	if ($active) {
 	    $ui->print("(Mail notification already on)\n");
 	} else {
 	    $check_eventid = TLily::Event::time_r(interval => $check_interval,
 						  call     => \&check_drops);
-	    
+
 	    my $drop;
 	    foreach $drop (@drops) {
 		$drop->{status} = 0;
@@ -243,7 +243,7 @@ sub biff_cmd {
 	check_drops();
 	return 0;
     }
-    
+
     if ($args eq 'list') {
 	if (@drops == undef) {
 	    $ui->print("(No maildrops are being monitored)\n");
@@ -258,13 +258,13 @@ sub biff_cmd {
 	}
 	return 0;
     }
-    
+
     if ($args eq '') {
 	map(print_drop($ui,$_), grep($_->{status} > 0, @drops)) ||
 	  $ui->print("(No unread mail)\n");
 	return 0;
     }
-    
+
     $ui->print("Usage: %biff [on|off|list]\n");
     return 0;
 }
@@ -370,7 +370,7 @@ turn notification on and off, the 'list' argument lists the maildrops
 currently being monitored, and if no argument is given, %biff will list
 those maildrops with unread mail.
 
-See "%help variables biff_drop" for how to configure your mail drop list.
+See "%help variables biff_drops" for how to configure your mail drop list.
 });
 
 # Start biff by default when loaded.
