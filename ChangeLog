@@ -1,4 +1,6 @@
 Version 2.3
+  * [extensions/multicore.pl] Add support for @SERVER/Command and 
+    */Command [WJC]
   * [extensions/blurb.pl] changed config var to server_all, added support
     for %here, %away [WJC]
   * [TLily/Server/SLCP.pm, extensions/expand.pl] Fixed up a few bugs in
