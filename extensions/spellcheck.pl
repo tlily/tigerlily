@@ -84,28 +84,29 @@ sub lookup_word {
     return $look_cache{$word};
 }
 
+my $state;
 sub spellcheck_cmd {
     my($ui, $command) = @_;
 
     if ($command =~ /on/i) {
 	TLily::UI::istyle_fn_r(\&spellcheck_input);
 	$ui->print("(spellcheck enabled)\n");
-    } else {
+	$state="enabled";
+    } elsif ($command =~ /off/i) {
 	TLily::UI::istyle_fn_u(\&spellcheck_input);
 	$ui->print("(spellcheck disabled)\n");
+	$state="disabled";	
+    } else {
+    	$ui->print("(spellcheck is $state)\n");
     }
 }
 
 
 sub load {    
-    my $ui = TLily::UI::name();
-    $ui->defstyle(input_error  => 'reverse');
-    $ui->defcstyle(input_error => 'red', 'black', 'normal');
-
     command_r("spellcheck" => \&spellcheck_cmd);
 
     foreach (qw(i a about an and are as at by for from in is of on or
-		the to with ok foo bar baz perl)) {
+		the to with ok foo bar baz perl tlily)) {
 	$stop_list{$_}=1;
     }
     
