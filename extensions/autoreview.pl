@@ -22,7 +22,7 @@ my $rev_start;
 
 sub connected_handler {
     my($event, $handler);
-    event_d($handler);
+    event_u($handler);
     
     review_start();
     return 0;
