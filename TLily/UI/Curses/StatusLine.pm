@@ -83,7 +83,7 @@ sub set {
 sub redraw {
 	my($self) = @_;
 
-	$self->{W}->addstr(0, 0, $self->{str});
-	$self->{W}->clrtoeol();
+	$self->{W}->clrtoeol(0, 0);
+	$self->{W}->addstr($self->{str});
 	$self->{W}->noutrefresh();
 }
