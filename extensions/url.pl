@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/url.pl,v 1.9 1999/11/29 22:27:53 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/url.pl,v 1.10 1999/11/29 22:51:09 albert Exp $
 
 #
 # URL handling
@@ -70,15 +70,19 @@ sub url_cmd {
 	    TLily::Event::keepalive();
  	    $ui->suspend();
 	    if ($^O =~ /cygwin/) {	    
-	        $ret=`$cmd 2>&1`;
+	        $ret=`$cmd`;
 	    } else {
-	        $ret=`$cmd`;	    
+	        $ret=`$cmd 2>&1`;	    
 	    }
  	    $ui->resume();
  	    $ui->print("$ret\n") if $ret;
  	} else {
 	    TLily::Event::keepalive(15);
-   	    $ret=`$cmd 2>&1`;
+	    if ($^O =~ /cygwin/) {	    
+		$ret=`$cmd`;
+	    } else {
+		$ret=`$cmd 2>&1`;
+	    }
  	    $ui->print("$ret\n") if $ret;
  	}
  	return

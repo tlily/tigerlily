@@ -8,7 +8,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/Attic/tlily.global,v 1.31 1999/11/29 22:27:52 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/Attic/tlily.global,v 1.32 1999/11/29 22:51:09 albert Exp $
 
 # Global defaults for tlily
 # PLEASE DO NOT EDIT EXCEPT FOR DEVELOPMENT!
@@ -104,16 +104,18 @@ $port=7777;
 $mono=0;
 $pager=1;
 
-$editor ||= $ENV{VISUAL} || $ENV{EDITOR} || 'vi';
-
-#$browser_textmode=1;
-#$browser="lynx";
-$browser_textmode=0;
-if ($^O =~ /cygwin/) {
-    $browser="explorer.exe %URL%";
+if($^O =~ /cygwin/) {
+    $editor ||= $ENV{VISUAL} || $ENV{EDITOR} || 'notepad.exe';
+    $browser_textmode=0;
+    $browser="explore.exe";
 } else {
+    $editor ||= $ENV{VISUAL} || $ENV{EDITOR} || 'vi';
+#    $browser_textmode=1;
+#    $browser="lynx";
+    $browser_textmode=0;
     $browser="netscape -remote 'openURL(%URL%)'";
 }
+
 $clocktype=24;
 $clockdelta=0;
 
