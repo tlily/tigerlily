@@ -1,4 +1,5 @@
 Version 2.2
+  * [everything] Updated hostnames and copyright dates. [DPN]
   * [extensions/program.pl] Fixed PR#848 & 850 (reedit & indented comments)[CWS]
   * [extensions/gag.pl] Added rudimentary support for %gag <group> [WJC]
   * [extensions/server.pl] Fixed PR#812 (error msg on invalid core) [WJC]

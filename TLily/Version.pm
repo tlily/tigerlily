@@ -1,6 +1,6 @@
 #    TigerLily:  A client for the lily CMC, written in Perl.
-#    Copyright (C) 1999-2001  The TigerLily Team, <tigerlily@einstein.org>
-#                             http://www.hitchhiker.org/tigerlily/
+#    Copyright (C) 1999-2001 The TigerLily Team, <tigerlily@tlily.org>
+#                             http://www.tlily.org/tigerlily/
 #
 #  This program is free software; you can redistribute it and/or modify it
 #  under the terms of the GNU General Public License version 2, as published

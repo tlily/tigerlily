@@ -1,12 +1,12 @@
 #    TigerLily:  A client for the lily CMC, written in Perl.
-#    Copyright (C) 1999  The TigerLily Team, <tigerlily@einstein.org>
-#                                http://www.hitchhiker.org/tigerlily/
+#    Copyright (C) 1999-2001  The TigerLily Team, <tigerlily@tlily.org>
+#                                http://www.tlily.org/tigerlily/
 #
 #  This program is free software; you can redistribute it and/or modify it
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/README,v 1.12 2000/12/17 19:10:59 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/README,v 1.13 2001/01/26 03:01:44 neild Exp $
 
      ("`-/")_.-'"``-._ 
       . . `; -._    )-;-,_`)          TigerLily 2.x
@@ -182,22 +182,22 @@ for the specific module to see what options can be set.
 CVS access
 ----------
 The TigerLily sources are stored in a CVS repository.  Anyone working on
-TigerLily development can get access by contacting Damien (neild@acm.rpi.edu)
+TigerLily development can get access by contacting Damien (neild@misago.org)
 or Albert (albert@acm.rpi.edu).  We also allow anonymous read-only access.
 
-The repository is currently located on tlily.centauri.org.
+The repository is currently located on cvs.tlily.org.
 
 To access the repository anonymous read-only, do:
-  cvs -d :pserver:anon@tlily.centauri.org:/data/cvs login
+  cvs -d :pserver:anon@cvs.tlily.org:/data/cvs login
   (When prompted for a password, just press enter.)
-  cvs -d :pserver:anon@tlily.centauri.org:/data/cvs co tlily2
+  cvs -d :pserver:anon@cvs.tlily.org:/data/cvs co tlily2
 
 To access the repository read-write, once you have an account, you will
 need to set two environment variables:
-  export CVSROOT=:ext:neild@tlily.centauri.org:/data/cvs
+  export CVSROOT=:ext:neild@cvs.tlily.org:/data/cvs
   export CVS_RSH=ssh
 
-Obviously, replace the `neild' with your own userid on tlily.centauri.org.
+Obviously, replace the `neild' with your own userid on cvs.tlily.org.
 
 The important CVS commands are:
   - cvs checkout tlily2

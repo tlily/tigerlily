@@ -69,8 +69,8 @@ sub make_version_file {
 
 	my $verfile = <<END
 ##    TigerLily:  A client for the lily CMC, written in Perl.
-##    Copyright (C) 1999-2001  The TigerLily Team, <tigerlily\@einstein.org>
-##                             http://www.hitchhiker.org/tigerlily/
+##    Copyright (C) 1999-2001  The TigerLily Team, <tigerlily\@tlily.org>
+##                             http://www.tlily.org/tigerlily/
 ##
 ##  This program is free software; you can redistribute it and/or modify it
 ##  under the terms of the GNU General Public License version 2, as published
@@ -182,8 +182,8 @@ sub do_announcement {
 		close(CL);
 
 		my $msg = <<END
-#From: "The Tigerlily Developers" <tigerlily\@tlily.centauri.org>
-#To: "Tigerlily Announcement List" <tigerlily-announce\@tlily.centauri.org>
+#From: "The Tigerlily Developers" <tigerlily\@tlily.org>
+#To: "Tigerlily Announcement List" <tigerlily-announce\@tlily.org>
 #Subject: Tigerlily $version is now available
 #
 #Hi All -
@@ -200,7 +200,7 @@ sub do_announcement {
 #The Tigerlily Developers
 #Albert, Damien, Josh, Matt & Steve.
 #----------------------------------------------------------------------------
-#To unsubscribe from this list, send email to <majordomo\@tlily.centauri.org>
+#To unsubscribe from this list, send email to <majordomo\@tlily.org>
 #with the words "unsubscribe tigerlily-announce" in the body.
 END
   ;

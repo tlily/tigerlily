@@ -1,14 +1,14 @@
 # -*- Perl -*-
 #    TigerLily:  A client for the lily CMC, written in Perl.
-#    Copyright (C) 1999  The TigerLily Team, <tigerlily@einstein.org>
-#                                http://www.hitchhiker.org/tigerlily/
+#    Copyright (C) 1999-2001  The TigerLily Team, <tigerlily@tlily.org>
+#                                http://www.tlily.org/tigerlily/
 #
 #  This program is free software; you can redistribute it and/or modify it
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/ExoSafe.pm,v 1.6 2000/12/16 01:32:59 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/ExoSafe.pm,v 1.7 2001/01/26 03:01:48 neild Exp $
 
 package ExoSafe;
 

@@ -1,10 +1,10 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/submit.pl,v 1.8 2000/12/21 21:32:22 coke Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/submit.pl,v 1.9 2001/01/26 03:01:57 neild Exp $
 
 use TLily::Version;
 use strict;
 
-my $TLILY_BUGS = "tigerlily-bugs\@tlily.centauri.org";
+my $TLILY_BUGS = "tigerlily-bugs\@tlily.org";
 
 # Issue report template
 my $template = 

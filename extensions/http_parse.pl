@@ -129,7 +129,7 @@ sub complete_http {
 			$d->print("</head><body>\n");
 			$d->print("To download the latest version of Tigerlily, ");
 			$d->print("click ");
-			$d->print("<a href=\"http://www.hitchhiker.org/tigerlily\">\n");
+			$d->print("<a href=\"http://www.tlily.org/tigerlily\">\n");
 			$d->print("here</a></body></html>\n");
 		}
 		$d->close();

@@ -1,12 +1,12 @@
 #!/usr/bin/perl -w
 #    TigerLily:  A client for the lily CMC, written in Perl.
-#    Copyright (C) 1999  The TigerLily Team, <tigerlily@einstein.org>
-#                                http://www.hitchhiker.org/tigerlily/
+#    Copyright (C) 1999-2001  The TigerLily Team, <tigerlily@tlily.org>
+#                                http://www.tlily.org/tigerlily/
 #
 #  This program is free software; you can redistribute it and/or modify it
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/tools/Attic/postrelease,v 1.2 1999/04/11 22:35:48 albert Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/tools/Attic/postrelease,v 1.3 2001/01/26 03:01:58 neild Exp $
 
 use strict;
 use Config;
@@ -65,7 +65,7 @@ sub do_announcement (%) {
 	close(CL);
 
 	my $msg = qq(From: "The Tigerlily Developers" <tigerlily\@hitchhiker.org>
-To: "Tigerlily Announcement List" <tigerlily-announce\@einstein.org>
+To: "Tigerlily Announcement List" <tigerlily-announce\@tlily.org>
 Subject: Tigerlily $version is now available
 
 Hi All -
@@ -75,7 +75,7 @@ Tigerlily version $version is now available.
 Changes in this release, from the ChangeLog:
 $ChangeLog
 Once Josh moves it into place, it will be available from:
-http://www.hitchhiker.org/tigerlily/
+http://www.tlily.org/tigerlily/
 
 Until then, you can get it from:
 http://www.acm.rpi.edu/~neild/
@@ -85,7 +85,7 @@ Share and Enjoy.
 The Tigerlily Developers
 Damien, Albert, Josh, Jon, Steve & Matt.
 ----------------------------------------------------------------------------
-To unsubscribe from this list, send email to <majordomo\@einstein.org> with
+To unsubscribe from this list, send email to <majordomo\@tlily.org> with
 the words "unsubscribe tigerlily-announce" in the body.
 );
 	my $abort_flag;
@@ -123,7 +123,7 @@ the words "unsubscribe tigerlily-announce" in the body.
     }
     else {
 	print "Don't forget to send an announcement of the new release\n",
-	    "to tigerlily-announce\@einstein.org.\n";
+	    "to tigerlily-announce\@tlily.org.\n";
     }
 }
 
@@ -199,8 +199,8 @@ sub make_version_file (%) {
         or die "Cannot open TLily/Version.pm for writing: $!\n";
 
     print VERFILE qq(#    TigerLily:  A client for the lily CMC, written in Perl.
-#    Copyright (C) 1999  The TigerLily Team, <tigerlily\@einstein.org>
-#                                http://www.hitchhiker.org/tigerlily/
+#    Copyright (C) 1999-2001  The TigerLily Team, <tigerlily\@tlily.org>
+#                                http://www.tlily.org/tigerlily/
 #
 #  This program is free software; you can redistribute it and/or modify it
 #  under the terms of the GNU General Public License version 2, as published
