@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/on.pl,v 1.12 2000/12/22 01:20:22 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/on.pl,v 1.13 2001/12/06 15:42:08 kazrak Exp $
 
 use strict;
 use Text::ParseWords qw(quotewords);
@@ -32,6 +32,8 @@ There are a number of options to limit the events acted upon.
   value <string> - The VALUE field of the event is identical to <string>.
   like <regexp>  - The VALUE field of the event matches the given pattern.
   server <name>  - Events sent to a specific server.
+  notify <value> - The NOTIFY value of the event is on ('yes'), off ('no'),
+                   or ignored ('always').  (Default is 'yes')
 
 %on supports the following special characters in "what to do":
 
@@ -156,7 +158,7 @@ sub on_cmd {
 	my %mask;
 	my $event_type = shift @args;
 
-	while (@args && $args[0] =~ /^(from|to|value|like|server)$/i) {
+	while (@args && $args[0] =~ /^(notify|from|to|value|like|server)$/i) {
 	    my $masktype = uc(shift @args);
 	    my $maskval  = shift @args;
 	    $mask{$masktype} = $maskval;
@@ -230,6 +232,17 @@ sub on_cmd {
 	    $str .= " from group $mask{FROM}" if defined($mask{SGROUP});
 	    $str .= " to $mask{TO}"           if defined($mask{RHANDLE});
 	    $str .= " to group $mask{TO}"     if defined($mask{RGROUP});
+
+	    if ($mask{NOTIFY}) {
+		if ($mask{NOTIFY} eq 'always') {
+		    $str .= " always";
+		} else {
+		    $str .= " when";
+		    $str .= " not" if $mask{NOTIFY} eq 'no';
+		    $str .= " notified";
+		}
+	    }
+
 	    $str .= " with a value like \"$mask{LIKE}\""
 	      if defined($mask{LIKE});
 	    $str .= " with a value of \"$mask{VALUE}\""
@@ -278,6 +291,14 @@ sub on_evt_handler {
 	for my $m ($1,$2,$3,$4,$5,$6,$7,$8,$9) {
 	    $vars{$i++} = $m;
 	}
+    }
+
+    # Notify value match?
+    if (defined $mask->{NOTIFY}) {
+	return if ($mask->{NOTIFY} eq 'yes' and !defined($e->{NOTIFY}));
+	return if ($mask->{NOTIFY} eq 'no' and defined($e->{NOTIFY}));
+    } else {
+	return if (!defined($e->{NOTIFY}));
     }
 
     # Literal value match?
