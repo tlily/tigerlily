@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/mask.pl,v 1.1 2003/07/11 00:23:39 coke Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/mask.pl,v 1.2 2003/07/18 04:23:56 coke Exp $
 
 use strict;
 
@@ -10,8 +10,29 @@ use strict;
 #
 
 command_r('mask', \&mask_cmd);
-shelp_r('mask', "mask user a as group b");
-help_r('mask', "mask user a as group b");
+shelp_r('mask', "Mask user a as group b");
+shelp_r('mask_full', "If true, fully %mask users.", "variables");
+help_r('mask', "Takes advantage of groups with a single user in them, e.g.:
+
+/group new coke Will
+
+Sends from Will are now rewritten, ala:
+
+ -> (10:02) From Will (coke) [Mr. Bartender], to tigerlily:
+ -  mask.pl has been checked in.
+
+This allows you to easily track users who change their psuedos, or create
+a group that describes a particular user. For example:
+
+ -> (10:02) From damien (japanese expert) [\@work], to tigerlily:
+ -  Nifty.
+
+If the config variable 'mask_full' is true, then the send above will instead
+appear as:
+
+ -> (10:02) From japanese expert [\@work], to tigerlily:
+ -  Nifty.
+");
 
 sub load {
     # XXX If you're ambitious, add more event types.
@@ -20,6 +41,7 @@ sub load {
                 order => 'before',
                 call  => \&masker);
      }
+     exists ($config{mask_full}) or $config{mask_full} = 0;
 }
 
 sub masker {
@@ -40,7 +62,12 @@ sub masker {
   # If you're ambitious, do this for recipients as well.
 
   if (exists($mask{$event->{SHANDLE}})) {
-    $event->{SOURCE} = $event->{SOURCE} . " (" . $mask{$event->{SHANDLE}} .")";
+    if ($config{mask_full}) {
+      $event->{SOURCE} = $mask{$event->{SHANDLE}};
+    } else {
+      $event->{SOURCE} = $event->{SOURCE} . " (" . $mask{$event->{SHANDLE}} .")";
+
+    }
   }
   return;
 }
