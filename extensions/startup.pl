@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/startup.pl,v 1.15 2001/11/10 07:05:20 tale Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/startup.pl,v 1.16 2002/12/03 20:32:14 josh Exp $
 
 use strict;
 
@@ -14,8 +14,7 @@ sub startup_handler ($$) {
 
     if(-f $ENV{HOME}."/.lily/tlily/Startup") {
         local(*SUP);
-	open(SUP, "<$ENV{HOME}/.lily/tlily/Startup");
-	if($!) {
+	if (! open(SUP, "<$ENV{HOME}/.lily/tlily/Startup")) {
 	    $ui->print("Error opening Startup: $!\n");
 	    return 0;
 	}
