@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_output.pl,v 1.25 2002/08/21 03:41:20 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_output.pl,v 1.26 2003/03/16 08:22:39 steve Exp $
 
 use strict;
 
@@ -277,15 +277,15 @@ my @infomsg = (
 
     'appoint'    => 'tC="speaker";' => "*** Discussion %R is now moderated ***",    
     'appoint'    => 'MC="speaker";' => "*** You have been made a speaker for discussion %R ***",
-    'appoint'    => 'C="speaker";' => "*** %P is now a speaker for discussion foo ***",
+    'appoint'    => 'C="speaker";' => "*** %P is now a speaker for discussion %R ***",
     'unappoint'  => 'tC="speaker";' => "*** Discussion %R is no longer moderated ***",
     'unappoint'  => 'MC="speaker";' => "*** You are no longer a speaker for discussion %R ***",
-    'unappoint'  => 'C="speaker";' => "*** %P is no longer a speaker for discussion foo ***",
+    'unappoint'  => 'C="speaker";' => "*** %P is no longer a speaker for discussion %R ***",
 
     'appoint'    => 'MC="author";' => "*** You have been made an author for discussion %R ***",
-    'appoint'    => 'C="author";' => "*** %P is now an author for discussion foo ***",
+    'appoint'    => 'C="author";' => "*** %P is now an author for discussion %R ***",
     'unappoint'  => 'MC="author";' => "*** You are no longer an author for discussion %R ***",
-    'unappoint'  => 'C="author";' => "*** %P is no longer an author for discussion foo ***",
+    'unappoint'  => 'C="author";' => "*** %P is no longer an author for discussion %R ***",
 
     'appoint'    => 'M'            => "*** You are now a %E for %R ***",
     'appoint'    => ''            => "*** %P is now a %E for %R ***",
