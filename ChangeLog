@@ -1,4 +1,4 @@
-Version 2.3-post
+Version 2.4
   * [Makefile.PL] Revamped build system.
   * [extensions/infobot.pl] Tlily-based infobot [JDW]
   * [extensions/group.pl] Reformat group info [WJC]
