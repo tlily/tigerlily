@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Curses/Attic/Input.pm,v 1.26 2001/12/05 20:33:18 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Curses/Attic/Input.pm,v 1.27 2002/03/26 18:41:42 neild Exp $
 
 package TLily::UI::Curses::Input;
 
@@ -909,6 +909,7 @@ sub yank {
     my($self) = @_;
     substr($self->{text}, $self->{point}, 0) = $self->{kill_buffer};
     $self->{point} += length($self->{kill_buffer});
+    $self->{kill_reset} = 1;
     $self->update_style();
     $self->rationalize();
     $self->redraw();
