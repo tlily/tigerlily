@@ -1,4 +1,4 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/multicore.pl,v 1.3 2001/07/30 19:12:13 coke Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/multicore.pl,v 1.4 2001/07/31 19:33:41 coke Exp $
 
 use strict;
 
@@ -28,6 +28,8 @@ sub input_handler {
 
     next unless $e->{text} =~ m/^([^@;:=\s]+)(\/.*)/;
     my($servers, $command) = ($1, $2);
+
+    next if $servers eq "&" ;# pipes.pl uses this.
 
     my @servers;
 
