@@ -6,7 +6,7 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Server/Attic/SLCP.pm,v 1.48 2003/05/01 19:07:16 steve Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Server/Attic/SLCP.pm,v 1.49 2003/08/17 01:49:20 steve Exp $
 
 package TLily::Server::SLCP;
 
@@ -361,16 +361,26 @@ sub expand_name {
     }
 
     # Check for a substring match.
+    my $n;
     unless ($disc) {
 	@m = grep { index($_, $name) != -1 } @unames;
 	return if (@m > 1 && !wantarray);
-	return map($self->{NAME}->{$_}->{NAME}, @m) if (@m);
+	# If a user /renamed from a name that's like a discussion,
+	# it may be found in @m.  We don't want that.
+	if (@m && ($m[0] ne $self->{NAME}->{$m[0]}->{NAME})) {
+	    $n = \@m;
+	}
+	elsif (@m) {
+	    return map($self->{NAME}->{$_}->{NAME}, @m);
+	}
     }
     unless ($user) {
 	@m = grep { index($_, $name) != -1 } @dnames;
 	return if (@m > 1 && !wantarray);
 	return map('-'.$self->{NAME}->{$_}->{NAME}, @m) if (@m);
     }
+
+    return map($self->{NAME}->{$_}->{NAME}, @$n) if $n;
 
     return;
 }
