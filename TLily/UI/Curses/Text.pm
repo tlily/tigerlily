@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Curses/Attic/Text.pm,v 1.22 2001/01/26 03:01:54 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Curses/Attic/Text.pm,v 1.23 2001/02/09 00:24:10 kazrak Exp $
 
 package TLily::UI::Curses::Text;
 
@@ -21,6 +21,13 @@ use TLily::Config qw(%config);
 
 @ISA = qw(TLily::UI::Curses::Generic);
 
+TLily::User::shelp_r('max_scrollback' => 'How many lines of scrollback to keep',
+        'variables');
+TLily::User::help_r('variables max_scrollback' => q(
+The maximum number of lines of scrollback to keep at any time.  This number
+may be exceeded under certain circumstances; nothing will be expired while
+it is on-screen.
+));
 
 # These are handy in a couple of places.
 sub max($$) { ($_[0] > $_[1]) ? $_[0] : $_[1] }
@@ -318,6 +325,65 @@ sub print {
     $self->{text} .= $text;
     $self->{styles}->[-1]  = length($self->{text}) + 1;
     $self->{indents}->[-1] = length($self->{text}) + 1;
+
+    # rbj =-= Adding expiry here.  Check if we've passed our maximum
+    # length; if so, expire the first line.
+    while ($#{$self->{indexes}} > $config{max_scrollback} &&
+           $config{max_scrollback} > 0 &&
+           $self->{idx_anchor} > $self->{lines}) {
+        $self->{idx_anchor}--;
+        $self->{idx_unseen}--;
+        my $linelen = $self->{indexes}->[1];
+        $self->{text} = substr($self->{text}, $linelen);
+        shift @{$self->{indexes}};
+        my $style = undef;
+        for (my $i = 0; $i < $#{$self->{styles}}; ) {
+            $self->{styles}->[$i] -= $linelen;
+            if ($self->{styles}->[$i] < 0) {
+                shift @{$self->{styles}}; # Gets rid of the index
+                $style = shift @{$self->{styles}}; # Gets rid of the style
+            } else {
+                if ($style && $self->{styles}->[$i] > 0) {
+                    # Insert the last style with offset 0 when we otherwise
+                    # wouldn't have a style that starts there.
+                    unshift @{$self->{styles}}, (0, $style);
+                    undef $style;
+                    $i += 2;
+                }
+                $i += 2;
+            }
+        }
+        if ($#{$self->{styles}} < 3) {
+            $self -> {styles} = [ 0, "default", length($self->{text}) + 1];
+        }
+        my $indent = undef;
+        $style = undef;
+        for (my $i = 0; $i < $#{$self->{indents}}; ) {
+            $self->{indents}->[$i] -= $linelen;
+            if ($self->{indents}->[$i] < 0) {
+                shift @{$self->{indents}}; # Gets rid of the index
+                $style = shift @{$self->{indents}}; # Gets rid of the style
+                $indent = shift @{$self->{indents}}; # Gets rid of the string
+            } else {
+                if ($style && $self->{indents}->[$i] > 0) {
+                    # Insert the last style/indent with offset 0 when we
+                    # otherwise wouldn't have a style/offset that starts there.
+                    unshift @{$self->{indents}}, (0, $style, $indent);
+                    undef $style;
+                    undef $indent;
+                    $i += 3;
+                }
+                $i += 3;
+            }
+        }
+        if ($#{$self->{indents}} < 3) {
+            $self->{indents} =
+              [ 0, "default", "", length($self->{text}) + 1];
+        }
+        for (my $i = 0; $i <= $#{$self->{indexes}}; $i++) {
+            $self->{indexes}->[$i] -= $linelen;
+        }
+    }
 
     my @lines = $self->fetch_lines($self->{indexes}->[-1]);
     for (my $i = 1; $i < @lines; $i++) {
