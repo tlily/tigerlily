@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/osxspeak.pl,v 1.1 2003/08/12 02:47:32 coke Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/osxspeak.pl,v 1.2 2003/08/12 05:09:00 coke Exp $
 
 use strict;
 
@@ -31,7 +31,7 @@ sub sayit {
         $message = "(to $event->{RECIPS}), $event->{SOURCE} $event->{VALUE}";
     }
 
-    $message =~ s/'//g;
+    $message =~ s/[^a-z0-9]//ig;
     system("osascript -e 'say \"$message\"'&");
 
     return;
