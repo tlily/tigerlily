@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/after.pl,v 1.10 2000/03/10 07:31:09 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/after.pl,v 1.11 2000/04/05 02:54:15 mjr Exp $
 
 use strict;
 
@@ -107,7 +107,7 @@ sub cron_command {
 	foreach $k (sort keys %cron) {
        	    my($sec,$min,$hour,$mday,$mon,$year) = localtime($cron_when{$k});
 	    $ui->printf("(%2d  %02d:%02d:%02d %02d/%02d/%02d  %6s %s)\n",
-			$k, $hour, $min, $sec, $mon+1, $mday, $year, $cron_interval{$k}, $cron{$k});
+			$k, $hour, $min, $sec, $mon+1, $mday, $year%100, $cron_interval{$k}, $cron{$k});
 	}
 	return;
     }
