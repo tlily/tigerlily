@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/FoiledAgain/Attic/TermScreen.pm,v 1.1 2003/03/07 05:19:11 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/FoiledAgain/Attic/TermScreen.pm,v 1.2 2003/10/18 22:25:52 josh Exp $
 
 package TLily::FoiledAgain::TermScreen;
 
@@ -304,28 +304,32 @@ sub scroll {
     $self->{lineevents} = [];
     
     if ($numlines > 0) {
-        # toss the first line off the screen.
-        shift @lineevents;    
+        # toss the scrolled-off line off the screen.
+        shift @lineevents for (1..$numlines);
 	
 	# reexecute the rest of the events, but tweak the line numbers.
 	foreach my $line (@lineevents) {
+	    next unless defined($line);
 	    foreach my $event (@{$line}) {
                 my ($x, $y, $command, @args) = @{$event};
 	    
     		$y-- if defined($y);
+                $self->_queue_event(0, $y, 'clreol');		
 	        $self->_queue_event($x, $y, $command, @args);
 	    }
 	}
     } else {
-        # toss the last line off the screen.
-        pop @lineevents;    
+        # toss the scrolled-off line off the screen.
+        pop @lineevents for (1..-$numlines);
 	
 	# reexecute the rest of the events, but tweak the line numbers.
-	foreach my $line (@lineevents) {	
+	foreach my $line (@lineevents) {
+	    next unless defined($line);	
             foreach my $event (@{$line}) {
                 my ($x, $y, $command, @args) = @{$event};
 	    
                 $y++ if defined($y);
+                $self->_queue_event(0, $y, 'clreol');
                 $self->_queue_event($x, $y, $command, @args);
             }		
 	}
@@ -333,7 +337,7 @@ sub scroll {
     }
 
     # and slap the cursor at the bottom.
-    $self->move_point($self->{lines} - $numlines, 0);  
+    $self->move_point($self->{lines} - $numlines, 0);
 }
 
 
@@ -342,7 +346,7 @@ sub commit {
     DEBUG(@_);
 
     foreach my $window (@windows) {
-        # replay the eventsd commands..
+        # replay the queued events...
         while (@{$window->{events}}) {
 	    my $event = shift @{$window->{events}};
             my ($x, $y, $command, @args) = @{$event};
@@ -350,9 +354,13 @@ sub commit {
             if (defined($x)) {
                 $SCREEN->at($y + $window->{begin_y},
                             $x + $window->{begin_x});
+                uidebug("commit - at(" . $y + $window->{begin_y} . ",".
+                                         $x + $window->{begin_x} . ")\n");
             }
+	    uidebug("commit - $command(@args)\n");
             $SCREEN->$command(@args);
 	    
+	    # stash the events in case we need to scroll the window.
 	    my $line = defined($y) ? $y : -1;
 	    
 	    if ($line == -1 && (@{$window->{lineevents}} == 0)) {
@@ -361,7 +369,7 @@ sub commit {
 	    
 	    $window->{lineevents}[$line] ||= [];
 	    push @{$window->{lineevents}[$line]}, $event;
-	    uidebug("lineevents[$line] = [ $x, $y, $command, @args ]\n");
+#	    uidebug("lineevents[$line] = [ $x, $y, $command, @args ]\n");
         }
     }
 
