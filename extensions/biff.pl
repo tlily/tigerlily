@@ -1,4 +1,4 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/biff.pl,v 1.1 1999/02/28 06:13:41 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/biff.pl,v 1.2 1999/02/28 08:03:58 josh Exp $
 #
 # A Biff module
 #
@@ -141,10 +141,6 @@ sub check_drops {
 	&{"check_$drop->{type}"}($drop);
     }
     update_biff();
-
-    # re-register our timed handler.
-    $check_eventid = TLily::Event::time_r(after => $check_interval,
-					  call  => \&check_drops);
 }
 
 sub update_biff {
@@ -191,8 +187,8 @@ sub biff_cmd {
 	if ($active) {
 	    $ui->print("(Mail notification already on)\n");
 	} else {
-	    $check_eventid = TLily::Event::time_r(after => $check_interval,
-						  call  => \&check_drops);
+	    $check_eventid = TLily::Event::time_r(interval => $check_interval,
+						  call     => \&check_drops);
 	    
 	    foreach $drop (@drops) {
 		$drop->{status} = 0;
