@@ -12,13 +12,19 @@ Before 2.0 release:
   pipes.pl      (medium)
   program.pl    (medium)
   ctc.pl/httpd.pl/Httpd.pm  (steve is working on this)
-  Makefile.PL   (albert is working on this)  
 
+  New functionality:
+    Makefile.PL   (albert is working on this)  
+    Key bindings need to be moved into tlily.global
+    
   Bugs:
     log.pl - doesn't do indenting/wrapping right.  damien will move the 
              wrapping/indenting code out of Curses.pm and into the UI.
 
     hidesend (misc.pl) - Doesn't seem to work for me.. why?
+
+    README is incorrect on color setup.. probably other things.
+    
 
 Later:
   multiserver, multiui
