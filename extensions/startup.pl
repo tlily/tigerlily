@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/startup.pl,v 1.2 1999/03/15 23:53:17 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/startup.pl,v 1.3 1999/04/14 03:03:24 albert Exp $
 
 use strict;
 
@@ -30,6 +30,39 @@ sub startup_handler ($$) {
         $ui->print("(No Setup file found.)\n");
         $ui->print("(If you want to install one, call it ~/.lily/tlily/Startup)\n");
     }
+
+    my $server = server_name();
+    my $sub = sub {
+	my(%args) = @_;
+        
+	if(!$args{text}) {
+	    $args{ui}->print("Error opening *tlilyStartup: $!\n");
+	    return 0;
+	}
+        {   my $f;
+	    foreach (@{$args{text}}) { $f = 1 and last if not /^\s*$/ }
+
+            unless($f) {
+		$args{ui}->print("(No Setup memo found.)\n",
+		    "(If you want to install one, ",
+		    "call it tlilyStartup or *tlilyStartup)\n");
+		return 0;
+	    }
+        }
+        $args{ui}->print("(Running memo tlilyStartup)\n\n");
+	foreach (@{$args{text}}) {
+	    chomp;
+	    TLily::Event::send({type => 'user_input',
+				ui   => $args{ui},
+				text => "$_\n"});
+	}
+    };
+    $server->fetch(ui     => $ui,
+		   type   => "memo",
+                   name   => "tlilyStartup",
+		   target => "me",
+		   call   => $sub);
+
     event_u($handler->{id});
     return 0;
 }

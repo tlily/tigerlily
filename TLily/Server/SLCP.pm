@@ -6,8 +6,7 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Server/Attic/SLCP.pm,v 1.16 1999/04/14 01:37:15 albert Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Server/Attic/SLCP.pm,v 1.17 1999/04/14 03:03:21 albert Exp $
 
 package TLily::Server::SLCP;
 
