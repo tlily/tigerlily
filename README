@@ -27,7 +27,7 @@ monochrome preferences are in %mono_attrs.
 Example:  To make the header on private messages red on white instead of
 green on black, add the following to your config file:
 
-    %color_attrs = ('pubhdr' => [ 'fg:red', 'bg:white' ]);
+    %color_attrs = ('public_header' => [qw(red     white   normal)]);
 
 
 /-command Overrides
@@ -106,18 +106,6 @@ Here is a summary of the common configuration file(CF) options:
 %mono_attrs
 	Setting these variables in a cf will change the color settings
 	for the color and monochrome mode of an element.
-	    # Example:
-	    %color_attrs = ('pubhdr' =>  ['bg:blue', 'fg:red', 'bold'],
-	                    'privmsg' => ['fg:cyan', 'bg:green']);
-	    # Make all public message headers red on blue and bold, and
-	    # make all private messages green on cyan.  The color attributes
-	    # for other elements will be unchanged.
-	    %mono_attrs = ('pubmsg' => ['reverse'],
-			   'statusline' => ['bold']);
-            # Make all public messages be in reverse video (black on white),
-            # and make the statusline be normal(white on black) with the text
-            # in bold.  The monochrome attributes for other elements will be
-            # unchanged.
 
 @slash
 	Setting this variable will change the list of /-commands that are

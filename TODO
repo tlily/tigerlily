@@ -2,8 +2,6 @@ To Do
 -----
 
 Before 2.0 release:
-  when the last open server connection is closed, provide a exit/reconnect
-  option. (integrate with smartexit feature)
   
   The following need to be ported/written.  Most should be pretty easy to do
   based on the ones we've already finished.
@@ -14,15 +12,17 @@ Before 2.0 release:
   ctc.pl/httpd.pl/Httpd.pm  (steve is working on this)
 
   New functionality:
-    Makefile.PL   (albert is working on this)  
-    Key bindings need to be moved into tlily.global
-    
+    - Makefile.PL   (albert is working on this)  
+    - when the last open server connection is closed, provide a exit/reconnect
+      option. (integrate with smartexit feature)
+      
   Bugs:
+    UI     - if UI is suspended (for example C-z), when it comes back, the 
+             cursor keys don't work.
+	     after C-z, %keyname tells me that left arrow is M-[. 
+  
     log.pl - doesn't do indenting/wrapping right.  damien will move the 
              wrapping/indenting code out of Curses.pm and into the UI.
-
-    README is incorrect on color setup.. probably other things.
-    
 
 Later:
   multiserver, multiui
