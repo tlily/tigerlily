@@ -8,7 +8,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/Attic/tlily.global,v 1.47 2001/03/20 01:05:09 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/Attic/tlily.global,v 1.48 2002/03/19 20:28:05 neild Exp $
 
 # Global defaults for tlily
 # PLEASE DO NOT EDIT EXCEPT FOR DEVELOPMENT!
@@ -132,6 +132,9 @@ if($^O =~ /cygwin/) {
 
 $clocktype=24;
 $clockdelta=0;
+
+# Don't use infinite memory by default.
+$max_scrollback=10000;
 
 # Httpd settings
 # Time for the httpd to remain active after the last file has been
