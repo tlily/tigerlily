@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/misc.pl,v 1.20 1999/10/03 18:25:52 josh Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/misc.pl,v 1.21 1999/11/29 22:27:53 josh Exp $ 
 
 use strict;
 use TLily::Version;
@@ -19,7 +19,11 @@ sub shell_handler {
     $ui->print("[beginning of command output]\n");
     
     local *FD;
-    open(FD, "$command 2>&1 |");
+    if ($^O =~ /cygwin/) {
+        open(FD, "$command |");
+    } else {
+        open(FD, "$command 2>&1 |");
+    }
     $ui->print(<FD>);
     close(FD);
     
