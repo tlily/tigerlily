@@ -6,7 +6,7 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Server/Attic/SLCP.pm,v 1.39 2001/01/26 03:01:51 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Server/Attic/SLCP.pm,v 1.40 2001/02/19 20:22:28 neild Exp $
 
 package TLily::Server::SLCP;
 
@@ -489,7 +489,12 @@ sub state {
 	    # create a new record if one was not found.
 	    $record = {};
 	}
-	
+
+	# If the handle (unlikely) or name are being updated, remove the
+	# old entry from the indices.
+	delete $self->{HANDLE}->{$record->{HANDLE}} if defined ($args{HANDLE});
+	delete $self->{NAME}->{$record->{NAME}} if defined ($args{NAME});
+
 	# OK, now update the record with our arguments.
 	foreach (keys %args) {
 	    $record->{$_}=$args{$_};
@@ -497,7 +502,6 @@ sub state {
 	
 	# And recreate the indices to make sure things are nice and 
 	# consistent.
-	
 	$self->{HANDLE}{$record->{HANDLE}} = $record
 	  if ($record->{HANDLE});
 	$self->{NAME}{lc($record->{NAME})} = $record
