@@ -8,7 +8,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/Attic/tlily.global,v 1.36 1999/12/13 06:38:15 albert Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/Attic/tlily.global,v 1.37 1999/12/15 20:50:11 albert Exp $
 
 # Global defaults for tlily
 # PLEASE DO NOT EDIT EXCEPT FOR DEVELOPMENT!
@@ -70,11 +70,11 @@ if ($^O =~ /cygwin/) {
    'emote_dest'      => [qw(cyan    -       normal)],
    'emote_sender'    => [qw(cyan    -       normal)],
    'review'          => [qw(magenta -       normal)],
-   'slcp'            => [qw(yellow  -       normal)],
+   'slcp'            => [qw(white   -       normal)],
    'yellow'          => [qw(yellow  -       bold  )],
    'green'           => [qw(green   -       bold  )],
    'bwhite'          => [qw(-       -       bold  )],   
-   'user_input'      => [qw(red     -       normal)],
+   'user_input'      => [qw(white   -       normal)],
   );
 
 %color_attrs = %traditional_color_attrs;
