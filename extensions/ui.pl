@@ -1,4 +1,4 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/ui.pl,v 1.33 2001/11/15 05:45:16 tale Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/ui.pl,v 1.34 2002/06/07 07:03:48 bwelling Exp $
 use strict;
 
 =head1 NAME
@@ -133,6 +133,24 @@ sub ui_command {
     #$newui->print("foo\n");
 }
 #command_r(ui => \&ui_command);
+
+my $windows_help = "
+Sometimes you want to split the screen and view different parts of your
+scrollback in each one.  This can be done with the split-window (M-= by
+default) command.  To cycle between windows, use the next-window (M-down)
+and prev-window (M-up) commands.  To close a window, use the close-window
+(M-q) command.
+
+When multiple windows are open, the active window will be denoted by arrows
+on the sides of the corresponding status bar.
+";
+
+TLily::UI::bind("M-down" => "next-window");
+TLily::UI::bind("M-up" => "prev-window");
+TLily::UI::bind("M-=" => "split-window");
+TLily::UI::bind("M-q" => "close-window");
+TLily::User::shelp_r("windows" => "Dealing with multiple windows.", "concepts");
+TLily::User::help_r("windows" => $windows_help);
 
 
 =item %page

@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Curses/Attic/Text.pm,v 1.27 2001/12/03 18:45:42 kazrak Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Curses/Attic/Text.pm,v 1.28 2002/06/07 07:03:47 bwelling Exp $
 
 package TLily::UI::Curses::Text;
 
@@ -40,6 +40,9 @@ sub new {
     my $class = ref($proto) || $proto;
     my %a = @_;
     my $self  = $class->SUPER::new(bg => 'text_window', @_);
+
+    # If we're cloning an existing window, do it.
+    return $self->clone($a{clone}, $a{status}, $class) if $a{clone};
 
     # The contents of the text widget are stored in one big string.
     $self->{text}        = "";
@@ -76,6 +79,21 @@ sub new {
     bless($self, $class);
 }
 
+sub clone {
+    my ($self, $clone, $status, $class) = @_;
+
+    $self->{text}	= $clone->{text};
+    $self->{styles}	= [@{$clone->{styles}}];
+    $self->{indents}	= [@{$clone->{indents}}];
+    $self->{indexes}	= [@{$clone->{indexes}}];
+    $self->{idx_anchor}	= $clone->{idx_anchor};
+    $self->{idx_unseen}	= $clone->{idx_unseen};
+    $self->{status}	= $status;
+    $self->{status}->define(t_more => 'override') if ($self->{status});
+    $self->{'page'}	= defined($config{page}) ? $config{page} : 1;
+
+    bless($self, $class);
+}
 
 # Standard resize-handler.
 sub size {
@@ -84,7 +102,7 @@ sub size {
 
     # If we are being resized, and our width changed, we need to
     # re-word-wrap the buffer.
-    if ($newc && ($newc != $self->{cols})) {
+    if ($newc && $self->{cols} && ($newc != $self->{cols})) {
 	$self->{indexes}  = [ 0 ];
 	pos($self->{text}) = 0;
 	while (next_line($self->{text}, $self->{cols})) {

@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Curses/Attic/StatusLine.pm,v 1.9 2002/06/06 17:29:46 bwelling Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Curses/Attic/StatusLine.pm,v 1.10 2002/06/07 07:03:47 bwelling Exp $
 
 package TLily::UI::Curses::StatusLine;
 
@@ -33,6 +33,11 @@ sub new {
     bless($self, $class);
 }
 
+sub make_active {
+    my($self, $is_active) = @_;
+    $self->{active} = $is_active;
+    $self->redraw();
+}
 
 sub define {
     my($self, $name, $type) = @_;
@@ -49,6 +54,8 @@ sub define {
 	unshift @{$self->{right}}, $name;
     } elsif ($type eq 'override') {
 	push @{$self->{override}}, $name;
+    } elsif ($type eq 'nowhere') {
+	;
     } else {
 	croak "Unknown position: \"$type\".";
     }
@@ -57,13 +64,26 @@ sub define {
 
 sub build_string {
     my($self) = @_;
-    
+
+    my ($cols, $begin, $end);
+    if ($self->{active}) {
+        $cols = $self->{cols} - 6;
+	$begin = "^^ ";
+	$end = " ^^";
+    } else {
+        $cols = $self->{cols};
+	$begin = "";
+	$end = "";
+    }
+ 
     foreach my $v (@{$self->{override}}) {
 	next unless (defined $self->{var}->{$v});
 	my $s = $self->{var}->{$v};
-	my $x = int(($self->{cols} - length($s)) / 2);
+	my $x = int(($cols - length($s)) / 2);
+	my $y = int(($cols - length($s) + 1) / 2);
 	$x = 0 if $x < 0;
-	$self->{str} = (' ' x $x) . $s;
+	$y = 0 if $y < 0;
+	$self->{str} = $begin . (' ' x $x) . $s . (' ' x $y) . $end;
 	return;
     }
     
@@ -75,8 +95,8 @@ sub build_string {
     my $l = join(" | ", @l);
     my $r = join(" | ", @r);
     
-    my $mlen = $self->{cols} - (length($l) + length($r));
-    $self->{str} = $l . (' ' x $mlen) . $r;
+    my $mlen = $cols - (length($l) + length($r));
+    $self->{str} = $begin . $l . (' ' x $mlen) . $r . $end;
 }
 
 

@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/Curses.pm,v 1.56 2002/06/02 01:24:11 neild Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/Curses.pm,v 1.57 2002/06/07 07:03:47 bwelling Exp $
 
 package TLily::UI::Curses::Proxy;
 
@@ -109,7 +109,9 @@ BEGIN {
 sub accept_line {
     my($ui) = @_;
     my $text = $ui->{input}->accept_line();
-    $ui->{text}->seen();
+    foreach my $tpair (values %{$ui->{win}}) {
+        $tpair->{text}->seen();
+    }
 
     if (@{$ui->{prompt}} > 0) {
 	my $args = shift @{$ui->{prompt}};
@@ -164,6 +166,64 @@ sub mark_output {
     $ui->style("normal");
 }
 
+sub switch_window {
+    my ($ui, $dir) = @_;
+
+    my (@keys, $pos, $active);
+    @keys = sort(keys %{$ui->{win}});
+    for (my $i = 0; $i < @keys; $i++) {
+        my $tpair = $ui->{win}->{$keys[$i]};
+	next if ($tpair->{text} != $ui->{text});
+	if ($dir == 1) {
+            $pos = ($i + 1) % @keys;
+        } else {
+            $pos = ($i + @keys - 1) % @keys;
+        }
+        last;
+    }
+    $active = $ui->{win}->{$keys[$pos]}->{text};
+    $ui->{text}->{status}->make_active(0);
+    $ui->{text} = $active;
+    $ui->{text}->{status}->make_active(1);
+}
+
+sub split_window {
+    my ($ui) = @_;
+
+    my $tcount = scalar(keys %{$ui->{win}});
+
+    # Don't allow more windows to be created than will fit.
+    my $imax = $ui->{input_imax} || 2;
+    return if ($imax + 2 * ($tcount + 1) > $LINES);
+
+    $ui->{text}->{status}->make_active(1) if ($tcount == 1);
+
+    $ui->clear_statusbar();
+
+    my $name = sprintf("sub%05d", $ui->{winid}++);
+    my $newui = TLily::UI::Curses->new(name => "$name");
+
+    $ui->populate_statusbar();
+}
+
+sub close_window {
+    my ($ui) = @_;
+
+    my @keys = sort(keys %{$ui->{win}});
+    return unless (@keys > 1);
+    foreach my $key (@keys) {
+        next if ($ui->{win}->{$key}->{text} != $ui->{text});
+        $ui->switch_window(1);
+        delete $ui->{win}->{$key};
+	last;
+    }
+    my @keys = sort(keys %{$ui->{win}});
+    $ui->{text}->{status}->make_active(0) if (@keys == 1);
+    $ui->{status} = $ui->{win}->{@keys[@keys - 1]}->{status};
+    $ui->populate_statusbar();
+    $ui->layout();
+}
+
 # The default set of mappings from command names to functions.
 %commandmap =
   (
@@ -200,7 +260,11 @@ sub mark_output {
    'scroll-to-bottom'     => sub { $_[0]->{text}->scroll_bottom(); },
    'refresh'              => sub { $_[0]->{input}->{W}->clearok(1); $_[0]->redraw(); },
    'suspend'              => sub { TLily::Event::keepalive(); kill 'TSTP', $$; },
-   'quoted-insert'        => sub { $_[0]->{input}->{quoted_insert} = 1 }
+   'quoted-insert'        => sub { $_[0]->{input}->{quoted_insert} = 1 },
+   'prev-window'          => sub { $_[0]->switch_window(-1); },
+   'next-window'          => sub { $_[0]->switch_window(1); },
+   'split-window'         => sub { $_[0]->split_window(); },
+   'close-window'         => sub { $_[0]->close_window(); }
   );
 
 # The default set of keybindings.
@@ -306,6 +370,13 @@ sub new {
        status  => $self->{status});
     $self->{win}->{$arg{name}}->{text} = $self->{text};
 
+    $self->{winid} = 0;
+
+    # These are used to keep a record of entries added to the main status
+    # bar, so they can be reapplied when new windows are created.
+    $self->{statuspositions} = [];
+    $self->{statusvalues} = {};
+
     $self->{input} = TLily::UI::Curses::Input->new
       (layout  => $self,
        color   => $self->{color});
@@ -354,8 +425,10 @@ sub splitwin {
 
 	$self->{win}->{$name}->{text} = TLily::UI::Curses::Text->new
 	  ( layout => $self, color => $self->{color},
-	    status => $self->{win}->{$name}->{status} );
+	    status => $self->{win}->{$name}->{status},
+	    clone => $self->{text});
 
+        $self->{status} = $self->{win}->{$name}->{status};
 	$self->layout();
     }
 
@@ -432,7 +505,8 @@ sub layout {
     my $trem   = ($LINES - $ilines) % $tcount;
     my $y      = 0;
 
-    foreach my $tpair (values %{$self->{win}}) {
+    foreach my $key (sort(keys %{$self->{win}})) {
+        my $tpair = $self->{win}->{$key};
 	my $l = $tlines;
 	if ($trem) { $l++; $trem--; }
 
@@ -584,14 +658,18 @@ sub clearstyle {
 
 sub style {
     my($self, $style) = @_;
-    $self->{text}->style($style);
+    foreach my $tpair (values %{$self->{win}}) {
+        $tpair->{text}->style($style);
+    }
 }
 
 
 sub indent {
     my $self = shift;
     $self->SUPER::indent(@_);
-    $self->{text}->indent(@_);
+    foreach my $tpair (values %{$self->{win}}) {
+        $tpair->{text}->indent(@_);
+    }
 }
 
 
@@ -599,7 +677,9 @@ sub print {
     my $self = shift;
     return if $config{quiet};
     $self->SUPER::print(@_);
-    $self->{text}->print(join('', @_));
+    foreach my $tpair (values %{$self->{win}}) {
+	$tpair->{text}->print(join('', @_));
+    }
     $self->{input}->position_cursor();
     doupdate();
 };
@@ -717,13 +797,16 @@ sub prompt {
 
 sub page {
     my $self = shift;
-    $self->{text}->page(@_);
+    foreach my $tpair (values %{$self->{win}}) {
+      $tpair->{text}->page(@_);
+    }
 }
 
 
 sub define {
     my($self, $name, $pos) = @_;
     $self->{status}->define($name, $pos);
+    push (@{$self->{statuspositions}}, {name => $name, pos =>$pos});
     $self->{input}->position_cursor();
     doupdate;
 }
@@ -732,6 +815,7 @@ sub define {
 sub set {
     my($self, $name, $val) = @_;
     $self->{status}->set($name, $val);
+    $self->{statusvalues}->{$name} = $val;
     $self->{input}->position_cursor();
     doupdate;
 }
@@ -777,6 +861,23 @@ sub bell {
 sub dump_to_file {
     my $self = shift;
     $self->{text}->dump_to_file(@_);
+}
+
+sub populate_statusbar {
+    my($self) = @_;
+    foreach my $var (@{$self->{statuspositions}}) {
+        $self->{status}->define($var->{name}, $var->{pos});
+    }
+    foreach my $key (keys(%{$self->{statusvalues}})) {
+        $self->{status}->set($key, $self->{statusvalues}->{$key});
+    }
+}
+
+sub clear_statusbar {
+    my($self) = @_;
+    foreach my $var (@{$self->{statuspositions}}) {
+        $self->{status}->define($var->{name}, 'nowhere');
+    }
 }
 
 1;
