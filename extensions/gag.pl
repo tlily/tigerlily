@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/gag.pl,v 1.9 2002/07/24 17:57:39 kazrak Exp $ 
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/gag.pl,v 1.10 2002/08/20 16:25:49 kazrak Exp $ 
 
 use strict;
 
@@ -166,10 +166,12 @@ sub load {
     shelp_r('gag' => 'Affix a gag to a user');
     help_r('gag' => "
 Usage: %gag [user]
+       %gag topic [topic]
 
-The %gag command replaces the text of all sends from a user with an \
-amusing string of mrfls.  Once upon a time, it was possible to retroactively \
-ungag someone -- this is no longer supported.
+The %gag command replaces the text of all sends from a user, or all sends \
+that match a given topic, with an amusing string of mrfls.  Once upon a \
+time, it was possible to retroactively ungag someone -- this is no longer \
+supported.
 ");
 } 
 
