@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/spellcheck.pl,v 1.18 1999/04/21 21:02:29 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/spellcheck.pl,v 1.19 1999/10/03 00:33:10 mjr Exp $
 
 use strict;
 use IPC::Open2;
@@ -269,26 +269,7 @@ sub look_cmd {
     } else {
 	$ui->print("(The following possible words were found:)\n");
 
-	my $clen = 0;
-	foreach (@res) { $clen = length $_ if (length $_ > $clen); }
-	$clen += 2;
-
-	my $cols = int($ui_cols / $clen);
-	my $rows = int(@res / $cols);
-	$rows++ if (@res % $cols);
-
-	$rows = 5 if ($rows > 5);
-
-	my $i;
-	for ($i = 0; $i < $rows; $i++) {
-	    $ui->print(sprintf("%-${clen}s" x $cols,
-			      map{$res[$i+$rows*$_]} 0..$cols));
-	    $ui->print("\n");
-	}
-
-	if (@res > $rows * $cols) {
-	    $ui->print("(" . (@res - ($rows * $cols)) . " more entries follow)\n");
-	}
+        foreach (@{columnize_list($ui, \@res, 5)}) { $ui->print($_, "\n"); }
     }
 
     return;

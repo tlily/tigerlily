@@ -7,7 +7,7 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Utils.pm,v 1.2 1999/10/02 02:45:10 mjr Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Utils.pm,v 1.3 1999/10/03 00:33:06 mjr Exp $
 package TLily::Utils;
 
 use strict;
@@ -19,23 +19,26 @@ use vars qw(@ISA @EXPORT_OK);
 
 @EXPORT_OK = qw(&edit_text &diff_text &columnize_list);
 
-sub columnize_list() {
+sub columnize_list {
     my ($ui, $list, $limit) = @_;
 
     my $outlist = [];
     my $ui_cols = 79;
     my $clen = 0;
-    foreach (@_) { $clen = length $_ if (length $_ > $clen); }
+
+    # Need to implement some feedback here to adjust the column width
+    # more appropriately.
+    foreach (@{$list}) { $clen = length $_ if (length $_ > $clen); }
     $clen += 2;
 
     my $cols = int($ui_cols / $clen);
-    my $rows = int(@_ / $cols);
-    $rows++ if (@_ % $cols);
+    my $rows = int(@{$list} / $cols);
+    $rows++ if (@{$list} % $cols);
 
-    my $out_rows = ($limit < $rows)?$limit:$rows;
+    my $out_rows = (defined($limit) && $limit < $rows)?$limit:$rows;
     for (my $i = 0; ($i < $out_rows); $i++) {
         push @{$outlist},
-          sprintf("%-${clen}s" x $cols, map{$_[$i+$rows*$_]} 0..$cols);
+          sprintf("%-${clen}s" x $cols, map {$list->[$i+$rows*$_]} 0..$cols);
     }
 
     if ($out_rows < $rows) {

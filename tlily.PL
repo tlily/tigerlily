@@ -7,7 +7,7 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/tlily.PL,v 1.44 1999/10/02 18:03:42 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/tlily.PL,v 1.45 1999/10/03 00:33:02 mjr Exp $
 
 use strict;
 use Config;
@@ -104,6 +104,15 @@ use strict;
 use lib qw(@@LIBMODDIR@@);
 use vars qw($EAGAIN);
 
+if ( -f 'tlily.PL' ) {
+    my @tstat = stat('tlily.PL');
+    my @mstat = stat($0);
+    if ($tstat[9] > $mstat[9]) {
+	print "tlily.PL is newer than $0 -- rerun make.\n";
+	exit;
+    }
+}
+
 use TLily::Event;
 use TLily::Config;
 use TLily::UI;
@@ -113,15 +122,6 @@ use TLily::User;
 use TLily::Extend;
 use TLily::Version;
 use TLily::Utils;
-
-if ( -f 'tlily.PL' ) {
-    my @tstat = stat('tlily.PL');
-    my @mstat = stat($0);
-    if ($tstat[9] > $mstat[9]) {
-	print "tlily.PL is newer than $0 -- rerun make.\n";
-	exit;
-    }
-}
 
 eval { require "errno.ph"; EAGAIN(); };
 if ($@) { 
