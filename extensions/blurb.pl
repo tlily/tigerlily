@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/blurb.pl,v 1.4 2000/11/22 16:08:10 coke Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/blurb.pl,v 1.5 2000/11/22 16:35:56 coke Exp $
 
 use strict;
 
@@ -29,6 +29,7 @@ my %abbr = (
 	qr/fou?r/ => "4",
 	qr/ate|eight/ => "8",
 	qr/\b(too?|two)/ => "2",
+	qr/and/ => "&",
 );
 
 
@@ -49,7 +50,6 @@ sub check_blurb {
 	}
 	return 0;
 }
-
 
 #
 # Apply a set of rules to reduce your blurb into something that will 
@@ -105,6 +105,7 @@ sub blurb_cmd {
 
 	#Remove punctuation
 
+	if (0) {
 	while (grep /\W/, @words) { #if -any- puncutation
 		foreach my $word (@words) { # remove from each word in turn.
 			if ($word =~ s/\W//) {
@@ -114,7 +115,7 @@ sub blurb_cmd {
 			}
 		}
 	}
-
+	}
 	#Remove some vowels?
 
 	my $vowelRE = qr/([^AEIOUaeiou])[aeiou]([^AEIOUaeiou])/;
