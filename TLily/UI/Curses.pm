@@ -7,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/Curses.pm,v 1.43 2000/02/16 23:26:27 josh Exp $
+# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/Curses.pm,v 1.44 2000/02/18 20:26:06 tale Exp $
 
 package TLily::UI::Curses::Proxy;
 
@@ -469,7 +469,8 @@ sub run {
 	$self->{input}->addchar($key);
         $self->{input}->{quoted_insert} = 0;
         $self->command("scroll-to-bottom")
-            if $config{scroll_to_bottom_on_input};
+            if $config{scroll_to_bottom_on_input} &&
+               $self->{status}->{var}->{t_more};
     }
 
     $self->{input}->position_cursor;
