@@ -39,7 +39,7 @@ sub to_server {
 	return 1;
     }
     
-    if ($e->{text} =~ /^(\S*)([;:])(.*)/) {
+    if ($e->{text} =~ /^([^\s;:]*)([;:])(.*)/) {
 	TLily::Event::send(type   => 'user_send',
 			   server => $server,
 			   RECIPS => [split /,/, $1],
