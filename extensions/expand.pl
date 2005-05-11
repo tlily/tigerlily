@@ -177,9 +177,16 @@ sub private_handler {
     
     my $serv_name = $event->{server}->name();
   
+    # recalc from SHANDLE, since some extensions may muck with the SOURCE 
+    my $sender = $event->{server}->{HANDLE}->{$event->{SHANDLE}}->{NAME} .
+        "@" . $serv_name;
+
     if ($event->{SOURCE} ne $me) {
-        # recalc from SHANDLE, since some extensions may muck with the SOURCE 
-        $expansions{sender} = $event->{server}->{HANDLE}->{$event->{SHANDLE}}->{NAME} . "@" . $serv_name;
+        $expansions{sender} = $sender;
+
+        @past_sends = grep { $_ ne $sender } @past_sends;
+        unshift @past_sends, $sender;
+        pop @past_sends if (@past_sends > ($config{tab_ring_size}||5));
     }
     
     my @group = split /, /, $event->{RECIPS};
@@ -205,7 +212,7 @@ sub user_send_handler {
     
     @past_sends = grep { $_ ne $dlist } @past_sends;
     unshift @past_sends, $dlist;
-    pop @past_sends if (@past_sends > 5);
+    pop @past_sends if (@past_sends > ($config{tab_ring_size}||5));
 
     return;
 }
@@ -358,4 +365,6 @@ shelp_r('always_add_server' =>
 	'Always append the server name to destinations.',
 	'variables');
 
-
+shelp_r('tab_ring_size' =>
+        'Number of destinations to keep in tab ring',
+        'variables');
