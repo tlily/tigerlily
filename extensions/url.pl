@@ -114,7 +114,7 @@ sub url_cmd {
 	    return;
 	}
 
-	$url =~ s/([^\w\/:\.])/sprintf "%%%02x", ord($1)/eg;
+        $url =~ s/([,\"\'\\])/sprintf "%%%02x", ord($1)/eg;
 
 	$ui->print("(viewing $url)\n");
 	my $cmd=$config{browser};
@@ -126,9 +126,7 @@ sub url_cmd {
             # browser variable.
 	    $cmd=~s/%URL%/$url/g;
 	} else {
-            # This should have quotes around it, however.  (Actually, they
-            # shouldn't be necessary, given all the substituting done on the
-            # URL.)
+            # This should have quotes around it, however.
 	    $cmd .= " '$url'";
  	}
 	if ($^O =~ /MSWin32/) {
