@@ -122,7 +122,7 @@ sub new {
     $self->{bytes_in}  = 0;
     $self->{bytes_out} = 0;
 
-    $ui->print("Connecting to $self->{host}:$self->{port}...\n");
+    $ui->print("Connecting to $self->{host}, port $self->{port}...");
 
     eval {
 	if($self->{insecure} != 1 && $SSL_avail == 1) {
@@ -136,7 +136,7 @@ sub new {
 	return;
     }
 
-    $ui->print("Connected to $self->{host}:$self->{port}.\n");
+    $ui->print("connected.\n");
 
     tl_nonblocking($self->{sock});
 
@@ -182,7 +182,6 @@ sub contact {
 
     my($iaddr, $paddr, $proto);
     local *SOCK;
-    warn("*** Warning: this session is NOT encrypted! ***\n");
 
     $port = getservbyname($port, 'tcp') if ($port =~ /\D/);
     croak "No port" unless $port; 
@@ -209,6 +208,8 @@ sub contact_ssl {
     my $cert_filename;
     my $ui = TLily::UI::name();
 
+    $ui->print("trying SSL...");
+
     $sock = IO::Socket::SSL->new(PeerAddr => $serv,
 				 PeerPort => $port+1,
 				 SSL_use_cert => 0,
@@ -217,8 +218,9 @@ sub contact_ssl {
     
     if(!$sock)
     {
-	$sock = contact($serv, $port);
-	return $sock;
+        $ui->print("\n*** WARNING: This session is NOT encrypted ***\n");
+        $sock = contact($serv, $port);
+        return $sock;
     }
 
     @arr = gethostbyname($serv);
