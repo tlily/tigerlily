@@ -385,16 +385,8 @@ $annotation_code{shorten} = {
 
     if (length($shorten) <=32) { return; }
     
-    # don't bother shortening as much if the url begins the send.
-
-=pod
-
-not quite right yet.
-
     if ((index($event->{VALUE},$shorten) == 0 ) && 
         length($shorten) <= 64) { return; }
-
-=cut
 
     if ($shorten !~ m|^http://xrl.us|) {
       shorten($shorten, sub { 
@@ -439,7 +431,7 @@ $response{help} = {
 			return "ERROR: Expected RE not matched!";
 		}
 		if ($args eq "") {		
-			return "Hello. I'm a bot. I don't do much right now. Try 'help' followed by one of the following for more information: " . join (", ", sort grep {! /^help/} keys %response) . ". In general, commands can appear anywhere in private sends, but must begin public sends.";
+			return "Hello. I'm a bot. Try 'help' followed by one of the following for more information: " . join (", ", sort grep {! /^help/} keys %response) . ". In general, commands can appear anywhere in private sends, but must begin public sends.";
 		}
 		#my @help = split(/\s+/, $args);
 		#my $topic = shift @help;	
@@ -808,6 +800,45 @@ sub scrape_webster {
   return "According to Webster: " . $retval; 
 
 }
+
+sub scrape_bacon {
+  my ($content) = shift ;
+  $content =~ s/.*?says://s;
+
+  if ($content =~ /infinity/) {
+    $content =~ s/(infinity).*/$1/s;
+  } elsif  ($content =~ /cannot find/) {
+    $content =~ s/Enter the name of an.*//s;
+  } else {
+    $content =~ s/<br>/;/g;
+    $content =~ s/(Kevin Bacon).*/$1/s;
+  }
+  return cleanHTML($content);
+}
+
+$response{bacon} = {
+	CODE   => sub {
+		my ($event) = @_;
+		my $args = $event->{VALUE};
+		if (! ($args =~ m/\bbacon*\s*(.*)\s*$/i)) {
+			return "ERROR: Expected RE not matched!";
+		}
+		my $term = escape($1);
+                my $url = "http://oracleofbacon.org/cgi-bin/oracle/movielinks?firstname=Bacon%2C+Kevin&game=1&secondname=".$term;
+  add_throttled_HTTP(url => $url,
+	                    ui_name => 'main',
+                            callback => sub {
+    my ($response) = @_;
+    dispatch($event,scrape_bacon($response->{_content}));
+  });
+	"";
+	},
+	HELP   => sub { return "Find someone's bacon number using http://oracleofbacon.org/"; },
+	TYPE   => [qw/private/],
+	POS    => '-1', 
+	STOP   => 1,
+	RE     => qr/bacon/i,
+};
 
 $response{define} = {
 	CODE   => sub {
@@ -1307,17 +1338,18 @@ sub load {
   $server->fetch(call=>sub {my %event=@_;  $unified= $event{text}}, type=>"memo", target=>$disc, name=>"-unified");
 
   $every_10m= TLily::Event::time_r( call => sub { 
-    get_feeds();dump_stats() } , interval => 60*10);
+    get_feeds() } , interval => 60*10);
   $every_30s= TLily::Event::time_r( call => sub { 
     broadcast_feeds();checkpoint() } , interval => 60*.5);
   $frequently= TLily::Event::time_r( call => sub { 
     do_throttled_HTTP();} , interval => 2.0);
   TLily::Server->active()->cmd_process("/blurb off");
 
-  dump_stats();
+  #dump_stats();
 }
 
 
+# not used at the moment.
 use Data::Dumper;
   #print out the size of all of our globals.
 sub dump_stats {
