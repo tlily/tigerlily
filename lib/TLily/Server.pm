@@ -109,18 +109,18 @@ sub new {
     $self->{bytes_in}  = 0;
     $self->{bytes_out} = 0;
 
-    $ui->print("Connecting to $self->{host}, port $self->{port}...");
+    $ui->print("Connecting to $self->{host}, port $self->{port}...") if $ui;
 
 #    $self->{sock} = IO::Socket::INET->new(PeerAddr => $self->{host},
 #					  PeerPort => $self->{port},
 #					  Proto    => 'tcp');
     eval { $self->{sock} = contact($self->{host}, $self->{port}); };
     if ($@) {
-	$ui->print("failed: $@");
+	$ui->print("failed: $@") if $ui;
 	return;
     }
 
-    $ui->print("connected.\n");
+    $ui->print("connected.\n") if $ui;
 
     tl_nonblocking($self->{sock});
 
@@ -430,7 +430,7 @@ sub reader {
     # End of line.
     if (!defined($rc) || $rc == 0) {
 	my $ui = TLily::UI::name($self->{"ui_name"}) if ($self->{"ui_name"});
-	$ui->print("*** Lost connection to \"" . $self->{"name"} . "\" ***\n");
+	$ui->print("*** Lost connection to \"" . $self->{"name"} . "\" ***\n") if $ui;
 	$self->terminate();
     }
 
