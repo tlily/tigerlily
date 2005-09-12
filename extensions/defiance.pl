@@ -11,7 +11,7 @@ use TLily::Server::HTTP;
 #  http://fluff.dapillow.com:8888/defiance/datagrab/datagrabber-help.html
 #  http://fluff.dapillow.com:8888/defiance/datagrab/dataposter-help.html
 
-my $BASE_URL = 'http://fluff.dapillow.com:8888/defiance/datagrab';
+my $BASE_URL = 'http://defiance.versestudios.com/datagrab/';
 
 my @behaviors = (
     { name    => 'queue_length',
@@ -33,7 +33,7 @@ my @behaviors = (
     { name    => 'current_stats_active',
       respond => 'if_addressed',
       match   => [ 'playing', 'current', 'now', 'whats on', 
-                  'anything good on' ],
+                  'anything good on', 'whats this' ],
       call    => \&fetch_playing_now
     },
     { name    => 'current_stats_active',
