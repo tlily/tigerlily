@@ -57,7 +57,8 @@ use Chatbot::Eliza;
 #my $throttle_safety   = 5; #seconds
 #my %prefs; #dbmopen'd hash of lily user prefs. (XXX KILL THIS)
 #my $config; # Config::IniFiles object storing preferences.
-#my $disc="cj-admin"; #where we keep our memos.
+my $disc="cj-admin"; #where we keep our memos.
+my $bleat_disc = "cj-admin";
 #my %disc_feed; # A cached copy of which discussions each feed goes to
 #my %disc_annotations; # A cached copy of which discussions each annotation goes to.
 #my %annotations; # A cached copy of what our annotations do.
@@ -77,7 +78,7 @@ $eliza = new Chatbot::Eliza {name=>$name,prompts_on=>0};
 
 # register a complaint
 sub bleat {
- TLily::Server->active()->cmd_process("$disc: @_");
+ TLily::Server->active()->cmd_process("$bleat_disc: @_");
 }
 
 # XXX use File::*
@@ -392,7 +393,7 @@ $annotation_code{shorten} = {
       shorten($shorten, sub { 
         my ($short_url) = shift;
         if ($short_url eq "") {
-          bleat ("Error shortening $shorten")
+          dispatch ($event,"Unable to shorten $event->{SOURCE}'s url.");
         } else {
           dispatch ($event,"$event->{SOURCE}'s url is $short_url");
         }
@@ -627,6 +628,8 @@ $response{"stomach pump"} = {
 	RE     => qr/stomach pump/,
 };
 
+=for later
+
 $response{cmd} = {
 	CODE   => sub {
 		my ($event) = @_;
@@ -647,6 +650,8 @@ $response{cmd} = {
 	STOP   => 1,
 	RE     => qr/\bcmd\b/,
 };
+
+=cut
 
 $response{buzz} = {
 	CODE   => sub {
