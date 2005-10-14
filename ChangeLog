@@ -1,4 +1,6 @@
 Version 2.4-post
+  * Finally removed the Curses UI, as Josh requested [WJC]
+  * [extensions/defiance.pl] A bot extension for handling Defiance Radio [JDW]
   * [extensions/deblurb.pl] Fixed handling of blurb changes [RBJ]
   * [extensions/profane.pl] Add extension to convert someone's sends into
     obscenities. [RBJ] 
