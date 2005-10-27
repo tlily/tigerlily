@@ -76,8 +76,9 @@ sub expand_slash {
 	my @servers =
 	  grep(/^\Q$partial\E/i, map(scalar $_->name, TLily::Server::find));
 	if (@servers == 1) {
+	    $pos++ if (substr($line, $pos, 1) eq "/");
 	    $ui->set_input(length($servers[0]) + 1,
-			   $servers[0].substr($line, $pos)."/");
+			   $servers[0]."/".substr($line, $pos));
 	    return;
 	}
     }
