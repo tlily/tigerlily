@@ -1,7 +1,7 @@
 If you want to run the command line version, you just need to follow the
 directions on the RPI server in
 
-/memo osx tlilyonjaguar
+/memo osx tlilyonPanther
 
 To build the aqua version, you'll need the developer tools installed. Open
 aqua/Tigerlily.pbproj, then build. You'll get a Tigerlily.App that you can just
