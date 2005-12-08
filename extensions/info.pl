@@ -125,8 +125,11 @@ sub helper_cmd {
     elsif ($cmd eq 'edit') {
 	my $sub = sub {
 	    my(%args) = @_;
+        $args{text} = [ grep {! /^\/#/} @{$args{text}} ]; # strip comments
+        $args{text} = [ grep {! /^?sethelp/} @{$args{text}} ]; # strip ?sethelp
+
 	    edit_text($args{ui}, $args{text}) or return;
-	    $server->store(@_);
+	    $server->store(%args);
 	};
 
 	$server->fetch(ui     => $ui,
