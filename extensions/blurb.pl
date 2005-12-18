@@ -40,21 +40,16 @@ $config{"server_all"} = 0 if !exists($config{"server_all"});
 #
 
 my %abbr = (
-	'fou?r' => "4",
-	'ate|eight' => "8",
-	'\b(too?|two)' => "2",
-	'and' => "&",
+	'fou?r' => '4',
+	'ate|eight' => '8',
+	'(too?|two)' => '2',
+	'and' => '&',
+        'you' => 'u'
 );
-
-#my %abbr_must = (
-	#'fuck' => "f***",
-	#'shit' => "sh*t",
-#);
 
 sub unload {
 	## Nothing to do here right now.
 }
-
 
 my $max = 35;
 my $psuedo;
@@ -132,12 +127,6 @@ sub blurb_cmd {
 		return;
 	}
 
-	#Handle any -required- substitutions. (swear filter)
-
-	#foreach my $re (keys %abbr_must) {
-		#$blurb =~s /$re/$abbr_must{$re}/gi;
-	#}
-
 	## strip off exterior braces/quotes.
 
 	if ($blurb =~ /^"(.*)"$/) {
@@ -166,7 +155,7 @@ sub blurb_cmd {
 	#Handle any abbreviations;
 
 	foreach my $re (keys %abbr) {
-		while ($blurb =~s /$re/$abbr{$re}/i) {
+		while ($blurb =~s /\b$re\b/$abbr{$re}/i) {
         		goto DONE if (check_blurb($blurb));
 		}
 	}
