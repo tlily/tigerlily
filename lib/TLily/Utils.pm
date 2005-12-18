@@ -150,7 +150,13 @@ sub save_deadfile {
 
     my $escaped_name = $server->name() . "::$name";
     $escaped_name =~ s|/|,|g;
-    my $deadfile = $ENV{HOME}."/.lily/tlily/dead.$type.$escaped_name";
+
+    my $deaddir = $ENV{HOME}."/.lily/tlily";
+    if (! -d $deaddir) {
+        mkdir $deaddir or return undef;
+    }
+    my $deadfile = $deaddir . "/dead.$type.$escaped_name";
+
     unlink($deadfile);
 
     local *DF;
