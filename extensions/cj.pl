@@ -410,6 +410,35 @@ $annotation_code{shorten} = {
     }
   }
 };
+
+$response{mistranslate} = {
+	CODE   => sub {
+		my ($event) = @_;
+		my $args = $event->{VALUE};
+		if ($args !~ m/mistranslate*\s*(.*)\s*$/i) {
+			return "ERROR: Expected RE not matched!";
+		} 
+		my $term = escape $1;
+		my $url = "http://babelfish.altavista.com/tr?trtext=$term&lp=en_it";
+		add_throttled_HTTP(url => $url, ui_name => 'main', callback => sub {
+			my ($response) = @_;
+			my $italian = escape scrape_translate($term,$response->{_content});
+
+			my $url = "http://babelfish.altavista.com/tr?trtext=$italian&lp=it_en";
+			add_throttled_HTTP(url => $url, ui_name => 'main', callback => sub {
+				my ($response) = @_;
+				my $engrish = scrape_translate($term,$response->{_content});
+    			dispatch($event,$engrish);
+			});
+		});
+		return;
+	},
+	HELP   => sub { return "Given an english phrase, botch it." },
+	TYPE   => [qw/private public/],
+	POS    => '-1', 
+	STOP   => 1,
+	RE      => qr/\bmistranslate\b/i
+};
    
 $response{shorten} = {
 	CODE   => sub {
@@ -759,6 +788,16 @@ sub scrape_horoscope {
   $content =~ m/<b class="yastshdotxt">Overview:<\/b><br>([^<]*)<\/td>/;
   my $reading = $1;
   return cleanHTML("$sign ($dates): $reading") ;
+}
+
+sub scrape_translate {
+  my ($term,$content) = @_;
+
+  if ( $content =~ m{<td bgcolor=white class=s><div style=padding:10px;>(.*)</div></td>}i) {
+    return cleanHTML($1);
+  } else {
+    return ""
+  }
 }
 
 
