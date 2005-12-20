@@ -358,8 +358,15 @@ sub do_throttled_HTTP {
 # of the URL and pass it to the callback.
 # XXX (Add in the hostname to the response)
 
+my %shorts; # briefs?
+
 sub shorten {
   my ($short, $callback) = @_; 
+
+  if (exists $shorts{$short}) {
+    &$callback($shorts{$short});
+    return;
+  }
 
   my $url = 'http://metamark.net/api/rest/simple?long_url=' . escape($short);
 
@@ -377,6 +384,7 @@ sub shorten {
   				$response->{_content} =~ m/(http.*)/;
 	   			$ans = $1;
           $ans =~ s/\s//g;
+	  $shorts{$short} = $ans;
      }
           &$callback($ans);
              });
