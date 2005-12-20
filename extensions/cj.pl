@@ -907,12 +907,13 @@ $response{bacon} = {
 	RE     => qr/bacon/i,
 };
 
+# XXXX SHouldn't have the same RE twice.
 $response{horoscope} = {
 	CODE   => sub {
 		my ($event) = @_;
 		my $args = $event->{VALUE};
     #XXX this should be done in the handler caller, not the handler itself.
-	  $args =~ m/\b(aries|leo|sagittarius|taurus|virgo|capricorn|gemini|libra|aqaurius|cancer|scorpio|pisces)\b/i;
+	  $args =~ m/\b(aries|leo|sagittarius|taurus|virgo|capricorn|gemini|libra|aquarius|cancer|scorpio|pisces)\b/i;
 
 		my $term = $1;
                my $url = "http://astrology.yahoo.com/astrology/general/dailyoverview/$term";
@@ -928,7 +929,7 @@ $response{horoscope} = {
 	TYPE   => [qw/private public emote/],
 	POS    => '-1', 
 	STOP   => 1,
-	RE     => qr/\b(aries|leo|sagittarius|taurus|virgo|capricorn|gemini|libra|aqaurius|cancer|scorpio|pisces)\b/i
+	RE     => qr/\b(aries|leo|sagittarius|taurus|virgo|capricorn|gemini|libra|aquarius|cancer|scorpio|pisces)\b/i
 };
 
 $response{define} = {
