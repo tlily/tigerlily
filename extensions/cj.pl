@@ -1314,12 +1314,7 @@ sub cj_event {
 	if ($event->{type} eq "private") {
 		push @recips, $event->{SOURCE};
 	}
-  if ($event->{type} eq "emote") {
-	#TLily::Server->active()->cmd_process("Coke: '' $event->{VALUE} ''");
-    #$event->{VALUE} =~ s/^says, "(.*)"$/$1/;
-  
-    #dispatch($event,$event->{VALUE});
-  }
+
 	@recips = grep {!/^$name$/} @recips;
   my $recips = join (",", @recips);
 	$recips =~ s/ /_/g;
@@ -1332,6 +1327,14 @@ sub cj_event {
 			if ($response{$handler}->{POS} eq $order) {
 				next if ! grep {/$event->{type}/} @{$response{$handler}{TYPE}};
 				my $re = $response{$handler}->{RE};
+				if ($event->{type} eq "emote") {
+	
+					if ($event->{VALUE} =~ /^ . o O \((.*)\)$/) {
+						$event->{VALUE} = $1;  
+					} elsif ($event->{VALUE} =~ /^ (asks|says), \"(.*)\"$/) {
+						$event->{VALUE}= $2;
+					}
+  				}
 				if ($event->{type} eq "public" || $event->{type} eq "emote") {
 					$re = qr/^\s*(?i:$name\s*,\s*)?$re/;
 				}
