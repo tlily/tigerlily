@@ -411,20 +411,21 @@ $annotation_code{shorten} = {
   }
 };
 
-$response{mistranslate} = {
+$response{engrish} = {
 	CODE   => sub {
 		my ($event) = @_;
 		my $args = $event->{VALUE};
-		if ($args !~ m/mistranslate*\s*(.*)\s*$/i) {
+		if ($args !~ m/engrish*\s*(.*)\s*$/i) {
 			return "ERROR: Expected RE not matched!";
 		} 
 		my $term = escape $1;
-		my $url = "http://babelfish.altavista.com/tr?trtext=$term&lp=en_it";
+		my $language = "nl";
+		my $url = "http://babelfish.altavista.com/tr?trtext=$term&lp=en_$language";
 		add_throttled_HTTP(url => $url, ui_name => 'main', callback => sub {
 			my ($response) = @_;
-			my $italian = escape scrape_translate($term,$response->{_content});
+			my $xlated = escape scrape_translate($term,$response->{_content});
 
-			my $url = "http://babelfish.altavista.com/tr?trtext=$italian&lp=it_en";
+			my $url = "http://babelfish.altavista.com/tr?trtext=$xlated&lp=$language" . "_en";
 			add_throttled_HTTP(url => $url, ui_name => 'main', callback => sub {
 				my ($response) = @_;
 				my $engrish = scrape_translate($term,$response->{_content});
@@ -437,7 +438,7 @@ $response{mistranslate} = {
 	TYPE   => [qw/private public/],
 	POS    => '-1', 
 	STOP   => 1,
-	RE      => qr/\bmistranslate\b/i
+	RE      => qr/\bengrish\b/i
 };
    
 $response{shorten} = {
