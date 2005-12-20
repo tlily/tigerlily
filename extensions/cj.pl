@@ -368,12 +368,17 @@ sub shorten {
 	                    ui_name => 'main',
                             callback => sub { 
 
-			my ($response) = @_;
-
-                $response->{_content} =~ m/(http.*)/;
-		my $ans = $1;
-                $ans =~ s/\s//g;
-                &$callback($ans);
+			my ($response) = @_[0];
+	
+			my $ans = "";	
+			if ($response->{_state}{_status} ne "200") {
+  				$ans = "unreachable. (HTTP Status " . $response->{_state}{_status} . ")";
+			} else  {
+  				$response->{_content} =~ m/(http.*)/;
+	   			$ans = $1;
+          $ans =~ s/\s//g;
+     }
+          &$callback($ans);
              });
   return;
 }
@@ -392,11 +397,7 @@ $annotation_code{shorten} = {
     if ($shorten !~ m|^http://xrl.us|) {
       shorten($shorten, sub { 
         my ($short_url) = shift;
-        if ($short_url eq "") {
-          dispatch ($event,"Unable to shorten $event->{SOURCE}'s url.");
-        } else {
-          dispatch ($event,"$event->{SOURCE}'s url is $short_url");
-        }
+        dispatch ($event,"$event->{SOURCE}'s url is $short_url ");
       });
     }
   }
@@ -740,6 +741,19 @@ $response{eliza} = {
 	RE     => qr/.*/,
 };
 
+sub scrape_horoscope {
+  my ($term,$content) = @_;
+
+  $content =~ m/<span class="yastshdate">([^<]*)<\/span>/i;
+  my $dates = $1;
+  $content =~ m/<big class="yastshsign">([^<]*)<\/big>/i;
+  my $sign  = $1;
+  $content =~ m/<b class="yastshdotxt">Overview:<\/b><br>([^<]*)<\/td>/;
+  my $reading = $1;
+  return cleanHTML("$sign ($dates): $reading") ;
+}
+
+
 sub scrape_webster {
   my ($term,$content) = @_;
 
@@ -843,6 +857,30 @@ $response{bacon} = {
 	POS    => '-1', 
 	STOP   => 1,
 	RE     => qr/bacon/i,
+};
+
+$response{horoscope} = {
+	CODE   => sub {
+		my ($event) = @_;
+		my $args = $event->{VALUE};
+    #XXX this should be done in the handler caller, not the handler itself.
+	  $args =~ m/\b(aries|leo|sagittarius|taurus|virgo|capricorn|gemini|libra|aqaurius|cancer|scorpio|pisces)\b/i;
+
+		my $term = $1;
+               my $url = "http://astrology.yahoo.com/astrology/general/dailyoverview/$term";
+  add_throttled_HTTP(url => $url,
+	                    ui_name => 'main',
+                            callback => sub { 
+    my ($response) = @_;
+    dispatch($event,scrape_horoscope($term,$response->{_content}));
+  });
+    ""; #muahaah
+	},
+	HELP   => sub { return "ask me about your sign to get a daily horoscope.";},
+	TYPE   => [qw/private public emote/],
+	POS    => '-1', 
+	STOP   => 1,
+	RE     => qr/\b(aries|leo|sagittarius|taurus|virgo|capricorn|gemini|libra|aqaurius|cancer|scorpio|pisces)\b/i
 };
 
 $response{define} = {
@@ -1228,6 +1266,12 @@ sub cj_event {
 	if ($event->{type} eq "private") {
 		push @recips, $event->{SOURCE};
 	}
+  if ($event->{type} eq "emote") {
+	#TLily::Server->active()->cmd_process("Coke: '' $event->{VALUE} ''");
+    #$event->{VALUE} =~ s/^says, "(.*)"$/$1/;
+  
+    #dispatch($event,$event->{VALUE});
+  }
 	@recips = grep {!/^$name$/} @recips;
   my $recips = join (",", @recips);
 	$recips =~ s/ /_/g;
@@ -1240,8 +1284,8 @@ sub cj_event {
 			if ($response{$handler}->{POS} eq $order) {
 				next if ! grep {/$event->{type}/} @{$response{$handler}{TYPE}};
 				my $re = $response{$handler}->{RE};
-				if ($event->{type} eq "public") {
-					$re = '^\s*' . $re;
+				if ($event->{type} eq "public" || $event->{type} eq "emote") {
+					$re = qr/^\s*(?i:$name\s*,\s*)?$re/;
 				}
 				if ($event->{VALUE} =~ m/$re/) {
 					$message .= &{$response{$handler}{CODE}}($event);
