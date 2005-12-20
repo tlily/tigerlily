@@ -435,7 +435,7 @@ $response{engrish} = {
 		return;
 	},
 	HELP   => sub { return "Given an english phrase, botch it." },
-	TYPE   => [qw/private public/],
+	TYPE   => [qw/private public emote/],
 	POS    => '-1', 
 	STOP   => 1,
 	RE      => qr/\bengrish\b/i
@@ -1337,7 +1337,7 @@ sub cj_event {
 					}
   				}
 				if ($event->{type} eq "public" || $event->{type} eq "emote") {
-					$re = qr/^\s*(?i:$name\s*,\s*)?$re/;
+					$re = qr/^\s*(?i:$name\s*,?\s*)?$re/;
 				}
 				if ($event->{VALUE} =~ m/$re/) {
 					$message .= &{$response{$handler}{CODE}}($event);
