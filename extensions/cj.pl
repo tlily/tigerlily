@@ -1,7 +1,7 @@
 # -*- Perl -*-
 # $Header: /data/cvs/lily/tigerlily2/extensions/cj.pl,v 1.2 2000/12/01 19:22:54 coke Exp $
 
-#use strict; # So very not strict at the moment.
+use strict; # So very not strict at the moment.
 use CGI qw/escape unescape/;
 use lib qw(/Users/cjsrv/lib);
 
@@ -58,32 +58,33 @@ a ComplexBot module.
 =cut
 
 #########################################################################
-#my %response; #Container for all response handlers. 
-#my %throttle; #Container for all throttling information. 
+my %response; #Container for all response handlers. 
+my %throttle; #Container for all throttling information. 
 #my $irc_obj = new Net::IRC;
-#my %irc; #Container for all irc channel information
-#my $throttle_interval = 1; #seconds
-#my $throttle_safety   = 5; #seconds
-#my %prefs; #dbmopen'd hash of lily user prefs. (XXX KILL THIS)
-#my $config; # Config::IniFiles object storing preferences.
+my %irc; #Container for all irc channel information
+my $throttle_interval = 1; #seconds
+my $throttle_safety   = 5; #seconds
+my %prefs; #dbmopen'd hash of lily user prefs. (XXX KILL THIS)
+my $config; # Config::IniFiles object storing preferences.
 my $disc="cj-admin"; #where we keep our memos.
 my $debug_disc = "cj-admin";
-#my %disc_feed; # A cached copy of which discussions each feed goes to
-#my %disc_annotations; # A cached copy of which discussions each annotation goes to.
-#my %annotations; # A cached copy of what our annotations do.
-#my %annotation_code; # ala response, but for annotations.
+my %disc_feed; # A cached copy of which discussions each feed goes to
+my %disc_annotations; # A cached copy of which discussions each annotation goes to.
+my %annotations; # A cached copy of what our annotations do.
+my %annotation_code; # ala response, but for annotations.
+my ($every_10m, $every_30s,$frequently); #timers
 
 # some array refs of sayings...
-#my $sayings;   # pithy 8ball-isms.
-#my $overhear;  # listen for my name occasionally;
-#my $buzzwords; # random set of words.
-#my #$unified;   # special handling for the unified discussion.
+my $sayings;   # pithy 8ball-isms.
+my $overhear;  # listen for my name occasionally;
+my $buzzwords; # random set of words.
+my $unified;   # special handling for the unified discussion.
 
 # we don't expect to be changing our name frequently, cache it.
-$name = active_server()->user_name();
+my $name = active_server()->user_name();
 
 # we'll use Eliza to handle any commands we don't understand, so set her up.
-$eliza = new Chatbot::Eliza {name=>$name,prompts_on=>0};
+my $eliza = new Chatbot::Eliza {name=>$name,prompts_on=>0};
 
 =head1 Methods
 
@@ -98,7 +99,7 @@ sub debug {
 }
 
 # XXX use File::*
-$config_file = $ENV{HOME} . "/.lily/tlily/CJ.ini";
+my $config_file = $ENV{HOME} . "/.lily/tlily/CJ.ini";
 
 =head2 asAdmin( $event, $callback) 
 
@@ -153,7 +154,7 @@ sub get_feeds {
 }
 
 # Get a feed.
-#my %rss_feeds;
+my %rss_feeds;
 my $xmlparser = new XML::RSS::Parser;
 sub get_feed {
   my ($source,$url) = @_;
@@ -259,7 +260,7 @@ sub save_value {
 
 ### Process stock requests
 
-$wrapline = 76; # This is where we wrap lines...
+my $wrapline = 76; # This is where we wrap lines...
 sub get_stock {
   my ($event,@stock)=@_;
   my %stock = ();
@@ -348,7 +349,7 @@ sub wrap {
 # These events are queued up and then run - at a very quick interval, but
 # not immediately.
 
-#my @throttled_events;
+my @throttled_events;
 sub add_throttled_HTTP {
   my (%options) = @_;
 
@@ -531,6 +532,7 @@ my $translateRE = qr/
   )
   \s* $
 /ix;
+
 $response{translate} = {
 	CODE   => sub {
 		my ($event) = @_;
@@ -624,8 +626,8 @@ $response{help} = {
 	RE      => qr/\bhelp\b/i,
 };
 
-$year = qr/\d{4}/;
-$month = qr/(?:[1-9]|10|11|12)/;
+my $year = qr/\d{4}/;
+my $month = qr/(?:[1-9]|10|11|12)/;
 
 $response{cal} = {
 	CODE   => sub { 
@@ -833,7 +835,7 @@ $response{buzz} = {
 		my ($event) = @_;
 		my @tmp;
 		foreach (1..3) {
-	   push @tmp ,pickRandom($buzzwords);
+			 push @tmp ,pickRandom($buzzwords);
 		}
 		return join (" ",@tmp) . "!";
 	},
@@ -975,6 +977,7 @@ sub scrape_webster {
   # Is there another form of the same name?
 
 if (0) {
+# XXX This needs to be converted to add_throttled_http...
 
   if (scalar(@other_forms) >= 1) {
     #Need to figure out the magic incation to get the secondary data...
@@ -982,15 +985,15 @@ if (0) {
     #<input type=hidden name=list value="murder[1,noun]=700416;murder[2,verb]=700439;bloody murder=109479;self-murder=972362">
 
     $content =~ /<input type=hidden name=list value="(.*)">/;
-    $list = $1;
+    my $list = $1;
  
-    foreach $other_term (@other_forms) { 
+    foreach my $other_term (@other_forms) { 
       my $sub_url = "http://www.m-w.com/cgi-bin/dictionary?hdwd=" . $term . "&jump=" . $other_term . "&list=" . $list; 
-      my $sub_response = $ua->request(HTTP::Request->new(GET => $sub_url));
-      if ($sub_response->is_success) {
-        ($sub_content= cleanHTML($sub_response->content)) =~ s/^.*Main Entry: (.*)Get the Top 10.*/$1/;
-        $retval .= "; " . $sub_content;
-      }
+      #my $sub_response = $ua->request(HTTP::Request->new(GET => $sub_url));
+      #if ($sub_response->is_success) {
+        #($sub_content= cleanHTML($sub_response->content)) =~ s/^.*Main Entry: (.*)Get the Top 10.*/$1/;
+        #$retval .= "; " . $sub_content;
+      #}
     }
   }
 
@@ -1165,8 +1168,8 @@ $response{lynx} = {
 }
 };
 
-@ascii = qw/NUL SOH STX ETX EOT ENQ ACK BEL BS HT LF VT FF CR SO SI DLE DC1 DC2 DC3 DC4 NAK SYN ETB CAN EM SUB ESC FS GS RS US SPACE/;
-#my %ascii;
+my @ascii = qw/NUL SOH STX ETX EOT ENQ ACK BEL BS HT LF VT FF CR SO SI DLE DC1 DC2 DC3 DC4 NAK SYN ETB CAN EM SUB ESC FS GS RS US SPACE/;
+my %ascii;
 
 for my $cnt (0..$#ascii) {
   $ascii{$ascii[$cnt]} = $cnt;
@@ -1526,8 +1529,6 @@ for (qw/public private emote/) {
 	event_r(type => $_, order=>'before', call => \&cj_event);
 }
 event_r(type=>"away", order=>'after', call=> \&away_event);
-
-#my ($every_10m, $every_30s,$frequently);
 
 
 sub load {
