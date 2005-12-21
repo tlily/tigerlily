@@ -470,9 +470,10 @@ sub get_lang {
 my $default_language = "English";
 my $translateRE = qr/
   (?:
-  \b translate \s+ (.*) \s+ from \s+ (.*) \s+ to \s+ (.*) |
-  \b translate \s+ (.*) \s+ from \s+ (.*)                 |
-  \b translate \s+ (.*) \s+                   to \s+ (.*)
+  \b translate \s+ (.*) \s+ from      \s+ (.*) \s+ (?:in)?to \s+ (.*) |
+  \b translate \s+ (.*) \s+ (?:in)?to \s+ (.*) \s+ from      \s+ (.*) |
+  \b translate \s+ (.*) \s+ from      \s+ (.*)                        |
+  \b translate \s+ (.*) \s+ (?:in)?to \s+ (.*)
   )
   \s* $
 /ix;
@@ -486,9 +487,11 @@ $response{translate} = {
 		if ($1) {
 			($term,$guess_from,$guess_to) = ($1, $2, $3);
 		} elsif ($4) {
-			($term,$guess_from,$guess_to) = ($4, $5, $default_language);
-		} elsif ($6) {
-			($term,$guess_from,$guess_to) = ($6, $default_language, $7);
+			($term,$guess_from,$guess_to) = ($4, $5, $6);
+		} elsif ($7) {
+			($term,$guess_from,$guess_to) = ($7, $8, $default_language);
+		} elsif ($9) {
+			($term,$guess_from,$guess_to) = ($9, $default_language, $10);
 		}
 		$term = escape $term;
 		my $from = get_lang($guess_from);
