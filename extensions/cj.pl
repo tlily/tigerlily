@@ -454,7 +454,9 @@ my %languages = (
 
 sub get_lang {
   my $guess = lc shift;
-
+  
+  $guess =~ s/^\s+//;
+  $guess =~ s/\s+$//;
  
   if (exists $languages{$guess}) {
     return $languages{$guess};
@@ -465,21 +467,35 @@ sub get_lang {
   return;
 }
 
-my $translateRE = qr/\btranslate\s+(.*)\s+from\s+(.*)\s+to\s+(.*)\s*$/i;
+my $default_language = "English";
+my $translateRE = qr/
+  (?:
+  \b translate \s+ (.*) \s+ from \s+ (.*) \s+ to \s+ (.*) |
+  \b translate \s+ (.*) \s+ from \s+ (.*)                 |
+  \b translate \s+ (.*) \s+                   to \s+ (.*)
+  )
+  \s* $
+/ix;
 $response{translate} = {
 	CODE   => sub {
 		my ($event) = @_;
 		my $args = $event->{VALUE};
 		$args =~ $translateRE;
 
-		my $term = escape $1;
-		my $guess_from = $2;
+		my ($term,$guess_from,$guess_to);
+		if ($1) {
+			($term,$guess_from,$guess_to) = ($1, $2, $3);
+		} elsif ($4) {
+			($term,$guess_from,$guess_to) = ($4, $5, $default_language);
+		} elsif ($6) {
+			($term,$guess_from,$guess_to) = ($6, $default_language, $7);
+		}
+		$term = escape $term;
 		my $from = get_lang($guess_from);
 		if (! $from) {
 			dispatch($event, "I don't speak $guess_from")	;
 			return;
 		}
-		my $guess_to = $3;
 		my $to = get_lang($guess_to);
 		if (! $to) {
 			dispatch($event, "I don't speak $guess_to")	;
@@ -497,7 +513,7 @@ $response{translate} = {
 		});
 		return;
 	},
-	HELP   => sub { return "translate some text from english to german (e.g.)"},
+	HELP   => sub { return "for example, 'translate some text from english to german' (valid languages: " . join (", ", keys %languages) .") (either the from or to is optional, and defaults to $default_language)"},
 	TYPE   => [qw/private public emote/],
 	POS    => '-1', 
 	STOP   => 1,
