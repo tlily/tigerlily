@@ -440,6 +440,69 @@ $response{engrish} = {
 	STOP   => 1,
 	RE      => qr/\bengrish\b/i
 };
+
+my %languages = (
+  english    => 'en',
+  german     => 'de',
+  dutch      => 'nl',
+  french     => 'fr',
+  greek      => 'el',
+  italian    => 'it',
+  portuguese => 'pt',
+  spanish    => 'es',
+);
+
+sub get_lang {
+  my $guess = lc shift;
+
+ 
+  if (exists $languages{$guess}) {
+    return $languages{$guess};
+  }
+  if (grep {$_ eq $guess} (values %languages) ) {
+    return $guess;
+  }
+  return;
+}
+
+my $translateRE = qr/\btranslate\s+(.*)\s+from\s+(.*)\s+to\s+(.*)\s*$/i;
+$response{translate} = {
+	CODE   => sub {
+		my ($event) = @_;
+		my $args = $event->{VALUE};
+		$args =~ $translateRE;
+
+		my $term = escape $1;
+		my $guess_from = $2;
+		my $from = get_lang($guess_from);
+		if (! $from) {
+			dispatch($event, "I don't speak $guess_from")	;
+			return;
+		}
+		my $guess_to = $3;
+		my $to = get_lang($guess_to);
+		if (! $to) {
+			dispatch($event, "I don't speak $guess_to")	;
+			return;
+		}
+		my $url = "http://babelfish.altavista.com/tr?trtext=$term&lp=${from}_${to}";
+		add_throttled_HTTP(url => $url, ui_name => 'main', callback => sub {
+			my ($response) = @_;
+			my $xlated = scrape_translate($term,$response->{_content});
+			if ($xlated) {
+    			  dispatch($event,$xlated);
+			} else {
+			  dispatch($event,"Apparently I can't do that.");
+			}
+		});
+		return;
+	},
+	HELP   => sub { return "translate some text from english to german (e.g.)"},
+	TYPE   => [qw/private public emote/],
+	POS    => '-1', 
+	STOP   => 1,
+	RE     => $translateRE,
+};
    
 $response{shorten} = {
 	CODE   => sub {
