@@ -1298,13 +1298,14 @@ $response{utf8} = {
 
 # This is already pretty unweidly.
 #
-# XXX - http://www.electriceditors.net/langline/accents.php
 sub cleanHTML {
 
+  # join blank lines, remove excess whitespace and kill tags.
   $a = join(" ",@_);
-
   $a =~ s/\n/ /;
   $a =~ s/<[^>]*>/ /g;
+
+  # translate some common html-escapes.
   $a =~ s/&lt;/</gi;
   $a =~ s/&gt;/>/gi;
   $a =~ s/&amp;/&/gi;
@@ -1313,6 +1314,11 @@ sub cleanHTML {
   $a =~ s/&quot;/"/ig;
   $a =~ s/&nbsp;/ /ig;
   $a =~ s/&uuml;/u"/ig;
+
+  # translate any utf8 codes to ascii representations:
+  # Use Text::Unidecode if it's available...
+
+  # cleanup whitespace.
   $a =~ s/\s+/ /g;
   $a =~ s/^\s+//;
   $a =~ s/\s+$//;
