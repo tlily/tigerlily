@@ -1617,14 +1617,28 @@ sub dump_stats {
   #print length(Dumper(\%response));
 }
 
+=head2 checkpoint ()
+
+Call this to save our in memory config out, either by saving memos or
+writing to our local config file(s).
+
+=cut
+
 sub checkpoint {
   $config->RewriteConfig() ;
 }
 
+=head2 unload ()
+
+Called by tigerlily when you use C<%ext unload cj> - our chance to
+release any external resources we have open.
+
+=cut
+
 sub unload {
   dbmclose(%prefs);
   checkpoint();
-  #TLily::Server->active()->cmd_process("/blurb asleep");
+
   TLily::Event->time_u($every_10m);
   TLily::Event->time_u($every_30s);
   TLily::Event->time_u($frequently);
