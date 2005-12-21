@@ -1,7 +1,7 @@
 # -*- Perl -*-
 # $Header: /data/cvs/lily/tigerlily2/extensions/cj.pl,v 1.2 2000/12/01 19:22:54 coke Exp $
 
-#use strict;
+#use strict; # So very not strict at the moment.
 use CGI qw/escape unescape/;
 use lib qw(/Users/cjsrv/lib);
 
@@ -11,42 +11,51 @@ use XML::RSS::Parser;
 use Config::IniFiles;
 use DB_File; # get rid of this now that we have Config::IniFiles...
 
-# Should probably make it optional to run with these.
 use Chatbot::Eliza;
 #use Net::IRC
 
-# AUTHOR: (Podify this)
+=head1 AUTHOR
 
-# Will "Coke" Coleda
+Will "Coke" Coleda
 
-# PURPOSE:
+=head1 PURPOSE
 
-# this extension allows a login to act like a bot. It is designed to run
-# as a standalone user, although modifications could be made to make
-# it function as a cyborg.
+This extension allows a player to act like a bot. It is designed to run
+as a standalone user: don't expect to login to lily as yourself and run
+this, it will take over your session.
 
-# it provides several types of information:
-# Unicast: Given user input, provide a response.
-# Broadcast: Broadcast info as available.
-# Multicast: Given user/moderator preferences, send selective info.
+There are two types of output that are generated:
 
-# Users (and Discussion moderators) may request broadcast information
-# of any of the available types. The extension will record these preferences
-# in a permanent location, so that state may be preserved if the user running
-# the extension must logout (or reload the extension)
+=over 4
 
-# HISTORY:
+=item 1
 
-# CJ was a bot. He did a lot of things that some folks found useful,
-# and did a lot of things that some folks thought was waaaaay too chatty.
-# He began as a lily-server based magic 8-ball, was ported to a bot using
-# tlily version 1. This brings CJ up to tlily version 2 as a fresh
-# implementation. I was going to use Josh's Bot.pm to handle a good chunk 
-# of the guts for me, but Bot.pm didn't really seem to meet my needs.
-# This rewrite is intended as an exercize to (a) improve stability, (b) 
-# improve maintainability, (c) prepare for a similar capability for Flow.
-# Perhaps someone could remove most of the functionality here and make
-# a ComplexBot module
+Responses to queries. Each public, private or emote type send is checked
+to see if matches certain regular expressions. If the expression matches,
+a chunk of code is run against that event, and a response may be generated
+to the discussion(s) or user the original message was targeted to.
+
+=item 2
+
+Broadcasts. Timers run every so often which look for new information (say,
+from an RSS feed), and then announce this information to certain discussions.
+
+=back
+
+=head1 HISTORY
+
+CJ was a bot. He did a lot of things that some folks found useful,
+and did a lot of things that some folks thought was waaaaay too chatty.
+He began as a lily-server based magic 8-ball, was ported to a bot using
+tlily version 1. This brings CJ up to tlily version 2 as a fresh
+implementation. I was going to use Josh's Bot.pm to handle a good chunk 
+of the guts for me, but Bot.pm didn't really seem to meet my needs.
+This rewrite is intended as an exercize to (a) improve stability, (b) 
+improve maintainability, (c) prepare for a similar capability for Flow.
+Perhaps someone could remove most of the functionality here and make
+a ComplexBot module.
+
+=cut
 
 #########################################################################
 #my %response; #Container for all response handlers. 
@@ -58,7 +67,7 @@ use Chatbot::Eliza;
 #my %prefs; #dbmopen'd hash of lily user prefs. (XXX KILL THIS)
 #my $config; # Config::IniFiles object storing preferences.
 my $disc="cj-admin"; #where we keep our memos.
-my $bleat_disc = "cj-admin";
+my $debug_disc = "cj-admin";
 #my %disc_feed; # A cached copy of which discussions each feed goes to
 #my %disc_annotations; # A cached copy of which discussions each annotation goes to.
 #my %annotations; # A cached copy of what our annotations do.
@@ -76,15 +85,22 @@ $name = active_server()->user_name();
 # we'll use Eliza to handle any commands we don't understand, so set her up.
 $eliza = new Chatbot::Eliza {name=>$name,prompts_on=>0};
 
-# register a complaint
-sub bleat {
- TLily::Server->active()->cmd_process("$bleat_disc: @_");
+=head1 Methods
+
+=head2 debug( @complaints) 
+
+Helpful when generating debug output for new features. Typically disabled
+
+=cut
+
+sub debug {
+ TLily::Server->active()->cmd_process("$debug_disc: @_");
 }
 
 # XXX use File::*
 $config_file = $ENV{HOME} . "/.lily/tlily/CJ.ini";
 
-=head1
+=head2 asAdmin( $event, $callback) 
 
 If someone is an admin, perform a task.
 
@@ -115,9 +131,13 @@ sub asAdmin {
 	});
 }
 
+=head2 pickRandom( $listref )
 
-### pick an element of a ref-list at random.
-sub random { 
+Given a ref to a list, return a random element from it.
+
+=cut
+
+sub pickRandom { 
 	my @list = @{$_[0]};
 	return $list[int(rand(scalar(@list)))];
 }
@@ -191,14 +211,14 @@ sub send_headline {
     }
     $line .= " :: ";
     #my $tmp = "$title--NADA--$description" ;
-    #bleat("target: $target");
+    #debug("target: $target");
     #if ($tmp =~ s/(.*)\.+?\s*--NADA--\s*\1/$1 :: ... /) {
-      #bleat("the RE matched...");
+      #debug("the RE matched...");
     #} else {
-      #bleat("the RE did not match...");
+      #debug("the RE did not match...");
     #}  
     #$tmp =~ s/ :: \.\.\. $//;
-    #bleat("temp is '$tmp'");
+    #debug("temp is '$tmp'");
     #$line .= $tmp;
    
     $line .= "$title :: $description";
@@ -313,19 +333,6 @@ subgain";
 	});
 }
 
-#
-# Setup Response configuration.
-#
-# Response handlers are hashrefs with the following fields:
-#   <all CODE are passed the event as args>
-#   <all HELP are passed the args, split, if any>
-#   CODE=<coderef>, HELP=<coderef>,
-#   TYPE=listof<private|public|emote>, POS=<-1|0|1>
-#   STOP=<boolean> (do I stop processing the send at this point?)
-#   RE {how do I match this command?} 
-# There is no magical "default" handler. you must define one below if you 
-#  desire. The default behavior is silence, because that's how Priz would
-#  have wanted it.
 
 sub wrap {
   my $wrap = 76;
@@ -410,6 +417,53 @@ $annotation_code{shorten} = {
     }
   }
 };
+
+=head1 %response
+
+This hash contains all the information for how CJ should respond to 
+public, private, and emote sends. The top level keys are the names
+of the implemented command. Their values are hashrefs of the following
+form:
+
+=over 4
+
+=item RE
+
+A regexp object that is compared to each send of the appropriate type to
+see if this is what the user wants.
+
+=item CODE
+
+The perl code that will be execute when the the RE is matched. This callback
+is passed the tigerlily event when invoked.
+
+=item TYPE
+
+Listref showing the valid contexts for this command. (public, private, or emote)
+
+=item POS
+
+Integer (-1, 0, 1) indicating the order in which this command should be checked.
+Lowest is checked first.
+
+=item HELP
+
+Coderef that will be run when someone asks for help with this handler. See
+the help response handler for more details. 
+
+=item STOP
+
+Boolean that indicates whether this command should stop processing of any
+other commands. Set to false to run this command B<and> still allow for
+later rules to process.
+
+=back
+
+There is no special default handler. You must define one explicitly.
+The default behavior is silence, because that's how Priz would
+have wanted it.
+
+=cut
 
 $response{engrish} = {
 	CODE   => sub {
@@ -749,7 +803,7 @@ $response{"stomach pump"} = {
 	RE     => qr/stomach pump/,
 };
 
-=for later
+if(0) {
 
 $response{cmd} = {
 	CODE   => sub {
@@ -772,14 +826,14 @@ $response{cmd} = {
 	RE     => qr/\bcmd\b/,
 };
 
-=cut
+}
 
 $response{buzz} = {
 	CODE   => sub {
 		my ($event) = @_;
 		my @tmp;
 		foreach (1..3) {
-	   push @tmp ,random($buzzwords);
+	   push @tmp ,pickRandom($buzzwords);
 		}
 		return join (" ",@tmp) . "!";
 	},
@@ -808,7 +862,7 @@ $response{stock} = {
 	RE     => qr/\bstock\b/,
 };
 
-=pod 
+if(0) {
 
 $response{drink} = {
 	CODE   => sub {
@@ -829,7 +883,7 @@ $response{drink} = {
 	RE     => qr/down the bar to CJ\.$/,
 };
 
-=cut
+}
 
 $response{kibo} = {
 	CODE   => sub {
@@ -838,7 +892,7 @@ $response{kibo} = {
 		if ($event->{RECIPS} eq "unified" or $event->{RECIPS} eq "bar") {
 			$list = $unified;
 		}
-		my ($message) = sprintf(random($list),$event->{SOURCE});
+		my ($message) = sprintf(pickRandom($list),$event->{SOURCE});
 		return $message;
 	},
 	HELP   => sub { return "I respond to public questions addressed to me.";},
@@ -920,7 +974,7 @@ sub scrape_webster {
 
   # Is there another form of the same name?
 
-=for later
+if (0) {
 
   if (scalar(@other_forms) >= 1) {
     #Need to figure out the magic incation to get the secondary data...
@@ -940,7 +994,7 @@ sub scrape_webster {
     }
   }
 
-=cut
+}
 
  # tack on any other items that turned up on the main list, for kicks.
   if (scalar(@see_also)) {
