@@ -114,6 +114,9 @@ sub asAdmin {
 #      It should (a) have notifies turned off, and (b) be sent back
 #      to the originator of the command.
 #
+# XXX: Change this to use a group called "admins", and add a way to easily
+#      Change the group via a command IFF you're an admin.
+
 	my ($event,$sub) = @_;
 
   TLily::Server->active()->cmd_process("/what $disc", sub {
@@ -463,6 +466,14 @@ later rules to process.
 
 Boolean that indicates whether this command should be processed or not.
 
+=item PRIVILEGE
+
+String indicating the level of privilege required to run this command. Three
+possible settings: Admin (Must be one of CJ's administrators), and User
+(Anyone can make this request.) - If not specified, the default is User.
+
+TODO: Moderator (must moderator/own a discussion the request is on behalf of)
+
 =back
 
 There is no special default handler. You must define one explicitly.
@@ -614,6 +625,7 @@ $response{help} = {
 			return "ERROR: Expected RE not matched!";
 		}
 		if ($args eq "") {
+			# XXX respect PRIVILEGE
 			my @cmds = sort grep {!$response{$_}->{DISABLED}} grep {$_ ne "help"} keys %response;
 			return "Hello. I'm a bot. Try 'help' followed by one of the following for more information: " . join (", ", @cmds) . ". In general, commands can appear anywhere in private sends, but must begin public sends.";
 		}
@@ -812,6 +824,7 @@ $response{"stomach pump"} = {
 #     the admin that requested the results.
 
 $response{cmd} = {
+	PRIVILEGE => "admin",
 	CODE   => sub {
 		my ($event) = @_;
 		(my $cmd = $event->{VALUE}) =~ s/.*\bcmd\b\s*(.*)/$1/;
@@ -1471,6 +1484,7 @@ sub cj_event {
 	my $message="";
 	HANDLE_OUTER: foreach my $order (qw/-1 0 1 2/) {
 		HANDLE_INNER: foreach my $handler (keys %response) {
+			# XXX respect PRIVILEGE
 			next if $response{$handler}->{DISABLED};
 			if ($response{$handler}->{POS} eq $order) {
 				next if ! grep {/$event->{type}/} @{$response{$handler}{TYPE}};
