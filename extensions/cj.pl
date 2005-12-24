@@ -459,6 +459,10 @@ Boolean that indicates whether this command should stop processing of any
 other commands. Set to false to run this command B<and> still allow for
 later rules to process.
 
+=item DISABLED
+
+Boolean that indicates whether this command should be processed or not.
+
 =back
 
 There is no special default handler. You must define one explicitly.
@@ -609,12 +613,10 @@ $response{help} = {
 		if (! ($args =~ s/help\s*(.*)\s*$/$1/i)) {
 			return "ERROR: Expected RE not matched!";
 		}
-		if ($args eq "") {		
-			return "Hello. I'm a bot. Try 'help' followed by one of the following for more information: " . join (", ", sort grep {! /^help/} keys %response) . ". In general, commands can appear anywhere in private sends, but must begin public sends.";
+		if ($args eq "") {
+			my @cmds = sort grep {!$response{$_}->{DISABLED}} grep {$_ ne "help"} keys %response;
+			return "Hello. I'm a bot. Try 'help' followed by one of the following for more information: " . join (", ", @cmds) . ". In general, commands can appear anywhere in private sends, but must begin public sends.";
 		}
-		#my @help = split(/\s+/, $args);
-		#my $topic = shift @help;	
-		#Subtopics don't work
 		if (exists ${response}{$args}) {
 			return &{$response{$args}{HELP}}();
 		}
@@ -867,9 +869,8 @@ $response{stock} = {
 	RE     => qr/\bstock\b/,
 };
 
-if(0) {
-
 $response{drink} = {
+	DISABLED => 1,
 	CODE   => sub {
 		my ($event) = @_;
 		my $args=$event->{VALUE};
@@ -887,8 +888,6 @@ $response{drink} = {
 	STOP   => 1,
 	RE     => qr/down the bar to CJ\.$/,
 };
-
-}
 
 $response{kibo} = {
 	CODE   => sub {
@@ -1099,8 +1098,8 @@ $response{define} = {
 	RE     => qr/\bdefine\b/i
 };
 
-if (0) {
 $response{foldoc} = {
+	DISABLED => 1,
 	CODE   => sub {
 		my ($event)= @_;
 		my $args = $event->{VALUE};
@@ -1139,9 +1138,9 @@ $response{foldoc} = {
 	STOP   => 1,
 	RE     => qr/foldoc/,
 };
-}
-if (0) {
+
 $response{lynx} = {
+	DISABLED => 1,
 	CODE   => sub {
 		my ($event)= @_;
 		my $args = $event->{VALUE};
@@ -1168,7 +1167,6 @@ $response{lynx} = {
 	POS    => '0', 
 	STOP   => 1,
 	RE     => qr/lynx/,
-}
 };
 
 my @ascii = qw/NUL SOH STX ETX EOT ENQ ACK BEL BS HT LF VT FF CR SO SI DLE DC1 DC2 DC3 DC4 NAK SYN ETB CAN EM SUB ESC FS GS RS US SPACE/;
@@ -1473,6 +1471,7 @@ sub cj_event {
 	my $message="";
 	HANDLE_OUTER: foreach my $order (qw/-1 0 1 2/) {
 		HANDLE_INNER: foreach my $handler (keys %response) {
+			next if $response{$handler}->{DISABLED};
 			if ($response{$handler}->{POS} eq $order) {
 				next if ! grep {/$event->{type}/} @{$response{$handler}{TYPE}};
 				my $re = $response{$handler}->{RE};
