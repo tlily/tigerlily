@@ -119,13 +119,11 @@ sub asAdmin {
   TLily::Server->active()->cmd_process("/what $disc", sub {
 		my ($newevent) = @_;
 
-		my $oldevent=$event;
-
 		$newevent->{NOTIFY}=0;
 		return if ($newevent->{type} eq "endcmd");
 		return if ($newevent->{type} eq "begincmd");
 		if ($newevent->{text} =~ s/^Permitted: //g) {
-			if (grep(/^$oldevent->{SOURCE}$/,split(/, /,$newevent->{text}))) {
+			if (grep(/^$event->{SOURCE}$/,split(/, /,$newevent->{text}))) {
 				$sub->();	
 			}
 		}
@@ -261,6 +259,7 @@ sub save_value {
 ### Process stock requests
 
 my $wrapline = 76; # This is where we wrap lines...
+
 sub get_stock {
   my ($event,@stock)=@_;
   my %stock = ();
@@ -371,6 +370,8 @@ my %shorts; # briefs?
 sub shorten {
   my ($short, $callback) = @_; 
 
+  
+  # If we've already seen this URL, don't bother asking again.
   if (exists $shorts{$short}) {
     &$callback($shorts{$short});
     return;
@@ -382,7 +383,7 @@ sub shorten {
          url => $url,
 	                    ui_name => 'main',
                             callback => sub { 
-
+ 
 			my ($response) = @_[0];
 	
 			my $ans = "";	
@@ -805,20 +806,24 @@ $response{"stomach pump"} = {
 	RE     => qr/stomach pump/,
 };
 
-if(0) {
+# XXX This doesn't return the result of the command cj executes to
+#     the admin that requested the results.
 
 $response{cmd} = {
 	CODE   => sub {
 		my ($event) = @_;
 		(my $cmd = $event->{VALUE}) =~ s/.*\bcmd\b\s*(.*)/$1/;
 		asAdmin($event,sub {
-			my ($newevent) = @_;
-			$newevent->{NOTIFY} = 0;
-			my $server = TLily::Server->active();
-			$server->cmd_process($cmd, sub {
-				$_[0]->{NOTIFY} = 0;
+			my $response = "";
+			TLily::Server->active()->cmd_process($cmd, sub {
+				my ($newevent) = @_;
+				$newevent->{NOTIFY} = 0;
+                		return if ($newevent->{type} eq "endcmd");
+				$response .= $newevent->{text};
+                		if ($newevent->{type} eq "begincmd") {
+					dispatch($event,$response);
+				}
 			});
-			dispatch($event,$newevent->{VALUE});
 		});
 	},
 	HELP   => sub { return "If you are permitted to the admin discussion, you can use this command to boss me around.";},
@@ -827,8 +832,6 @@ $response{cmd} = {
 	STOP   => 1,
 	RE     => qr/\bcmd\b/,
 };
-
-}
 
 $response{buzz} = {
 	CODE   => sub {
