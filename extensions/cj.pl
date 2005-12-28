@@ -78,7 +78,9 @@ my ($every_10m, $every_30s,$frequently); #timers
 my $sayings;   # pithy 8ball-isms.
 my $overhear;  # listen for my name occasionally;
 my $buzzwords; # random set of words.
+# Unify this into generic special handling. =-)
 my $unified;   # special handling for the unified discussion.
+my $beener;   # special handling for the beener discussion.
 
 # we don't expect to be changing our name frequently, cache it.
 my $name = active_server()->user_name();
@@ -876,7 +878,7 @@ $response{stock} = {
 		}
 	},
 	HELP   => sub { return "Give a list of ticker symbols, I'll be your web proxy to finance.yahoo.com";},
-	TYPE   => [qw/private/],
+	TYPE   => [qw/private public emote/],
 	POS    => '0', 
 	STOP   => 1,
 	RE     => qr/\bstock\b/,
@@ -906,8 +908,10 @@ $response{kibo} = {
 	CODE   => sub {
 		my ($event) = @_;
 		my $list = $sayings;
-		if ($event->{RECIPS} eq "unified" or $event->{RECIPS} eq "bar") {
-			$list = $unified;
+		if ($event->{RECIPS} eq "unified" ) {
+			$list = [(@$unified)x2, @$list];
+		} elsif ($event->{RECIPS} eq "beener" ) {
+			$list = [(@$beener)x2, @$list];
 		}
 		my ($message) = sprintf(pickRandom($list),$event->{SOURCE});
 		return $message;
@@ -1596,6 +1600,7 @@ sub load {
   $server->fetch(call=>sub {my %event=@_;  $overhear = $event{text}}, type=>"memo", target=>$disc, name=>"overhear");
   $server->fetch(call=>sub {my %event=@_;  $buzzwords = $event{text}}, type=>"memo", target=>$disc, name=>"buzzwords");
   $server->fetch(call=>sub {my %event=@_;  $unified= $event{text}}, type=>"memo", target=>$disc, name=>"-unified");
+  $server->fetch(call=>sub {my %event=@_;  $beener= $event{text}}, type=>"memo", target=>$disc, name=>"-beener");
 
   $every_10m= TLily::Event::time_r( call => sub { 
     get_feeds() } , interval => 60*10);
