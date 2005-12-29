@@ -1609,34 +1609,6 @@ sub load {
   $frequently= TLily::Event::time_r( call => sub { 
     do_throttled_HTTP();} , interval => 2.0);
   TLily::Server->active()->cmd_process("/blurb off");
-
-  #dump_stats();
-}
-
-
-# not used at the moment.
-use Data::Dumper;
-  #print out the size of all of our globals.
-sub dump_stats {
-  my @vars = qw/%response %throttle %prefs $config @throttled_events %disc_feed
-  %disc_annotations %annotations %annotation_code $sayings $overhear $buzzwords
-  $unified %rss_feeds/; # and possibly some stuff from TLily::Server
-
-  my $output ;
-  foreach my $var (@vars) {
-    $output .= "$var=";
-    my $dumped = join("",eval "Dumper($var)");
-    if ($@) {
-      $output .= "error..;"
-    } else {
-#      $output .= "DUMPED:'$dumped'";
-      $output .= length($dumped);
-      $output .= ";"
-    }
-  }
-
-  print $output ."\n";
-  #print length(Dumper(\%response));
 }
 
 =head2 checkpoint ()
