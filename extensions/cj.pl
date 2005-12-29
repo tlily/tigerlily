@@ -374,6 +374,8 @@ sub shorten {
     return;
   }
 
+  #my $domain = new URI($short);
+
   my $url = 'http://metamark.net/api/rest/simple?long_url=' . escape($short);
 
                 add_throttled_HTTP(
@@ -604,7 +606,7 @@ $response{shorten} = {
                }
                return "";
 	},
-	HELP   => sub { return "Given a URL, return an xrl.us shortened version of the url. Or, vice verse";},
+	HELP   => sub { return "Given a URL, return an xrl.us shortened version of the url.";},
 	TYPE   => [qw/private/],
 	POS    => '-1', 
 	STOP   => 1,
@@ -851,10 +853,12 @@ $response{cmd} = {
 				my ($newevent) = @_;
 				$newevent->{NOTIFY} = 0;
                 		return if ($newevent->{type} eq "begincmd");
-				push @response , $newevent->{text};
                 		if ($newevent->{type} eq "endcmd") {
 					dispatch($event,wrap(@response));
 				}
+			        if ($newevent->{text} ne "") { 
+				  push @response, $newevent->{text};
+                                }
 			});
 		});
 	},
