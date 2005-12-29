@@ -338,6 +338,7 @@ sub wrap {
     my $pad = " " x ($wrap - ((length $tmp) % $wrap)) ;
     $retval .= $tmp . $pad;
   }
+  $retval =~ s/\s+$//;
   return $retval;
 }
 
