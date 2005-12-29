@@ -840,9 +840,6 @@ $response{"stomach pump"} = {
 	RE     => qr/stomach pump/,
 };
 
-# XXX This doesn't return the result of the command cj executes to
-#     the admin that requested the results.
-
 $response{cmd} = {
 	PRIVILEGE => "admin",
 	CODE   => sub {
@@ -861,7 +858,7 @@ $response{cmd} = {
 			});
 		});
 	},
-	HELP   => sub { return "If you are permitted to the admin discussion, you can use this command to boss me around.";},
+	HELP   => sub { return "If you are a cj admin, you can use this command to boss me around.";},
 	TYPE   => [qw/private/],
 	POS    => '0', 
 	STOP   => 1,
