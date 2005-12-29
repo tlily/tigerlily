@@ -82,6 +82,9 @@ my $buzzwords; # random set of words.
 my $unified;   # special handling for the unified discussion.
 my $beener;   # special handling for the beener discussion.
 
+my $uptime = time() ; #uptime indicator.
+my %served;         #stats.
+
 # we don't expect to be changing our name frequently, cache it.
 my $name = active_server()->user_name();
 
@@ -105,34 +108,23 @@ my $config_file = $ENV{HOME} . "/.lily/tlily/CJ.ini";
 
 =head2 asAdmin( $event, $callback) 
 
-If someone is an admin, perform a task.
+If someone is an admin, perform a task. The bot user should have a group
+called "admins" - if the user is part of that group, then she's a moderator.
 
 =cut
 
 sub asAdmin {
+  my ($event,$sub) = @_;
+  my $server = TLily::Server::active();
 
-#
-# BUG: This still notifies the client running the code of the output.
-#      It should (a) have notifies turned off, and (b) be sent back
-#      to the originator of the command.
-#
-# XXX: Change this to use a group called "admins", and add a way to easily
-#      Change the group via a command IFF you're an admin.
+  my $isAdmin = grep {$event->{SHANDLE} eq $_}
+    split(/,/, $server->{NAME}->{'admins'}->{'MEMBERS'}); 
 
-	my ($event,$sub) = @_;
-
-  TLily::Server->active()->cmd_process("/what $disc", sub {
-		my ($newevent) = @_;
-
-		$newevent->{NOTIFY}=0;
-		return if ($newevent->{type} eq "endcmd");
-		return if ($newevent->{type} eq "begincmd");
-		if ($newevent->{text} =~ s/^Permitted: //g) {
-			if (grep(/^$event->{SOURCE}$/,split(/, /,$newevent->{text}))) {
-				$sub->();	
-			}
-		}
-	});
+  if ($isAdmin) {
+     $sub->();
+  } else {
+     dispatch($event,"I'm a frayed knot.");
+  }
 }
 
 =head2 pickRandom( $listref )
@@ -800,11 +792,37 @@ $response{"set"} = {
 	RE     => qr(\bset\b),
 };
 
+
+sub humanTime {
+  my $seconds = shift;
+
+  return ("$seconds seconds");
+
+  my @result;
+  if ($seconds >= 60 * 60 * 24) {
+    push @result, ($seconds/(60*60*24)). " days";
+    $seconds -= ($seconds/(60*60*24));
+  }
+  if ($seconds > 60 * 60 ) {
+    push @result, ($seconds/(60*60)). " hours";
+    $seconds -= ($seconds/(60*60));
+  }
+  if ($seconds > 60 ) {
+    push @result, ($seconds/60). " minutes";
+    $seconds -= ($seconds/60);
+  }
+  if ($seconds) {
+    push @result, $seconds. " seconds";
+  }
+
+  return (join(", ",@result));
+}
+
 $response{"ping"} = {
 	CODE   => sub {
-		return "pong";
+		return "uptime: " . humanTime(time() - $uptime);
 	},
-	HELP   => sub { return "hello! (may eventually return stats)";},
+	HELP   => sub { return "Yes, I'm alive. And have some stats while you're at it.";},
 	TYPE   => [qw/private/],
 	POS    => '0', 
 	STOP   => 1,
@@ -831,14 +849,14 @@ $response{cmd} = {
 		my ($event) = @_;
 		(my $cmd = $event->{VALUE}) =~ s/.*\bcmd\b\s*(.*)/$1/;
 		asAdmin($event,sub {
-			my $response = "";
+			my @response;
 			TLily::Server->active()->cmd_process($cmd, sub {
 				my ($newevent) = @_;
 				$newevent->{NOTIFY} = 0;
-                		return if ($newevent->{type} eq "endcmd");
-				$response .= $newevent->{text};
-                		if ($newevent->{type} eq "begincmd") {
-					dispatch($event,$response);
+                		return if ($newevent->{type} eq "begincmd");
+				push @response , $newevent->{text};
+                		if ($newevent->{type} eq "endcmd") {
+					dispatch($event,wrap(@response));
 				}
 			});
 		});
@@ -1477,10 +1495,16 @@ sub cj_event {
 	my @recips = split(/, /,$event->{RECIPS});
 	if ($event->{type} eq "private") {
 		push @recips, $event->{SOURCE};
-	}
+	} elsif ($event->{type} eq "emote") {
+          if ($event->{VALUE} =~ /^ . o O \((.*)\)$/) {
+	    $event->{VALUE} = $1;  
+          } elsif ($event->{VALUE} =~ /^ (asks|says), \"(.*)\"$/) {
+            $event->{VALUE}= $2;
+          }
+        }
 
 	@recips = grep {!/^$name$/} @recips;
-  my $recips = join (",", @recips);
+        my $recips = join (",", @recips);
 	$recips =~ s/ /_/g;
 	$event->{_recips} = $recips;
 
@@ -1493,14 +1517,6 @@ sub cj_event {
 			if ($response{$handler}->{POS} eq $order) {
 				next if ! grep {/$event->{type}/} @{$response{$handler}{TYPE}};
 				my $re = $response{$handler}->{RE};
-				if ($event->{type} eq "emote") {
-	
-					if ($event->{VALUE} =~ /^ . o O \((.*)\)$/) {
-						$event->{VALUE} = $1;  
-					} elsif ($event->{VALUE} =~ /^ (asks|says), \"(.*)\"$/) {
-						$event->{VALUE}= $2;
-					}
-  				}
 				if ($event->{type} eq "public" || $event->{type} eq "emote") {
 					$re = qr/^\s*(?i:$name\s*,?\s*)?$re/;
 				}
