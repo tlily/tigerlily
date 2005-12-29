@@ -360,7 +360,6 @@ sub do_throttled_HTTP {
 
 # Given a URL and a callback, find out the shortened version
 # of the URL and pass it to the callback.
-# XXX (Add in the hostname to the response)
 
 my %shorts; # briefs?
 
@@ -374,7 +373,7 @@ sub shorten {
     return;
   }
 
-  #my $domain = new URI($short);
+  my $original_host = new URI($short)->host();
 
   my $url = 'http://metamark.net/api/rest/simple?long_url=' . escape($short);
 
@@ -392,6 +391,7 @@ sub shorten {
   				$response->{_content} =~ m/(http.*)/;
 	   			$ans = $1;
           $ans =~ s/\s//g;
+          $ans .=  " [$original_host]";
 	  $shorts{$short} = $ans;
      }
           &$callback($ans);
@@ -413,7 +413,7 @@ $annotation_code{shorten} = {
     if ($shorten !~ m|^http://xrl.us|) {
       shorten($shorten, sub { 
         my ($short_url) = shift;
-        dispatch ($event,"$event->{SOURCE}'s url is $short_url ");
+        dispatch ($event,"$event->{SOURCE}'s url is $short_url");
       });
     }
   }
