@@ -2,8 +2,11 @@
 # $Header: /data/cvs/lily/tigerlily2/extensions/cj.pl,v 1.2 2000/12/01 19:22:54 coke Exp $
 
 use strict; # So very not strict at the moment.
+
+use lib qw(/Users/cjsrv/lib); # XXX hack.
+
 use CGI qw/escape unescape/;
-use lib qw(/Users/cjsrv/lib);
+use Data::Dumper; 
 
 use TLily::Server::HTTP;
 use URI;
@@ -796,23 +799,28 @@ $response{"set"} = {
 };
 
 
+my $min  = 60;
+my $hour = $min * 60;
+my $day  = $hour * 24;
+
 sub humanTime {
   my $seconds = shift;
 
-  return ("$seconds seconds");
-
-  my @result;
-  if ($seconds >= 60 * 60 * 24) {
-    push @result, ($seconds/(60*60*24)). " days";
-    $seconds -= ($seconds/(60*60*24));
+  my (@result,$chunk);
+  if ($seconds >= $day) {
+    $chunk = int($seconds/$day); 
+    push @result, $chunk . " days";
+    $seconds -= ($chunk * $day);
   }
-  if ($seconds > 60 * 60 ) {
-    push @result, ($seconds/(60*60)). " hours";
-    $seconds -= ($seconds/(60*60));
+  if ($seconds >= $hour  ) {
+    $chunk = int($seconds/$hour); 
+    push @result, $chunk . " hours";
+    $seconds -= ($chunk * $hour);
   }
-  if ($seconds > 60 ) {
-    push @result, ($seconds/60). " minutes";
-    $seconds -= ($seconds/60);
+  if ($seconds >= $min) {
+    $chunk = int($seconds/$min); 
+    push @result, $chunk . " minutes";
+    $seconds -= ($chunk * $min);
   }
   if ($seconds) {
     push @result, $seconds. " seconds";
@@ -823,7 +831,9 @@ sub humanTime {
 
 $response{"ping"} = {
 	CODE   => sub {
-		return "uptime: " . humanTime(time() - $uptime);
+		my $a = cleanHTML(Dumper(\%served));
+		$a =~ s/\$VAR1 =/ number of commands and messages processed: /;
+		return "pong. uptime: " . humanTime(time() - $uptime) . "; $a";
 	},
 	HELP   => sub { return "Yes, I'm alive. And have some stats while you're at it.";},
 	TYPE   => [qw/private/],
@@ -1523,6 +1533,8 @@ sub cj_event {
 					$re = qr/^\s*(?i:$name\s*,?\s*)?$re/;
 				}
 				if ($event->{VALUE} =~ m/$re/) {
+					$served{$event->{type} . " messages"}++;
+					$served{$handler}++;
 					$message .= &{$response{$handler}{CODE}}($event);
 					if ($response{$handler}->{STOP}) {
 						last HANDLE_OUTER;
