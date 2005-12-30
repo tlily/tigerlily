@@ -1328,6 +1328,7 @@ $response{horoscope} = {
             $type = "chinese";
         }
 
+        $term = lc $term;
         $url = $url . $term;
         add_throttled_HTTP(
             url      => $url,
