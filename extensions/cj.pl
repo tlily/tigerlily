@@ -522,6 +522,42 @@ have wanted it.
 
 =cut
 
+$response{weather} = {
+    CODE => sub {
+        my ($event) = @_;
+        my $args = $event->{VALUE};
+        if ( $args !~ m/weather\s*(.*)\s*$/i ) {
+            return "ERROR: Expected RE not matched!";
+        }
+        my $term     = escape $1;
+        my $url      =
+            "http://mobile.wunderground.com/cgi-bin/findweather/getForecast?brand=mobile&query=$term";
+        add_throttled_HTTP(
+            url      => $url,
+            ui_name  => 'main',
+            callback => sub {
+                my ($response) = @_;
+                my $conditions = 
+                  scrape_weather( $term, $response->{_content} );
+                if ($conditions )
+                {
+                    dispatch( $event, $conditions) ;
+                }
+                else
+                {
+                    dispatch( $event, "I don't know where that is.");
+                }
+            }
+        );
+        return;
+    },
+    HELP => sub { return "Given a location, get the weather forecast." },
+    TYPE => [qw/private public emote/],
+    POS  => '-1',
+    STOP => 1,
+    RE   => qr/\bweather\b/i
+};
+
 $response{engrish} = {
     CODE => sub {
         my ($event) = @_;
@@ -862,46 +898,35 @@ $response{"set"} = {
         }
         my @args = split( ' ', $args, 2 );
 
-        my $handle = $event->{SHANDLE};
+        my $section = "user $event->{SHANDLE}";
 
-        if ( scalar @args == 0 ) {
-            my @tmp;
-            if ( $handle eq "#127" ) {
-                foreach my $key ( sort keys %prefs ) {
-                    $key =~ /^(#\d+)-(.*)/;
-                    my ( $user, $var ) = ( $1, $2 );
-                    my $nick =
-                      TLily::Server->active()->get_name( HANDLE => $user );
-                    push @tmp,
-                      "\$\{" . $nick . "\}\{$2\}=\'" . $prefs{$key} . "\'";
-                }
-            }
-            else {
-                foreach my $key ( grep { /^${handle}-/ } ( sort keys(%prefs) ) )
-                {
-                    ( my $var = $key ) =~ s/^${handle}-//;
-                    push @tmp, "\$" . $var . "=\'" . $prefs{$key} . "\'";
-                }
+        if ( ! @args ) {
+            my @tmp; 
+            foreach my $key ($config->Parameters($section))
+            {
+                my $val = $config->val($section,$key);
+                push @tmp,  $key . " = \'" . $val . "\'";
             }
             return join( ", ", @tmp );
         }
         elsif ( scalar @args == 1 ) {
-            return $prefs{ $handle . "-" . $args[0] };
+            my $val = $config->val($section,$args[0]);
+            return (defined($val)? "\"$val\"":"undef");
         }
-        elsif ( scalar @args == 2 ) {
-            if ( $args[0] =~ m:^\*: ) {
-                return "You may not modify " . $args[0] . " directly.";
+        else
+        {
+            my $key = shift @args;
+            my $val = join(" ",@args);
+            if ( $key =~ m:^\*: ) {
+                return "You may not modify " . $key . " directly.";
             }
-            $prefs{ $handle . "-" . $args[0] } = $args[1];
-            return "set \$" . $args[0] . "=\'" . $args[1] . "\'";
-        }
-        else {
-            return "ERROR: Expected RE not matched!";
+            $config->setval($section,$key,$val);
+            return $key . " = \'" . $val . "\'";
         }
     },
     HELP => sub {
         return
-"Purpose: provide a generic mechanism for preference management. Usage: set [ <var> [ <value> ] ]. Only works in private. I should really limit what data can be set here.";
+"Purpose: provide a generic mechanism for preference management. Usage: set [ <var> [ <value> ] ]. Only works in private. I should really limit what data can be set here. Also, we use your SHANDLE via SLCP, in violation of the geneva convention.";
     },
     TYPE => [qw/private/],
     POS  => '0',
@@ -1095,16 +1120,35 @@ $response{eliza} = {
     RE   => qr/.*/,
 };
 
-sub scrape_horoscope {
+sub scrape_weather {
     my ( $term, $content ) = @_;
 
-    $content =~ m/<span class="yastshdate">([^<]*)<\/span>/i;
-    my $dates = $1;
+    $content =~ m/(Updated:.*)<tr><td>Visibility/s;
+    my $results = $1;
+    $results =~ s/<tr>/; /g ;
+    return cleanHTML($results);
+}
+
+sub scrape_horoscope {
+    my ( $term, $content, $type ) = @_;
+
     $content =~ m/<big class="yastshsign">([^<]*)<\/big>/i;
     my $sign = $1;
-    $content =~ m/<b class="yastshdotxt">Overview:<\/b><br>([^<]*)<\/td>/;
-    my $reading = $1;
-    return cleanHTML("$sign ($dates): $reading");
+
+    if ($type eq "chinese") {
+        $content =~ m:<small>Year In General(.*)Previous Day</a>:s;
+        my $reading = $1;
+        return cleanHTML("$sign : $reading");
+    }
+    else
+    {
+        $content =~ m/<span class="yastshdate">([^<]*)<\/span>/i;
+        my $dates = $1;
+        $content =~ m/<b class="yastshdotxt">Overview:<\/b><br>([^<]*)<\/td>/;
+        my $reading = $1;
+        return cleanHTML("$sign ($dates): $reading");
+    }
+
 }
 
 sub scrape_translate {
@@ -1245,36 +1289,62 @@ $response{bacon} = {
     RE   => qr/bacon/i,
 };
 
-# XXXX SHouldn't have the same RE twice.
+my $horoscopeRE = qr( \b
+    (
+      aries | leo | sagittarius | taurus | virgo | capricorn | gemini |
+      libra | aquarius | cancer | scorpio | pisces | ophiuchus
+    )  |
+    (
+      rat | ox | goat | dragon | rabbit | monkey | dog | pig | snake | 
+      tiger | rooster | horse
+    )
+\b )xi;
+
 $response{horoscope} = {
     CODE => sub {
         my ($event) = @_;
         my $args = $event->{VALUE};
+        my ($term, $url, $type);
 
         #XXX this should be done in the handler caller, not the handler itself.
-        $args =~
-m/\b(aries|leo|sagittarius|taurus|virgo|capricorn|gemini|libra|aquarius|cancer|scorpio|pisces)\b/i;
+        $args =~ $horoscopeRE;
 
-        my $term = $1;
-        my $url  =
-          "http://astrology.yahoo.com/astrology/general/dailyoverview/$term";
+        if ($1)
+        {
+            $term = $1;
+            if (lc($term) eq "ophiuchus") {
+                # support those unlucky enough to be in this sign.
+                $term = "sagittarius";
+            }
+            $url  =
+              "http://astrology.yahoo.com/astrology/general/dailyoverview/";
+            $type = "western";
+        }
+        else 
+        {
+            $term = $2;
+            $url  =
+              "http://astrology.yahoo.com/chinese/general/dailyoverview/";
+            $type = "chinese";
+        }
+
+        $url = $url . $term;
         add_throttled_HTTP(
             url      => $url,
             ui_name  => 'main',
             callback => sub {
                 my ($response) = @_;
                 dispatch( $event,
-                    scrape_horoscope( $term, $response->{_content} ) );
+                    scrape_horoscope( $term, $response->{_content}, $type ) );
             }
         );
         "";    #muahaah
     },
-    HELP => sub { return "ask me about your sign to get a daily horoscope."; },
+    HELP => sub { return "ask me about your sign to get a daily horoscope. We speak chinese."; },
     TYPE => [qw/private public emote/],
     POS  => '-1',
     STOP => 1,
-    RE   =>
-qr/\b(aries|leo|sagittarius|taurus|virgo|capricorn|gemini|libra|aquarius|cancer|scorpio|pisces)\b/i
+    RE   => $horoscopeRE,
 };
 
 $response{define} = {
@@ -1631,6 +1701,8 @@ sub cleanHTML {
     $a =~ s/&gt;/>/gi;
     $a =~ s/&amp;/&/gi;
     $a =~ s/&#46;/./g;
+    $a =~ s/&#160;/ /g;
+    $a =~ s/&#176;/o/g;
     $a =~ s/&#0?39;/'/g;
     $a =~ s/&quot;/"/ig;
     $a =~ s/&nbsp;/ /ig;
