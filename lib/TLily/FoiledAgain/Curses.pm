@@ -127,6 +127,10 @@ sub stop {
     system("stty lnext $STTY_LNEXT") if ($STTY_LNEXT);
 }
 
+sub refresh {
+    endwin();
+    doupdate();
+}
 
 
 #

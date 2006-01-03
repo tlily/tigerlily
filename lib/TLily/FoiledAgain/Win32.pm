@@ -148,6 +148,7 @@ sub stop {
 
 
 sub has_resized { }
+sub refresh {  }
 sub suspend {  }
 sub resume  {  }
 sub bell {

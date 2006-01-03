@@ -119,6 +119,7 @@ sub stop {
 }
 
 
+sub refresh { }
 sub suspend {  }
 sub resume  {  }
 sub bell {

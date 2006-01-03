@@ -640,9 +640,7 @@ sub print {
 
 sub force_redraw {
     my ($self) = @_;
-
-#    $self->{input}->{F}->{W}->clearok(1);  # XXX foiledagain
-    $self->redraw();
+    TLily::FoiledAgain::refresh();
 }
 
 sub redraw {

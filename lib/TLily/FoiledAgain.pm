@@ -150,6 +150,7 @@ Return a character of input, if available.  Otherwise return undef.
 # screen operations
 sub start            { dispatch_classmethod(start            => @_); }
 sub stop             { dispatch_classmethod(stop             => @_); }
+sub refresh          { dispatch_classmethod(refresh          => @_); }
 sub has_resized      { dispatch_classmethod(has_resized      => @_); }
 sub suspend          { dispatch_classmethod(suspend          => @_); }
 sub resume           { dispatch_classmethod(resume           => @_); }
