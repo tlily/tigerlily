@@ -394,9 +394,37 @@ sub do_throttled_HTTP {
 }
 
 # Given a URL and a callback, find out the shortened version
-# of the URL and pass it to the callback.
+# of the URL and pass it to the callback. Or the other thing.
 
 my %shorts;    # briefs?
+
+sub unshorten {
+    my ( $short, $callback ) = @_;
+
+    my $url = 'http://metamark.net/api/rest/simple?short_url=' . escape($short);
+
+    add_throttled_HTTP(
+        url      => $url,
+        ui_name  => 'main',
+        callback => sub {
+
+            my ($response) = @_[0];
+
+            my $ans = "";
+            if ( $response->{_content} =~ "ERROR" ) {
+                $ans = "Pshaw. That's not right, and you know it.";
+            }
+            else {
+                $ans = $response->{_content};
+                $ans =~ s/\s//g;
+                $ans = "Originally: $ans";
+                
+            }
+            &$callback($ans);
+        }
+    );
+    return;
+}
 
 sub shorten {
     my ( $short, $callback ) = @_;
@@ -428,8 +456,12 @@ sub shorten {
                 $response->{_content} =~ m/(http.*)/;
                 $ans = $1;
                 $ans =~ s/\s//g;
-                $ans .= " [$original_host]";
-                $shorts{$short} = $ans;
+                if ($ans) { 
+                  $ans .= " [$original_host]";
+                  $shorts{$short} = $ans;
+                } else {
+                  $ans = "unresolvable, sorry."
+                }
             }
             &$callback($ans);
         }
@@ -706,8 +738,8 @@ $response{shorten} = {
             return "ERROR: Expected RE not matched!";
         }
         my $shorten = $1;
-        if ( $shorten =~ m|^http://xrl.us| ) {
-            dispatch( $event, "Who shortens the shortening?" );
+        if ( $shorten =~ m|^http://xrl.us/(.*)| ) {
+            unshorten( $1, sub { dispatch( $event, shift ) } );
         }
         else {
             shorten( $shorten, sub { dispatch( $event, shift ) } );
@@ -715,7 +747,7 @@ $response{shorten} = {
         return "";
     },
     HELP => sub {
-        return "Given a URL, return an xrl.us shortened version of the url.";
+        return "Given a URL, return an xrl.us shortened version of the url. Or, vice versa.";
     },
     TYPE => [qw/private/],
     POS  => '-1',
