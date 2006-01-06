@@ -748,7 +748,7 @@ $response{help} = {
     },
     HELP => sub { return "You're kidding, right?"; },
     TYPE => [qw/private/],
-    POS  => '-1',
+    POS  => '-2',
     STOP => 1,
     RE   => qr/\bhelp\b/i,
 };
@@ -1817,7 +1817,7 @@ sub cj_event {
 
     # Workhorse for responses:
     my $message = "";
-  HANDLE_OUTER: foreach my $order (qw/-1 0 1 2/) {
+  HANDLE_OUTER: foreach my $order (qw/-2 -1 0 1 2/) {
       HANDLE_INNER: foreach my $handler ( keys %response ) {
 
             # XXX respect PRIVILEGE
