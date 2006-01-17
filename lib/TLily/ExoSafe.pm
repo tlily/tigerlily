@@ -12,6 +12,8 @@
 
 package ExoSafe;
 
+use File::Find;
+use IO::String;
 use Carp;
 use strict;
 no strict 'refs';
@@ -104,26 +106,60 @@ sub symtab {
 
 sub load_internal_files {
     if (keys %internal_files == 0) {
-	local *FH;
-	my $rc = open(FH, $0) or die "$0: $!";
+        local *FH;
+        my $rc = open(FH, $0) or die "$0: $!";
 
-	my $name;
-	my $data = "";
-	while (<FH>) {
-	    if (defined($name)) {
-		if (/^\#\#\#\# END/) {
-		    $internal_files{$name} = $data;
-		    $data = "";
-		    undef $name;
-		} else {
-		    $data .= $_;
-		}
-	    } else {
-		if (/^\#\#\#\# EMBEDDED \"([^\"]+)\"/) {
-		    $name = $1;
-		}
-	    }
-	}
+        my $name;
+        my $data = "";
+        while (<FH>) {
+            if (defined($name)) {
+                if (/^\#\#\#\# END/) {
+                    $internal_files{$name} = $data;
+                    $data = "";
+                    undef $name;
+                } else {
+                    $data .= $_;
+                }
+            } else {
+                if (/^\#\#\#\# EMBEDDED \"([^\"]+)\"/) {
+                    $name = $1;
+                }
+            }
+        }
+    }
+}
+
+sub list_files {
+    my $rootdir = shift;
+    my $filter = shift || '';
+    my @files;
+
+    if ($rootdir =~ s|^//INTERNAL/||) {
+        my $full_filter = "$rootdir/$filter";
+        @files = map { "//INTERNAL/$_" }
+                 grep { m|^\Q$full_filter\E| } keys %internal_files;
+    } else {
+        find({ wanted => sub {
+            m/^\..+/ && ($File::Find::prune = 1) && next;
+            $File::Find::name =~ m|^\Q$rootdir/$filter\E| || next;
+            -f || next;
+            push(@files, $File::Find::name);
+        } }, $rootdir);
+    }
+
+    return @files;
+}
+
+sub fetch {
+    my $file = shift;
+
+    if ($file =~ s|//INTERNAL/||) {
+        load_internal_files();
+        return IO::String->new(my $var = $internal_files{$file});
+    } else {
+        local $/ = undef;
+        open(my $fh, $file) or die "Could not open $file: $!\n";
+        return $fh;
     }
 }
 

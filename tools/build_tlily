@@ -135,15 +135,11 @@ sub get_tlily_plx {
     );
 
     if ($moduleset eq "curses") {
-        push @modules, qw(
-            TLily::UI::Curses::Generic TLily::UI::Curses::Input
-            TLily::UI::Curses::StatusLine TLily::UI::Curses::Text
-            TLily::UI::Curses TLily::FoiledAgain::Curses
-        );
+        push @modules, qw(TLily::FoiledAgain::Curses);
     } elsif ($moduleset eq "win32") {   
         push @modules, qw(TLily::FoiledAgain::Win32);
     } elsif ($moduleset eq "tk") {
-        push (@modules, qw(TLily::UI::Tk::Event TLily::UI::Tk));
+        push @modules, qw(TLily::UI::Tk::Event TLily::UI::Tk);
     }
 
     for my $module (@modules) {
@@ -153,7 +149,9 @@ sub get_tlily_plx {
         $file =~ s|::|/|g;
         
         $script .= "{\n";
+        $script .= "#### EMBEDDED \"$file\"\n";
         $script .= embedperl($file);
+        $script .= "#### END\n";
         $script .= "}\n";
     }
     
@@ -195,23 +193,16 @@ sub embedperl {
         if (/^__(?:END|DATA)__/) {
             last;
         }
-        if ($inpod) {
-            if (/^=cut/) {
-                $inpod = 0;
-            }
+
+        if (/^use\s+(TLily::[^\s;\(]+)(.*)/) {
+            print "$file depends on $1\n" unless $added{$1};
+            $script .= "BEGIN { import $1$2 }\n";
+        } elsif (/^\@(?:ISA|EXPORT|EXPORT_OK|EXPORT_TAGS)\s*=/) {
+            $script .= "BEGIN {\n    $_}\n";
+        } elsif (/eval "require \$UI_CLASS;";/) {
+            $script .= '    eval "import $UI_CLASS;";';
         } else {
-            if (/^=/) {
-                $inpod = 1;
-            } elsif (/^use\s+(TLily::[^\s;\(]+)(.*)/) {
-                print "$file depends on $1\n" unless $added{$1};
-                $script .= "BEGIN { import $1$2 }\n";
-            } elsif (/^\@(?:ISA|EXPORT|EXPORT_OK|EXPORT_TAGS)\s*=/) {
-                $script .= "BEGIN {\n    $_}\n";
-            } elsif (/eval "require \$UI_CLASS;";/) {
-                $script .= '    eval "import $UI_CLASS;";';
-            } else {
-                $script .= $_;
-            }
+            $script .= $_;
         }
     }
 

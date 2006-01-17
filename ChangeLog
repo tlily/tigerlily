@@ -1,4 +1,12 @@
 Version 2.4-post
+  * Rework internal POD help system system to work to use new file access
+    layer, and uses Pod::Text instead of backticking to perldoc, so it now
+    works in Windows and in single-file installs. [MJR]
+  * Add a simple file-access layer to ExoSafe that allows for TLily to
+    access the contents of component files whether it's normal or single-
+    file install. [MJR]
+  * [tools/build_tlily] Fix curses single-build build (Was still trying
+    to include removed Curses modules. [MJR]
   * Finally removed the Curses UI, as Josh requested [WJC]
   * [extensions/defiance.pl] A bot extension for handling Defiance Radio [JDW]
   * [extensions/deblurb.pl] Fixed handling of blurb changes [RBJ]
