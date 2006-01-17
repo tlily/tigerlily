@@ -103,7 +103,7 @@ sub load {
 			$main::TL_EXTDIR);
 	my $dir;
 	foreach $dir (@ext_dirs) {
-	    if (-f "${dir}/${name}.pl" || $dir =~ m|^//INTERNAL|) {
+            if (ExoSafe::fetch("${dir}/${name}.pl")) {
 		$filename = "${dir}/${name}.pl";
 		last;
 	    }

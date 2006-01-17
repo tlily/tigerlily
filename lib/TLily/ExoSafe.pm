@@ -155,9 +155,11 @@ sub fetch {
 
     if ($file =~ s|//INTERNAL/||) {
         load_internal_files();
+        return undef unless exists $internal_files{$file};
         return IO::String->new(my $var = $internal_files{$file});
     } else {
         local $/ = undef;
+        return undef unless -f $file;
         open(my $fh, $file) or die "Could not open $file: $!\n";
         return $fh;
     }

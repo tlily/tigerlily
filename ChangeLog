@@ -1,4 +1,6 @@
 Version 2.4-post
+  * [TLily/ExoSafe.pm,TLily/Extend.pm] Fix bug #1119 - Loading non-
+    existant extensions in single-file failed ungracefully.
   * Rework internal POD help system system to work to use new file access
     layer, and uses Pod::Text instead of backticking to perldoc, so it now
     works in Windows and in single-file installs. [MJR]
