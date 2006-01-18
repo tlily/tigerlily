@@ -95,7 +95,6 @@ sub new {
     #init();
 
     my $ui = TLily::UI::name($self->{ui_name});
-    $ui->print("SETTING THE USER TO '$self->{user}'\n");
 
     $ui->print("Logging into IRC...\n");
 
@@ -174,6 +173,7 @@ sub new {
       # Keep adding _'s to our name! XXX need saner approach, neh?
       $self->{user} .= "_";  
       $conn->nick($self->{user});
+      $ui->print("*** Renaming to $self->{user} ***\n");
       # XXX Generate a lily rename event.
     });
 
@@ -181,14 +181,26 @@ sub new {
       my ($conn,$event) = @_;
       my ($channel) = ($event->to)[0];
 
-      $ui->print("'$event->{nick}' vs. '$self->{user}'\n");
       if ($event->{nick} eq $self->{user}) {
         $ui->print("(you have joined $channel)\n");
       } else {  
-        $ui->print("*** $event->{nick} has joined $channel ***\n");
+        $ui->print("*** $event->{nick} is now a member of $channel ***\n");
       }
 
       # XXX Generate tlily join'd event.
+    });
+
+    $self->{irc}->add_handler('part', sub {
+      my ($conn,$event) = @_;
+      my ($channel) = ($event->to)[0];
+
+      if ($event->{nick} eq $self->{user}) {
+        $ui->print("(you have quit $channel)\n");
+      } else {  
+        $ui->print("*** $event->{nick} is no longer a member of $channel ***\n");
+      }
+
+      # XXX Generate tlily quit event.
     });
 
 
