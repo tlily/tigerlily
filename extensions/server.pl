@@ -6,6 +6,7 @@ use strict;
 use TLily::UI;
 use TLily::Server::SLCP;
 use TLily::Server::AIM;
+use TLily::Server::IRC;
 use TLily::Event;
 
 =head1 NAME
@@ -101,10 +102,14 @@ sub connect_command {
 
     } elsif ($host =~ /^aim:([^\:]+):([^\:]+)/i) {
         $host = "host not used";
-        $host = "host not used";
         $port = "port not used";
         $class = 'TLily::Server::AIM';
         $user = $1; $pass = $2;
+    } elsif ($host =~ /^irc:([^\:]+):([^\:]+)/i) {
+        $host = $1;
+        $user = $2;
+        $pass = "pass not used";
+        $class = 'TLily::Server::IRC';
     }
 
     my $server = $class->new(host      => $host,
