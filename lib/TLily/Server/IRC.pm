@@ -272,6 +272,10 @@ sub cmd_process {
                     joi   => \&cmd_join,
                     jo    => \&cmd_join,
                     j     => \&cmd_join,
+                    quit  => \&cmd_quit,
+                    qui   => \&cmd_quit,
+                    qu    => \&cmd_quit,
+                    q     => \&cmd_quit,
                     help  => \&cmd_help,
                     hel   => \&cmd_help,
                     he    => \&cmd_help,
@@ -390,6 +394,15 @@ sub cmd_join {
     if ($disc !~ /^#/) { $disc = "#$disc" };
 
     $self->{irc}->join("$disc");
+    return;
+}
+
+sub cmd_quit {
+    my ($self, $disc) = @_;
+  
+    if ($disc !~ /^#/) { $disc = "#$disc" };
+
+    $self->{irc}->part("$disc");
     return;
 }
 
