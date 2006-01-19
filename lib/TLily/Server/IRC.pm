@@ -190,6 +190,14 @@ sub new {
       # XXX Generate tlily join'd event.
     });
 
+    $self->{irc}->add_handler('nick', sub {
+      my ($conn,$event) = @_;
+      my $from = $event->{nick};
+      my $to   = $event->{args}->[0];
+      $ui->print("*** $from is now named $to ***\n");
+      # XXX Generate tlily rename'd event, update our DB.
+    });
+
     $self->{irc}->add_handler('part', sub {
       my ($conn,$event) = @_;
       my ($channel) = ($event->to)[0];
