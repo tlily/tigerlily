@@ -76,6 +76,7 @@ sub new {
 
     $self->{name}      = $name if (defined($args{name}));
     $self->{host}      = $args{host};
+    $self->{ssl}       = $args{ssl};
     @{$self->{names}}  = ($name);
     $self->{ui_name}   = $args{ui_name} || "main";
     $self->{proto}     = "irc";
@@ -118,7 +119,8 @@ sub new {
         $self->{irc} = $self->{netirc}->newconn(
             Server   => $self->{host},
             Port     => 6667,
-            Nick     => $self->{user}
+            Nick     => $self->{user},
+            SSL      => $args{ssl},
         );
        
         die "Error creating Net::IRC object!')\n"
@@ -716,5 +718,25 @@ sub queued_event_handler {
     return 0; # let the event propagate.
 }
 event_r(type  => 'all', order => 'before', call  => \&queued_event_handler);
+
+=item terminate()
+
+Shuts down a server instance. Override our parent version, as we don't
+have a {sock} ATM.
+
+=cut
+
+sub terminate {
+    my($self) = @_;
+
+
+    $self->{irc}->quit() if $self->{irc};
+    $self->{irc} = undef;
+
+    $self->TLily::Server::terminate();
+
+    return;
+}
+
 
 1;
