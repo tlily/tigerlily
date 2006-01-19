@@ -298,6 +298,15 @@ sub cmd_process {
         awa    => \&cmd_away,
         aw     => \&cmd_away,
         a      => \&cmd_away,
+        bye    => \&cmd_detach,
+        by     => \&cmd_detach,
+        b      => \&cmd_detach,
+        detach => \&cmd_detach,
+        detac  => \&cmd_detach,
+        deta   => \&cmd_detach,
+        det    => \&cmd_detach,
+        de     => \&cmd_detach,
+        d      => \&cmd_detach,
         join   => \&cmd_join,
         joi    => \&cmd_join,
         jo     => \&cmd_join,
@@ -423,6 +432,12 @@ sub send_message {
 
 ###############################################################################
 # Private methods
+
+sub cmd_detach {
+    my ($self, $message) = @_;
+
+    $self->terminate($message);
+}
 
 sub cmd_join {
     my ($self, $disc) = @_;
@@ -727,10 +742,9 @@ have a {sock} ATM.
 =cut
 
 sub terminate {
-    my($self) = @_;
+    my($self,$message) = @_;
 
-
-    $self->{irc}->quit() if $self->{irc};
+    $self->{irc}->quit($message) if $self->{irc};
     $self->{irc} = undef;
 
     $self->TLily::Server::terminate();
