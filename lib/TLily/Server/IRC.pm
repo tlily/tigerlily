@@ -584,5 +584,129 @@ sub cmd_default {
 }
 
 
-1;
 
+# Since lily-style sends can be very verbose, we make a small effort to
+# collapse multiple sends that occcur in a very short span of time into
+# a single user visible send. (For IRC only at the moment.)
+
+# XXX - If we can avoid the delay caused by the combinations, then there
+# shouldn't be an issue with turning this on (perhaps optionally) for
+# SLCP servers either. For now, the delay required for SLCP (1.25s based
+# on empirical testing) is too much for many
+# users. If this code ever becomes more generic, move it out of IRC.pm
+
+my $queued_event;         # There can be at most one queued event.
+my $handle_queued_event;  # A timer that will fire and publish the event
+                          #   if a new event isn't received in a short
+                          #   amount of time.
+my $queued_interval = 0.1;# Fractional # of seconds to wait until a queued
+                          # event is dumped.
+
+sub queued_event_handler {
+    my($e) = @_;
+
+    # XXX For now, only process these events for irc-style servers.
+    if (exists $e->{server} && $e->{server}->{proto} ne "irc") { return }
+
+    # Disable the timer.
+    TLily::Event::time_u($handle_queued_event);
+
+    # Skip events that aren't user level. (XXX not necessary for irc-only)
+    # return if $e->{type} eq "slcp_data";
+
+    my $ui= TLily::UI->name($e->{ui_name});
+ 
+    my $publish_queued = 0;
+    my $set_timer = 0;
+    my $enqueue_event = 0;
+
+    # is there a queued event already?
+    if ($queued_event) {
+
+    #  If this event matches the queued_event, then
+    # prepend the previous event into this one, and
+    # delete the last event. Replace the queued event with
+    # this one.
+    #  An event matches if the type, source, and target match.
+
+    # This recips handling is annoying, and may be too overprotective.
+    my ($recips_new,$recips_old);
+    if ($e->{RECIPS}) {
+        if (ref $e->{RECIPS} eq "ARRAY") {
+            $recips_new = join(',',@{$e->{RECIPS}}); 
+        } else {
+            $recips_new = (ref $e->{RECIPS}) . $e->{RECIPS};
+        }
+    }
+    if ($queued_event->{RECIPS}) {
+        if (ref $queued_event->{RECIPS} eq "ARRAY") {
+            $recips_old = join(',',@{$queued_event->{RECIPS}}); 
+        } else {
+            $recips_old = $queued_event->{RECIPS};
+        }
+    }
+
+        if ($e->{type}    eq $queued_event->{type} and
+            $e->{SOURCE}  eq $queued_event->{SOURCE} and
+            $recips_new   eq $recips_old) {
+
+            # combine the events and set the timer.
+            #$ui->print("*** combining events ***\n");
+            $e->{VALUE} = $queued_event->{VALUE} . "\n" . $e->{VALUE};
+            undef $queued_event; 
+        } else {
+            # doesn't match: publish the old event.
+            #$ui->print("*** events don't match ***\n");
+            $publish_queued = 1;
+            if ($e->{type} ne $queued_event->{type}) {
+              #$ui->print("*** event types differ ($e->{type},$queued_event->{type}) ***\n");
+            }
+            if ($e->{SOURCE} ne $queued_event->{SOURCE}) {
+              #$ui->print("*** event source differs ***\n");
+            }
+            if ($recips_new ne $recips_old) {
+              #$ui->print("*** event recips differ ***\n");
+            }
+        }
+    }
+
+    #is the new event queueable? (new and of the right type)
+    #  If the new event is a public, private, or emote send,
+    # then queue it.
+
+    if (($e->{NOTIFY} == 1) and (!exists $e->{_enqueued}) and ($e->{type} eq "public" or $e->{type} eq "private" or $e->{type} eq "emote" )) {
+        $enqueue_event = 1;
+    } else {
+      # don't touch it.
+    }
+
+    if ($publish_queued) {
+        #$ui->print("*** dumping queued event ***\n");
+        $queued_event->{NOTIFY} = 1;
+        TLily::Event::send($queued_event);
+        undef $queued_event;
+    }
+    if ($enqueue_event) {
+        #$ui->print("*** queuing event ***\n");
+        $e->{NOTIFY} = 0;
+        $e->{_enqueued} = 1;
+        $queued_event = $e;
+
+        # Add a timer: If this timer goes off, the event will be re-published
+        # This prevents the last event from being perpetually stuck in the queue.
+        my $h = {
+            after => $queued_interval,
+            call  => sub {
+                $queued_event->{NOTIFY} = 1;
+                TLily::Event::send($queued_event);
+                undef $queued_event;
+            }
+        };
+        $handle_queued_event =  TLily::Event::time_r ( $h ); 
+        return 1; # eat the event.
+    }
+    return 0; # let the event propagate.
+}
+event_r(type  => 'all', order => 'before', call  => \&queued_event_handler);
+
+1;
