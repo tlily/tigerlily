@@ -21,7 +21,6 @@ Reformat public, and private sends with fake newlines to use real ones.
 
 my $newline_re = qr{ 
   (?:   
-    ::  |
     \\n |
     < \s* br \s* /? >   # a br tag, with an optional close brace
   )
