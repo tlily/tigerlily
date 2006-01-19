@@ -169,11 +169,11 @@ sub new {
     # Nick Taken
     $self->{irc}->add_global_handler(433, sub {
       my ($conn) = @_;
-      $ui->print("*** Your nick is already taken ***\n");
+      $ui->print("*** That nick is already taken ***\n");
       # Keep adding _'s to our name! XXX need saner approach, neh?
       $self->{user} .= "_";  
       $conn->nick($self->{user});
-      $ui->print("*** Renaming to $self->{user} ***\n");
+      $ui->print("(you are now named $self->{user})\n");
       # XXX Generate a lily rename event.
     });
 
@@ -201,6 +201,21 @@ sub new {
       }
 
       # XXX Generate tlily quit event.
+    });
+
+    # names
+    $self->{irc}->add_handler(353, sub {
+      my ($conn,$event) = @_;
+       
+      my (@list, $channel) = ($event->args);    # eat yer heart out, mjd!
+
+      # splice() only works on real arrays. Sigh.
+      ($channel, @list) = splice @list, 2;
+
+      # XXX Store this information in our local DB of who is where, instead
+      # of printing it out.
+      $ui->print("Users on $channel: " . join(", ", @list) . "\n");
+
     });
 
 
@@ -268,21 +283,32 @@ sub cmd_process {
 
     return unless ($command =~ /\S/);
 
-    my %commands = (join  => \&cmd_join,
-                    joi   => \&cmd_join,
-                    jo    => \&cmd_join,
-                    j     => \&cmd_join,
-                    quit  => \&cmd_quit,
-                    qui   => \&cmd_quit,
-                    qu    => \&cmd_quit,
-                    q     => \&cmd_quit,
-                    help  => \&cmd_help,
-                    hel   => \&cmd_help,
-                    he    => \&cmd_help,
-                    h     => \&cmd_help,
-                    #who   => \&cmd_who,
-                    #wh    => \&cmd_who,
-                    #w     => \&cmd_who,
+    my %commands = (
+        away   => \&cmd_away,
+        awa    => \&cmd_away,
+        aw     => \&cmd_away,
+        a      => \&cmd_away,
+        join   => \&cmd_join,
+        joi    => \&cmd_join,
+        jo     => \&cmd_join,
+        j      => \&cmd_join,
+        help   => \&cmd_help,
+        hel    => \&cmd_help,
+        he     => \&cmd_help,
+        h      => \&cmd_help,
+        quit   => \&cmd_quit,
+        qui    => \&cmd_quit,
+        qu     => \&cmd_quit,
+        q      => \&cmd_quit,
+        rename => \&cmd_rename,
+        renam  => \&cmd_rename,
+        rena   => \&cmd_rename,
+        ren    => \&cmd_rename,
+        re     => \&cmd_rename,
+        r      => \&cmd_rename,
+        #who    => \&cmd_who,
+        #wh     => \&cmd_who,
+        #w      => \&cmd_who,
      );
 
     &$callback({type    => "begincmd",
@@ -406,6 +432,25 @@ sub cmd_quit {
     return;
 }
 
+sub cmd_away {
+    my ($self, $blurb) = @_;
+  
+    $self->{irc}->away($blurb);
+    return;
+}
+
+sub cmd_rename {
+    my ($self, $nick) = @_;
+
+    my $ui = TLily::UI::name($self->{ui_name});
+  
+    $self->{user} = $nick;
+    $self->{irc}->nick($nick);
+    $ui->print("(you are now named $nick)\n");
+    # XXX Generate a lily rename event.
+    return;
+}
+
 sub cmd_help {
     my ($self, $argstr) = @_;
 
@@ -413,8 +458,11 @@ sub cmd_help {
 
 The following commands are available:
 
+    /away
     /help
     /join
+    /quit
+    /rename
 
 EOF
 }
