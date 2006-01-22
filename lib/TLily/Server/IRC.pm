@@ -59,7 +59,7 @@ sub new {
     bless $self, $class;
 
     # Generate a unique name for this server object.
-    my $name = "IRC";
+    my $name = $args{'host'};
     if ( $server{$name} ) {
         my $i = 2;
         while ( $server{ $name . "#$i" } ) { $i++; }
@@ -99,8 +99,11 @@ sub new {
         ON_SINCE    => time,
         IDLE        => 0,
         LAST_UPDATE => time,
-        UNAVAILABLE => 0
+        STATE       => 'here',
     );
+    $self->state(DATA  => 1,
+                 NAME  => "whoami",
+                 VALUE => $self->{user});
 
     eval { require TLily::Server::IRC::Driver; };
     die "Error loading Net::IRC: $@\n" if $@;
@@ -121,6 +124,15 @@ sub new {
         $ui->print("failed: $@");
         return;
     }
+
+# If uncommented, will dump all received Net::IRC events that do
+# not have handlers registered.  Useful for development.
+#    $self->{'irc'}->add_default_handler(
+#        sub {
+#            my ( $conn, $event ) = @_;
+#            $ui->print("IRCEVENT: " . Dumper($event));
+#        }
+#    );
 
     # on_connect
     $self->{'irc'}->add_global_handler(
@@ -197,6 +209,9 @@ sub new {
             # Keep adding _'s to our name! XXX need saner approach, neh?
             $self->{user} .= "_";
             $conn->nick( $self->{user} );
+            $self->state(DATA  => 1,
+                         NAME  => "whoami",
+                         VALUE => $self->{user});
             $ui->print("(you are now named $self->{user})\n");
 
             # XXX Generate a lily rename event.
@@ -277,10 +292,9 @@ sub new {
 
     # stash a "server name" for use in the status bar.
     # XXX not sufficient.
-    $self->state(
-        DATA => 1,
-        NAME => "IRC"
-    );
+    $self->state(DATA   => 1,
+                 NAME   => "NAME",
+                 VALUE  => $self->{'host'});
 
     TLily::Event::send(
         type   => 'connected',
@@ -521,6 +535,9 @@ sub cmd_rename {
 
     $self->{user} = $nick;
     $self->{irc}->nick($nick);
+    $self->state(DATA  => 1,
+                 NAME  => "whoami",
+                 VALUE => $self->{user});
     $ui->print("(you are now named $nick)\n");
 
     # XXX Generate a lily rename event.
