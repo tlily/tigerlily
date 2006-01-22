@@ -177,3 +177,8 @@ $debughttpd=0;
 # For the 'autoreview' extension: Sets which discussions to /review at
 # connect-time.
 #@autoreview = ('computer', 'lily-dev');
+
+# To make tlily not attempt to connect to a default server, set $noauto
+# to a true value (1)
+#$noauto = 0;
+$noauto = 1;

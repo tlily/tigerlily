@@ -108,13 +108,13 @@ sub get_tlily_plx {
     my $script = get_script_header();
 
     my @modules = qw(
+        TLily::Version
         TLily::ExoSafe
         TLily::Config
         TLily::Registrar
         TLily::Event
         TLily::Utils
         TLily::User
-        TLily::Version
         TLily::UI::Util
         TLily::UI
         TLily::FoiledAgain
@@ -126,6 +126,8 @@ sub get_tlily_plx {
         TLily::Extend
         TLily::Server
         TLily::Server::AIM
+        TLily::Server::IRC::Driver
+        TLily::Server::IRC
         TLily::Server::SLCP
         TLily::Server::HTTP
         TLily::Daemon

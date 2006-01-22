@@ -1,4 +1,18 @@
 Version 2.4-post
+  * [extensions/server.pl, TLily/Server/IRC.pm] Modify to all specifying
+    a server port, and (untested) SSL support, by using 'ircs:' instead of
+    'irc:' in the server specifier.  Also modify the /join command to
+    allow for channel passwords. [MJR]
+  * [tools/tlily_build] TLily::Event uses TLily::Version, but came before 
+    TLily::Version in the single-file build.  Moved TLily::Version to be
+    the first module in the single-file build. [MJR]
+  * [TLily/Server/IRC.pm, TLily/Server/IRC/Driver.pm] Reworked IRC support
+    by subclassing Net::IRC as TLily::Server::IRC::Driver, overriding addfh()
+    and removefh() so we can use TLily's event loop.  This is incomplete,
+    however, as it current only covers io events, and not timed events.
+    The latter is TBD. [MJR]
+  * [tlily.global] Add a comment about $noauto config variable. [MJR]
+  * [TLily/Server/IRC.pm] New module for IRC support. [WJC]
   * [TLily/ExoSafe.pm,TLily/Extend.pm] Fix bug #1119 - Loading non-
     existant extensions in single-file failed ungracefully.
   * Rework internal POD help system system to work to use new file access

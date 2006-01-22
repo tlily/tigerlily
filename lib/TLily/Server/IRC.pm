@@ -40,8 +40,8 @@ This class interfaces tlily to an IRC server.  It also provides a set of
 
 Note:  For compatibility, this is subclassed from SLCP, and all the state
        database-related code is left unmolested.   Ideally though, this code
-       should be refactored into the base class and SLCP and TOC should sit 
-       side by side, since TOC is not REALLY a subclass of SLCP.
+       should be refactored into the base class and SLCP and IRC should sit 
+       side by side, since IRC is not REALLY a subclass of SLCP.
 
 =head1 FUNCTIONS
 
@@ -77,6 +77,7 @@ sub new {
     $self->{name}      = $name if (defined($args{name}));
     $self->{host}      = $args{host};
     $self->{ssl}       = $args{ssl};
+    $self->{port}      = $args{port}||6667;
     @{$self->{names}}  = ($name);
     $self->{ui_name}   = $args{ui_name} || "main";
     $self->{proto}     = "irc";
@@ -110,21 +111,21 @@ sub new {
                  UNAVAILABLE => 0);
 
     eval {
-        require Net::IRC;
+        require TLily::Server::IRC::Driver;
     };
     die "Error loading Net::IRC: $@\n" if $@;
 
     eval {
-        $self->{netirc} = Net::IRC->new();
-        $self->{irc} = $self->{netirc}->newconn(
-            Server   => $self->{host},
-            Port     => 6667,
-            Nick     => $self->{user},
-            SSL      => $args{ssl},
+        $self->{'netirc'} = TLily::Server::IRC::Driver->new();
+        $self->{'irc'} = $self->{'netirc'}->newconn(
+            Server   => $self->{'host'},
+            Port     => $self->{'port'},
+            Nick     => $self->{'user'},
+            SSL      => $args{'ssl'},
         );
        
         die "Error creating Net::IRC object!')\n"
-            unless defined($self->{irc});
+            unless defined($self->{'irc'});
     };
     if ($@) {
 	     $ui->print("failed: $@");
@@ -132,8 +133,13 @@ sub new {
     }
 
     # on_connect
-    $self->{irc}->add_global_handler('376', sub {
+    $self->{'irc'}->add_global_handler('376', sub {
       $ui->print("connected to $self->{host} as $self->{user}.\n\n");
+    });
+    # on disconnect - this is required; if there is no handler for
+    # a disconnect event, Net::IRC's default action is to call die().
+    $self->{'irc'}->add_global_handler('disconnect', sub {
+      $ui->print("*** Closed connection to $self->{host} as $self->{user} ***\n");
     });
 
     $self->{irc}->add_handler('msg', sub {
@@ -231,15 +237,15 @@ sub new {
 
     # Add Net::IRC processing to tlily's events.
     $self->{netirc}->timeout(0.01);
-    my $h = { 
-       after => 0,
-       interval => .02,
-       call => sub {
-           $self->{netirc}->do_one_loop(); 
-       }
-    };
-
-    TLily::Event::time_r( $h );
+#    my $h = { 
+#       after => 0,
+#       interval => .02,
+#       call => sub {
+#           $self->{netirc}->do_one_loop(); 
+#       }
+#    };
+#
+#    TLily::Event::time_r( $h );
 
     $self->add_server();
 
@@ -440,11 +446,11 @@ sub cmd_detach {
 }
 
 sub cmd_join {
-    my ($self, $disc) = @_;
+    my ($self, $disc, $pw) = @_;
   
     if ($disc !~ /^#/) { $disc = "#$disc" };
 
-    $self->{irc}->join("$disc");
+    $self->{irc}->join("$disc", $pw);
     return;
 }
 
