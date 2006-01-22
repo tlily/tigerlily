@@ -13,6 +13,7 @@ Version 2.4-post
     The latter is TBD. [MJR]
   * [tlily.global] Add a comment about $noauto config variable. [MJR]
   * [TLily/Server/IRC.pm] New module for IRC support. [WJC]
+  * [extensions/cj.pl] Many new CJ commands, some code cleanup [WJC]
   * [TLily/ExoSafe.pm,TLily/Extend.pm] Fix bug #1119 - Loading non-
     existant extensions in single-file failed ungracefully.
   * Rework internal POD help system system to work to use new file access
