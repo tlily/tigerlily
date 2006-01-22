@@ -19,7 +19,6 @@ use Carp;
 use Text::Abbrev;
 use Exporter;
 use File::Basename;
-use IO::String;
 use Pod::Text;
 
 use TLily::ExoSafe;
@@ -29,6 +28,20 @@ use TLily::Registrar;
 
 @ISA = qw(Exporter);
 @EXPORT_OK = qw(&help_r &shelp_r &command_r);
+
+# Pod::Text methods only operate on filehandles.  So, if IO::String
+# is available, we'll try to use that instead of tempfiles, since it
+# will be faster and more reliable.
+my $IOSTRING_avail;
+BEGIN {
+    eval { require IO::String; };
+    if ($@) {
+        $IOSTRING_avail = 0;
+        require File::Temp;
+    } else {
+        $IOSTRING_avail = 1;
+    }
+}
 
 =head1 NAME
 
@@ -457,13 +470,24 @@ sub help_command {
     
     elsif ($help{$arg} =~ /^POD:(\S+)/) {
         my $in_fh = ExoSafe::fetch($1);
-        my $out_str;
-        my $out_fh = IO::String->new($out_str);
+        my $out_fh;
         my $parser = Pod::Text->new(sentence => 0, width => 77);
+
+        # If IO::String is available, we'll use that, since it will
+        # be faster and more reliable than tempfiles.
+        if ($IOSTRING_avail) {
+            $out_fh = IO::String->new(my $out_str);
+        } else {
+            $out_fh = File::Temp->new(UNLINK => 1, SUFFIX => '.txt');
+        }
+
         $parser->parse_from_filehandle($in_fh, $out_fh);
-	$ui->indent("? ");
-	$ui->print($out_str);
-	$ui->indent("");	
+        seek($out_fh, 0, 0);
+        local $/ = undef;
+
+        $ui->indent("? ");
+        $ui->print(<$out_fh>);
+        $ui->indent("");
     }
 
     else {

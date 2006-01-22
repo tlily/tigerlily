@@ -13,10 +13,23 @@
 package ExoSafe;
 
 use File::Find;
-use IO::String;
 use Carp;
 use strict;
 no strict 'refs';
+
+# Pod::Text methods only operate on filehandles.  So, if IO::String
+# is available, we'll try to use that instead of tempfiles, since it
+# will be faster and more reliable.
+my $IOSTRING_avail;
+BEGIN {
+    eval { require IO::String; die; };
+    if ($@) {
+        $IOSTRING_avail = 0;
+        require File::Temp;
+    } else {
+        $IOSTRING_avail = 1;
+    }
+}
 
 # Originally hacked out of Safe.pm by Chistopher Masto.
 # Expanded and fitted into tigerlily by Matthew Ryan
@@ -156,7 +169,18 @@ sub fetch {
     if ($file =~ s|//INTERNAL/||) {
         load_internal_files();
         return undef unless exists $internal_files{$file};
-        return IO::String->new(my $var = $internal_files{$file});
+
+        # If IO::String is available, use that, since it will be faster
+        # and more reliable than tempfiles.
+        if ($IOSTRING_avail) {
+            return IO::String->new(my $var = $internal_files{$file});
+        } else {
+            my $tmpfile = File::Temp->new( UNLINK => 1,
+                                           SUFFIX => '.txt');
+            $tmpfile->print($internal_files{$file});
+            seek($tmpfile,0,0);
+            return $tmpfile;
+        }
     } else {
         local $/ = undef;
         return undef unless -f $file;

@@ -1,4 +1,7 @@
 Version 2.4-post
+  * [TLily/Server.pm, TLily/Config.pm] Merge in Phreaker's SLCP SSL patches;
+    activate with -secure on commandline, or by setting $secure in your
+    config. [MJR]
   * [extensions/server.pl, TLily/Server/IRC.pm] Modify to all specifying
     a server port, and (untested) SSL support, by using 'ircs:' instead of
     'irc:' in the server specifier.  Also modify the /join command to
