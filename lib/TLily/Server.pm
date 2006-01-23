@@ -118,7 +118,6 @@ sub new {
     $self->{host}      = $args{host};
     $self->{port}      = $args{port};
     $self->{ui_name}   = $args{ui_name};
-    $self->{secure}    = $TLily::Config::config{secure};
     $self->{proto}     = defined($args{protocol}) ? $args{protocol}:"server";
     $self->{bytes_in}  = 0;
     $self->{bytes_out} = 0;
@@ -129,7 +128,7 @@ sub new {
 #					  PeerPort => $self->{port},
 #					  Proto    => 'tcp');
     eval {
-        if($self->{secure} && $SSL_avail == 1) {
+        if ($TLily::Config::config{secure} && $SSL_avail) {
             $self->{sock} = contact_ssl($self->{host}, $self->{port});
         } else {
             $self->{sock} = contact($self->{host}, $self->{port});
@@ -140,6 +139,8 @@ sub new {
 	$ui->print("failed: $@") if $ui;
 	return;
     }
+
+    $self->{secure} = (ref($self->{sock}) eq 'IO::Socket::SSL');
 
     $ui->print("connected.\n") if $ui;
 
@@ -330,6 +331,16 @@ sub terminate {
     return;
 }
 
+=item secure()
+
+Returns true is the connection is secure (e.g., SSL), false otherwise.
+
+=cut
+
+sub secure {
+    my ($self) = @_;
+    return $self->{secure};
+}
 
 =item ui_name()
 
