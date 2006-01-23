@@ -544,35 +544,35 @@ IO Handler to process input from the server.
 
 sub reader {
     my($self, $mode, $handler) = @_;
+    my ($buf, $rc);
+    my $bufsize = 16384;
 
-    my $buf;
-    # Need to use read() here, with a large buffer, or SSL doesn't work
-    # right.
-    my $rc = read($self->{sock}, $buf,  1000000);
+    do {
+        $rc = sysread($self->{sock}, $buf,  $bufsize);
 
+        # Interrupted by a signal or would block
+        return if (!defined($rc) && $! == $::EAGAIN);
 
-    # Interrupted by a signal or would block
-    return if (!defined($rc) && $! == $::EAGAIN);
+        # This is a kludge for the SSL layer, I looked into this back when
+        # I wrote the patches and there was no good way around it.
+        # Without this, I disconnect during the SLCP sync to the RPI
+        # server. - Phreaker
 
-    # This is a kludge for the SSL layer, I looked into this back when
-    # I wrote the patches and there was no good way around it.
-    # Without this, I disconnect during the SLCP sync to the RPI
-    # server. - Phreaker
+        # IO::Socket doesn't have an errstr function, so this call needs
+        # to be wrapped.  This should do the trick.
+        # -Steve
 
-    # IO::Socket doesn't have an errstr function, so this call needs
-    # to be wrapped.  This should do the trick.
-    # -Steve
-
-    if ($self->{sock}->can('errstr')) {
-        if ($self->{sock}->errstr eq "SSL read error\nSSL wants a read first!") {
-            $self->{sock}->error("");
-            $self->{bytes_in} += length($buf);
-            TLily::Event::send(type   => "$self->{proto}_data",
-                               server => $self,
-                               data   => $buf);
-            return;
+        if ($self->{sock}->can('errstr')) {
+            if ($self->{sock}->errstr eq "SSL read error\nSSL wants a read first!") {
+                $self->{sock}->error("");
+                $self->{bytes_in} += length($buf);
+                TLily::Event::send(type   => "$self->{proto}_data",
+                                   server => $self,
+                                   data   => $buf);
+                return if !defined($rc);;
+            }
         }
-    }
+    } while (ref($self->{'sock'}) eq 'IO::Socket::SSL' && $rc);
 
     # Would block.  (used only on win32 right now)
     return if (($^O eq "MSWin32") && (!defined($rc) && $! == &EWOULDBLOCK));
