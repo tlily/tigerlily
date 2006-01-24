@@ -111,6 +111,7 @@ sub init {
     command_r(help => \&help_command);
     shelp_r(help => "Display help pages.");
     help_r(commands  => sub { help_index("commands",  @_); } );
+    help_r(ui_commands  => sub { help_index("ui_commands",  @_); } );
     help_r(variables => sub { help_index("variables", @_); } );
     help_r(concepts  => sub { help_index("concepts", @_); } );
     help_r(internals => sub { help_index("internals", @_); } );

@@ -79,5 +79,6 @@ following a newline are not entered.
 TLily::UI::command_r("paste-mode"        => \&paste_mode);
 TLily::UI::command_r("toggle-paste-mode" => \&toggle_paste_mode);
 TLily::UI::bind("M-p" => "toggle-paste-mode");
-TLily::User::shelp_r("paste" => "Pasting multi-line text.", "concepts");
-TLily::User::help_r("paste" => $paste_help);
+shelp_r("paste" => "Pasting multi-line text.", "concepts");
+help_r("paste" => $paste_help);
+shelp_r("toggle-paste-mode" => "Toggle paste mode (see %help paste)", "ui_commands");

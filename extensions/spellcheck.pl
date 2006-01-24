@@ -193,6 +193,7 @@ NOTE: This extension requires that the \"look\" program be installed and
       functional on your system.
 
 ");
+    shelp_r("look" => "Spellcheck the current word", "ui_commands");
 
 
 }

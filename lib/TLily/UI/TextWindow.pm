@@ -680,9 +680,16 @@ sub bind {
         $self->{bindings}->{$key} = $command;
     } elsif (! defined($key)) {
         # XXXDCL could use specialized sorting algorithm.
+        my %seen;
         foreach my $key (sort keys %{$self->{bindings}}) {
+            $seen{$self->{bindings}->{$key}} = 1;
             $self->print(sprintf("%-16s%s\n", $key,
                                  $self->{bindings}->{$key}));
+        }
+        foreach my $command (sort keys %{$self->{'command'}}) {
+            next if $seen{$command};
+            $self->print(sprintf("%-16s%s\n", '(unbound)',
+                                 $command));
         }
     } elsif ($self->{bindings}->{$key}) {
         $self->print("$key is bound to $self->{bindings}->{$key}\n");
