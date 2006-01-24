@@ -195,16 +195,25 @@ sub embedperl {
         if (/^__(?:END|DATA)__/) {
             last;
         }
-
-        if (/^use\s+(TLily::[^\s;\(]+)(.*)/) {
-            print "$file depends on $1\n" unless $added{$1};
-            $script .= "BEGIN { import $1$2 }\n";
-        } elsif (/^\@(?:ISA|EXPORT|EXPORT_OK|EXPORT_TAGS)\s*=/) {
-            $script .= "BEGIN {\n    $_}\n";
-        } elsif (/eval "require \$UI_CLASS;";/) {
-            $script .= '    eval "import $UI_CLASS;";';
-        } else {
+        if ($inpod) {
+            if (/^=cut/) {
+                $inpod = 0;
+            }
             $script .= $_;
+        } else {
+            if (/^=/) {
+                $inpod = 1;
+                $script .= $_;
+            } elsif (/^use\s+(TLily::[^\s;\(]+)(.*)/) {
+                print "$file depends on $1\n" unless $added{$1};
+                $script .= "BEGIN { import $1$2 }\n";
+            } elsif (/^\@(?:ISA|EXPORT|EXPORT_OK|EXPORT_TAGS)\s*=/) {
+                $script .= "BEGIN {\n    $_}\n";
+            } elsif (/eval "require \$UI_CLASS;";/) {
+                $script .= '    eval "import $UI_CLASS;";';
+            } else {
+                $script .= $_;
+            }
         }
     }
 

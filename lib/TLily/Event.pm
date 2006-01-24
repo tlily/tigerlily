@@ -677,8 +677,3 @@ sub tl_alarm {
 
 
 1;
-
-
-
-__END__
-

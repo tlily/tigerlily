@@ -335,7 +335,6 @@ TLily::Registrar::class_r(global_istyle_fn  => \&istyle_fn_u);
 
 1;
 
-__END__
 
 =back
 
@@ -469,4 +468,3 @@ and inserts the key it is invoked with into the input line.
 The status line needs to be thought out more, fixed up, and documented.
 
 =cut
-

@@ -167,6 +167,3 @@ sub callback {
 sub activate { $_[0]->{alarm} = 1 }
 
 1;
-
-__END__
-

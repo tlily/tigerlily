@@ -647,7 +647,3 @@ sub tl_nonblocking {
 #DESTROY { warn "Server object going down!\n"; }
 
 1;
-
-__END__
-
-=cut
