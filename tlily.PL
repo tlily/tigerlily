@@ -29,7 +29,7 @@ sub directory_init {
         $::TL_TMPDIR = $ENV{TEMP} || 'C:\WINDOWS\TEMP';
     }
     
-    if (!defined($::TL_LIBMODDIR) ||
+    if (defined($::TL_LIBMODDIR) && 
 	($::TL_LIBMODDIR ne "//INTERNAL")) {
 	unshift @INC, $::TL_LIBMODDIR;
     }    
