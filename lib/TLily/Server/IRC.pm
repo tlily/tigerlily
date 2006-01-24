@@ -22,6 +22,7 @@ use TLily::Extend;
 use TLily::Event qw(event_r);
 use TLily::Config qw(%config);
 use TLily::UI;
+use TLily::Server::IRC::Driver;
 
 @ISA = qw(TLily::Server::SLCP);
 
@@ -104,9 +105,6 @@ sub new {
     $self->state(DATA  => 1,
                  NAME  => "whoami",
                  VALUE => $self->{user});
-
-    eval { require TLily::Server::IRC::Driver; };
-    die "Error loading Net::IRC: $@\n" if $@;
 
     eval {
         $self->{'netirc'} = TLily::Server::IRC::Driver->new();
