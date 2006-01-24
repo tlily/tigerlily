@@ -129,6 +129,10 @@ sub new {
     eval {
         if ($TLily::Config::config{secure} && $SSL_avail) {
             $self->{sock} = contact_ssl($self->{host}, $self->{port});
+        } elsif ($TLily::Config::config{secure}) {
+            $ui->print("\n\nWARNING: Secure connection requested, but IO::Socket::SSL not installed!\n");
+            $ui->print("Terminating connection attempt.\n\n");
+            die "No SSL support available.\n";
         } else {
             $self->{sock} = contact($self->{host}, $self->{port});
         }
