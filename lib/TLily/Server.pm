@@ -25,7 +25,6 @@ my $SSL_avail;
 BEGIN {
     eval { require IO::Socket::SSL; };
     if ($@) {
-        warn("*** WARNING: Unable to load IO::Socket::SSL ***\n");
         $SSL_avail = 0;
     } else {
         $SSL_avail = 1;

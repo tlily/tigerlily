@@ -479,7 +479,7 @@ sub help_command {
         if ($IOSTRING_avail) {
             $out_fh = IO::String->new(my $out_str);
         } else {
-            $out_fh = File::Temp->new(UNLINK => 1, SUFFIX => '.txt');
+            $out_fh = File::Temp::tempfile();
         }
 
         $parser->parse_from_filehandle($in_fh, $out_fh);

@@ -12,15 +12,32 @@
 package TLily::Server::IRC::Driver;
 
 use strict;
+use vars qw(@ISA);
 
 use Carp;
-use Net::IRC;
 use TLily::Event;
 use Data::Dumper;
 
-use base qw(Net::IRC);
+my $IRC_avail;
+BEGIN {
+    eval { require Net::IRC; };
+    if ($@) {
+        $IRC_avail = 0;
+    } else {
+        $IRC_avail = 1;
+        @ISA = qw(Net::IRC);
+    }
+
+}
 
 my %tlily_io_handlers;
+
+sub new {
+    return undef unless $IRC_avail;
+    my $proto = shift;
+    my $class = ref($proto) || $proto;
+    $class->SUPER::new(@_);
+}
 
 sub addfh() {
     my $self = shift;

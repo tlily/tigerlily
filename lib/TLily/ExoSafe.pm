@@ -175,9 +175,8 @@ sub fetch {
         if ($IOSTRING_avail) {
             return IO::String->new(my $var = $internal_files{$file});
         } else {
-            my $tmpfile = File::Temp->new( UNLINK => 1,
-                                           SUFFIX => '.txt');
-            $tmpfile->print($internal_files{$file});
+            my $tmpfile = File::Temp::tempfile();
+            print $tmpfile $internal_files{$file};
             seek($tmpfile,0,0);
             return $tmpfile;
         }
