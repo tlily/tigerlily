@@ -16,8 +16,8 @@ die "Usage: $0 <version> [confirm | announce]\n"
 die "You do not appear to be a developer.  You cannot use this function\n"
   unless (-d ".svn");
 
-die "The tlily2 directory must not be present"
-  if (-e "tlily2");
+die "The tlily-$version directory must not be present"
+  if (-e "tlily-$version");
 
 if ($opt && $opt eq "confirm") {
 	$forreal = 1;
@@ -51,10 +51,8 @@ command("svn", "cp",
         "-m", "Tag trunk for $version release.",
         ".", "$url$tag");
 
-$tag = $forreal ? $tag : "/trunk";
-command("svn", "export", "$url$tag", "tlily2");
+command("svn", "export", "$url$tag", "tlily-$version");
 
-command("mv", "tlily2", "tlily-$version");
 command("tar", "cvf", "tlily-$version.tar", "tlily-$version");
 command("rm", "-rf", "tlily-$version");
 command("gzip", "-9", "tlily-$version.tar");
