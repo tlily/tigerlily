@@ -1186,8 +1186,12 @@ sub scrape_horoscope {
 sub scrape_translate {
     my ( $term, $content ) = @_;
 
+    #my $joe = $content;
+#$joe =~ s{\n}{\\n}xgms;
+    #TLily::Server->active()->cmd_process( "Coke:$joe" );
+
     if ( $content =~
-        m{<td bgcolor=white class=s><div style=padding:10px;>(.*)</div></td>}i )
+        m{<td bgcolor=white class=s><div style=padding:10px;>([^<]*)</div></td>}i )
     {
         return cleanHTML($1);
     }
@@ -1276,13 +1280,18 @@ sub scrape_webster {
 
 sub scrape_bacon {
     my ($content) = shift;
-    $content =~ s/.*?says://s;
+
+    if ( $content =~ /cannot find/ ) {
+        $content =~ s/.*?(The Oracle cannot find)/\1/sm;
+        $content =~ s/Arnie.*//sm;
+        return cleanHTML($content);
+    }
+
+    $content =~ s/.*?The Oracle of Bacon at Virginia//s;
+    $content =~ s/.*?The Oracle of Bacon at Virginia//s;
 
     if ( $content =~ /infinity/ ) {
         $content =~ s/(infinity).*/$1/s;
-    }
-    elsif ( $content =~ /cannot find/ ) {
-        $content =~ s/Enter the name of an.*//s;
     }
     else {
         $content =~ s/<br>/;/g;
