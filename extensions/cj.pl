@@ -1312,7 +1312,7 @@ $response{bacon} = {
             dispatch($event,"Are you congenitally insane or irretrievably stupid?");
             return;
         }
-        if ($term =~ m/ \s* (\w+) \s+ (\w+) \s+ \(([ivxlcm])*\) /smix) {
+        if ($term =~ m/ \s* (\w+) \s+ (\w+) \s+ \(([ivxlcm]*)\) /smix) {
             $term = "$2, $1 ($3)";
         }
 
