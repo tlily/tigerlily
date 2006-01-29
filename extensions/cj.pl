@@ -1307,7 +1307,16 @@ $response{bacon} = {
         if ( !( $args =~ m/\bbacon*\s*(.*)\s*$/i ) ) {
             return "ERROR: Expected RE not matched!";
         }
-        my $term = escape($1);
+        my $term = $1;
+        if (lc($term) eq "kevin bacon") {
+            dispatch($event,"Are you congenitally insane or irretrievably stupid?");
+            return;
+        }
+        if ($term =~ m/ \s* (\w+) \s+ (\w+) \s+ \(([ivxlcm])*\) /smix) {
+            $term = "$2, $1 ($3)";
+        }
+
+        $term = escape($term);
         my $url  =
 "http://oracleofbacon.org/cgi-bin/oracle/movielinks?firstname=Bacon%2C+Kevin&game=1&secondname="
           . $term;
