@@ -593,17 +593,17 @@ sub cmd_rename {
 sub cmd_help {
     my ( $self, $argstr ) = @_;
 
-    return <<EOF;
+    return <<"END_HELP";
 
 The following commands are available:
 
-    /away
-    /help
-    /join
-    /quit
+    /away      /bye
+    /detach    /help
+    /join      /kick
+    /mode      /quit
     /rename
 
-EOF
+END_HELP
 }
 
 sub cmd_default {
