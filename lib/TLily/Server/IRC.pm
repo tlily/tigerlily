@@ -108,15 +108,15 @@ sub new {
 
     eval {
         $self->{'netirc'} = TLily::Server::IRC::Driver->new();
+        die "Error creating Net::IRC object! (Are you sure Net::IRC is installed?)\n"
+          unless defined $self->{'netirc'} ;
         $self->{'irc'}    = $self->{'netirc'}->newconn(
             Server => $self->{'host'},
             Port   => $self->{'port'},
             Nick   => $self->{'user'},
             SSL    => $args{'ssl'},
         );
-
-        die "Error creating Net::IRC object!')\n"
-          unless defined( $self->{'irc'} );
+        # XXX carp here about being unable to connect...
     };
     if ($@) {
         $ui->print("failed: $@");
