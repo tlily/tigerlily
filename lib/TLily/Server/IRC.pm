@@ -283,6 +283,32 @@ sub new {
         }
     );
 
+    # rudimentary show mode handler.
+    $self->{irc}->add_handler(
+        'mode',
+        sub {
+            my ( $conn, $event ) = @_;
+
+            $ui->print( "Mode: $event->{from} set " . 
+                join(" ",@{$event->{args}}) . " (" .
+                join(" ",@{$event->{to}})   . ")\n" );
+
+        }
+    );
+ 
+    # (no permissions to op, among others)
+    $self->{irc}->add_handler(
+        482,
+        sub {
+            my ( $conn, $event ) = @_;
+
+            my ( $id, $channel, $msg) = ( $event->args);
+
+            $ui->print( "$channel: $msg\n");
+
+        }
+    );
+
     # Add Net::IRC processing to tlily's events.
     $self->{netirc}->timeout(0.01);
 
@@ -368,6 +394,10 @@ sub cmd_process {
         hel    => \&cmd_help,
         he     => \&cmd_help,
         h      => \&cmd_help,
+        mode   => \&cmd_mode,
+        mod    => \&cmd_mode,
+        mo     => \&cmd_mode,
+        m      => \&cmd_mode,
         quit   => \&cmd_quit,
         qui    => \&cmd_quit,
         qu     => \&cmd_quit,
@@ -499,6 +529,13 @@ sub cmd_detach {
     my ( $self, $message ) = @_;
 
     $self->terminate($message);
+}
+
+sub cmd_mode {
+    my ( $self, $message ) = @_;
+
+    $self->{irc}->mode($message);
+    return;
 }
 
 sub cmd_join {
