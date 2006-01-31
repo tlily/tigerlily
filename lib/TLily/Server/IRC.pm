@@ -390,6 +390,10 @@ sub cmd_process {
         joi    => \&cmd_join,
         jo     => \&cmd_join,
         j      => \&cmd_join,
+        kick   => \&cmd_kick,
+        kic    => \&cmd_kick,
+        ki     => \&cmd_kick,
+        k      => \&cmd_kick,
         help   => \&cmd_help,
         hel    => \&cmd_help,
         he     => \&cmd_help,
@@ -535,6 +539,13 @@ sub cmd_mode {
     my ( $self, $message ) = @_;
 
     $self->{irc}->mode($message);
+    return;
+}
+
+sub cmd_kick {
+    my ( $self, $message ) = @_;
+
+    $self->{irc}->kick(split ('',$message));
     return;
 }
 
