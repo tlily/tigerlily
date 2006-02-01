@@ -153,7 +153,8 @@ sub save_deadfile {
 
     my $deaddir = $ENV{HOME}."/.lily/tlily";
     if (! -d $deaddir) {
-        mkdir $deaddir or return undef;
+        # use the default explicitly for older perls. -Coke
+        mkdir $deaddir, 0777 or return undef;
     }
     my $deadfile = $deaddir . "/dead.$type.$escaped_name";
 

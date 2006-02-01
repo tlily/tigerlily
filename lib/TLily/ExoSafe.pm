@@ -13,6 +13,7 @@
 package ExoSafe;
 
 use File::Find;
+use Cwd;
 use Carp;
 use strict;
 no strict 'refs';
@@ -152,12 +153,14 @@ sub list_files {
         @files = map { "//INTERNAL/$_" }
                  grep { m|^\Q$full_filter\E| } keys %internal_files;
     } else {
+        my $cwd = getcwd();
         find({ wanted => sub {
             m/^\..+/ && ($File::Find::prune = 1) && next;
             $File::Find::name =~ m|^\Q$rootdir/$filter\E| || next;
             -f || next;
             push(@files, $File::Find::name);
         } }, $rootdir);
+        chdir $cwd; # Necessary for older versions of File::Find - Coke
     }
 
     return @files;
@@ -183,7 +186,8 @@ sub fetch {
     } else {
         local $/ = undef;
         return undef unless -f $file;
-        open(my $fh, $file) or die "Could not open $file: $!\n";
+        my $fh = new IO::Handle; # Needed for older perls -Coke
+        open($fh, $file) or die "Could not open $file: $!\n";
         return $fh;
     }
 }

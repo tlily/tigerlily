@@ -9,7 +9,7 @@
 #
 # $Id$
 
-require 5.00307;
+require 5.00503; # Might be able to relax this. But don't. -Coke
 use strict;
 use vars qw($EAGAIN $TL_ETCDIR $TL_LIBDIR $TL_TMPDIR $TL_LIBMODDIR);
 
