@@ -247,6 +247,25 @@ sub new {
     );
 
     $self->{irc}->add_handler(
+        'quit',
+        sub {
+            my ( $conn, $event ) = @_;
+            my ($channel) = ( $event->to )[0];
+
+            if ( $event->{nick} eq $self->{user} ) {
+                $ui->print("(thank you for using IRC)\n");
+            }
+            else {
+                $ui->print(
+                    "*** $event->{nick} has left IRC ***\n"
+                );
+            }
+
+            # XXX Generate tlily quit event.
+        }
+    );
+
+    $self->{irc}->add_handler(
         'part',
         sub {
             my ( $conn, $event ) = @_;
