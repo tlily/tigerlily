@@ -1,6 +1,6 @@
 # -*- Perl -*-
 #    TigerLily:  A client for the lily CMC, written in Perl.
-#    Copyright (C) 1999-2001  The TigerLily Team, <tigerlily@tlily.org>
+#    Copyright (C) 1999-2002  The TigerLily Team, <tigerlily@tlily.org>
 #                                http://www.tlily.org/tigerlily/
 #
 #  This program is free software; you can redistribute it and/or modify it
@@ -335,7 +335,6 @@ TLily::Registrar::class_r(global_istyle_fn  => \&istyle_fn_u);
 
 1;
 
-__END__
 
 =back
 
@@ -469,4 +468,3 @@ and inserts the key it is invoked with into the input line.
 The status line needs to be thought out more, fixed up, and documented.
 
 =cut
-

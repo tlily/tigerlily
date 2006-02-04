@@ -20,7 +20,7 @@ server state database, etc.
 my $has_html_entities = 0;
 
 eval {
-    use HTML::Entities;
+    require HTML::Entities;
     $has_html_entities = 1;
 };
 

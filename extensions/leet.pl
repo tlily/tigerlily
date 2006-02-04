@@ -58,3 +58,4 @@ sub toggle_leet_mode {
 TLily::UI::command_r("leet-mode"        => \&leet_mode);
 TLily::UI::command_r("toggle-leet-mode" => \&toggle_leet_mode);
 TLily::UI::bind("M-l" => "toggle-leet-mode");
+shelp_r("toggle-leet-mode" => "Toggle l33t-speak transliteration of input text", "ui_commands");

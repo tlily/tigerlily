@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 #    TigerLily:  A client for the lily CMC, written in Perl.
-#    Copyright (C) 1999-2001  The TigerLily Team, <tigerlily@tlily.org>
+#    Copyright (C) 1999-2003  The TigerLily Team, <tigerlily@tlily.org>
 #                                http://www.tlily.org/tigerlily/
 #
 #  This program is free software; you can redistribute it and/or modify it
@@ -9,7 +9,7 @@
 #
 # $Id$
 
-require 5.00307;
+require 5.00503; # Might be able to relax this. But don't. -Coke
 use strict;
 use vars qw($EAGAIN $TL_ETCDIR $TL_LIBDIR $TL_TMPDIR $TL_LIBMODDIR);
 
@@ -29,7 +29,7 @@ sub directory_init {
         $::TL_TMPDIR = $ENV{TEMP} || 'C:\WINDOWS\TEMP';
     }
     
-    if (!defined($::TL_LIBMODDIR) ||
+    if (defined($::TL_LIBMODDIR) && 
 	($::TL_LIBMODDIR ne "//INTERNAL")) {
 	unshift @INC, $::TL_LIBMODDIR;
     }    

@@ -2,6 +2,7 @@
 # $Id$
 
 use TLily::Version;
+use Config;
 use strict;
 
 my $TLILY_BUGS = "tigerlily-bugs\@tlily.org";
@@ -27,7 +28,7 @@ my $version;
 sub submit_cmd($) {
     my $ui = shift @_;
     
-    if ($^O =~ /cygwin|MSWin32/) {
+    if (!defined(determine_mail_method($ui))) {
         $ui->print("(Sorry, %submit is not available on the $^O platform at this time.)\n");
 	return;
     }
@@ -53,8 +54,9 @@ sub submit_cmd($) {
 			      $version = $1;
 			  } elsif ($event->{type} eq 'endcmd') {
 			      edit_report(ui => $ui,
-					  version=>$version,
-					  recover=>$recover);
+					  type => $submit_to,
+					  version => $version,
+					  recover => $recover);
 			  }
 			  return 0;
 		      });
@@ -85,9 +87,7 @@ sub edit_report(%) {
     
     $form =~ s/^Lily_Core:$/Lily_Core: $args{'version'}/m;
     $form =~ s/^Lily_Server:$/Lily_Server: $config{'server'}:$config{'port'}/m;
-    my $OS = `uname -a`;
-    chomp $OS;
-    $form =~ s/^OS:$/OS: $OS/m;
+    $form =~ s/^OS:$/OS: $Config{'archname'}/m;
     my @pw = getpwuid $<;
     $pw[6] =~ s/,.*$//;
     $form =~ s/^From:$/From: $pw[0]/m;
@@ -126,24 +126,80 @@ sub edit_report(%) {
     close FH;
     $form = join("",@data);
     if ($form =~ /Description:$/) {
-	$ui->print("(No description - report not submitted; please re-edit with %submit -r)\n");
+	$ui->print("(No description - report not submitted; please re-edit with %submit $args{'type'} -r)\n");
 	return;
     }
     if ($form =~ /^Subject:$/m) {
 	$ui->print("(No subject - report not submitted; please re-edit with %submit -r)\n");
 	return;
     }
+    if ($form !~ /^From:.* <?([^\@\n]+\@[^\@\s\n]+)>?.*$/m) {
+	$ui->print("(No From address - report not submitted; please re-edit with %submit -r)\n");
+        return;
+    }
+    my $from_addr = $1;
     
-    
-    open(FH, "|/usr/lib/sendmail -oi $TLILY_BUGS");
-    print FH $form;
-    close FH;
-    
+    TLily::Event::keepalive();
+    eval { sendmail($from_addr, $form, $ui); };
+    if ($@) {
+        $ui->print("(Submission failed: $@)\n");
+        return;
+    }
+    TLily::Event::keepalive(5);
+
     unlink($tmpfile);
     
     $ui->print("(Report submitted)\n");
 }
 
+
+sub determine_mail_method {
+    my $ui = shift;
+    my $method = undef;
+    foreach ('/usr/lib/sendmail', '/usr/sbin/sendmail') {
+        if (-x $_) {
+            $method = $_;
+            last;
+        }
+    }
+    if (!defined($method)) {
+        eval 'use Net::SMTP;';
+        $method = 'Net::SMTP' unless ($@);
+    }
+
+    return $method;
+}
+
+
+sub sendmail {
+    my $from = shift;
+    my $mail = shift;
+    my $ui = shift;
+
+    my $method = determine_mail_method($ui);
+
+    if ($method =~ m|^/|) {
+        my $rc = open(FH, "|$method -oi $TLILY_BUGS");
+        if ($rc) {
+            print FH $mail;
+            close FH;
+        } else {
+            die "sendmail: $!";
+        }
+    } elsif ($method eq 'Net::SMTP') {
+        my $smtp = Net::SMTP->new('bugs.tlily.org');
+        my $rc;
+        $smtp->mail($from) ||
+            die "Remote server didn't like from address ($from).";
+        $smtp->to($TLILY_BUGS) ||
+            die "Remote server didn't like recipient address ($TLILY_BUGS).";
+        $rc = $smtp->data($mail) ||
+            die "Remote server didn't like message body.";
+        $smtp->quit;
+    } else {
+        die "No method available to send mail.";
+    }
+}
 
 command_r('submit' => \&submit_cmd);
 

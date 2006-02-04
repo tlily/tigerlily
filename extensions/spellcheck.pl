@@ -29,8 +29,8 @@ Spellchecks the word underneath the cursor.  Bound to ^G by default.
 
 =cut
 
-my $dict;
-my $ispell;
+my $state = "disabled";
+my %stop_list;
 
 sub spellcheck_input {
     my($text) = @_;
@@ -79,141 +79,76 @@ sub spellcheck_input {
     return @f;
 }
 
+
 my %look_cache;
-my %stop_list;
+my $last_ispell_restart = 0;
 sub spelled_correctly {
     my ($word) = @_;
 
-    return 1 if lookup_word($word);
-    return 0 if ($ispell);
-
-    # we don't have ispell, so try to do some of its smarts ourselves..
-
-    # try stripping some obvious suffixes
-    $word =~ s/(?:s|ed|ing|\'s)$//g;
-    return 1 if $1 && lookup_word($word);
-
-    $word =~ s/([^ey]e)st$/$1/g;
-    return 1 if $1 && lookup_word($word);
-
-    $word =~ s/([^ey])er$/$1/g;
-    return 1 if $1 && lookup_word($word);
-
-    $word =~ s/([^ey])ed$/$1/g;
-    return 1 if $1 && lookup_word($word);
-
-    $word =~ s/([^e])ing$/$1/g;
-    return 1 if $1 && lookup_word($word);
-    
-    # now try adding some things.
-    # prefixes
-    foreach (qw(re in un)) {
-	return 1 if lookup_word("$_${word}");
-    }
-    
-    # ispell also checks a bunch of suffixes.  They mostly have special rules 
-    # though, so I don't implement them properly here.   We will support ispell
-    # directly, and it will do a better job.  
-    # here, we just make some guesses which may lead to false positives..
-
-    return 1 if lookup_word("${word}s");
-    return 1 if ($word =~ /e$/         && lookup_word("${word}d"));
-    return 1 if ($word =~ /e$/         && lookup_word("${word}rs"));
-    return 1 if ($word =~ /e$/         && lookup_word("${word}r"));
-    return 1 if ($word =~ /[^ey]$/     && lookup_word("${word}ers"));
-    return 1 if ($word =~ /[^ey]$/     && lookup_word("${word}er"));
-    return 1 if ($word =~ /[^e]$/      && lookup_word("${word}ings"));
-    return 1 if ($word =~ /[^e]$/      && lookup_word("${word}ing"));
-    return 1 if ($word =~ /[^aeiou]y$/ && lookup_word("${word}ed"));
-    return 1 if ($word =~ /[^ey]$/     && lookup_word("${word}ed"));
-    return 1 if ($word =~ /[^aeiou]y$/ && lookup_word("${word}est"));
-    return 1 if ($word =~ /[^ey]$/     && lookup_word("${word}est"));
-    return 1 if ($word =~ /e$/         && lookup_word("${word}st"));
-    
-    return 0;
-}
-
-sub lookup_word {
-    my ($word) = @_;
     $word = lc($word);
-
     $word =~ s/[^A-Za-z]//g;
+
+    return 1 if ($state ne "enabled");
+
     return 1 if ($word !~ /\S/);    
+
+    return 1 if (exists($stop_list{$word}));
+    
+    # clear the cache if it's grown too big.
     if (scalar(keys %look_cache) > 500) { undef %look_cache; }
     
-    return 1 if $stop_list{$word};   
-    
-    if (exists $look_cache{$word}) {
-	return $look_cache{$word};
+    return $look_cache{$word} if (exists $look_cache{$word});
+
+    # Talk to ispell
+    print I_WRITE "^$word\n" or do {
+        my $ui = TLily::UI::name();
+
+        if (time - $last_ispell_restart < 60) {
+            $ui->print("(ispell has died again.  giving up and disabling spellcheck)\n");
+            $state="disabled";
+
+            TLily::UI::istyle_fn_u(\&spellcheck_input);
+            return 1;
+            
+        }
+        
+        $last_ispell_restart = time;
+
+        $ui->print("(ispell seems to have died- restarting)");
+        init_ispell();
+
+        return;
+    };
+	
+    my $resp  = <I_READ>;
+    while (defined(my $blank = <I_READ>)) {
+        last if $blank =~ /^$/;
     }
-    
-    my $lookout;
-    if ($ispell) {
-	print I_WRITE "^$word\n" or do {
-	    # Stupidly try to re-start ispell
-	    init_ispell();
-	    return;
-	};
 	
-	my $resp  = <I_READ>;
-	while (defined(my $blank = <I_READ>)) {
-	    last if $blank =~ /^$/;
-	}
-	
-	if ($resp =~ /^[*+-]/) {
-	    $look_cache{$word}=1;
-	} else {
-	    $look_cache{$word}=0;     
-	}
+    if ($resp =~ /^[*+-]/) {
+        $look_cache{$word}=1;
     } else {
-	if ($dict) {
-	    look($dict, $word, 1, 1);
-	    $lookout = <$dict>;	
-	} else {
-	    $lookout = `look -f $word`;
-	}
-	
-	if ($lookout =~ m/\b${word}\b/i) { 
- 	    $look_cache{$word}=1;
-	} else {
-	    $look_cache{$word}=0;	
-	}
+        $look_cache{$word}=0;     
     }
 
     return $look_cache{$word};
 }
 
-my $state;
 sub spellcheck_cmd {
     my($ui, $command) = @_;
 
-    if ($command =~ /on/i) {
-	TLily::UI::istyle_fn_r(\&spellcheck_input);
-	my $dictfile;
+    if ($command =~ /on/i && $state ne "enabled") {
+	if (! init_ispell()) {
+            $ui->print("('ispell' not available, spellcheck disabled)\n");
+            $state="disabled";
+            return;
+        }
 
-	$ispell = init_ispell() unless $config{no_ispell};
+        TLily::UI::istyle_fn_r(\&spellcheck_input);
+        
+        $ui->print("(spellcheck enabled, using \'ispell\')\n");
+        $state="enabled";
 
-	if ($ispell) {
-	    $ui->print("(spellcheck enabled, using \'ispell\')\n");
-	} else {
-	    if (%Search::Dict::) {       
-		my @words = qw(/usr/dict/words /usr/share/dict/words);
-		unshift @words, $config{words} if ($config{words});
-		foreach (@words) {
-		    if ( -f $_ ) { $dictfile = $_; last; }
-		}
-		
-		local *DICT;
-		my $rc = open(DICT, "< $dictfile");
-		$dict = $rc ? *DICT{IO} : undef;
-	    }
-	    if ($dict) {
-		$ui->print("(spellcheck enabled, using Search::Dict on $dictfile)\n");
-	    } else {
-		$ui->print("(spellcheck enabled, using \`look\`)\n");
-	    }
-	}
-	$state="enabled";
     } elsif ($command =~ /off/i) {
 	TLily::UI::istyle_fn_u(\&spellcheck_input);
 	$ui->print("(spellcheck disabled)\n");
@@ -230,13 +165,11 @@ sub init_ispell {
     my $pid = open2(\*I_READ, \*I_WRITE, 'ispell', '-a') or return undef;
     my $banner = <I_READ>;
     $banner =~ /^\@/ or return 0; # "Couldn't sync with ispell"
+
     return $pid;
 }
 
-sub unload { undef $dict; }
 sub load {    
-    eval { use Search::Dict; };
-
     command_r("spellcheck" => \&spellcheck_cmd);
 
     TLily::UI::command_r("look" => \&look_cmd);
@@ -246,7 +179,6 @@ sub load {
 		the to with ok foo bar baz perl tlily)) {
 	$stop_list{$_}=1;
     }
-    
     shelp_r("spellcheck" => "Enable or disable the spell checker");
     help_r("spellcheck" => "
 Usage: %spellcheck [on|off]
@@ -261,6 +193,7 @@ NOTE: This extension requires that the \"look\" program be installed and
       functional on your system.
 
 ");
+    shelp_r("look" => "Spellcheck the current word", "ui_commands");
 
 
 }

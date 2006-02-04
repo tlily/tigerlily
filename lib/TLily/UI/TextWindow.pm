@@ -1,6 +1,6 @@
 # -*- Perl -*-
 #    TigerLily:  A client for the lily CMC, written in Perl.
-#    Copyright (C) 1999-2001  The TigerLily Team, <tigerlily@tlily.org>
+#    Copyright (C) 2003-2006  The TigerLily Team, <tigerlily@tlily.org>
 #                                http://www.tlily.org/tigerlily/
 #
 #  This program is free software; you can redistribute it and/or modify it
@@ -640,9 +640,7 @@ sub print {
 
 sub force_redraw {
     my ($self) = @_;
-
-#    $self->{input}->{F}->{W}->clearok(1);  # XXX foiledagain
-    $self->redraw();
+    TLily::FoiledAgain::refresh();
 }
 
 sub redraw {
@@ -682,9 +680,16 @@ sub bind {
         $self->{bindings}->{$key} = $command;
     } elsif (! defined($key)) {
         # XXXDCL could use specialized sorting algorithm.
+        my %seen;
         foreach my $key (sort keys %{$self->{bindings}}) {
+            $seen{$self->{bindings}->{$key}} = 1;
             $self->print(sprintf("%-16s%s\n", $key,
                                  $self->{bindings}->{$key}));
+        }
+        foreach my $command (sort keys %{$self->{'command'}}) {
+            next if $seen{$command};
+            $self->print(sprintf("%-16s%s\n", '(unbound)',
+                                 $command));
         }
     } elsif ($self->{bindings}->{$key}) {
         $self->print("$key is bound to $self->{bindings}->{$key}\n");

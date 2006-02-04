@@ -105,11 +105,6 @@ lib/TLily/Server/HTTP.pm
 lib/TLily/Server/SLCP.pm
 lib/TLily/UI.pm
 lib/TLily/UI/Cocoa.pm
-lib/TLily/UI/Curses.pm
-lib/TLily/UI/Curses/Generic.pm
-lib/TLily/UI/Curses/Input.pm
-lib/TLily/UI/Curses/StatusLine.pm
-lib/TLily/UI/Curses/Text.pm
 lib/TLily/UI/ReadLine.pm
 lib/TLily/UI/Text.pm
 lib/TLily/UI/TextWindow.pm

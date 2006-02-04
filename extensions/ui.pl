@@ -150,8 +150,12 @@ TLily::UI::bind("M-down" => "next-window");
 TLily::UI::bind("M-up" => "prev-window");
 TLily::UI::bind("M-=" => "split-window");
 TLily::UI::bind("M-q" => "close-window");
-TLily::User::shelp_r("windows" => "Dealing with multiple windows.", "concepts");
-TLily::User::help_r("windows" => $windows_help);
+shelp_r("windows" => "Dealing with multiple windows.", "concepts");
+help_r("windows" => $windows_help);
+shelp_r("next-window" => "Cycle to next window (see %help windows)", "ui_commands");
+shelp_r("prev-window" => "Cycle to previous window (see %help windows)", "ui_commands");
+shelp_r("split-window" => "Split a window in two (see %help windows)", "ui_commands");
+shelp_r("close-window" => "Close current window (see %help windows)", "ui_commands");
 
 
 =item %page
@@ -251,6 +255,7 @@ TLily::UI::bind("C-x" => "next-input-context");
 shelp_r("icontext" => "Input contexts let you defer sends until later.",
         "concepts");
 help_r("icontext" => $icontext_help);
+shelp_r("next-input-context" => "Cycle to next input context (see %help icontext)", "ui_commands");
 
 #
 # Input history searching
@@ -463,11 +468,15 @@ TLily::UI::bind("C-r" => "isearch-backward");
 TLily::UI::bind("C-s" => "isearch-forward");
 shelp_r("isearch" => "Search your input buffer for a string.", "concepts");
 help_r("isearch" => $isearch_help);
+shelp_r("isearch-forward" => "Search input buffer (see %help isearch)",
+        "ui_commands");
+shelp_r("isearch-backward" => "Search input buffer (see %help isearch)",
+        "ui_commands");
 
 #
 # Input editing.
 #
-my $zap_help == qq(
+my $zap_help = qq(
 zap-to-char will delete the input buffer up through the next character typed.
 It is normally bound to M-z.  For example, if you had this pending buffer:
 	Tale:You're ugly, and your mother dresses you funny.
@@ -514,8 +523,8 @@ zap_to_char {
 
 TLily::UI::command_r("zap-to-char" => \&zap_to_char);
 TLily::UI::bind("M-z" => "zap-to-char");
-shelp_r("zap-to-char" =>
-        "Kill the input buffer through the next character typed.");
+shelp_r("zap-to-char" => "Kill input through next char. (%help zap-to-char)",
+        "ui_commands");
 help_r("zap-to-char" => $zap_help);
 
 sub
@@ -533,7 +542,8 @@ kill_sentence {
 
 TLily::UI::command_r("kill-sentence" => \&kill_sentence);
 TLily::UI::bind("M-k" => "kill-sentence");
-shelp_r("kill-sentence" => "Kill the remainder of the sentence.");
+shelp_r("kill-sentence" => "Kill the remainder of the sentence.",
+        "ui_commands");
 
 #
 # Styles.

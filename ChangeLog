@@ -1,4 +1,43 @@
-Version 2.4-post
+Version 2.5.1-post
+
+Version 2.5.1
+  * [TLily/Server.pm, TLily/Config.pm] Merge in Phreaker's SLCP SSL patches;
+    activate with -secure on commandline, or by setting $secure in your
+    config. [MJR]
+  * [extensions/server.pl, TLily/Server/IRC.pm] Modify to all specifying
+    a server port, and (untested) SSL support, by using 'ircs:' instead of
+    'irc:' in the server specifier.  Also modify the /join command to
+    allow for channel passwords. [MJR]
+  * [tools/tlily_build] TLily::Event uses TLily::Version, but came before 
+    TLily::Version in the single-file build.  Moved TLily::Version to be
+    the first module in the single-file build. [MJR]
+  * [TLily/Server/IRC.pm, TLily/Server/IRC/Driver.pm] Reworked IRC support
+    by subclassing Net::IRC as TLily::Server::IRC::Driver, overriding addfh()
+    and removefh() so we can use TLily's event loop.  This is incomplete,
+    however, as it current only covers io events, and not timed events.
+    The latter is TBD. [MJR]
+  * [tlily.global] Add a comment about $noauto config variable. [MJR]
+  * [TLily/Server/IRC.pm] New module for IRC support. [WJC]
+  * [extensions/cj.pl] Many new CJ commands, some code cleanup [WJC]
+  * [TLily/ExoSafe.pm,TLily/Extend.pm] Fix bug #1119 - Loading non-
+    existant extensions in single-file failed ungracefully.
+  * Rework internal POD help system system to work to use new file access
+    layer, and uses Pod::Text instead of backticking to perldoc, so it now
+    works in Windows and in single-file installs. [MJR]
+  * Add a simple file-access layer to ExoSafe that allows for TLily to
+    access the contents of component files whether it's normal or single-
+    file install. [MJR]
+  * [tools/build_tlily] Fix curses single-build build (Was still trying
+    to include removed Curses modules. [MJR]
+  * Finally removed the Curses UI, as Josh requested [WJC]
+  * [extensions/defiance.pl] A bot extension for handling Defiance Radio [JDW]
+  * [extensions/deblurb.pl] Fixed handling of blurb changes [RBJ]
+  * [extensions/profane.pl] Add extension to convert someone's sends into
+    obscenities. [RBJ] 
+  * [extensions/deblurb.pl] Add extension to remove blurbs from a given user's
+    public, private, and SLCP events. [RBJ]
+  * [extensions/slcp_output.pl] Add $stampseconds geekknob to allow the user
+    to display timestamps with seconds. [RBJ]
   * [aqua/] Moved all OSX build items into aqua from root. [WJC]
 
 Version 2.4

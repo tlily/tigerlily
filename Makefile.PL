@@ -43,7 +43,7 @@ sub ask_dirs {
 	print "Configuring for use in the current directory.\n";
 	$TL_PREFIX = ".";
 	$TL_BINDIR = $TL_PREFIX;
-	$TL_LIBDIR = "$TL_PREFIX/lib";
+	$TL_LIBDIR = "lib";
 	$TL_ETCDIR = $TL_PREFIX;
 	$TL_MANDIR = $TL_PREFIX;
 	return;
@@ -271,8 +271,7 @@ release:
 
 sub MY::libscan {
     my($self, $path) = @_;
-    return '' if $path =~ m:\bCVS/:;
-    return '' if $path =~ m:\b.svn/:;
+    return '' if $path =~ m:\.svn/:;
     return '' if $path =~ m:\binfobot-:;
     $path;
 }

@@ -1,6 +1,6 @@
 # -*- Perl -*-
 #    TigerLily:  A client for the lily CMC, written in Perl.
-#    Copyright (C) 1999-2001  The TigerLily Team, <tigerlily@tlily.org>
+#    Copyright (C) 1999-2005  The TigerLily Team, <tigerlily@tlily.org>
 #                                http://www.tlily.org/tigerlily/
 #
 #  This program is free software; you can redistribute it and/or modify it
@@ -150,7 +150,14 @@ sub save_deadfile {
 
     my $escaped_name = $server->name() . "::$name";
     $escaped_name =~ s|/|,|g;
-    my $deadfile = $ENV{HOME}."/.lily/tlily/dead.$type.$escaped_name";
+
+    my $deaddir = $ENV{HOME}."/.lily/tlily";
+    if (! -d $deaddir) {
+        # use the default explicitly for older perls. -Coke
+        mkdir $deaddir, 0777 or return undef;
+    }
+    my $deadfile = $deaddir . "/dead.$type.$escaped_name";
+
     unlink($deadfile);
 
     local *DF;

@@ -1,5 +1,5 @@
 #    TigerLily:  A client for the lily CMC, written in Perl.
-#    Copyright (C) 1999-2001  The TigerLily Team, <tigerlily@tlily.org>
+#    Copyright (C) 1999-2005  The TigerLily Team, <tigerlily@tlily.org>
 #                                http://www.tlily.org/tigerlily/
 #
 #  This program is free software; you can redistribute it and/or modify it
@@ -29,6 +29,7 @@ use TLily::Config qw(%config);
 use TLily::Event qw(event_r);
 use TLily::Extend;
 
+use Text::Wrap;
 use Safe;
 use strict;
 use vars qw(@ISA %EXPORT_TAGS @EXPORT_OK);
@@ -393,16 +394,27 @@ sub wrap_lines {
     my ($str) = @_;    
     my $ret;
 
-    return $str unless ($str =~ /\n/);
+    my $wrap_to = 75;
 
+    return $str unless ($str =~ /\n/);
+    
+    $Text::Wrap::columns = 77;
+    my $str = wrap('','',$str);
+
+    my @lines;
     $str =~ s/\n$//g;
-    foreach (split /\n/, $str) {
-	$ret .= $_;
-	$ret .= " " x (76 - length($_));
+    foreach my $line (split /\n/, $str) {
+	$ret .= $line;
+        my $len = length($line);
+        
+        my $spaces_needed = $wrap_to - ($len % $wrap_to);
+
+        $ret .= " " x $spaces_needed;
     }
     
     return($ret);
 }
+
 
 # die!
 sub realdie {

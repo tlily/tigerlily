@@ -1,6 +1,6 @@
 # -*- Perl -*-
 #    TigerLily:  A client for the lily CMC, written in Perl.
-#    Copyright (C) 1999-2001  The TigerLily Team, <tigerlily@tlily.org>
+#    Copyright (C) 1999-2006  The TigerLily Team, <tigerlily@tlily.org>
 #                                http://www.tlily.org/tigerlily/
 #
 #  This program is free software; you can redistribute it and/or modify it
@@ -18,13 +18,30 @@ use vars qw(@ISA @EXPORT_OK);
 use Carp;
 use Text::Abbrev;
 use Exporter;
+use File::Basename;
+use Pod::Text;
 
+use TLily::ExoSafe;
 use TLily::Config qw(%config);
 use TLily::Utils qw(&max);
 use TLily::Registrar;
 
 @ISA = qw(Exporter);
 @EXPORT_OK = qw(&help_r &shelp_r &command_r);
+
+# Pod::Text methods only operate on filehandles.  So, if IO::String
+# is available, we'll try to use that instead of tempfiles, since it
+# will be faster and more reliable.
+my $IOSTRING_avail;
+BEGIN {
+    eval { require IO::String; };
+    if ($@) {
+        $IOSTRING_avail = 0;
+        require File::Temp;
+    } else {
+        $IOSTRING_avail = 1;
+    }
+}
 
 =head1 NAME
 
@@ -94,6 +111,7 @@ sub init {
     command_r(help => \&help_command);
     shelp_r(help => "Display help pages.");
     help_r(commands  => sub { help_index("commands",  @_); } );
+    help_r(ui_commands  => sub { help_index("ui_commands",  @_); } );
     help_r(variables => sub { help_index("variables", @_); } );
     help_r(concepts  => sub { help_index("concepts", @_); } );
     help_r(internals => sub { help_index("internals", @_); } );
@@ -110,15 +128,78 @@ For a list of available extensions, try "%help extensions".
 If you\'re interested in tlily\'s guts, try "%help internals".
 ');
     
-    rebuild_file_help_idx("$::TL_LIBDIR/TLily",
-                          index => "internals",
-                          prefix => "TLily::")
-      unless ($::TL_LIBDIR =~ m|^//INTERNAL|);
+    rebuild_internal_help_idx(rootdir => "$::TL_LIBDIR",
+                              filter => "TLily",
+                              index => "internals");
 
-    rebuild_file_help_idx("$::TL_EXTDIR",
-                          index => "extensions")
-      unless ($::TL_LIBDIR =~ m|^//INTERNAL|);
+    rebuild_internal_help_idx(rootdir => "$::TL_EXTDIR",
+                              index => "extensions");
 }
+
+
+sub rebuild_internal_help_idx {
+    my %args = @_;
+    my %idx_seen;
+
+    my @files = ExoSafe::list_files($args{'rootdir'}, $args{'filter'});
+
+    foreach my $path (@files) {
+        next unless ($path =~ /\.pm$|\.pl$|\.pod$/);
+
+        my ($name, $dir) = fileparse($path);
+        $dir =~ s|/$||;
+
+        my $index = $dir;
+        $index =~ s|^\Q$args{'rootdir'}\E|$args{'index'}|;
+        $index =~ s|/|::|g;
+        my @dirs = split(/::/, $index);
+
+        my $fd = ExoSafe::fetch($path);
+
+        my $namehead = 0;
+        my $found = 0;
+        while(<$fd>) {
+            if (/=head1 NAME/) { $namehead = 1; next }
+            if (/=head1/) { $namehead = 0; last; }
+            next unless $namehead;
+            next if (/^\s*$/);
+
+            # If we've gotten this far, we now have the NAME pod section.
+            # Grab it.
+            my ($desc) = /-\s*(.*)\s*$/;
+
+            # Short help for this file
+            shelp_r("${index}::$name" => $desc, $index);
+            # Long help (POD) for this file.
+            help_r("${index}::$name" => "POD:$path");
+
+            $found++;
+            last;
+        }
+        close($fd);
+
+        # If we saw no POD docs, don't bother building the parent index;
+        # If another file is encountered in the same index space that has
+        # POD docs, it will trigger the index build.
+        next unless $found;
+
+        # Now create parent indices
+        for (my $elem = $#dirs; $elem >= 0; $elem--) {
+            my $seen_idx = join('::', @dirs[0 .. $elem]);
+            next if $idx_seen{$seen_idx}++;
+
+            # Listing for this index (Will list all the items in this index).
+            help_r($seen_idx => sub { help_index($seen_idx, @_); } );
+
+            # Short help for this index (in super-index)
+            next if $elem == 0;
+            my $parent_idx = join('::', @dirs[0 .. ($elem-1)]);
+            shelp_r($seen_idx => '(index)',  $parent_idx);
+        }
+
+    }
+}
+
 
 =item rebuild_file_help_idx($directory [, index => "indexname"] [, prefix => "prefix")
 
@@ -389,9 +470,25 @@ sub help_command {
     } 
     
     elsif ($help{$arg} =~ /^POD:(\S+)/) {
-	$ui->indent("? ");
-	$ui->print(`COLUMNS=77 perldoc -t $1`);
-	$ui->indent("");	
+        my $in_fh = ExoSafe::fetch($1);
+        my $out_fh;
+        my $parser = Pod::Text->new(sentence => 0, width => 77);
+
+        # If IO::String is available, we'll use that, since it will
+        # be faster and more reliable than tempfiles.
+        if ($IOSTRING_avail) {
+            $out_fh = IO::String->new(my $out_str);
+        } else {
+            $out_fh = File::Temp::tempfile();
+        }
+
+        $parser->parse_from_filehandle($in_fh, $out_fh);
+        seek($out_fh, 0, 0);
+        local $/ = undef;
+
+        $ui->indent("? ");
+        $ui->print(<$out_fh>);
+        $ui->indent("");
     }
 
     else {

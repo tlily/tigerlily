@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 #    TigerLily:  A client for the lily CMC, written in Perl.
-#    Copyright (C) 1999-2001  The TigerLily Team, <tigerlily@tlily.org>
+#    Copyright (C) 2003-2006  The TigerLily Team, <tigerlily@tlily.org>
 #                                http://www.tlily.org/tigerlily/
 #
 #  This program is free software; you can redistribute it and/or modify it
@@ -108,13 +108,13 @@ sub get_tlily_plx {
     my $script = get_script_header();
 
     my @modules = qw(
+        TLily::Version
         TLily::ExoSafe
         TLily::Config
         TLily::Registrar
         TLily::Event
         TLily::Utils
         TLily::User
-        TLily::Version
         TLily::UI::Util
         TLily::UI
         TLily::FoiledAgain
@@ -126,6 +126,8 @@ sub get_tlily_plx {
         TLily::Extend
         TLily::Server
         TLily::Server::AIM
+        TLily::Server::IRC::Driver
+        TLily::Server::IRC
         TLily::Server::SLCP
         TLily::Server::HTTP
         TLily::Daemon
@@ -135,15 +137,11 @@ sub get_tlily_plx {
     );
 
     if ($moduleset eq "curses") {
-        push @modules, qw(
-            TLily::UI::Curses::Generic TLily::UI::Curses::Input
-            TLily::UI::Curses::StatusLine TLily::UI::Curses::Text
-            TLily::UI::Curses TLily::FoiledAgain::Curses
-        );
+        push @modules, qw(TLily::FoiledAgain::Curses);
     } elsif ($moduleset eq "win32") {   
         push @modules, qw(TLily::FoiledAgain::Win32);
     } elsif ($moduleset eq "tk") {
-        push (@modules, qw(TLily::UI::Tk::Event TLily::UI::Tk));
+        push @modules, qw(TLily::UI::Tk::Event TLily::UI::Tk);
     }
 
     for my $module (@modules) {
@@ -153,7 +151,9 @@ sub get_tlily_plx {
         $file =~ s|::|/|g;
         
         $script .= "{\n";
+        $script .= "#### EMBEDDED \"$file\"\n";
         $script .= embedperl($file);
+        $script .= "#### END\n";
         $script .= "}\n";
     }
     
@@ -199,9 +199,11 @@ sub embedperl {
             if (/^=cut/) {
                 $inpod = 0;
             }
+            $script .= $_;
         } else {
             if (/^=/) {
                 $inpod = 1;
+                $script .= $_;
             } elsif (/^use\s+(TLily::[^\s;\(]+)(.*)/) {
                 print "$file depends on $1\n" unless $added{$1};
                 $script .= "BEGIN { import $1$2 }\n";
@@ -232,7 +234,7 @@ $PERL
 ##########################################################################
 ###
 ### Tigerlily:  A client for the lily CMC, written in Perl.
-### Copyright (C) 1999-2001  The TigerLily Team, <tigerlily\@tlily.org>
+### Copyright (C) 1999-2006  The TigerLily Team, <tigerlily\@tlily.org>
 ###                             http://www.tlily.org/tigerlily/
 ###
 ### This program is free software; you can redistribute it and/or modify it

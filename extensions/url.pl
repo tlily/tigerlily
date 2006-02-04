@@ -114,13 +114,19 @@ sub url_cmd {
 	    return;
 	}
 
-	$url =~ s/([,\"\'\\])/sprintf "%%%02x", ord($1)/eg;
+        $url =~ s/([,\"\'\\])/sprintf "%%%02x", ord($1)/eg;
 
 	$ui->print("(viewing $url)\n");
 	my $cmd=$config{browser};
 	if ($cmd =~ /%URL%/) {
-	    $cmd=~s/%URL%/'$url'/g;
+            # This should not have 'quotes' around the substitution value--
+            # consider what happens when browser is set to something like
+            #   mozilla -remote 'openURL("%URL",new-window)'
+            # If the user wants quotes, they should just add them to the
+            # browser variable.
+	    $cmd=~s/%URL%/$url/g;
 	} else {
+            # This should have quotes around it, however.
 	    $cmd .= " '$url'";
  	}
 	if ($^O =~ /MSWin32/) {
@@ -149,7 +155,6 @@ sub url_cmd {
 	    if ($^O =~ /cygwin/) {
 		$ret=`$cmd`;
 	    } else {
-                $ui->print($cmd);
 		$ret=`$cmd 2>&1`;
 	    }
  	    $ui->print("$ret\n") if $ret;

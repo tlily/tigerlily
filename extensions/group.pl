@@ -3,10 +3,9 @@
 
 use strict;
 
-# Author: Will "Coke" Coleda (will@coleda.com)
-
 #
-# nicely format group info.
+# nicely format group info. -- this is somewhat obsolete with 
+#  gad's recent server changes.
 #
 
 #
@@ -15,8 +14,12 @@ use strict;
 #
 
 command_r('group', \&group_cmd);
-shelp_r('group', "Pretty print group info.");
-help_r( 'group',"%group: like /group but prettier.");
+shelp_r('group', "Pretty print group info, add more group features.");
+help_r( 'group',<<"END_HELP");
+%group find <partial> - show all the groups this item is in.
+%group move <item> <from> <to> - delete the item from the from group
+       and add it to the to group.
+END_HELP
 
 sub print_results {
   my ($ui,$msg,%groups) = @_;
@@ -78,8 +81,13 @@ sub group_cmd {
     }
 
     print_results($ui,"no matches found", %hits);
+  } elsif ($subcmd eq "move") {
+    my ($item,$from,$to) = @args;
+    TLily::Server->active()->cmd_process("/group $to add $item");
+    TLily::Server->active()->cmd_process("/group $from del $item");
+  } else {
+    print_results($ui,"see %help group");
   }
-}
-
+} 
 #TRUE! They return TRUE!
 1;

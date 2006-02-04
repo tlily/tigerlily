@@ -1,6 +1,5 @@
-# -*- Perl -*-
 #    TigerLily:  A client for the lily CMC, written in Perl.
-#    Copyright (C) 1999-2001  The TigerLily Team, <tigerlily@tlily.org>
+#    Copyright (C) 1999-2005  The TigerLily Team, <tigerlily@tlily.org>
 #                                http://www.tlily.org/tigerlily/
 #
 #  This program is free software; you can redistribute it and/or modify it
@@ -8,7 +7,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Id$
+# $Header: /data/cvs/lily/tigerlily2/TLily/Server/HTTP.pm,v 1.5 2001/01/26 03:01:51 neild Exp $
 
 package TLily::Server::HTTP;
 
@@ -40,32 +39,44 @@ sub new {
 	my @t = split m|/|, $args{url};
 	$args{filename} = pop @t;
     }
-    
-    TLily::Event::event_r (type => 'server_connected',
-			   call => \&send_url);
-    
+
     my $self = $class->SUPER::new(%args);
+    
+    $self->{handler} = TLily::Event::event_r (type => 'server_connected',
+			  call => \&send_url);
     
     $self->{filename} = $args{filename};
     $self->{url} = $args{url};
     $self->{callback} = $args{callback} if (defined($args{callback}));
-        
+
     bless $self, $class;
 }
 
 sub send_url {
     my ($event, $handler) = @_;
-    
-    my $ui = TLily::UI::name();
+
+    #Since we got this far, we don't need the server_connected callback anymore.
+    TLily::Event::event_u($event->{server}->{handler});
     
     return unless exists ($event->{server}->{url});
-    
-    $event->{server}->send("GET ", $event->{server}->{url},
-			   " HTTP/1.0\r\n\r\n");
+   
+    my $request = "GET " . $event->{server}->{url} . " HTTP/1.0\r\n";
+    $request .= "host: " . $event->{server}->{host} . "\r\n";
+    $request .= "\r\n";
+    $event->{server}->send($request);
     
     return;
 }
 
-sub DESTROY { };
+# don't track the HTTP servers (our parent class does, and that would
+# just keep them around) A better solution might be to have the notion of
+# transient servers.
+
+sub add_server {};
+
+sub DESTROY {
+ # XXX - This never seems to print.
+ #print "DESTROYING HTTP SERVER\n";
+};
 
 1;

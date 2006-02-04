@@ -1,6 +1,6 @@
 # -*- Perl -*-
 #    TigerLily:  A client for the lily CMC, written in Perl.
-#    Copyright (C) 1999-2001  The TigerLily Team, <tigerlily@tlily.org>
+#    Copyright (C) 1999-2006  The TigerLily Team, <tigerlily@tlily.org>
 #                                http://www.tlily.org/tigerlily/
 #
 #  This program is free software; you can redistribute it and/or modify it
@@ -177,3 +177,10 @@ $debughttpd=0;
 # For the 'autoreview' extension: Sets which discussions to /review at
 # connect-time.
 #@autoreview = ('computer', 'lily-dev');
+
+# To make tlily not attempt to connect to a default server, set $noauto
+# to a true value (1)
+#$noauto = 0;
+
+# To enable SSL support (for SLCP), set to true (1):
+$secure = 0;

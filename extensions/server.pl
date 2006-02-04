@@ -6,6 +6,7 @@ use strict;
 use TLily::UI;
 use TLily::Server::SLCP;
 use TLily::Server::AIM;
+use TLily::Server::IRC;
 use TLily::Event;
 
 =head1 NAME
@@ -55,6 +56,7 @@ sub connect_command {
 
     my $host = shift @argv;
     my ($port, $user, $pass) = @argv;
+    my $ssl;
 
     if (!defined $host) {
 	if (!defined($config{server})) {
@@ -101,14 +103,20 @@ sub connect_command {
 
     } elsif ($host =~ /^aim:([^\:]+):([^\:]+)/i) {
         $host = "host not used";
-        $host = "host not used";
         $port = "port not used";
         $class = 'TLily::Server::AIM';
         $user = $1; $pass = $2;
+    } elsif ($host =~ /^irc(s?):([^\:]+):([^\:]+)$/i) {
+        $ssl = $1;
+        $host = $2;
+        $user = $3;
+        $pass = "pass not implemented";
+        $class = 'TLily::Server::IRC';
     }
 
     my $server = $class->new(host      => $host,
                              port      => $port,
+                             ssl       => $ssl,
                              user      => $user,
                              password  => $pass,
                              'ui_name' => $ui->name);
@@ -122,6 +130,8 @@ help_r('connect' => "
 Usage: %connect [host] [port]
 
 Create a new connection to a server.
+  
+(See also: %close)
 ");
 
 

@@ -431,7 +431,8 @@ sub etimestamp {
     
     my @a = localtime($time);
     my $str = TLily::Utils::format_time(\@a, delta => "zonedelta",
-					type => "zonetype");
+					type => "zonetype",
+                                        seconds => "stampseconds");
     return sprintf("%s, ", $str);
 }
 
@@ -440,6 +441,7 @@ sub timestamp {
 
     my @a = localtime($time);
     my $str = TLily::Utils::format_time(\@a, delta => "zonedelta",
-					type => "zonetype");
+					type => "zonetype",
+                                        seconds => "stampseconds");
     return sprintf("(%s) ", $str);
 }

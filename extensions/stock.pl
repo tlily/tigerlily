@@ -6,12 +6,11 @@ use strict;
 #Author: Will "Coke" Coleda
 
 ### Create a user Agent for web processing.
-require LWP::UserAgent;
-my $ua = new LWP::UserAgent;
+use TLily::Server::HTTP;
 
 my (%timer, $timer_id);
 my $info = "STOCK";
-$config{stock_symbol}="EXDS" if (!exists $config{stock_symbol});
+$config{stock_symbol}="GOOG" if (!exists $config{stock_symbol});
 $config{stock_freq}=300 if (!exists $config{stock_freq});
 
 command_r('stock', \&stock_cmd);
@@ -61,34 +60,24 @@ sub cleanHTML {
 sub disp_stock {
 	my ($ui,@stock) = @_;
 
-	my $url = "http://finance.yahoo.com/q?s=" . join("+",@stock) . "&d=v1";
-	my $response = $ua->request(HTTP::Request->new(GET => $url));
-	if (!$response->is_success) {
-		$ui->print("(stock request for @stock failed.)\n");
-		return;
-	}
+	my $url = "http://finance.yahoo.com/d/quotes.csv?s=" . join("+",@stock) . "&f=sl1d1t1c2v";
 
-	my $cnt=0;
+    TLily::Server::HTTP->new(
+      url => $url,
+      callback => sub {
+      
+	my ($response) = @_;
 
-	my @chunks = ($response->content =~ /^<td nowrap align=left>.*/mg);
+	my @chunks = split ( /\n/, $response->{_content} );
 
 	foreach (@chunks) {
-		my $retval="";
-		my ($time,$value,$frac,$perc,$volume) = (split(/<\/td>/,$_,))[1..5];
+                my ( $stock, $value, $date, $time, $change, $volume ) =
+                  map { s/^"(.*)"$/$1/; $_ } split( /,/, $_ );
+                $change =~ s/^(.*) - (.*)$/$1 ($2)/;
 
-		if (/No such ticker symbol/) {
-			$ui->print("($stock[$cnt]: Oops. No such ticker symbol. Try stock lookup.)\n");
-		} else {
-			$retval = "($stock[$cnt]: Last $time, $value: Change $frac ($perc): Vol $volume)";
-			$retval = cleanHTML($retval);
-			$retval =~ s:(\d) / (\d):$1/$2:g;
-			$retval =~ s:\( :(:g;
-			$retval =~ s: \):):g;
-			$retval =~ s: ,:,:g;
-			$ui->print("$retval\n");
+			$ui->print("$stock: Last $date $time, $value: Change $change\n");
 		}
-		$cnt++;
-	}
+  });
 }
 
 #
@@ -97,33 +86,34 @@ sub disp_stock {
 #
 
 sub track_stock {
-	my ($stock) = @_;
+	my (@stock) = @_;
 
-	my $url = "http://finance.yahoo.com/q?s=" . join("+",$stock) . "&d=v1";
-	my $response = $ua->request(HTTP::Request->new(GET => $url));
-	if (!$response->is_success) {
-		return "$stock: no data";
-	}
+	my $ui = TLily::UI->name("main");
+	my $url = "http://finance.yahoo.com/d/quotes.csv?s=" . join("+",@stock) . "&f=sl1d1t1c2v";
 
-	my @chunks = ($response->content =~ /^<td nowrap align=left>.*/mg);
-	if (scalar (@chunks) != 1) {
-		return "$stock: bad data";
-	}
+    TLily::Server::HTTP->new(
+      url => $url,
+      callback => sub {
+      
+	my ($response) = @_;
 
-	my ($time,$value,$frac,$perc,$volume) = (split(/<\/td>/,$chunks[0],))[1..5];
+	my @chunks = split ( /\n/, $response->{_content} );
 
-	if ($chunks[0] =~ /No such ticker symbol/) {
-		return "$stock: bad symbol";
-	} else {
-		my $retval="";
-		$retval = "$stock: $value ($frac)";
-		$retval = cleanHTML($retval);
-		$retval =~ s:(\d) / (\d):$1/$2:g;
-		$retval =~ s:\( :(:g;
-		$retval =~ s: \):):g;
-		$retval =~ s: ,:,:g;
-		return $retval;
-	}
+    my @retval;
+	foreach (@chunks) {
+                my ( $stock, $value, $date, $time, $change, $volume ) =
+                  map { s/^"(.*)"$/$1/; $_ } split( /,/, $_ );
+
+                $change =~ s/^(.*) - (.*)$/$1/;
+
+        push @retval, "$stock:$value($change)";
+		}
+
+    
+  TLily::UI->name("main")->set(stock => join (" ",@retval));
+
+  });
+
 }
 
 #
@@ -136,16 +126,17 @@ sub unload {
 }
 
 
-
-
 sub start_tracker {
 	my $ui = $_[0];
 	$ui->define(stock => 'right');
 	$info = "Waiting for $config{stock_symbol}";
 	$ui->set(stock => $info);
 	$timer{interval} = $config{stock_freq};
-	$timer{call} = 
-	  sub {$ui->set(stock => track_stock($config{stock_symbol}))};
+    my $stocks = $config{stock_symbol};
+    $stocks =~ s/^\s+//;
+    $stocks =~ s/\s+$//;
+    my @stocks = split(/[\s,]+/,$stocks);
+	$timer{call} = sub { track_stock(@stocks) };
 	$timer_id = TLily::Event::time_r(\%timer);
 }
 

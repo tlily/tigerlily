@@ -1,6 +1,6 @@
 # -*- Perl -*-
 #    TigerLily:  A client for the lily CMC, written in Perl.
-#    Copyright (C) 1999-2001  The TigerLily Team, <tigerlily@tlily.org>
+#    Copyright (C) 1999-2006  The TigerLily Team, <tigerlily@tlily.org>
 #                                http://www.tlily.org/tigerlily/
 #
 #  This program is free software; you can redistribute it and/or modify it
@@ -12,9 +12,25 @@
 
 package ExoSafe;
 
+use File::Find;
+use Cwd;
 use Carp;
 use strict;
 no strict 'refs';
+
+# Pod::Text methods only operate on filehandles.  So, if IO::String
+# is available, we'll try to use that instead of tempfiles, since it
+# will be faster and more reliable.
+my $IOSTRING_avail;
+BEGIN {
+    eval { require IO::String; die; };
+    if ($@) {
+        $IOSTRING_avail = 0;
+        require File::Temp;
+    } else {
+        $IOSTRING_avail = 1;
+    }
+}
 
 # Originally hacked out of Safe.pm by Chistopher Masto.
 # Expanded and fitted into tigerlily by Matthew Ryan
@@ -104,26 +120,75 @@ sub symtab {
 
 sub load_internal_files {
     if (keys %internal_files == 0) {
-	local *FH;
-	my $rc = open(FH, $0) or die "$0: $!";
+        local *FH;
+        my $rc = open(FH, $0) or die "$0: $!";
 
-	my $name;
-	my $data = "";
-	while (<FH>) {
-	    if (defined($name)) {
-		if (/^\#\#\#\# END/) {
-		    $internal_files{$name} = $data;
-		    $data = "";
-		    undef $name;
-		} else {
-		    $data .= $_;
-		}
-	    } else {
-		if (/^\#\#\#\# EMBEDDED \"([^\"]+)\"/) {
-		    $name = $1;
-		}
-	    }
-	}
+        my $name;
+        my $data = "";
+        while (<FH>) {
+            if (defined($name)) {
+                if (/^\#\#\#\# END/) {
+                    $internal_files{$name} = $data;
+                    $data = "";
+                    undef $name;
+                } else {
+                    $data .= $_;
+                }
+            } else {
+                if (/^\#\#\#\# EMBEDDED \"([^\"]+)\"/) {
+                    $name = $1;
+                }
+            }
+        }
+    }
+}
+
+sub list_files {
+    my $rootdir = shift;
+    my $filter = shift || '';
+    my @files;
+
+    if ($rootdir =~ s|^//INTERNAL/||) {
+        my $full_filter = "$rootdir/$filter";
+        @files = map { "//INTERNAL/$_" }
+                 grep { m|^\Q$full_filter\E| } keys %internal_files;
+    } else {
+        my $cwd = getcwd();
+        find({ wanted => sub {
+            m/^\..+/ && ($File::Find::prune = 1) && next;
+            $File::Find::name =~ m|^\Q$rootdir/$filter\E| || next;
+            -f || next;
+            push(@files, $File::Find::name);
+        } }, $rootdir);
+        chdir $cwd; # Necessary for older versions of File::Find - Coke
+    }
+
+    return @files;
+}
+
+sub fetch {
+    my $file = shift;
+
+    if ($file =~ s|//INTERNAL/||) {
+        load_internal_files();
+        return undef unless exists $internal_files{$file};
+
+        # If IO::String is available, use that, since it will be faster
+        # and more reliable than tempfiles.
+        if ($IOSTRING_avail) {
+            return IO::String->new(my $var = $internal_files{$file});
+        } else {
+            my $tmpfile = File::Temp::tempfile();
+            print $tmpfile $internal_files{$file};
+            seek($tmpfile,0,0);
+            return $tmpfile;
+        }
+    } else {
+        local $/ = undef;
+        return undef unless -f $file;
+        my $fh = new IO::Handle; # Needed for older perls -Coke
+        open($fh, $file) or die "Could not open $file: $!\n";
+        return $fh;
     }
 }
 

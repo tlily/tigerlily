@@ -25,7 +25,8 @@ sub set_serverstatus {
 
     my $sname = $server->state(DATA => 1,
 			       NAME => "NAME");
-    $ui->set(server => $sname) if (defined $sname);
+    $ui->set(server => $sname . ($server->secure()?' (Secure)':''))
+        if (defined $sname);
     
     my($name, %state);
     $name  = $server->user_name() || "";
