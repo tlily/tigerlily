@@ -578,7 +578,7 @@ $response{weather} = {
                 }
                 else
                 {
-                    dispatch( $event, "I don't know where that is.");
+                    dispatch( $event, "I don't know where '$term' is.");
                 }
             }
         );
@@ -1156,7 +1156,7 @@ $response{eliza} = {
 sub scrape_weather {
     my ( $term, $content ) = @_;
 
-    $content =~ m/(Updated:.*)<tr><td>Visibility/s;
+    $content =~ m/(Updated:.*)Current Radar/s;
     my $results = $1;
     $results =~ s/<tr>/; /g ;
     return cleanHTML($results);
