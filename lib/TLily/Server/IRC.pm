@@ -302,6 +302,18 @@ sub new {
         }
     );
 
+    # /finger
+    $self->{irc}->add_handler(
+        'whoisuser',
+        sub {
+            my ( $conn, $event ) = @_;
+            $ui->print( "* Pseudo: " . $event->{args}[1] . "\n" .
+                        "* Name: " . $event->{args}[5] . "\n" .
+                        "* Host: " . $event->{args}[3] . "\n" .
+                        "\n" );
+        }
+    );
+
     # rudimentary show mode handler.
     $self->{irc}->add_handler(
         'mode',
@@ -405,6 +417,12 @@ sub cmd_process {
         det    => \&cmd_detach,
         de     => \&cmd_detach,
         d      => \&cmd_detach,
+        finger => \&cmd_finger,
+        finge  => \&cmd_finger,
+        fing   => \&cmd_finger,
+        fin    => \&cmd_finger,
+        fi     => \&cmd_finger,
+        f      => \&cmd_finger,
         join   => \&cmd_join,
         joi    => \&cmd_join,
         jo     => \&cmd_join,
@@ -554,6 +572,13 @@ sub cmd_detach {
     $self->terminate($message);
 }
 
+sub cmd_finger {
+    my ( $self, $user ) = @_;
+    
+    $self->{irc}->whois($user);
+    return;
+}
+
 sub cmd_mode {
     my ( $self, $message ) = @_;
 
@@ -617,10 +642,10 @@ sub cmd_help {
 The following commands are available:
 
     /away      /bye
-    /detach    /help
-    /join      /kick
-    /mode      /quit
-    /rename
+    /detach    /finger
+    /help      /join
+    /kick      /mode
+    /quit      /rename
 
 END_HELP
 }

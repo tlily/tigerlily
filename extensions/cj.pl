@@ -460,10 +460,11 @@ sub shorten {
                   $ans .= " [$original_host]";
                   $shorts{$short} = $ans;
                 } else {
-                  $ans = "unresolvable, sorry."
+                  # XXX - this is really not very helpful. 
+                  # $ans = "unresolvable, sorry."
                 }
             }
-            &$callback($ans);
+            &$callback($ans) if $ans;
         }
     );
     return;
@@ -577,7 +578,7 @@ $response{weather} = {
                 }
                 else
                 {
-                    dispatch( $event, "I don't know where that is.");
+                    dispatch( $event, "I don't know where '$term' is.");
                 }
             }
         );
@@ -1155,7 +1156,7 @@ $response{eliza} = {
 sub scrape_weather {
     my ( $term, $content ) = @_;
 
-    $content =~ m/(Updated:.*)<tr><td>Visibility/s;
+    $content =~ m/(Updated:.*)Current Radar/s;
     my $results = $1;
     $results =~ s/<tr>/; /g ;
     return cleanHTML($results);
@@ -1340,6 +1341,8 @@ $response{bacon} = {
 };
 
 my $horoscopeRE = qr( \b
+    horoscope \s+ (?: for \s+)? 
+    (?:
     (
       aries | leo | sagittarius | taurus | virgo | capricorn | gemini |
       libra | aquarius | cancer | scorpio | pisces | ophiuchus
@@ -1347,6 +1350,7 @@ my $horoscopeRE = qr( \b
     (
       rat | ox | goat | dragon | rabbit | monkey | dog | pig | snake | 
       tiger | rooster | horse
+    )
     )
 \b )xi;
 
@@ -1391,7 +1395,7 @@ $response{horoscope} = {
         );
         "";    #muahaah
     },
-    HELP => sub { return "ask me about your sign to get a daily horoscope. We speak chinese."; },
+    HELP => sub { return "ask me about your sign to get a daily horoscope. We speak chinese. (Usage: horoscope [for] sign)"; },
     TYPE => [qw/private public emote/],
     POS  => '-1',
     STOP => 1,

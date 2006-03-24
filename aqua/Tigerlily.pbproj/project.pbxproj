@@ -1,0 +1,491 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 38;
+	objects = {
+		080E96DCFE201CFB7F000001 = {
+			fileRef = 29B97318FDCFA39411CA2CEA;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		080E96DDFE201D6D7F000001 = {
+			children = (
+				F5D5A3B6026B2EB001A80164,
+			);
+			isa = PBXGroup;
+			name = Classes;
+			refType = 4;
+		};
+		089C165CFE840E0CC02AAC07 = {
+			children = (
+				089C165DFE840E0CC02AAC07,
+			);
+			isa = PBXVariantGroup;
+			name = InfoPlist.strings;
+			refType = 4;
+		};
+		089C165DFE840E0CC02AAC07 = {
+			fileEncoding = 10;
+			isa = PBXFileReference;
+			name = English;
+			path = English.lproj/InfoPlist.strings;
+			refType = 4;
+		};
+		089C165EFE840E0CC02AAC07 = {
+			fileRef = 089C165CFE840E0CC02AAC07;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+//080
+//081
+//082
+//083
+//084
+//100
+//101
+//102
+//103
+//104
+		1058C7A0FEA54F0111CA2CBB = {
+			children = (
+				1058C7A1FEA54F0111CA2CBB,
+				F5D5A3B2026B2D4801A80164,
+			);
+			isa = PBXGroup;
+			name = "Linked Frameworks";
+			refType = 4;
+		};
+		1058C7A1FEA54F0111CA2CBB = {
+			isa = PBXFrameworkReference;
+			name = Cocoa.framework;
+			path = /System/Library/Frameworks/Cocoa.framework;
+			refType = 0;
+		};
+		1058C7A2FEA54F0111CA2CBB = {
+			children = (
+				29B97325FDCFA39411CA2CEA,
+				29B97324FDCFA39411CA2CEA,
+			);
+			isa = PBXGroup;
+			name = "Other Frameworks";
+			refType = 4;
+		};
+		1058C7A3FEA54F0111CA2CBB = {
+			fileRef = 1058C7A1FEA54F0111CA2CBB;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+//100
+//101
+//102
+//103
+//104
+//170
+//171
+//172
+//173
+//174
+		17587328FF379C6511CA2CBB = {
+			isa = PBXApplicationReference;
+			path = Tigerlily.app;
+			refType = 3;
+		};
+//170
+//171
+//172
+//173
+//174
+//190
+//191
+//192
+//193
+//194
+		19C28FACFE9D520D11CA2CBB = {
+			children = (
+				17587328FF379C6511CA2CBB,
+			);
+			isa = PBXGroup;
+			name = Products;
+			refType = 4;
+		};
+//190
+//191
+//192
+//193
+//194
+//290
+//291
+//292
+//293
+//294
+		29B97313FDCFA39411CA2CEA = {
+			buildStyles = (
+				4A9504CCFFE6A4B311CA0CBA,
+				4A9504CDFFE6A4B311CA0CBA,
+			);
+			hasScannedForEncodings = 1;
+			isa = PBXProject;
+			mainGroup = 29B97314FDCFA39411CA2CEA;
+			projectDirPath = "";
+			targets = (
+				29B97326FDCFA39411CA2CEA,
+			);
+		};
+		29B97314FDCFA39411CA2CEA = {
+			children = (
+				080E96DDFE201D6D7F000001,
+				29B97315FDCFA39411CA2CEA,
+				29B97317FDCFA39411CA2CEA,
+				29B97323FDCFA39411CA2CEA,
+				19C28FACFE9D520D11CA2CBB,
+			);
+			isa = PBXGroup;
+			name = Tigerlily;
+			path = "";
+			refType = 4;
+		};
+		29B97315FDCFA39411CA2CEA = {
+			children = (
+				E936598D05A1EC9E00FFBBD9,
+				29B97316FDCFA39411CA2CEA,
+				F5D5A3B4026B2DF601A80164,
+				E936528805A1E98F00FFBBD9,
+				E9B6B33C05A2350500D0C4D2,
+				E9CC456205A23B120089078B,
+			);
+			isa = PBXGroup;
+			name = "Other Sources";
+			path = "";
+			refType = 4;
+		};
+		29B97316FDCFA39411CA2CEA = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			path = main.m;
+			refType = 4;
+		};
+		29B97317FDCFA39411CA2CEA = {
+			children = (
+				29B97318FDCFA39411CA2CEA,
+				F55030F9026B86CD01A80164,
+				089C165CFE840E0CC02AAC07,
+				E93C6AD004D8F20200E20B96,
+			);
+			isa = PBXGroup;
+			name = Resources;
+			path = "";
+			refType = 4;
+		};
+		29B97318FDCFA39411CA2CEA = {
+			children = (
+				29B97319FDCFA39411CA2CEA,
+			);
+			isa = PBXVariantGroup;
+			name = MainMenu.nib;
+			path = "";
+			refType = 4;
+		};
+		29B97319FDCFA39411CA2CEA = {
+			isa = PBXFileReference;
+			name = English;
+			path = English.lproj/MainMenu.nib;
+			refType = 4;
+		};
+		29B97323FDCFA39411CA2CEA = {
+			children = (
+				1058C7A0FEA54F0111CA2CBB,
+				1058C7A2FEA54F0111CA2CBB,
+			);
+			isa = PBXGroup;
+			name = Frameworks;
+			path = "";
+			refType = 4;
+		};
+		29B97324FDCFA39411CA2CEA = {
+			isa = PBXFrameworkReference;
+			name = AppKit.framework;
+			path = /System/Library/Frameworks/AppKit.framework;
+			refType = 0;
+		};
+		29B97325FDCFA39411CA2CEA = {
+			isa = PBXFrameworkReference;
+			name = Foundation.framework;
+			path = /System/Library/Frameworks/Foundation.framework;
+			refType = 0;
+		};
+		29B97326FDCFA39411CA2CEA = {
+			buildPhases = (
+				29B97327FDCFA39411CA2CEA,
+				29B97328FDCFA39411CA2CEA,
+				29B9732BFDCFA39411CA2CEA,
+				29B9732DFDCFA39411CA2CEA,
+			);
+			buildSettings = {
+				FRAMEWORK_SEARCH_PATHS = "";
+				HEADER_SEARCH_PATHS = "";
+				LIBRARY_SEARCH_PATHS = "";
+				OTHER_CFLAGS = "";
+				OTHER_LDFLAGS = "";
+				PRODUCT_NAME = Tigerlily;
+				SECTORDER_FLAGS = "";
+				WARNING_CFLAGS = "-Wmost -Wno-four-char-constants -Wno-unknown-pragmas";
+				WRAPPER_EXTENSION = app;
+			};
+			dependencies = (
+			);
+			isa = PBXApplicationTarget;
+			name = Tigerlily;
+			productName = Tigerlily;
+			productReference = 17587328FF379C6511CA2CBB;
+			productSettingsXML = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
+<!DOCTYPE plist PUBLIC \"-//Apple Computer//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">
+<plist version=\"1.0\">
+<dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>English</string>
+	<key>CFBundleExecutable</key>
+	<string>Tigerlily</string>
+	<key>CFBundleIconFile</key>
+	<string>Tigerlily.icns</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleSignature</key>
+	<string>????</string>
+	<key>CFBundleVersion</key>
+	<string>0.1</string>
+	<key>NSMainNibFile</key>
+	<string>MainMenu</string>
+	<key>NSPrincipalClass</key>
+	<string>NSApplication</string>
+</dict>
+</plist>
+";
+		};
+		29B97327FDCFA39411CA2CEA = {
+			buildActionMask = 2147483647;
+			files = (
+			);
+			isa = PBXHeadersBuildPhase;
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		29B97328FDCFA39411CA2CEA = {
+			buildActionMask = 2147483647;
+			files = (
+				080E96DCFE201CFB7F000001,
+				089C165EFE840E0CC02AAC07,
+				F5D5A3B5026B2DF601A80164,
+				F5D5A3B7026B2EB001A80164,
+				F55030FB026B86CD01A80164,
+				E93C6AD104D8F20200E20B96,
+				E936541005A1E98F00FFBBD9,
+				E9365B3F05A1EC9E00FFBBD9,
+				E9B6B33D05A2350500D0C4D2,
+				E9CC456305A23B120089078B,
+			);
+			isa = PBXResourcesBuildPhase;
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		29B9732BFDCFA39411CA2CEA = {
+			buildActionMask = 2147483647;
+			files = (
+				29B9732CFDCFA39411CA2CEA,
+			);
+			isa = PBXSourcesBuildPhase;
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		29B9732CFDCFA39411CA2CEA = {
+			fileRef = 29B97316FDCFA39411CA2CEA;
+			isa = PBXBuildFile;
+			settings = {
+				ATTRIBUTES = (
+				);
+			};
+		};
+		29B9732DFDCFA39411CA2CEA = {
+			buildActionMask = 2147483647;
+			files = (
+				1058C7A3FEA54F0111CA2CBB,
+				F5D5A3B3026B2D4801A80164,
+			);
+			isa = PBXFrameworksBuildPhase;
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+//290
+//291
+//292
+//293
+//294
+//4A0
+//4A1
+//4A2
+//4A3
+//4A4
+		4A9504CCFFE6A4B311CA0CBA = {
+			buildRules = (
+			);
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+				OPTIMIZATION_CFLAGS = "-O0";
+			};
+			isa = PBXBuildStyle;
+			name = Development;
+		};
+		4A9504CDFFE6A4B311CA0CBA = {
+			buildRules = (
+			);
+			buildSettings = {
+				COPY_PHASE_STRIP = YES;
+			};
+			isa = PBXBuildStyle;
+			name = Deployment;
+		};
+//4A0
+//4A1
+//4A2
+//4A3
+//4A4
+//E90
+//E91
+//E92
+//E93
+//E94
+		E936528805A1E98F00FFBBD9 = {
+			includeInIndex = 1;
+			isa = PBXFolderReference;
+			name = extensions;
+			path = ../extensions;
+			refType = 0;
+		};
+		E936541005A1E98F00FFBBD9 = {
+			fileRef = E936528805A1E98F00FFBBD9;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		E936598D05A1EC9E00FFBBD9 = {
+			includeInIndex = 1;
+			isa = PBXFolderReference;
+			name = TLily;
+			path = "..//lib/TLily";
+			refType = 0;
+		};
+		E9365B3F05A1EC9E00FFBBD9 = {
+			fileRef = E936598D05A1EC9E00FFBBD9;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		E93C6AD004D8F20200E20B96 = {
+			isa = PBXFileReference;
+			path = Tigerlily.icns;
+			refType = 4;
+		};
+		E93C6AD104D8F20200E20B96 = {
+			fileRef = E93C6AD004D8F20200E20B96;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		E9B6B33C05A2350500D0C4D2 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			name = tlily.global;
+			path = ../lib/tlily.global;
+			refType = 0;
+		};
+		E9B6B33D05A2350500D0C4D2 = {
+			fileRef = E9B6B33C05A2350500D0C4D2;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		E9CC456205A23B120089078B = {
+			fileEncoding = 30;
+			isa = PBXExecutableFileReference;
+			name = tlily.PL;
+			path = ../tlily.PL;
+			refType = 0;
+		};
+		E9CC456305A23B120089078B = {
+			fileRef = E9CC456205A23B120089078B;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+//E90
+//E91
+//E92
+//E93
+//E94
+//F50
+//F51
+//F52
+//F53
+//F54
+		F55030F9026B86CD01A80164 = {
+			children = (
+				F55030FA026B86CD01A80164,
+			);
+			isa = PBXVariantGroup;
+			name = MainWindow.nib;
+			path = "";
+			refType = 4;
+		};
+		F55030FA026B86CD01A80164 = {
+			isa = PBXFileReference;
+			name = English;
+			path = English.lproj/MainWindow.nib;
+			refType = 4;
+		};
+		F55030FB026B86CD01A80164 = {
+			fileRef = F55030F9026B86CD01A80164;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F5D5A3B2026B2D4801A80164 = {
+			isa = PBXFrameworkReference;
+			name = CamelBones.framework;
+			path = /Library/Frameworks/CamelBones.framework;
+			refType = 0;
+		};
+		F5D5A3B3026B2D4801A80164 = {
+			fileRef = F5D5A3B2026B2D4801A80164;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F5D5A3B4026B2DF601A80164 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			path = main.pl;
+			refType = 4;
+		};
+		F5D5A3B5026B2DF601A80164 = {
+			fileRef = F5D5A3B4026B2DF601A80164;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F5D5A3B6026B2EB001A80164 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			path = MyApp.pm;
+			refType = 4;
+		};
+		F5D5A3B7026B2EB001A80164 = {
+			fileRef = F5D5A3B6026B2EB001A80164;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+	};
+	rootObject = 29B97313FDCFA39411CA2CEA;
+}
