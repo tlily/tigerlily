@@ -221,6 +221,7 @@ sub new {
         sub {
             my ( $conn, $event ) = @_;
             my ($channel) = ( $event->to )[0];
+            $channel =~ s/^-?#?//;
 
             if ( $event->{nick} eq $self->{user} ) {
                 $ui->print("(you have joined $channel)\n");
@@ -228,6 +229,15 @@ sub new {
             else {
                 $ui->print(
                     "*** $event->{nick} is now a member of $channel ***\n");
+                my $user = $event->{nick};
+                $user =~ s/^(@|^)//;
+                if (defined $self->{NAME}->{$user}) {
+                    $self->{NAME}->{$user}->{COUNT}++;
+                }
+                else {
+                    $self->state(NAME => $user, LOGIN => 1, COUNT => 1);
+                }
+                $self->{NAME}->{$channel}->{MEMBERS} .= "," . $user;
             }
 
             # XXX Generate tlily join'd event.
@@ -242,7 +252,11 @@ sub new {
             my $to   = $event->{args}->[0];
             $ui->print("*** $from is now named $to ***\n");
 
-            # XXX Generate tlily rename'd event, update our DB.
+            # XXX Generate tlily rename'd event
+
+            $self->{NAME}->{$to} = $self->{NAME}->{$from};
+            $self->{NAME}->{$to}->{NAME} = $to;
+            delete $self->{NAME}->{$from};
         }
     );
 
@@ -251,6 +265,7 @@ sub new {
         sub {
             my ( $conn, $event ) = @_;
             my ($channel) = ( $event->to )[0];
+            $channel =~ s/^-?#?//;
 
             if ( $event->{nick} eq $self->{user} ) {
                 $ui->print("(thank you for using IRC)\n");
@@ -259,6 +274,7 @@ sub new {
                 $ui->print(
                     "*** $event->{nick} has left IRC ***\n"
                 );
+                $self->state(NAME => $event->{nick}, __DELETE => 1);
             }
 
             # XXX Generate tlily quit event.
@@ -270,14 +286,24 @@ sub new {
         sub {
             my ( $conn, $event ) = @_;
             my ($channel) = ( $event->to )[0];
+            $channel =~ s/^-?#?//;
 
             if ( $event->{nick} eq $self->{user} ) {
                 $ui->print("(you have quit $channel)\n");
+
+                for my $nick (split ',', $self->{NAME}->{$channel}->{MEMBERS}) {
+                    next if $nick eq $self->user_name;
+                    
+                    $self->state(NAME => $nick, __DELETE => 1)
+                        if --$self->{NAME}->{$nick}->{COUNT} == 0;
+                }
             }
             else {
                 $ui->print(
                     "*** $event->{nick} is no longer a member of $channel ***\n"
                 );
+                $self->state(NAME => $event->{nick}, __DELETE => 1)
+                    if --$self->{NAME}->{ $event->{nick} }->{COUNT} == 0;
             }
 
             # XXX Generate tlily quit event.
@@ -290,15 +316,21 @@ sub new {
         sub {
             my ( $conn, $event ) = @_;
 
-            my ( @list, $channel ) = ( $event->args ); # eat yer heart out, mjd!
+            my @list = ( $event->args ); # eat yer heart out, mjd!
 
-            # splice() only works on real arrays. Sigh.
-            ( $channel, @list ) = splice @list, 2;
+            my $channel = $list[2];
+            $channel =~ s/^-?#?//;
+            my @users   = map { s/^(@|\+)//; $_; } split ' ', $list[3];
 
-           # XXX Store this information in our local DB of who is where, instead
-           # of printing it out.
-            $ui->print( "Users on $channel: " . join( ", ", @list ) . "\n" );
-
+            $self->state(NAME => $channel, CREATION => 1, MEMBERS => join(',', @users));
+            for my $user (@users) {
+                if (defined $self->{NAME}->{$user}) {
+                    $self->{NAME}->{$user}->{COUNT}++;
+                }
+                else {
+                    $self->state(NAME => $user, LOGIN => 1, COUNT => 1);
+                }
+            }
         }
     );
 
@@ -334,6 +366,7 @@ sub new {
             my ( $conn, $event ) = @_;
 
             my ( $id, $channel, $msg) = ( $event->args);
+            $channel =~ s/^#/-/g;
 
             $ui->print( "$channel: $msg\n");
 
@@ -449,6 +482,9 @@ sub cmd_process {
         ren    => \&cmd_rename,
         re     => \&cmd_rename,
         r      => \&cmd_rename,
+        who    => \&cmd_who,
+        wh     => \&cmd_who,
+        w      => \&cmd_who,
     );
 
     &$callback(
@@ -471,8 +507,8 @@ sub cmd_process {
         $result = &{$func}( $self, $2 );
     }
     elsif ( $command =~ /^([^;:]+)([:;])(.*)$/ ) {
-        my ( $self, $sep, $target, $message ) = @_;
-        $result = $self->cmdsend( $2, $1, $3 );
+        my ( $target, $sep, $msg ) = ($1, $2, $3);
+        $result = $self->cmdsend( $sep, $target, $msg );
     }
 
     foreach ( split /\n/, $result ) {
@@ -558,6 +594,7 @@ sub send_message {
     my $ui = TLily::UI::name( $self->{ui_name} );
 
     foreach my $recip (@recips) {
+        $recip =~ s/^-#?/#/; # - marks a tlily discussion
         $self->{irc}->privmsg( "$recip", $message );
         $ui->print("(message sent to $recip)\n");
     }
@@ -596,6 +633,7 @@ sub cmd_kick {
 sub cmd_join {
     my ( $self, $disc, $pw ) = @_;
 
+    $disc =~ s/^-//;
     if ( $disc !~ /^#/ ) { $disc = "#$disc" }
 
     $self->{irc}->join( "$disc", $pw );
@@ -605,6 +643,7 @@ sub cmd_join {
 sub cmd_quit {
     my ( $self, $disc ) = @_;
 
+    $disc =~ s/^-//;
     if ( $disc !~ /^#/ ) { $disc = "#$disc" }
 
     $self->{irc}->part("$disc");
@@ -634,6 +673,28 @@ sub cmd_rename {
     return;
 }
 
+sub cmd_who {
+    my ($self, $channel) = @_;
+
+    $channel =~ s/^-?#?//;    
+
+    my $ui = TLily::UI::name( $self->{ui_name} );
+    
+    if ($self->{NAME}->{$channel}->{CREATION}) {
+        $ui->print(" Name\n");
+        $ui->print(" ----\n");
+        for my $user (split ",", $self->{NAME}->{$channel}->{MEMBERS}) {
+            $ui->print(" ", $user, "\n");
+        }
+        $ui->print("\n");
+    }
+    else {
+        $ui->print("(could find no discussion to match to \"$channel\")\n");
+    }
+    
+    return;
+}
+
 sub cmd_help {
     my ( $self, $argstr ) = @_;
 
@@ -646,6 +707,7 @@ The following commands are available:
     /help      /join
     /kick      /mode
     /quit      /rename
+    /who
 
 END_HELP
 }
