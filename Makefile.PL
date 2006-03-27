@@ -228,7 +228,7 @@ sub MY::processPL {
     my @inherited = split(/\n/, $inherited);
     my $f;
     foreach (@inherited) {
-	s|(tools/build_tlily\s+tlily)|$1 TL_ETCDIR=$::TL_ETCDIR TL_LIBDIR=$::TL_LIBDIR|g;
+	s|(tools/build_tlily\s+tlily\S*)|$1 TL_ETCDIR=$::TL_ETCDIR TL_LIBDIR=$::TL_LIBDIR|g;
     }
     join("\n", @inherited)."\n";
 }
