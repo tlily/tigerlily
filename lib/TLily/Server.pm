@@ -561,52 +561,57 @@ sub reader {
     my ($buf, $rc);
     my $bufsize = 16384;
 
+    # We need a loop here, because, for IO::Socket::SSL handles, if we
+    # don't completely drain the underlying buffer, a subsequent select()
+    # will not get notice the handle is ready for reading unless more
+    # data comes in.
     do {
         $rc = sysread($self->{sock}, $buf,  $bufsize);
 
         # Interrupted by a signal or would block
 	return if (!defined($rc) && $! == $::EAGAIN && !length($buf));
 
-        # This is a kludge for the SSL layer, I looked into this back when
-        # I wrote the patches and there was no good way around it.
-        # Without this, I disconnect during the SLCP sync to the RPI
-        # server. - Phreaker
+        # Would block.  (win32)
+        return if (($^O eq "MSWin32") &&
+                   (!defined($rc) && $! == &EWOULDBLOCK && !length($buf)));
 
+        # For IO::Socket:SSL connections, returning under from a read does
+        # not always indicate connection closed.  It may also indicate
+        # a condition of the underlying SSL connection that essentially
+        # means we have to retry the read again later.  This is indicated
+        # by the errstr() method returning 'SSL wants a read first!'.
+        #
         # IO::Socket doesn't have an errstr function, so this call needs
-        # to be wrapped.  This should do the trick.
-        # -Steve
-
+        # to be wrapped.
         if ($self->{sock}->can('errstr')) {
-            if ($self->{sock}->errstr eq "SSL read error\nSSL wants a read first!") {
+            if ($self->{sock}->errstr eq
+                  "SSL read error\nSSL wants a read first!") {
                 $self->{sock}->error("");
-                $self->{bytes_in} += length($buf);
-                TLily::Event::send(type   => "$self->{proto}_data",
-                                   server => $self,
-                                   data   => $buf);
-		$buf = '';
                 return if !defined($rc);
 	    }
         }
-    } while (ref($self->{'sock'}) eq 'IO::Socket::SSL' && $rc);
 
-    # Would block.  (used only on win32 right now)
-    return if (($^O eq "MSWin32") && (!defined($rc) && $! == &EWOULDBLOCK));
+        # Connection lost/closed
+        if (!defined($rc) || $rc == 0) {
+	    my $ui = TLily::UI::name($self->{"ui_name"})
+              if ($self->{"ui_name"});
+	    $ui->print("*** Lost connection to \"" .
+                       $self->{"name"} . "\" ***\n") if $ui;
+	    $self->terminate();
+        }
 
-    # End of line.
-    if (!defined($rc) || $rc == 0) {
-	my $ui = TLily::UI::name($self->{"ui_name"}) if ($self->{"ui_name"});
-	$ui->print("*** Lost connection to \"" . $self->{"name"} . "\" ***\n") if $ui;
-	$self->terminate();
-    }
-
-    # Data as usual.
-    else {
-	$self->{bytes_in} += length($buf);
+        # Data as usual.
+        else {
+	    $self->{bytes_in} += length($buf);
 	
-	TLily::Event::send(type   => "$self->{proto}_data",
-			   server => $self,
-			   data   => $buf);
-    }
+	    TLily::Event::send(type   => "$self->{proto}_data",
+			       server => $self,
+			       data   => $buf);
+	    $buf = '';
+        }
+
+    # See above comment about this loop at its start (the 'do').
+    } while (ref($self->{'sock'}) eq 'IO::Socket::SSL' && $rc);
 
     return;
 }
