@@ -565,7 +565,7 @@ sub reader {
         $rc = sysread($self->{sock}, $buf,  $bufsize);
 
         # Interrupted by a signal or would block
-        return if (!defined($rc) && $! == $::EAGAIN);
+	return if (!defined($rc) && $! == $::EAGAIN && !length($buf));
 
         # This is a kludge for the SSL layer, I looked into this back when
         # I wrote the patches and there was no good way around it.
@@ -583,8 +583,9 @@ sub reader {
                 TLily::Event::send(type   => "$self->{proto}_data",
                                    server => $self,
                                    data   => $buf);
-                return if !defined($rc);;
-            }
+		$buf = '';
+                return if !defined($rc);
+	    }
         }
     } while (ref($self->{'sock'}) eq 'IO::Socket::SSL' && $rc);
 
