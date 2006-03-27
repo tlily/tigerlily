@@ -297,6 +297,7 @@ sub new {
                     $self->state(NAME => $nick, __DELETE => 1)
                         if --$self->{NAME}->{$nick}->{COUNT} == 0;
                 }
+                $self->state(NAME => $channel, __DELETE => 1);
             }
             else {
                 $ui->print(
