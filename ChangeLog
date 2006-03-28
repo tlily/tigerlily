@@ -1,4 +1,10 @@
 Version 2.5.1-post
+  * [TLily/Server.pm] Fixes to SSL. [MJR]
+  * [Makefile.PL] Extutils::MakeMaker was upgraded in Perl 5.8.8, and broke
+    our processPL() override, causing it to produce invalid Makefiles. [MJR]
+  * [TLily/ExoSafe.pm, TLily/Util.pm] Fixes for 5.6.x Perls. [WJC]
+  * [tlily.PL] Bump minimum perl to 5.5.3 [WJC]
+  * [TLily/Server/IRC.pm] Numerous IRC improvements. [MD]
 
 Version 2.5.1
   * [TLily/Server.pm, TLily/Config.pm] Merge in Phreaker's SLCP SSL patches;
