@@ -117,7 +117,7 @@ sub new {
     $self->{host}      = $args{host};
     $self->{port}      = $args{port};
     $self->{ui_name}   = $args{ui_name};
-    $self->{secure}    = $args{secure} || $$TLily::Config::config{secure};
+    $self->{secure}    = $args{secure} || $TLily::Config::config{secure};
     $self->{proto}     = defined($args{protocol}) ? $args{protocol}:"server";
     $self->{bytes_in}  = 0;
     $self->{bytes_out} = 0;
