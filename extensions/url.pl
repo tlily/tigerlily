@@ -7,9 +7,41 @@
 
 use strict;
 
+use CGI qw/escape unescape/;
+use TLily::Server::HTTP;
+use URI;
+
 my @urls = ();
 my $url_base = q%\S+[^\s;:,.!?()<>{}\[\]\"\']+%;
 my $text_wrapping;
+
+sub shorten {
+    my ($ui, $url, $sender) = @_;
+
+    $sender .= "'s" if (length($sender));
+    $sender = 'Shortened' if (!length($url));
+
+    my $original_host = new URI($url)->host();
+
+    my $url = 'http://metamark.net/api/rest/simple?long_url=' . escape($url);
+
+    TLily::Server::HTTP->new(
+        url => $url,
+        secure => 0,
+        callback => sub {
+            my ($response) = @_;
+            if ($response->{_state}{_status} ne 200) {
+            } else {
+                $response->{_content} =~ m/(http.*)/;
+                my $ans = $1;
+                $ans =~ s/\s//g;
+                if ($ans) {
+                    $ui->print("(${sender}'s URL: $ans [$original_host])\n");
+                }
+            }
+        }
+    );
+}
 
 sub handler {
     my($event, $handler) = @_;
@@ -17,12 +49,15 @@ sub handler {
     my $type;
     foreach $type ('http', 'https', 'ftp', 'daap') {
         $event->{VALUE} =~ s|($type://$url_base)|
-            if ($1 ne $urls[$#urls])
-            {
-              push @urls, $1;
+            my $url = $1;
+            if ($url ne $urls[$#urls]) {
+                push @urls, $url;
             }
+            shorten(ui_name($event->{ui_name}), $url, $event->{SOURCE})
+                if ($config{shorten});
             my $t=$config{tag_urls} ? '['.scalar(@urls).']' : "";
-            "$1$t";|ge;
+            "$url$t";
+        |ge;
     }
     return 0;
 }
@@ -222,6 +257,7 @@ Note: the browser and browser_textmode variables are ignored if you're on
 a win32 OS. In that case, your default browser is used.
 ");
 
-shelp_r('browser', "browser command for %url", "variables");
-shelp_r('browser_textmode', "should browser open in tlily? (boolean)", "variables");
+shelp_r('browser', "[string] browser command for %url", "variables");
+shelp_r('browser_textmode', "[boolean] open textmode browser open in tlily", "variables");
+shelp_r('shorten', "[boolean] Shorten captured URLs", "variables");
 

@@ -117,6 +117,7 @@ sub new {
     $self->{host}      = $args{host};
     $self->{port}      = $args{port};
     $self->{ui_name}   = $args{ui_name};
+    $self->{secure}    = $args{secure} || $$TLily::Config::config{secure};
     $self->{proto}     = defined($args{protocol}) ? $args{protocol}:"server";
     $self->{bytes_in}  = 0;
     $self->{bytes_out} = 0;
@@ -127,9 +128,9 @@ sub new {
 #					  PeerPort => $self->{port},
 #					  Proto    => 'tcp');
     eval {
-        if ($TLily::Config::config{secure} && $SSL_avail) {
+        if ($self->{secure} && $SSL_avail) {
             $self->{sock} = contact_ssl($self->{host}, $self->{port});
-        } elsif ($TLily::Config::config{secure}) {
+        } elsif ($self->{secure}) {
             $ui->print("\n\nWARNING: Secure connection requested, but IO::Socket::SSL not installed!\n");
             $ui->print("Terminating connection attempt.\n\n");
             die "No SSL support available.\n";
