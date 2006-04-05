@@ -117,25 +117,25 @@ sub new {
     $self->{host}      = $args{host};
     $self->{port}      = $args{port};
     $self->{ui_name}   = $args{ui_name};
-    $self->{secure}    = $args{secure} || $TLily::Config::config{secure};
+    $self->{secure}    =
+        defined($args{secure})?$args{secure}:$TLily::Config::config{secure};
     $self->{proto}     = defined($args{protocol}) ? $args{protocol}:"server";
     $self->{bytes_in}  = 0;
     $self->{bytes_out} = 0;
 
-    $ui->print("Connecting to $self->{host}, port $self->{port}...") if $ui;
 
 #    $self->{sock} = IO::Socket::INET->new(PeerAddr => $self->{host},
 #					  PeerPort => $self->{port},
 #					  Proto    => 'tcp');
     eval {
         if ($self->{secure} && $SSL_avail) {
-            $self->{sock} = contact_ssl($self->{host}, $self->{port});
+            $self->{sock} = $self->contact_ssl();
         } elsif ($self->{secure}) {
             $ui->print("\n\nWARNING: Secure connection requested, but IO::Socket::SSL not installed!\n");
             $ui->print("Terminating connection attempt.\n\n");
             die "No SSL support available.\n";
         } else {
-            $self->{sock} = contact($self->{host}, $self->{port});
+            $self->{sock} = $self->contact();
         }
     };
 
@@ -188,10 +188,17 @@ sub remove_server {
 
 # internal utility function
 sub contact {
-    my($serv, $port) = @_;
+    my $self = shift;
+
+    my $serv = $self->{host};
+    my $port = $self->{port};
 
     my($iaddr, $paddr, $proto);
     local *SOCK;
+
+    my $ui = TLily::UI::name($self->{ui_name}) if ($self->{ui_name});
+    $ui->print("Connecting to $serv, port $port...")
+        if $ui;
 
     $port = getservbyname($port, 'tcp') if ($port =~ /\D/);
     croak "No port" unless $port; 
@@ -208,7 +215,11 @@ sub contact {
 #This is the SSL connection routine. 
 #it also falls back to non-ssl connections.
 sub contact_ssl {
-    my($serv, $port) = @_;
+    my $self = shift;
+
+    my $serv = $self->{host};
+    my $port = $self->{port};
+
     my($iaddr, $paddr, $proto);
     my($sock);
     my($cert,$other_cert, $string_cert);
@@ -216,10 +227,10 @@ sub contact_ssl {
     my($temp);
     my $cert_path = $ENV{HOME}."/.lily/certs";
     my $cert_filename;
-    my $ui = TLily::UI::name();
 
-    $ui->print("trying SSL...") if $ui;;
-
+    my $ui = TLily::UI::name($self->{ui_name}) if ($self->{ui_name});
+    $ui->print("Connecting via SSL to $serv, port " . ($port+1) . "...")
+        if $ui;
     $sock = IO::Socket::SSL->new(PeerAddr => $serv,
                                 PeerPort => $port+1,
                                 SSL_use_cert => 0,
@@ -227,11 +238,10 @@ sub contact_ssl {
                                 );
  
 
-    if(!$sock)
-    {
-        $ui->print("\n*** WARNING: This session is NOT encrypted ***\n")
-            if $ui;;
-        $sock = contact($serv, $port);
+    if (!$sock) {
+        $ui->print("failed.\n*** WARNING: This session is NOT encrypted ***\n")
+            if $ui;
+        $sock = $self->contact();
         return $sock;
     }
 
