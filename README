@@ -18,7 +18,7 @@
 
 Installing
 ----------
-TigerLily requires Perl 5.003 or greater.  You will also need
+TigerLily requires Perl 5.6.1 or greater.  You will also need
 Curses.pm or Term::Readline::Gnu. (from CPAN)
 
 You can run tlily directly from the source directory, by running
