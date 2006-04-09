@@ -28,6 +28,7 @@ sub shorten {
 
     if (exists $shorten{$url}) {
         $ui->print("(${sender} URL: $shorten{$url}{short_url} [$original_host] (cached))\n");
+        return;
     }
 
     my $url = 'http://metamark.net/api/rest/simple?long_url=' . escape($url);
