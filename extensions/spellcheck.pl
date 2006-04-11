@@ -189,7 +189,7 @@ input line.
 Once the spellchecker is enabled, words will be highlighted in red if they
 might be misspelled.
 
-NOTE: This extension requires that the \"look\" program be installed and
+NOTE: This feature requires that the \"ispell\" program be installed and
       functional on your system.
 
 ");
