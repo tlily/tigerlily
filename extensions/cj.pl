@@ -731,6 +731,73 @@ $response{translate} = {
     RE   => $translateRE,
 };
 
+my $anagramRE      = qr/
+  (?:
+  \b anagram \s+ (.*) \s+ with    \s+ (.*) \s+ without \s+ (.*) |
+  \b anagram \s+ (.*) \s+ without \s+ (.*) \s+ with    \s+ (.*) |
+  \b anagram \s+ (.*) \s+ with    \s+ (.*) |
+  \b anagram \s+ (.*) \s+ without \s+ (.*) |
+  \b anagram \s+ (.*)
+  )
+  \s* $
+/ix;
+
+$response{anagram} = {
+    CODE => sub {
+        my ($event) = @_;
+        my $args = $event->{VALUE};
+
+        $args =~ $anagramRE;
+        my ($term, $include, $exclude);
+        my  $url = 
+        "http://wordsmith.org/anagram/anagram.cgi?language=english" ;
+ 
+        if ($1) {
+          ( $term, $include, $exclude) = ( $1, $2, $3) ;
+        } elsif ($4) { 
+          ( $term, $exclude, $include) = ( $4, $5, $6) ;
+        } elsif ($7) { 
+          ( $term, $include) = ( $7, $8 );
+        } elsif ($9) { 
+          ( $term, $exclude) = ( $9, $10 );
+        } else { 
+          ( $term ) = ( $11 );
+        }
+        $url .= "&anagram=" . escape ($term); 
+        if ($include) {
+            $url .= "&include=" . escape ($include);
+        }
+        if ($exclude) {
+            $url .= "&exclude=" . escape ($exclude);
+        }
+        
+
+        add_throttled_HTTP(
+            url      => $url,
+            ui_name  => 'main',
+            callback => sub {
+                my ($response) = @_;
+                my $anagram = scrape_anagram( $term, $response->{_content} );
+                if ($anagram) {
+                    dispatch( $event, $anagram );
+                }
+                else {
+                    dispatch( $event, "That's unanagrammaticatable!" );
+                }
+            }
+        );
+        return;
+    },
+    HELP => sub {
+        return
+ "given a phrase, return an anagram of it.";
+    },
+    TYPE => [qw/private public emote/],
+    POS  => '-1',
+    STOP => 1,
+    RE   => $anagramRE,
+};
+
 $response{shorten} = {
     CODE => sub {
         my ($event) = @_;
@@ -1182,6 +1249,19 @@ sub scrape_horoscope {
         return cleanHTML("$sign ($dates): $reading");
     }
 
+}
+
+sub scrape_anagram{
+    my ( $term, $content ) = @_;
+
+    if ( $content =~
+        m{<PRE>([^<]*)</PRE>}i )
+    {
+        return pickRandom( [ split /\n/, $1 ]); 
+    }
+    else {
+        return;
+    }
 }
 
 sub scrape_translate {
