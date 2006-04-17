@@ -219,7 +219,7 @@ such as TortoiseSVN.
 The repository is currently located on svn.tlily.org.
 
 To access the repository anonymous read-only, do:
-  svn co http://svn.tlily.org/svn/tlily/trunk tlily
+  svn co svn://svn.tlily.org/svn/tlily/trunk tlily
 Which will get you the most recent development version.
 
 To access the repository read-write, once you have an account, do:
