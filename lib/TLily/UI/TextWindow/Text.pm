@@ -221,7 +221,7 @@ sub dump_to_file {
     my ($self, $filename) = @_;
 
     local(*FILE);
-    open(FILE, ">$filename") ||
+    open(FILE, '>', $filename) ||
        $self->print("(Unable to open $filename for writing: $!)\n");
 
     my $count = 0;

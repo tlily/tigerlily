@@ -171,7 +171,7 @@ sub save_file {
 
         unless (defined $$st->{_filehandle}) {
             local *FH;
-            unless (open FH, ">$filename") {
+            unless (open FH, '>', $filename) {
                 my $ui = TLily::UI::name();
                 $ui->print ("(Unable to save file $filename: $!)\n");
                 $event->{server}->terminate() if $event->{server};

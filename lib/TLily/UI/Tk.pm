@@ -999,7 +999,7 @@ sub dump_to_file {
     my($self, $filename) = @_;
 
     local(*FILE);
-    open(FILE, ">$filename");
+    open(FILE, '>', $filename);
     if($!) {
         $self->print("(Unable to open $filename for writing: $!)\n");
 	return 0;

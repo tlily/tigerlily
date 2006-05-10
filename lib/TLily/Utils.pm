@@ -61,7 +61,7 @@ sub edit_text {
     my $mtime = 0;
 
     unlink($tmpfile);
-    open(FH, ">$tmpfile") or die "$tmpfile: $!";
+    open(FH, '>', $tmpfile) or die "$tmpfile: $!";
     if (@{$text}) {
         foreach (@{$text}) { 
 	    chomp; 
@@ -90,7 +90,7 @@ sub edit_text {
 
     $ui->resume;
 
-    my $rc = open(FH, "<$tmpfile");
+    my $rc = open(FH, '<', $tmpfile);
     unless ($rc) {
         $ui->print("(edit buffer file not found)\n") unless $quiet;
         return;
@@ -126,15 +126,15 @@ sub diff_text {
 
   my $tmpfile_a = "$::TL_TMPDIR/tlily-diff-a.$$";
   my $tmpfile_b = "$::TL_TMPDIR/tlily-diff-b.$$";
-  open FH, ">$tmpfile_a";
+  open FH, '>', $tmpfile_a;
   foreach (@{$a}) { print FH "$_\n" };
   close FH;
 
-  open FH, ">$tmpfile_b";
+  open FH, '>', $tmpfile_b;
   foreach (@{$b}) { print FH "$_\n" };
   close FH;
 
-  open FH, "diff $tmpfile_a $tmpfile_b |";
+  open FH, '-|', "diff $tmpfile_a $tmpfile_b";
   @{$diff} = <FH>;
   close FH;
 
@@ -161,7 +161,7 @@ sub save_deadfile {
     unlink($deadfile);
 
     local *DF;
-    open(DF, ">$deadfile") || return undef;
+    open(DF, '>', $deadfile) || return undef;
 
     foreach my $l (@{$text}) {
         print DF $l, "\n";
@@ -179,7 +179,7 @@ sub get_deadfile {
     my $deadfile = $ENV{HOME}."/.lily/tlily/dead.$type.$escaped_name";
 
     local *DF;
-    open(DF, "$deadfile") || return undef;
+    open(DF, '<', $deadfile) || return undef;
 
     my $text;
     @{$text} = <DF>;

@@ -43,7 +43,7 @@ sub getquote {
     my ($ret,$p);
 
     print "getting url\n";    
-    open (E,"lynx -dump $url |");
+    open (E, '-|', "lynx -dump $url");
     foreach (<E>) {
 	if (/____/) {
 	    $p=! defined($p);
@@ -63,7 +63,7 @@ sub getsearch {
 
     for (1..5) {
       print "getting url\n";    
-      open (E,"lynx -dump http://www.webcrawler.com/cgi-bin/SearchTicker|");
+      open (E, '-|', 'lynx -dump http://www.webcrawler.com/cgi-bin/SearchTicker');
       $ret = <E>;
       $ret = <E>;
       $ret = <E>;

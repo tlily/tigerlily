@@ -243,7 +243,7 @@ sub rebuild_file_help_idx {
         if ( -f "$file" ) {
             next unless ($file =~ /\.pm$|\.pl$|\.pod$/);
 
-            open(F,"<$file") ||
+            open(F, '<', $file) ||
               warn "Can't open $file: $!\n";
 	   
             my $namehead=0;

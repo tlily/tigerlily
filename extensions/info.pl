@@ -353,7 +353,7 @@ sub export_cmd {
     }
 
     local *FH;
-    my $rc = open(FH, "<$file");
+    my $rc = open(FH, '<', $file);
     unless ($rc) {
 	$ui->print("(\"$file\": $!)\n");
 	return;

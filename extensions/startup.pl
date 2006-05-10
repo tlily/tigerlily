@@ -14,7 +14,7 @@ sub startup_handler ($$) {
 
     if(-f $ENV{HOME}."/.lily/tlily/Startup") {
         local(*SUP);
-	if (! open(SUP, "<$ENV{HOME}/.lily/tlily/Startup")) {
+	if (! open(SUP, '<', "$ENV{HOME}/.lily/tlily/Startup")) {
 	    $ui->print("Error opening Startup: $!\n");
 	    return 0;
 	}

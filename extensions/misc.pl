@@ -46,9 +46,9 @@ sub shell_handler {
     
     local *FD;
     if ($^O =~ /cygwin/) {
-        open(FD, "$command |");
+        open(FD, '-|', $command);
     } else {
-        open(FD, "$command 2>&1 |");
+        open(FD, '-|', "$command 2>&1");
     }
     if (! $config{shell_silent}) {
       $ui->print(<FD>);

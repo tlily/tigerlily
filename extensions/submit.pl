@@ -76,7 +76,7 @@ sub edit_report(%) {
     
     if ($args{'recover'}) {
 	$ui->print("(Recalling saved report)\n");
-	my $rc = open(FH, "<$tmpfile");
+	my $rc = open(FH, '<', $tmpfile);
 	unless ($rc) {
 	    $ui->print("(edit buffer file not found)\n");
 	    return;
@@ -98,7 +98,7 @@ sub edit_report(%) {
     my $mtime = 0;
     
     unlink($tmpfile);
-    open(FH, ">$tmpfile") or die "$tmpfile: $!";
+    open(FH, '>', $tmpfile) or die "$tmpfile: $!";
     print FH "$form";
     $mtime = (stat FH)[10];
     close FH;
@@ -109,7 +109,7 @@ sub edit_report(%) {
     TLily::Event::keepalive(5);
     $ui->resume;
     
-    my $rc = open(FH, "<$tmpfile");
+    my $rc = open(FH, '<', $tmpfile);
     unless ($rc) {
 	$ui->print("(edit buffer file not found)\n");
 	return;
@@ -179,7 +179,7 @@ sub sendmail {
     my $method = determine_mail_method($ui);
 
     if ($method =~ m|^/|) {
-        my $rc = open(FH, "|$method -oi $TLILY_BUGS");
+        my $rc = open(FH, '|-', "$method -oi $TLILY_BUGS");
         if ($rc) {
             print FH $mail;
             close FH;
