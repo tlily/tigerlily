@@ -13,9 +13,9 @@ Provides paste mode, a mode which traps carriage returns, and turns them
 into spaces.  This prevents the input buffer from being sent, which is
 useful when pasting multiple lines into the input buffer.
 
-=over 10
-
 =head1 UI COMMANDS
+
+=over 10
 
 =item toggle-paste-mode
 
