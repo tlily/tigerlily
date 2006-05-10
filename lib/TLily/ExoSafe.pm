@@ -186,8 +186,8 @@ sub fetch {
     } else {
         local $/ = undef;
         return undef unless -f $file;
-        my $fh = new IO::Handle; # Needed for older perls -Coke
-        open($fh, $file) or die "Could not open $file: $!\n";
+        my $fh = new IO::Handle; # Needed for old perls -Coke
+        open($fh, '<', $file) or die "Could not open $file: $!\n";
         return $fh;
     }
 }

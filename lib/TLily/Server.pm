@@ -264,7 +264,7 @@ sub contact_ssl {
         undef $/;
 
         # Slurp in the whole certificate.
-        open(SSL_CERT,"<".$cert_filename);
+        open(SSL_CERT, '<', $cert_filename);
         sysread(SSL_CERT, $other_cert, 500000);
         close(SSL_CERT);
 
@@ -313,7 +313,7 @@ sub contact_ssl {
 sub write_cert {
     my($cert, $file) = @_;
     my($str_cert);
-    open(SSL_CERT, ">".$file);
+    open(SSL_CERT, '>', $file);
     $str_cert = Net::SSLeay::PEM_get_string_X509($cert);
     print(SSL_CERT $str_cert);
     close(SSL_CERT);

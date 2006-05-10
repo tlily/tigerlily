@@ -89,7 +89,7 @@ sub DEBUG {
 sub uidebug {
     return unless $TLily::FoiledAgain::DEBUG;
 
-    open(F, ">>uilog") || die;
+    open(F, '>>', 'uilog') || die;
     print F @_;
     close(F);
 }
