@@ -44,7 +44,7 @@ sub submit_cmd($) {
     if ($submit_to =~ /^server$/) {
 	$ui->print("(Sorry, %submit server not yet implemented - Feel Free(TM))\n");
 	return;
-    } elsif ($submit_to =~ "client") {	
+    } elsif ($submit_to =~ "client") {
 	  # Get the version of the lily core we're on.
 	  my $server = active_server();
 	  $server->cmd_process("/display version", sub {
@@ -65,15 +65,15 @@ sub submit_cmd($) {
 	return;
     }
 }
-	  
+
 sub edit_report(%) {
     my %args=@_;
-    
+
     my $form = $template;
     my $ui = $args{'ui'};
-    
+
     my $tmpfile = "$::TL_TMPDIR/tlily.submit.$$";
-    
+
     if ($args{'recover'}) {
 	$ui->print("(Recalling saved report)\n");
 	my $rc = open(FH, '<', $tmpfile);
@@ -84,7 +84,7 @@ sub edit_report(%) {
 	$form = join("",<FH>);
 	close FH;
     }
-    
+
     $form =~ s/^Lily_Core:$/Lily_Core: $args{'version'}/m;
     $form =~ s/^Lily_Server:$/Lily_Server: $config{'server'}:$config{'port'}/m;
     $form =~ s/^OS:$/OS: $Config{'archname'}/m;
@@ -96,32 +96,32 @@ sub edit_report(%) {
     $form =~ s/^Date:.*$/Date: $date/m;
     local(*FH);
     my $mtime = 0;
-    
+
     unlink($tmpfile);
     open(FH, '>', $tmpfile) or die "$tmpfile: $!";
     print FH "$form";
     $mtime = (stat FH)[10];
     close FH;
-    
+
     $ui->suspend;
     TLily::Event::keepalive();
     system("$config{editor} $tmpfile");
     TLily::Event::keepalive(5);
     $ui->resume;
-    
+
     my $rc = open(FH, '<', $tmpfile);
     unless ($rc) {
 	$ui->print("(edit buffer file not found)\n");
 	return;
     }
-    
+
     if ((stat FH)[10] == $mtime) {
 	$ui->print("(report not submitted)\n");
 	close FH;
 	unlink($tmpfile);
 	return;
     }
-    
+
     my @data = <FH>;
     close FH;
     $form = join("",@data);
@@ -138,7 +138,7 @@ sub edit_report(%) {
         return;
     }
     my $from_addr = $1;
-    
+
     TLily::Event::keepalive();
     eval { sendmail($from_addr, $form, $ui); };
     if ($@) {

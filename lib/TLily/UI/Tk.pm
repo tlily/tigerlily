@@ -29,7 +29,7 @@ use TLily::UI::Tk::Event;
 @ISA = qw(TLily::UI);
 
 # The default set of mappings from command names to functions.
-my %commandmap = 
+my %commandmap =
   (
    'accept-line'          => sub { $_[0]->accept_line() },
    'previous-history'     => sub { $_[0]->previous_history() },
@@ -89,7 +89,7 @@ my %bindmap =
    'Control-h'	       => 'backward-delete-char',
    'Control-k'	       => 'kill-line',
    'Control-l'	       => 'refresh',
-   'Control-m'	       => 'accept-line',  
+   'Control-m'	       => 'accept-line',
    'Control-n'	       => 'next-history',
    'Control-p'	       => 'previous-history',
    'Control-t'	       => 'transpose-chars',
@@ -174,7 +174,7 @@ sub new {
     print STDERR "TLily::Tk::new() called\n" if $config{ui_debug};
     my $proto = shift;
     my %arg   = @_;
-    
+
     my $class = ref($proto) || $proto;
     my $self  = $class->SUPER::new(@_);
     bless($self, $class);
@@ -200,7 +200,7 @@ sub new {
 					    -slant => "italic"),
 	$self->{toplevel} = $mainwin;
     }
-    
+
     $self->{event_core} = new TLily::UI::Tk::Event($mainwin);
     TLily::Event::replace_core($self->{event_core});
 
@@ -261,12 +261,12 @@ sub new {
        -insertontime => 0,
        -wrap         => "word",
        -state        => "disabled")->pack(-fill => "both", -expand => 1);
-    
+
     $self->{text} = $self->{stext}->Subwidget("rotext");
 
 
     $self->{status} = $self->{toplevel}->Frame(-bg => $color{blue});
-    
+
     $self->{status_left} = $self->{status}->Label
       (-textvariable => \$self->{left_str},
        -background   => $color{blue},
@@ -288,7 +288,7 @@ sub new {
 				      -fill => "x",
 					-ipady => 0,
 					-anchor => 'ne');
-    
+
     $self->{entry} = $self->{toplevel}->Frame();
 
     $self->{input} = $self->{entry}->Text
@@ -310,7 +310,7 @@ sub new {
 			 -expand => 0,
 			 -side   => "bottom",
 			 -anchor => "s");
-   
+
     $self->{status}->pack(-pady   => 0,
 			  -ipady  => 0,
 			  -padx   => 0,
@@ -319,7 +319,7 @@ sub new {
 			  -expand => 0,
 			  -side   => "bottom",
 			  -anchor => "s");
-    
+
     $self->{text}->configure(-state => "normal");
     #$self->{text}->image("create", "1.0", -image => $logo) if !$config{quiet};
     $self->{text}->insert("end", "\n");
@@ -353,7 +353,7 @@ sub ui_bindings {
     $mainwin->bind(ref $self->{input},'<Meta-1>','NoOp');
     $mainwin->bind(ref $self->{input},'<Alt-KeyPress>','NoOp');
     $mainwin->bind(ref $self->{input},'<Escape>','unselectAll');
-    
+
     $mainwin->bind(ref $self->{input},'<1>',['Button1',Ev('x'),Ev('y')]);
     $mainwin->bind(ref $self->{input},'<B1-Motion>','B1_Motion' ) ;
     $mainwin->bind(ref $self->{input},'<B1-Leave>','B1_Leave' ) ;
@@ -413,25 +413,25 @@ sub ui_bindings {
 		   ['SetCursor','end-1char']);
     $mainwin->bind(ref $self->{input},'<Control-Shift-End>',
 		   ['KeySelect','end-1char']);
-    
+
 #    $mainwin->bind(ref $self->{input}, "<Prior>",
 #		   [$stext => "yview", scroll => -1, "pages"]);
     $mainwin->bind(ref $self->{input},'<Shift-Prior>',
 		   ['KeySelect',Ev('ScrollPages',-1)]);
     $mainwin->bind(ref $self->{input},'<Control-Prior>',
 		   ['xview','scroll',-1,'page']);
-    
+
 #    $mainwin->bind(ref $self->{input}, "<Next>",
 #		   [$stext => "yview", scroll =>  1, "pages"]);
     $mainwin->bind(ref $self->{input},'<Shift-Next>',
 		   ['KeySelect',Ev('ScrollPages',1)]);
     $mainwin->bind(ref $self->{input},'<Control-Next>',
 		   ['xview','scroll',1,'page']);
-    
+
     $mainwin->bind(ref $self->{input},'<Shift-Tab>', 'NoOp');
     $mainwin->bind(ref $self->{input},'<Control-Tab>','NoOp');
     $mainwin->bind(ref $self->{input},'<Control-Shift-Tab>','NoOp');
-    
+
     $mainwin->bind(ref $self->{input},'<Control-space>',
 		   ['markSet','anchor','insert']);
     $mainwin->bind(ref $self->{input},'<Select>',
@@ -442,7 +442,7 @@ sub ui_bindings {
 		   ['SelectTo','insert','char']);
     $mainwin->bind(ref $self->{input},'<Control-slash>','selectAll');
     $mainwin->bind(ref $self->{input},'<Control-backslash>','unselectAll');
-    
+
 #    $mainwin->bind(ref $self->{input},'<Control-a>',
 #		   ['SetCursor','insert linestart']);
 #    $mainwin->bind(ref $self->{input},'<Control-b>',
@@ -459,12 +459,12 @@ sub ui_bindings {
 #		   [$text => "see", "1.0"]);
 #    $mainwin->bind(ref $self->{input},'<Meta-greater>',
 #		   [$text => "see", "end"]);
-    
+
 #    $mainwin->bind(ref $self->{input},'<Control-n>',
 #		   ['SetCursor',Ev('UpDownLine',1)]);
 #    $mainwin->bind(ref $self->{input},'<Control-p>',
 #		   ['SetCursor',Ev('UpDownLine',-1)]);
-    
+
     $mainwin->bind(ref $self->{input},'<2>',
 		   ['Button2',Ev('x'),Ev('y')]);
     $mainwin->bind(ref $self->{input},'<B2-Motion>',
@@ -483,10 +483,10 @@ sub ui_bindings {
 #    $mainwin->bind(ref $self->{input},'<BackSpace>','Backspace');
     $mainwin->bind(ref $self->{input},'<Insert>', \&ToggleInsertMode ) ;
     $mainwin->bind(ref $self->{input},'<KeyPress>',['InsertKeypress',Ev('A')]);
-    
-    $mainwin->bind(ref $self->{input},'<F1>', \&about); 
-    $mainwin->bind(ref $self->{input},'<F2>', 'NoOp'); 
-    $mainwin->bind(ref $self->{input},'<F3>', 'NoOp'); 
+
+    $mainwin->bind(ref $self->{input},'<F1>', \&about);
+    $mainwin->bind(ref $self->{input},'<F2>', 'NoOp');
+    $mainwin->bind(ref $self->{input},'<F3>', 'NoOp');
 #    $mainwin->bind(ref $self->{input},'<Control-d>',['delete','insert']);
     $mainwin->bind(ref $self->{input},'<Control-k>','deleteToEndofLine') ;#kill
     $mainwin->bind(ref $self->{input},'<Control-o>','NoOp');
@@ -555,11 +555,11 @@ sub prompt_for {
     print STDERR "password: $args{password}\n" if $config{ui_debug};
     print STDERR "call    : $args{call}\n" if $config{ui_debug};
     if(exists $args{prompt}) { $self->prompt($args{prompt}) }
-    
+
     my @args = (-insertofftime => 500, -insertontime => 500,
 		-font => $font{normal});
     if($args{password}) { push(@args, -show => "*") }
-    
+
     $self->{input}->packForget();
     $self->{prompt_for_w} = $self->{entry}->Entry(@args)
       ->pack(-side => "right", -fill => 'x', -expand => 1);
@@ -641,7 +641,7 @@ sub defstyle {
 
 sub defcstyle {
     my($self, $style, $fg, $bg, @attrs) = @_;
-    
+
     $bg = $color{black} if $bg eq "-";
     $fg = $color{white} if $fg eq "-";
     $bg = $color{$bg} if exists $color{$bg};
@@ -840,17 +840,17 @@ sub page {
     if($page == 1) { $self->{page} = 1; }
     else { $self->{page} = 0; }
 }
-    
+
 
 sub define {
     my($self, $name, $pos) = @_;
     $pos ||= 'right';
-    
+
     # Remove this variable from the existing lists.
     @{$self->{left}}     = grep { $_ ne $name } @{$self->{left}};
     @{$self->{right}}    = grep { $_ ne $name } @{$self->{right}};
     @{$self->{override}} = grep { $_ ne $name } @{$self->{override}};
-    
+
     if ($pos eq 'left') {
         push @{$self->{left}}, $name;
     } elsif ($pos eq 'right') {
@@ -882,12 +882,12 @@ sub build_string {
         $self->{left_str} = (' ' x $x) . $s;
         return;
     }
-    
+
     my @l = map({ defined($self->{var}->{$_}) ? $self->{var}->{$_} : () }
                 @{$self->{left}});
     my @r = map({ defined($self->{var}->{$_}) ? $self->{var}->{$_} : () }
                 @{$self->{right}});
-    
+
     $self->{left_str}  = join(" | ", @l) || "";
     $self->{right_str} = join(" | ", @r) || "";
 }
@@ -1006,7 +1006,7 @@ sub dump_to_file {
     }
 
     print FILE $self->{text}->get("1.0", "end");
-    close(FILE);  
+    close(FILE);
     return int($self->{text}->index("end"))-1;
 }
 

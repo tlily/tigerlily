@@ -150,7 +150,7 @@ sub setter {
 			 "See \%help $mode)");
 	      return 0;
 	    }
-	  } else { # Deleting a variable	      
+	  } else { # Deleting a variable
 	    delete($config{$var});
 	    $reason="$var deleted";
 	  }

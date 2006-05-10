@@ -24,7 +24,7 @@ help_r( 'blurb',"%blurb <blurb> will try to wedge your blurb into the available 
 if it won't fit. There is, by default, a 35 character limit on the length
 of your psuedo + the length of your blurb. (Toss in another 3 for the ' []',
 and the total of 38 is what's allowed to satisfy those lame old telnet
-clients.) 
+clients.)
 
 The extension will use a variety of techniques to try to cut your blurb
 down to size, and failing those, will lop off the end of your blurb.
@@ -90,7 +90,7 @@ sub state_cmd {
 		$servers[0] = TLily::Server->active();
 	}
 
-	foreach my $core (@servers) {	
+	foreach my $core (@servers) {
 		next if !defined $core;
 		$core->cmd_process("/$state", sub {
 			# I don't see how to get the output of the cmd back...
@@ -102,7 +102,7 @@ sub state_cmd {
 }
 
 #
-# Apply a set of rules to reduce your blurb into something that will 
+# Apply a set of rules to reduce your blurb into something that will
 # fit into a smaller space. Apply this rules in order of readability.
 #
 
@@ -121,7 +121,7 @@ sub blurb_cmd {
 			$servers[0] = TLily::Server->active();
 		}
 	
-		foreach my $core (@servers) {	
+		foreach my $core (@servers) {
 			next if !defined $core;
 			$core->cmd_process("/blurb off", sub {
 				# I don't see how to get the output of the cmd back...
@@ -175,7 +175,7 @@ sub blurb_cmd {
  	$ui->print("ALL SPACES:" .$blurb. "\n") if $config{blurb_verbose};
         goto DONE if (check_blurb($blurb));
 
-	#Remove punctuation 
+	#Remove punctuation
         my $punc = "'\""; # don't remove &, as it could be there intentionally
 
 	while (grep /$punc/, @words) { #if -any- puncutation
@@ -217,7 +217,7 @@ sub blurb_cmd {
 		$servers[0] = TLily::Server->active();
 	}
 
-	foreach my $core (@servers) {	
+	foreach my $core (@servers) {
 		next if !defined $core;
 		$core->cmd_process("/blurb [" . $blurb . "]", sub {
 			# I don't see how to get the output of the cmd back...

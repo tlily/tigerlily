@@ -63,12 +63,12 @@ sub edit_text {
     unlink($tmpfile);
     open(FH, '>', $tmpfile) or die "$tmpfile: $!";
     if (@{$text}) {
-        foreach (@{$text}) { 
-	    chomp; 
-            if ($^O =~ /cygwin/) {	    
+        foreach (@{$text}) {
+	    chomp;
+            if ($^O =~ /cygwin/) {
 	        print FH "$_\r\n";
 	    } else {
-	        print FH "$_\n";	    
+	        print FH "$_\n";
 	    }
 	}
         $mtime = (stat FH)[10];
@@ -77,7 +77,7 @@ sub edit_text {
 
     $ui->suspend;
     TLily::Event::keepalive();
-    
+
     if ($^O =~ /cygwin/) {
          my $tmpfile2 = "C:$tmpfile";
         $tmpfile2 =~ s/\//\\/g;
@@ -94,8 +94,8 @@ sub edit_text {
     unless ($rc) {
         $ui->print("(edit buffer file not found)\n") unless $quiet;
         return;
-    }  
-     
+    }
+
     if ($^O =~ /cygwin/) {
 	# blah!
     } elsif ((stat FH)[10] == $mtime) {
@@ -103,8 +103,8 @@ sub edit_text {
         unlink($tmpfile);
         $ui->print("(file unchanged)\n") unless $quiet;
         return;
-    }  
-    
+    }
+
     @{$text} = <FH>;
     if ($^O =~ /cygwin/) {
         local($/ = "\r\n");
@@ -196,7 +196,7 @@ sub format_time {
   my $type = $args{type};
   my $seconds = $args{seconds};
 
-  if ($delta && $config{$delta}) { 
+  if ($delta && $config{$delta}) {
     my($t) = ($time->[2] * 60) + $time->[1] + $config{$delta};
     $t += (60 * 24) if ($t < 0);
     $t -= (60 * 24) if ($t >= (60 * 24));

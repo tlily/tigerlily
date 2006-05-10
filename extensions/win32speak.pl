@@ -12,7 +12,7 @@ use strict;
 #
 # %extension load win32speak
 # %on <foo> %attr speak 1
-# 
+#
 # should write some docs, eh?
 
 use Win32::OLE qw( EVENTS );
@@ -25,14 +25,14 @@ sub ole_event_handler {
     my ($Obj, $Event, @Args) = @_;
     if ($Event == 4) {
        	if (defined($tlily_ole_handler)) {
-	    
+
 	    # we're done talking, so remove the ole hook.
 	    # if I felt like being clever, I could re-inject the OLE events
 	    # into tlily's event model, and keep the ole hook in place all
 	    # the time.  Might be amusing.  Maybe some other time.
 	    TLily::Event::idle_u($tlily_ole_handler);
             undef $tlily_ole_handler;
-	}	
+	}
     }
 }
 
@@ -40,45 +40,45 @@ sub sayit {
     my($event, $handler) = @_;
 
     my $Me =  $event->{server}->user_name();
-    
+
     # don't say anything if we sent the message somewhere.
     return if ($event->{SOURCE} eq $Me && $event->{RECIPS} ne $Me);
-    
+
     # don't say anything unless the "speak" attribute has been set (with %on)
     return unless $event->{speak};
-        
+
     my $message = "From $event->{SOURCE} to $event->{RECIPS}: $event->{VALUE}";
-    
+
     if ($event->{type} eq "emote") {
         $message = "(to $event->{RECIPS}), $event->{SOURCE} $event->{VALUE}";
     }
 
-    # Find a good voice to use.  Note that win2k appears to only come with 
+    # Find a good voice to use.  Note that win2k appears to only come with
     # one voice (male) anyway, by default.
     #
     # You can get more from http://www.bytecool.com/voices.htm.  I believe only
     # the SAPI4 ones apply to the control we are using.
-    
+
     my $pronoun = $event->{server}->get_pronoun(HANDLE => $event->{SHANDLE});
     my $gender  = ( $pronoun =~ /her/i ? 1 : 2 );
     my $ranklist = "Style=Casual;Gender=$gender";
     my $engine = $DirectSS->Find($ranklist);
 
-#    ui_name()->print("(Using voice '" . $DirectSS->ModeName($engine) . 
+#    ui_name()->print("(Using voice '" . $DirectSS->ModeName($engine) .
 #                     "' (voice $engine of " . $DirectSS->CountEngines() . " available))\n");
-    
+
     $DirectSS->Select($engine);
     $DirectSS->Speak($message);
 
     # we need to ensure that win32::OLE's message loop continues to function
     # until it's done speaking.  Register an idle handler, and then we'll
-    # unregister it when the OLE event comes in that tells us it's done 
+    # unregister it when the OLE event comes in that tells us it's done
     # talking.
-    
-    $tlily_ole_handler = TLily::Event::idle_r(call => sub { 
+
+    $tlily_ole_handler = TLily::Event::idle_r(call => sub {
         Win32::OLE->SpinMessageLoop();
     });
-    
+
     return;
 }
 

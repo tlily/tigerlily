@@ -129,7 +129,7 @@ sub url_cmd {
 	if ($arg eq "show" && ! $num) {
 	    $num=$#urls+1;
 	}
-	if ($arg=~/^-?\d+$/) { $num=$arg;	}
+	if ($arg=~/^-?\d+$/) { $num=$arg; }
 	if (! defined $num) {
 	    $ui->print("(usage: %url show <number|url> or %url show ",
                        "or %url <number>\n");

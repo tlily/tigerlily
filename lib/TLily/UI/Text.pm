@@ -12,7 +12,7 @@
 # lazy to bother to actually understand how tlily UI's work :)
 #
 # Thus it sucks.
-# 
+#
 # But it will suffice for botworkin' for now.
 
 # $Id$
@@ -53,7 +53,7 @@ BEGIN {
 }
 
 END {
-    system("stty sane");    
+    system("stty sane");
 }
 
 sub accept_line {
@@ -98,7 +98,7 @@ sub run {
     $self->{point}++;
 
     $c = ord($c);
-    
+
     my $ctrl;
     my $key;
     if ($c == 27) {
@@ -118,7 +118,7 @@ sub run {
 
     $key = ($ctrl ? "C-" : "") . ($meta ? "M-" : "") . chr($c);
 
-    if ($key eq "C-j") { 	
+    if ($key eq "C-j") {
 	$self->accept_line($self->{text});
 	$self->{text} = "";
 	$self->{point} = -1;
@@ -314,10 +314,10 @@ sub set {
 
 sub get_input {
     my($self) = @_;
-    
+
     if (wantarray) {
-	return(($self->{point}, $self->{text}));	
-    } else { 
+	return(($self->{point}, $self->{text}));
+    } else {
 	return($self->{text});
     }
 }

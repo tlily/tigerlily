@@ -23,7 +23,7 @@ Turns spellcheck mode on or off.  See "%help %spellcheck".
 
 =head1 UI COMMANDS
 
-=item look 
+=item look
 
 Spellchecks the word underneath the cursor.  Bound to ^G by default.
 
@@ -63,7 +63,7 @@ sub spellcheck_input {
 	    $message =~ s/\b$word\b/\0${word}\0/g;
 	}
     }
- 
+
     # take the \0 markers around the misspelled words and generate the style
     # list
     while ($message =~ /\0[^\0]*\0/) {
@@ -90,13 +90,13 @@ sub spelled_correctly {
 
     return 1 if ($state ne "enabled");
 
-    return 1 if ($word !~ /\S/);    
+    return 1 if ($word !~ /\S/);
 
     return 1 if (exists($stop_list{$word}));
-    
+
     # clear the cache if it's grown too big.
     if (scalar(keys %look_cache) > 500) { undef %look_cache; }
-    
+
     return $look_cache{$word} if (exists $look_cache{$word});
 
     # Talk to ispell
@@ -109,9 +109,9 @@ sub spelled_correctly {
 
             TLily::UI::istyle_fn_u(\&spellcheck_input);
             return 1;
-            
+
         }
-        
+
         $last_ispell_restart = time;
 
         $ui->print("(ispell seems to have died- restarting)");
@@ -128,7 +128,7 @@ sub spelled_correctly {
     if ($resp =~ /^[*+-]/) {
         $look_cache{$word}=1;
     } else {
-        $look_cache{$word}=0;     
+        $look_cache{$word}=0;
     }
 
     return $look_cache{$word};
@@ -145,16 +145,16 @@ sub spellcheck_cmd {
         }
 
         TLily::UI::istyle_fn_r(\&spellcheck_input);
-        
+
         $ui->print("(spellcheck enabled, using \'ispell\')\n");
         $state="enabled";
 
     } elsif ($command =~ /off/i) {
 	TLily::UI::istyle_fn_u(\&spellcheck_input);
 	$ui->print("(spellcheck disabled)\n");
-	$state="disabled";	
+	$state="disabled";
     } else {
-	$state ||= "disabled";	
+	$state ||= "disabled";
     	$ui->print("(spellcheck is $state)\n");
     }
 }
@@ -169,7 +169,7 @@ sub init_ispell {
     return $pid;
 }
 
-sub load {    
+sub load {
     command_r("spellcheck" => \&spellcheck_cmd);
 
     TLily::UI::command_r("look" => \&look_cmd);

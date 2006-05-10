@@ -7,7 +7,7 @@ sub load {
 
     if ($server) {
 	init_bandwidth();
-    
+
     } else {
 	event_r(type => 'connected',
 		call => \&init_bandwidth);
@@ -19,10 +19,10 @@ sub init_bandwidth {
     my $ui = ui_name("main");
     my $server = active_server();
     my $last_in  = $server->{bytes_in};
-    
+
     $ui->define(bandwidth => 'right');
-    my $update = 10;		# seconds
-    
+    my $update = 10; # seconds
+
     my $sub = sub {
 	my $ui = ui_name("main");
 	my $server = active_server();
@@ -44,7 +44,7 @@ sub init_bandwidth {
     TLily::Event::time_r(after    => $update,
 			 interval => $update,
 			 call     => $sub);
-    
+
     return 0;
 }
 

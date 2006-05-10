@@ -31,7 +31,7 @@ $keep{USER} = {HANDLE   => 1,
 	       BLURB    => 1,
 	       PRONOUN  => 1,
 	       STATE    => 1};
-$keep{DISC} = {HANDLE   => 1, 
+$keep{DISC} = {HANDLE   => 1,
                CREATION => 1,
 	       NAME     => 1,
 	       TITLE    => 1,
@@ -59,7 +59,7 @@ my %events =
    permit        => undef,
    depermit      => undef,
    appoint       => undef,
-   unappoint     => undef,   
+   unappoint     => undef,
    'join'        => undef,
    quit          => undef,
    retitle       => undef,
@@ -80,9 +80,9 @@ server to the latest version or use another (1.x) version of tlily.\n";
 # Take raw server output, and deal with it.
 sub parse_raw {
     my($event, $handler) = @_;
-    
+
     my $serv = $event->{server};
-    
+
     # Divide into lines.
     $serv->{pending} .= $event->{data};
     my @lines = split /\r?\n/, $serv->{pending}, -1;
@@ -103,7 +103,7 @@ sub parse_raw {
     foreach (@lines) {
 	parse_line($serv, $_);
     }
-    
+
     return;
 }
 
@@ -112,13 +112,13 @@ sub parse_raw {
 sub parse_line {
     my($serv, $line) = @_;
     chomp $line;
-    
+
     my $ui;
     $ui = ui_name($serv->{'ui_name'}) if ($serv->{'ui_name'});
-    
+
     #print STDERR "=", $line, "\n";
     $ui->print("=", $serv->name(), "=", $line, "\n") if ($TLily::Config::config{parser_debug});
-    
+
     my %event;
     my $cmdid = "";
     # prompts #############################################################
@@ -136,9 +136,9 @@ sub parse_line {
 	}
     }
 
-    
+
     # prefixes ############################################################
-    
+
     # %g
     if ($line =~ s/^%g//) {
 	$serv->{BELL} = 1;
@@ -149,9 +149,9 @@ sub parse_line {
 	$cmdid = $1;
 	$line = $2;
     }
-        
+
     # SLCP ################################################################
-    
+
     # SLCP "%USER" and "%DISC" messages, used to sync up the
     # initial client state database.
     if ($line =~ /^%USER /) {
@@ -169,7 +169,7 @@ sub parse_line {
 	
 	return;
     }
-    
+
     if ($line =~ /^%DISC /) {
 	my %args = SLCP_parse($line);
 	foreach (keys %args) {
@@ -183,14 +183,14 @@ sub parse_line {
 
     # SLCP "%GROUP" messages.
     if ($line =~ /^%GROUP /) {
-	my %args = SLCP_parse($line);	
+	my %args = SLCP_parse($line);
 	$serv->state(%args);
 	
 	return;
     }
 
 	
-    # SLCP "%DATA" messages. 
+    # SLCP "%DATA" messages.
     if ($line =~ /^%DATA /) {
 	my %args = SLCP_parse($line);
 	
@@ -215,7 +215,7 @@ sub parse_line {
 		  text   => $line);
 	goto found;
     }
-    
+
     # SLCP-SYNC messages
     if ($line =~ /^%SLCP-SYNC (.*)/) {
 	my $be = lc($1);
@@ -224,8 +224,8 @@ sub parse_line {
 		  text   => "(SLCP sync ${be}ing)");
 	goto found;
     }
-    
-    # SLCP %NOTIFY messages.  We pretty much just push these through to 
+
+    # SLCP %NOTIFY messages.  We pretty much just push these through to
     # tlily's internal event system.
     if ($line =~ /^%NOTIFY /) {
 
@@ -243,10 +243,10 @@ sub parse_line {
 	$event{SHANDLE} = $event{SOURCE};
 	$event{SOURCE}  = $serv->get_name(HANDLE => $event{SOURCE});
 
-	if ($event{EVENT} =~ /unidle/ &&	
+	if ($event{EVENT} =~ /unidle/ &&
 	    $event{SOURCE} eq $serv->user_name) {
 	    $event{NOTIFY} = 0;
-	}       	
+	}
 	
 	if ($event{RECIPS}) {
 	    $event{RHANDLE} = [ split /,/, $event{RECIPS} ];
@@ -280,14 +280,14 @@ sub parse_line {
 	$event{text} .= " = \"$event{VALUE}\""     if ($event{VALUE});
 	$event{text} .= ")";
 	
-	if ($event{SOURCE} eq $serv->user_name) { 
+	if ($event{SOURCE} eq $serv->user_name) {
 	    $event{isuser} = 1;
 	}
 	
 	goto found;
     }
-    
-    
+
+
     # other %server messages ##############################################
 
     # %server
@@ -307,7 +307,7 @@ sub parse_line {
 	$event{password} = 1 if (/password/);
 	goto found;
     }
-    
+
     # %begin (command leafing)
     if ($line =~ /^%begin \[(\d+)\] (.*)/) {
 	%event = (type    => 'begincmd',
@@ -322,7 +322,7 @@ sub parse_line {
 		  cmdid => $1);
 	goto found;
     }
-    
+
     # %connected
     if ($line =~ /^%connected/) {
 	$serv->{logged_in} = 1;
@@ -330,7 +330,7 @@ sub parse_line {
 			  text => $line);
 	goto found;
     }
-    
+
     # %export_file
     if ($line =~ /^%export_file (\w+)/) {
 	%event = (type => 'export',
@@ -339,7 +339,7 @@ sub parse_line {
                   text => $line);
 	goto found;
     }
-    
+
     # %import_file
     if ($line =~ /^%import_file/) {
 	%event = (type => 'import',
@@ -348,31 +348,31 @@ sub parse_line {
                   text => $line);
 	goto found;
     }
-    
+
     # %pong
     if ($line =~ /^%pong/) {
 	%event = (type => 'pong');
 	goto found;
-    }    
-    
+    }
+
     # The options notification.
     if ($line =~ /%options\s+(.*?)\s*$/) {
-    
+
 	my @o = split /\s+/, $1;
 	%event = (type    => 'options',
 		  options => \@o,
                   text => $line);
 	
         if (! $serv->{SEEN_OPTIONS}) {
-            $serv->{SEEN_OPTIONS}=1;       
+            $serv->{SEEN_OPTIONS}=1;
             # flush out any pending send data at this point.  We queue the
             # initial sends from the user for a bit so that the options
-            # negotiation can happen properly.       
+            # negotiation can happen properly.
             foreach (@{$serv->{send_buffer}}) {
                 $serv->sendln($_);
             }
             undef $serv->{send_buffer};
-    
+
             goto found if $serv->{SLCP_OK};
 
             if (! ($line =~ /\+leaf-notify/ &&
@@ -386,34 +386,34 @@ sub parse_line {
 
         goto found;
     }
-    
+
     # check for old cores
     if  ($line =~ /type \/HELP for an introduction/) {
 	warn $SLCP_WARNING . "[Error Code -2]\n" unless $serv->{SLCP_OK};
     }
-    
+
     # login stuff #########################################################
-    
+
     # Welcome...
     if ($line =~ /^Welcome to (lily|Rowboat).*?at (.*?)\s*$/) {
 	$serv->state(DATA => 1, NAME => "NAME", VALUE => $2);
 	# Set servername to $2.
         $serv->name($2);
     }
-    
+
     # something completely unknown ########################################
-    
+
     %event = (type   => 'text',
 	      NOTIFY => 1,
 	      text   => $line);
-    
+
     # An event has been parsed.
   found:
     $event{cmdid}     = $cmdid if ($cmdid);
     $event{BELL}      = 1 if ($serv->{BELL});
     $event{server}    = $serv;
     $event{'ui_name'} = $serv->{'ui_name'};
-    
+
     $serv->{BELL} = undef;
 
     TLily::Event::send(\%event);
@@ -429,7 +429,7 @@ sub load {
 sub SLCP_parse {
     my ($line) = @_;
     my %ret;
-    
+
     $line =~ /^%\S+/gc;
     while (1) {
 
@@ -440,7 +440,7 @@ sub SLCP_parse {
 	    pos($line) += $2;
 
         # OPT=VAL
-	} elsif ($line =~ /\G\s*([^\s=]+)=(\S+)/gc) {      
+	} elsif ($line =~ /\G\s*([^\s=]+)=(\S+)/gc) {
 	    $ret{$1} = $2;
 
         # OPT
@@ -451,7 +451,7 @@ sub SLCP_parse {
 	    last;
 	}
     }
-    
+
     return %ret;
 }
 

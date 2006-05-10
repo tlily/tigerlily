@@ -96,9 +96,9 @@ See "%help variables biff_drops" for how to configure your mail drop list.
 
 # Set the check interval (in seconds);
 my $check_interval = $config{biff_interval} || 60;
-my $check_eventid;		# id of the timed event handler for check_drops()
-my $biff = '';			# Statusline variable
-my $active;			# Is mail notification on?
+my $check_eventid;	# id of the timed event handler for check_drops()
+my $biff = '';      # Statusline variable
+my $active;         # Is mail notification on?
 
 # List of maildrops to check.  Each element is a hash, which contains access
 # and state information for drop.  Listed below are the hash elements used
@@ -139,10 +139,10 @@ sub check_mbox(\%) {
     my $atime = -A _;
     my $size = -s _;
 
-    $mboxRef->{status} = 0;	# Default is no unread mail.
+    $mboxRef->{status} = 0; # Default is no unread mail.
     if (-f _ && -s _ && ($mtime < -A _) ) {
 	if (($mboxRef->{mtime} == 0) || ($mtime < $mboxRef->{mtime})) {
-	    $mboxRef->{mtime} = $mtime;	# Update mtime
+	    $mboxRef->{mtime} = $mtime; # Update mtime
 	    $mboxRef->{status} = 3; # Ring bell
 	} else {
 	    $mboxRef->{status} = 1; # Unread mail
@@ -159,10 +159,10 @@ sub check_maildir(\%) {
 	$mtime = ($mtime < -M "$mdirRef->{path}/new/$_")?$mtime:-M _;
     }
     closedir(DH);
-    $mdirRef->{status} = 0;	# Default is no unread mail.
+    $mdirRef->{status} = 0; # Default is no unread mail.
     if (defined($mtime)) {
 	if ($mdirRef->{mtime} == 0 || $mtime < $mdirRef->{mtime}) {
-	    $mdirRef->{mtime} = $mtime;	# Update mtime
+	    $mdirRef->{mtime} = $mtime; # Update mtime
 	    $mdirRef->{status} = 3; # Ring bell
 	} else {
 	    $mdirRef->{status} = 1; # Unread mail
@@ -236,7 +236,7 @@ sub update_biff {
     my $drop;
     foreach $drop (@drops) {
 	$status |= $drop->{status};
-	$drop->{status} &= 1;	# Unset the bell bit.
+	$drop->{status} &= 1; # Unset the bell bit.
     }
     if ($status) {
 	$biff = "Mail";

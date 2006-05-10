@@ -7,12 +7,12 @@ sub set_clock {
     my $ui = ui_name("main");
 
     my @a = localtime;
-    
+
     $ui->set(clock => TLily::Utils::format_time(\@a, delta => "clockdelta",
     						type => "clocktype",
 						seconds => "clockseconds"));
     return 0;
-}    
+}
 
 sub set_serverstatus {
     my $ui     = ui_name("main");
@@ -27,20 +27,20 @@ sub set_serverstatus {
 			       NAME => "NAME");
     $ui->set(server => $sname . ($server->secure()?' (Secure)':''))
         if (defined $sname);
-    
+
     my($name, %state);
     $name  = $server->user_name() || "";
 
     if ($name ne "") {
         %state = $server->state(NAME => $name);
-    
+
         $name .= " [$state{BLURB}]" if (defined $state{BLURB} &&
 				        $state{BLURB} =~ /\S/);
     }
 
     $ui->set(nameblurb => $name);
     $ui->set(state => $state{STATE}) if defined($state{STATE});
-    
+
     return 0;
 }
 
@@ -48,13 +48,13 @@ sub set_serverstatus {
 sub load {
     my $ui = ui_name("main");
     my $server = active_server();
-    
+
     $ui->define(nameblurb => 'left');
     $ui->define(clock     => 'right');
     $ui->define(state     => 'right');
     $ui->define(server    => 'right');
     $ui->define(connected => 'override');
-    
+
     my $sec = (localtime)[0];
     set_clock();
     my ($after, $interval);
@@ -68,30 +68,30 @@ sub load {
     TLily::Event::time_r(after    => $after,
 			 interval => $interval,
 			 call     => \&set_clock);
-    
+
     if ($server) {
 	set_serverstatus();
     } else {
         $ui->set(connected => "-- NOT CONNECTED --");
     }
-    
+
     event_r(type => 'userstate',
-	    order => 'after',	
+	    order => 'after',
 	    call => \&set_serverstatus);
-    
+
     event_r(type => 'rename',
 	    order => 'after',
 	    call => \&set_serverstatus);
-    
+
     event_r(type => 'blurb',
-	    order => 'after',	
+	    order => 'after',
 	    call => \&set_serverstatus);
-    
+
     event_r(type => 'connected',
-	    order => 'after',	
+	    order => 'after',
 	    call => \&set_serverstatus);
-    
+
     event_r(type => 'server_activate',
-	    order => 'after',	
+	    order => 'after',
 	    call => \&set_serverstatus);
 }

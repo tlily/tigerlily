@@ -86,10 +86,10 @@ sub parse_interval {
     }
     elsif($s =~ m/^(\d+)h$/) {
 	return $1 * 3600;
-    } 
+    }
     elsif($s =~ m/^(\d+)d$/) {
 	return $1 * 86400 ;
-    } 
+    }
     else {
 	return;
     }
@@ -111,7 +111,7 @@ sub cron_command {
 				$k, $hour, $min, $sec, $mon+1, $mday, $year%100, $cron_interval{$k}, $cron{$k});
 		}
 	} else {
-		$ui->print("(There are no scheduled events)\n");	
+		$ui->print("(There are no scheduled events)\n");
 	}
 	return;
     }
@@ -154,7 +154,7 @@ sub cron_command {
 
     $cron{$id} = $cmd;
     $cron_when{$id} = time + $interval;
-    
+
     my $hid = $id;  # because $id will change, and the closure will see that.
                     # ($id is not local).
     my $sub = sub {
