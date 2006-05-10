@@ -124,6 +124,4 @@ tlily.PL
 tools/announcement
 tools/build_tlily
 tools/find_eagain
-tools/make_win32_release
 tools/makerelease
-tools/tlily.bat
