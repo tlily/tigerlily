@@ -37,8 +37,24 @@ my $jay_sherman = Perl::Critic->new(-exclude => [qr/.*/]);
 
 # Add in the few cases we should care about.
 # For a list of available policies, perldoc Perl::Critic
-$jay_sherman->add_policy(-policy => 'TestingAndDebugging::RequireUseStrict');
-$jay_sherman->add_policy(-policy => 'InputOutput::ProhibitTwoArgOpen');
+my @policies = qw{
+    TestingAndDebugging::RequireUseStrict
+    TestingAndDebugging::RequireUseWarnings
+    Variables::ProhibitConditionalDeclarations
+    InputOutput::ProhibitTwoArgOpen
+    InputOutput::ProhibitBarewordFileHandles
+    NamingConventions::ProhibitAmbiguousNames
+    Subroutines::ProhibitBuiltinHomonyms
+    Subroutines::ProhibitExplicitReturnUndef
+    Subroutines::ProhibitSubroutinePrototypes
+    Subroutines::RequireFinalReturn
+};
+
+foreach my $policy (@policies) {
+  $jay_sherman->add_policy(-policy => $policy);
+}
+
+# Do this one manually - requires an option.
 $jay_sherman->add_policy(
     -policy => 'CodeLayout::ProhibitHardTabs', 
     -config => { allow_leading_tabs => 0 }
