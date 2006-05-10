@@ -39,7 +39,10 @@ my $jay_sherman = Perl::Critic->new(-exclude => [qr/.*/]);
 # For a list of available policies, perldoc Perl::Critic
 $jay_sherman->add_policy(-policy => 'TestingAndDebugging::RequireUseStrict');
 $jay_sherman->add_policy(-policy => 'InputOutput::ProhibitTwoArgOpen');
-$jay_sherman->add_policy(-policy => 'CodeLayout::ProhibitHardTabs');
+$jay_sherman->add_policy(
+    -policy => 'CodeLayout::ProhibitHardTabs', 
+    -config => { allow_leading_tabs => 0 }
+);
 
 foreach my $file (@files) {
     my @violations = $jay_sherman->critique($file);
