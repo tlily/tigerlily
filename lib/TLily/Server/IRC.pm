@@ -67,6 +67,8 @@ sub new {
         $name .= "#$i";
     }
 
+    $args{port}     ||= 6667;
+
     $self->{name} = $name if ( defined( $args{name} ) );
     $self->{host} = $args{host};
     $self->{ssl}  = $args{ssl};
@@ -719,31 +721,47 @@ sub cmd_default {
     return "(unrecognized command)";
 }
 
-# Since lily-style sends can be very verbose, we make a small effort to
-# collapse multiple sends that occcur in a very short span of time into
-# a single user visible send. (For IRC only at the moment.)
+=for comment
 
-# XXX - If we can avoid the delay caused by the combinations, then there
-# shouldn't be an issue with turning this on (perhaps optionally) for
-# SLCP servers either. For now, the delay required for SLCP (1.25s based
-# on empirical testing) is too much for many
-# users. If this code ever becomes more generic, move it out of IRC.pm
+Since lily-style sends can be very verbose, we make a small effort to
+collapse multiple sends that occcur in a a brief span of time into
+a single user visible send.
 
-my $queued_event;           # There can be at most one queued event.
-my $handle_queued_event;    # A timer that will fire and publish the event
-                            #   if a new event isn't received in a short
-                            #   amount of time.
-my $queued_interval = 0.1;  # Fractional # of seconds to wait until a queued
-                            # event is dumped.
+Right now, we do this by stripping off the first line of the followup
+messages.  Ideally, we should allow the user to specify a "first send" 
+and "followup send" format which would each be applied as necessary.
+Users should also be able to specify the throttle speed at which a new
+send (and, in most cases, a new *timestamp* is therefore used.
+
+This could potentially be turned on with an option for other server
+types. There is some pushback to enabling this by default everywhere,
+and to be honest, the type of sends one sees on IRC more commonly *need*
+this sort of collapse, while lily does not, to the same degree.
+
+Because of the limited use of IRC support, however, we can pretty much
+do whatever we want to IRC sends. Muahahah. 
+
+If this does become a generic server thing, move it to a more appropriate
+location.
+--Coke
+
+=cut
+
+my $last_event;             # Keep track of the last event received.
+my $last_event_ts = -1;     # When did we last process an event?
+my $collapse_interval = 5;  # of seconds before a new send isn't collapsed. 
 
 sub queued_event_handler {
-    my ($e) = @_;
+    my ($e) = shift;
 
-    # XXX For now, only process these events for irc-style servers.
+    # Immediately save off the last event - if we decide not to collapse
+    # anymore, we can just exit out of the sub at this point.
+    my $old_e      = $last_event;
+    $last_event    = $e;
+    my $now = time();
+
+    # XXX For now, ONLY process these events for irc servers.
     if ( exists $e->{server} && $e->{server}->{proto} ne "irc" ) { return }
-
-    # Disable the timer.
-    TLily::Event::time_u($handle_queued_event);
 
     # Skip events that aren't user level. (XXX not necessary for irc-only)
     # return if $e->{type} eq "slcp_data";
@@ -754,93 +772,31 @@ sub queued_event_handler {
     my $set_timer      = 0;
     my $enqueue_event  = 0;
 
-    # is there a queued event already?
-    if ($queued_event) {
+    # Is the interval since our last event short enough to merit
+    # checking for collapsable sends?
+    my $interval = $now - $last_event_ts;
+    $last_event_ts = $now;  # remember this as we might exit here...
+    if ( $interval > $collapse_interval) { return }
 
-        #  If this event matches the queued_event, then
-        # prepend the previous event into this one, and
-        # delete the last event. Replace the queued event with
-        # this one.
-        #  An event matches if the type, source, and target match.
+    # Does this new event match the last event, in: server, source,
+    # recipients, type? If the answer to any of these is no, then
+    # simply exit this handler and let the normal print process
+    # handle it. If it *does* match, then check our time delay.
 
-        # This recips handling is annoying, and may be too overprotective.
-        my ( $recips_new, $recips_old );
-        if ( $e->{RECIPS} ) {
-            if ( ref $e->{RECIPS} eq "ARRAY" ) {
-                $recips_new = join( ',', @{ $e->{RECIPS} } );
-            }
-            else {
-                $recips_new = ( ref $e->{RECIPS} ) . $e->{RECIPS};
-            }
-        }
-        if ( $queued_event->{RECIPS} ) {
-            if ( ref $queued_event->{RECIPS} eq "ARRAY" ) {
-                $recips_old = join( ',', @{ $queued_event->{RECIPS} } );
-            }
-            else {
-                $recips_old = $queued_event->{RECIPS};
-            }
-        }
+    if ( $e->{server} != $old_e->{server}) { return }
+    if ( $e->{SOURCE} != $old_e->{SOURCE}) { return }
+    if ( $e->{RECIPS} != $old_e->{RECIPS}) { return }
+    if ( $e->{type}   != $old_e->{type}  ) { return }
+    # Only handle public/private messages for now
+    if ( $e->{type} ne 'public' && $e->{type} ne 'private') { return }
 
-        if (    $e->{type} eq $queued_event->{type}
-            and $e->{SOURCE} eq $queued_event->{SOURCE}
-            and $recips_new  eq $recips_old )
-        {
-
-            # combine the events and set the timer.
-            $e->{VALUE} = $queued_event->{VALUE} . "\n" . $e->{VALUE};
-            undef $queued_event;
-        }
-        else {
-            # doesn't match: publish the old event.
-            $publish_queued = 1;
-        }
-    }
-
-    #is the new event queueable? (new and of the right type)
-    #  If the new event is a public, private, or emote send,
-    # then queue it.
-
-    if (
-            ( $e->{NOTIFY} == 1 )
-        and ( !exists $e->{_enqueued} )
-        and (  $e->{type} eq "public"
-            or $e->{type} eq "private"
-            or $e->{type} eq "emote" )
-      )
-    {
-        $enqueue_event = 1;
-    }
-    else {
-
-        # don't touch it.
-    }
-
-    if ($publish_queued) {
-        $queued_event->{NOTIFY} = 1;
-        TLily::Event::send($queued_event);
-        undef $queued_event;
-    }
-    if ($enqueue_event) {
-        $e->{NOTIFY}    = 0;
-        $e->{_enqueued} = 1;
-        $queued_event   = $e;
-
-       # Add a timer: If this timer goes off, the event will be re-published
-       # This prevents the last event from being perpetually stuck in the queue.
-        my $h = {
-            after => $queued_interval,
-            call  => sub {
-                $queued_event->{NOTIFY} = 1;
-                TLily::Event::send($queued_event);
-                undef $queued_event;
-              }
-        };
-        $handle_queued_event = TLily::Event::time_r($h);
-        return 1;    # eat the event.
-    }
-    return 0;        # let the event propagate.
+    # Ok. All conditions are met. Let the normal event handlers know that this
+    # is an event that can be collapsed.
+    $e->{_collapsable} = 1;
+    return;
 }
+
+# Register our event collapser.
 event_r( type => 'all', order => 'before', call => \&queued_event_handler );
 
 =item terminate()

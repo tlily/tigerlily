@@ -17,7 +17,7 @@
 @load = qw(server slcp_parse slcp_output slcp_state toc_parse ui expand status
 	   after alias autologin autoreply countdown gag info misc paste pipes
 	   set startup source spellcheck submit url view vinfo log http_parse
-	   on blurbless dumpscrollback);
+	   on blurbless dumpscrollback cformat);
 
 if ($^O =~ /(MSWin32)/) {
     $textwindow_ui = 'TLily::FoiledAgain::Win32';
@@ -124,7 +124,7 @@ $port=7777;
 $mono=0;
 $pager=1;
 
-if ($^O =~ /cygwin/ or $^O =~/MSWin32/) {
+if($^O =~ /cygwin/ or $^O =~/MSWin32/) {
     $editor ||= $ENV{VISUAL} || $ENV{EDITOR} || 'NOTEPAD.EXE';
     $browser_textmode=0;
     $browser="explorer.exe";
@@ -137,7 +137,7 @@ if ($^O =~ /cygwin/ or $^O =~/MSWin32/) {
 #    $browser_textmode=1;
 #    $browser="lynx";
     $browser_textmode=0;
-    $browser="firefox -remote 'openURL(%URL%)'";
+    $browser="netscape -remote 'openURL(%URL%)'";
 }
 # Whether or not to shorten URLs
 # Off by default to be nice to chosen service.
