@@ -24,15 +24,19 @@ BEGIN {
     }
 }
 
-my $manifest    = maniread('MANIFEST');
-
 my @files;
 
-foreach my $file (keys(%$manifest)) {
-    next unless $file =~ /\.(?:pm|pl|t)$/;
-    push @files, $file;
-}
+if (!@ARGV) {
 
+    my $manifest = maniread('MANIFEST');
+
+    foreach my $file (keys(%$manifest)) {
+        next unless $file =~ /\.(?:pm|pl|t)$/;
+        push @files, $file;
+    }
+} else {
+    @files = @ARGV;
+}
 plan tests => scalar @files;
 
 # By default, don't complain about anything. Most of tigerlily doesn't
