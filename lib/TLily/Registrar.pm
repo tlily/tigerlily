@@ -221,6 +221,8 @@ sub tracking {
     $tracking = $on ? 1 : undef;
 }
 
+=back
+
 =head1 EXAMPLE
 
     TLily::Registrar::class_r("memory", \&free);

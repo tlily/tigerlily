@@ -14,11 +14,11 @@ will be displayed in your statusline.
 
 =head1 COMMANDS
 
+=over 10
+
 =item %countdown
 
 Starts or stops a countdown timer.  See "%help %countdown".
-
-=over 10
 
 =back
 

@@ -29,7 +29,11 @@ Connect to a server.  See "%help %connect".
 
 Close a connection to the current active server.  See "%help %close".
 
+=back
+
 =head1 UI COMMANDS
+
+=over 4
 
 =item next-server
 

@@ -196,6 +196,8 @@ sub command {
     return 1;
 }
 
+=over 10
+
 =item cmd_process()
 
 Execute a lily command on a lily server, and process the output

@@ -15,6 +15,8 @@ This extension provides expansion of sendgroups, users, and discussions.
 
 =head1 COMMANDS
 
+=over 10
+
 =item %oops
 
 =item %also

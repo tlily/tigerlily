@@ -558,8 +558,11 @@ sub command {
     return;
 }
 
+=back
 
 =head2 HANDLERS
+
+=over 10
 
 =item reader()
 

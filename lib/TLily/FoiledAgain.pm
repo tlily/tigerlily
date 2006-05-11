@@ -26,6 +26,8 @@ TLily::FoiledAgain - An interface that UIs can call against instead of Curses.pm
 
 =head2 CLASS (SCREEN) METHODS
 
+=over 10
+
 =item set_ui($package_name)
 
 Choose the underlying UI implementation.   This must be called before anything else will work.
@@ -76,12 +78,16 @@ the point (in the last window?)
 
 =item defcstyle($style, $fg, $bg, @attrs)
 
+=back
+
 =head2 OBJECT (WINDOW) METHODS
 
 In addition to the above class methods, this is also an object representing
 a virtual window within the real screen.   The following methods apply to one
 of these windows.   Note that coordinates (other than in the constructor) are
 relative to the window, not the screen.
+
+=over 10
 
 =item new($lines, $cols, $begin_x, $begin_y)
 

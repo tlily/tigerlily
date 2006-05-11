@@ -191,8 +191,11 @@ sub load_extensions {
     extension_cmd($ui,"list");
 }
 
+=back
 
 =head1 HANDLERS
+
+=over 4
 
 =item extension_cmd()
 

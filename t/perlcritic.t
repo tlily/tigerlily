@@ -10,6 +10,10 @@ use ExtUtils::Manifest qw(maniread);
 
 t/perlcritic.t - sanity check various coding standards in the source.
 
+=head1 BUGS
+
+Should use perltidy to require indents of 4-spaces.
+
 =cut
 
 BEGIN {

@@ -384,7 +384,7 @@ sub help_u {
     delete $help{$topic};
 }
 
-
+=back
 
 =head1 HANDLERS
 

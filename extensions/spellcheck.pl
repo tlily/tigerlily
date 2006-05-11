@@ -21,7 +21,11 @@ words in the input buffer are highlighted.
 
 Turns spellcheck mode on or off.  See "%help %spellcheck".
 
+=back
+
 =head1 UI COMMANDS
+
+=over 10
 
 =item look
 

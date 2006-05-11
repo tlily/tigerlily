@@ -38,9 +38,9 @@ lines typed by the user in the "text" field..
 
 =head1 FUNCTIONS
 
-=over 10
-
 =head2 FUNCTIONS DEFINED BY UI.pm:
+
+=over 10
 
 =cut
 
@@ -334,7 +334,6 @@ TLily::Registrar::class_r(global_ui_command => \&command_u);
 TLily::Registrar::class_r(global_istyle_fn  => \&istyle_fn_u);
 
 1;
-
 
 =back
 
