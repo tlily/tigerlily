@@ -20,8 +20,8 @@ use vars qw(@ISA @EXPORT_OK);
 @EXPORT_OK = qw(&max &min &edit_text &diff_text &columnize_list &save_deadfile &get_deadfile);
 
 # These are handy in a couple of places.
-sub max($$) { ($_[0] > $_[1]) ? $_[0] : $_[1] }
-sub min($$) { ($_[0] < $_[1]) ? $_[0] : $_[1] }
+sub max { return ($_[0] > $_[1]) ? $_[0] : $_[1] }
+sub min { return ($_[0] < $_[1]) ? $_[0] : $_[1] }
 
 sub columnize_list {
     my ($ui, $list, $limit) = @_;
@@ -64,13 +64,13 @@ sub edit_text {
     open(FH, '>', $tmpfile) or die "$tmpfile: $!";
     if (@{$text}) {
         foreach (@{$text}) {
-	    chomp;
+            chomp;
             if ($^O =~ /cygwin/) {
-	        print FH "$_\r\n";
-	    } else {
-	        print FH "$_\n";
-	    }
-	}
+            print FH "$_\r\n";
+        } else {
+            print FH "$_\n";
+        }
+    }
         $mtime = (stat FH)[10];
     }
     close FH;
@@ -97,7 +97,7 @@ sub edit_text {
     }
 
     if ($^O =~ /cygwin/) {
-	# blah!
+    # blah!
     } elsif ((stat FH)[10] == $mtime) {
         close FH;
         unlink($tmpfile);
@@ -108,9 +108,9 @@ sub edit_text {
     @{$text} = <FH>;
     if ($^O =~ /cygwin/) {
         local($/ = "\r\n");
-    	chomp(@{$text});
+        chomp(@{$text});
     } else {
-	chomp(@{$text});
+    chomp(@{$text});
     }
     close FH;
     unlink($tmpfile);
@@ -154,14 +154,14 @@ sub save_deadfile {
     my $deaddir = $ENV{HOME}."/.lily/tlily";
     if (! -d $deaddir) {
         # use the default explicitly for older perls. -Coke
-        mkdir $deaddir, 0777 or return undef;
+        mkdir $deaddir, 0777 or return;
     }
     my $deadfile = $deaddir . "/dead.$type.$escaped_name";
 
     unlink($deadfile);
 
     local *DF;
-    open(DF, '>', $deadfile) || return undef;
+    open(DF, '>', $deadfile) || return;
 
     foreach my $l (@{$text}) {
         print DF $l, "\n";
@@ -179,7 +179,7 @@ sub get_deadfile {
     my $deadfile = $ENV{HOME}."/.lily/tlily/dead.$type.$escaped_name";
 
     local *DF;
-    open(DF, '<', $deadfile) || return undef;
+    open(DF, '<', $deadfile) || return;
 
     my $text;
     @{$text} = <DF>;

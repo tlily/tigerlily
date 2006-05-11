@@ -84,7 +84,7 @@ sub run {
 
     my $nfound=0;
     if ( $^O eq 'MSWin32' &&
-	 join('',unpack('b*',join('',$rout,$wout,$eout)))==0 ) {
+     join('',unpack('b*',join('',$rout,$wout,$eout)))==0 ) {
         Win32::Sleep($timeout*1000);
     } else {
         $nfound = select($rout, $wout, $eout, $timeout);
@@ -403,11 +403,11 @@ sub io_u {
 
     my($io, @io);
     foreach $io (@e_io) {
-	if ($io->{id} == $id) {
-	    $core->io_u($io->{'fileno'},$io->{handle},$io->{mode});
-	} else {
-	    push @io, $io;
-	}
+    if ($io->{id} == $id) {
+        $core->io_u($io->{'fileno'},$io->{handle},$io->{mode});
+    } else {
+        push @io, $io;
+    }
     }
     @e_io = @io;
 
@@ -447,16 +447,16 @@ sub time_r {
       if ($h->{interval} && $h->{interval} <= 0);
 
     $h->{'after'} = 0 if (!defined($h->{'time'}) &&
-			  !defined($h->{after}) &&
-			  defined($h->{interval}));
+              !defined($h->{after}) &&
+              defined($h->{interval}));
 
     # Run after N seconds.
     if (defined($h->{after})) {
-	$h->{'time'} = time + $h->{after};
+    $h->{'time'} = time + $h->{after};
     }
     # Oops.
     elsif (!defined($h->{'time'})) {
-	croak qq(Handler registered without "after", "time", or "interval".);
+    croak qq(Handler registered without "after", "time", or "interval".);
     }
 
     $h->{'type'} = "TIMED";
@@ -534,19 +534,19 @@ sub invoke {
     unshift @_, $h->{obj} if ($h->{obj});
     my $rc;
     eval {
-	local $SIG{ALRM} = sub { die "event timeout\n"; };
+    local $SIG{ALRM} = sub { die "event timeout\n"; };
         my $timeout = $config{event_timeout};
         if (! defined($timeout) || $timeout !~ /^\d$/) {
-	    if ($^O =~ /cygwin/) {
+        if ($^O =~ /cygwin/) {
                 $timeout = 60;
-	    } else {
+        } else {
                 $timeout = 5;
             }
 
-	}
+    }
         tl_alarm($timeout);
-	$rc = $h->{call}->(@_);
-	tl_alarm(0);
+        $rc = $h->{call}->(@_);
+        tl_alarm(0);
     };
     warn "$h->{type} handler caused error: $@" if ($@);
     $h->{registrar}->pop_default  if ($h->{registrar});
@@ -574,56 +574,56 @@ sub loop_once {
     # whether that was relevant, though adding "after" also set
     # to 2 did make the problem go away.)
     foreach my $h (@e_time) {
-	if ($h->{'time'} <= $time) {
-	    invoke($h, $h);
-	    if ($h->{interval}) {
-		$h->{'time'} += $h->{interval};
-		while ($h->{'time'} <= $time) {
-		    invoke($h, $h);
-		    $h->{'time'} += $h->{interval};
-		}
-		$sort = 1;
-	    } else {
-		$h->{registrar}->remove("event", $h->{id})
-		  if ($h->{registrar});
-	    }
-	}
+    if ($h->{'time'} <= $time) {
+        invoke($h, $h);
+        if ($h->{interval}) {
+            $h->{'time'} += $h->{interval};
+            while ($h->{'time'} <= $time) {
+                invoke($h, $h);
+                $h->{'time'} += $h->{interval};
+            }
+            $sort = 1;
+        } else {
+            $h->{registrar}->remove("event", $h->{id})
+              if ($h->{registrar});
+            }
+        }
     }
     @e_time = grep { $_->{'time'} > $time } @e_time;
 
     if ($sort) {
-	@e_time = sort { $a->{'time'} <=> $b->{'time'} } @e_time;
+        @e_time = sort { $a->{'time'} <=> $b->{'time'} } @e_time;
     }
 
     # Named events.
   EVENT:
     while (my $e = shift @queue) {
-	foreach my $h (@{[@e_name]}) {
-	    next if $e_name_remove{$h->{id}};
-	    if ($e->{type} eq $h->{type} or $h->{type} eq 'all') {
-                my $debug = $config{event_debug} &&
-                  "$e->{type} $h->{origin}->{file}" =~ $config{event_debug};
-
-                TLily::UI::name()->print("Send $e->{type}:$h->{order} ",
-                                         "($h->{id}) via ",
-                                         "$h->{origin}->{file}:",
-                                         "$h->{origin}->{line}\n")
-                    if $debug;
-		my $rc = invoke($h, $e, $h);
-		if (defined($rc) && ($rc != 0) && ($rc != 1)) {
-		    warn "Event handler returned $rc.";
+        foreach my $h (@{[@e_name]}) {
+            next if $e_name_remove{$h->{id}};
+            if ($e->{type} eq $h->{type} or $h->{type} eq 'all') {
+                    my $debug = $config{event_debug} &&
+                      "$e->{type} $h->{origin}->{file}" =~ $config{event_debug};
+    
+                    TLily::UI::name()->print("Send $e->{type}:$h->{order} ",
+                                             "($h->{id}) via ",
+                                             "$h->{origin}->{file}:",
+                                             "$h->{origin}->{line}\n")
+                        if $debug;
+            my $rc = invoke($h, $e, $h);
+            if (defined($rc) && ($rc != 0) && ($rc != 1)) {
+                warn "Event handler returned $rc.";
 #                    warn Dumper($h);
-		}
-                TLily::UI::name()->print("\thandler returned ",
-                                         defined($rc) ? $rc : "undef", "\n")
-                    if $debug;
-		next EVENT if ($rc);
-	    }
-	}
+            }
+                    TLily::UI::name()->print("\thandler returned ",
+                                             defined($rc) ? $rc : "undef", "\n")
+                        if $debug;
+            next EVENT if ($rc);
+            }
+        }
     }
     if(%e_name_remove) {
-	@e_name = grep { !$e_name_remove{$_->{id}} } @e_name;
-	%e_name_remove = ();
+        @e_name = grep { !$e_name_remove{$_->{id}} } @e_name;
+        %e_name_remove = ();
     }
 
     my $timeout;
@@ -631,36 +631,36 @@ sub loop_once {
         # when we are sitting idle, guarantee that any idle event
         # handlers won't be repeatedly called more than once every
         # 0.01 seconds.
-	$timeout = 0.01;
+        $timeout = 0.01;
     } elsif ($e_time[0]) {
-	$timeout = $e_time[0]->{'time'} - $time;
-	$timeout = 0 if ($timeout < 0);
+        $timeout = $e_time[0]->{'time'} - $time;
+        $timeout = 0 if ($timeout < 0);
     }
 
     # IO events.
     my($r, $w, $e, $n) = $core->run($timeout);
     foreach my $h (@e_io) {
-	if (vec($r, fileno($h->{handle}), 1) && $h->{mode} =~ /r/) {
-	    invoke($h, 'r', $h);
-	} elsif (vec($w, fileno($h->{handle}), 1) && $h->{mode} =~ /w/) {
-	    invoke($h, 'w', $h);
-	} elsif (vec($e, fileno($h->{handle}), 1) && $h->{mode} =~ /e/) {
-	    invoke($h, 'e', $h);
-	}
+        if (vec($r, fileno($h->{handle}), 1) && $h->{mode} =~ /r/) {
+            invoke($h, 'r', $h);
+        } elsif (vec($w, fileno($h->{handle}), 1) && $h->{mode} =~ /w/) {
+            invoke($h, 'w', $h);
+        } elsif (vec($e, fileno($h->{handle}), 1) && $h->{mode} =~ /e/) {
+            invoke($h, 'e', $h);
+        }
     }
 
     foreach my $h (@e_idle) {
-	invoke($h, $h);
+        invoke($h, $h);
     }
 }
 
 =item loop()
 
 =cut
+
 sub loop {
     loop_once while (1);
 }
-
 
 =item tl_alarm()
 
