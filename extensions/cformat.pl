@@ -171,6 +171,10 @@ However, this is a big enough improvement over the previous way of doing this
 (queue collapsable messages), that I'm committing as is. Should only affect
 IRC users.
 
+Another IRC issue is that some sends are not sent as "events", things like
+Mode are just UI prints: to make this usable, that has to be sent as a
+generic event in a similar way to what slcp uses.
+
 =cut
 
     if ($e->{_collapsable}) { $fmt = '%[ - ]\n%Body'; }
