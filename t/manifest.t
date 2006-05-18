@@ -23,8 +23,6 @@ ok(-e $ExtUtils::Manifest::MANIFEST . '.SKIP', 'MANIFEST.SKIP exists');
 
 SKIP:
 {
-    diag "this may take a while...";
-
     $ExtUtils::Manifest::Quiet = 1;
 
     my @missing = ExtUtils::Manifest::manicheck();
