@@ -77,8 +77,8 @@ extensions/status.pl
 extensions/stock.pl
 extensions/stripper.pl
 extensions/submit.pl
-extensions/todeath.pl
 extensions/toc_parse.pl
+extensions/todeath.pl
 extensions/ui.pl
 extensions/uitest.pl
 extensions/url.pl
@@ -120,6 +120,10 @@ lib/TLily/User.pm
 lib/TLily/Utils.pm
 lib/TLily/Version.pm
 lib/tlily.global
+t/basic.t
+t/manifest.t
+t/perlcritic.t
+t/pod.t
 tlily.PL
 tools/announcement
 tools/build_tlily
