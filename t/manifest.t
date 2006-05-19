@@ -2,8 +2,9 @@
 
 use strict;
 use warnings;
-use Test::More tests => 3;
+use Test::More tests => 4;
 
+use File::Spec qw(devnull);
 use ExtUtils::Manifest;
 
 =head1 NAME
@@ -21,11 +22,12 @@ ok(-e $ExtUtils::Manifest::MANIFEST, 'MANIFEST exists');
 
 ok(-e $ExtUtils::Manifest::MANIFEST . '.SKIP', 'MANIFEST.SKIP exists');
 
-SKIP:
-{
-    $ExtUtils::Manifest::Quiet = 1;
+$ExtUtils::Manifest::Quiet = 1;
 
-    my @missing = ExtUtils::Manifest::manicheck();
-    ok(!@missing, 'manicheck()')
-        or diag("Missing files:\n\t" . join ("\n\t", @missing), "\n");
-};
+my @missing = ExtUtils::Manifest::manicheck();
+ok(!@missing, 'manicheck()')
+  or diag("Files in manifest, not on disk:\n\t" . join ("\n\t", @missing), "\n");
+
+my @extra = ExtUtils::Manifest::filecheck();
+ok(!@extra, 'filecheck()')
+  or diag("Files missing from MANIFEST:\n\t" . join ("\n\t", @extra), "\n");
