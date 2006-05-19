@@ -537,6 +537,8 @@ sub cmd_process {
 
     # unidle ourselves on the server.
     #$self->send_sflap(toc_set_idle => 0);
+
+    return;
 }
 
 =item fetch()
@@ -601,6 +603,8 @@ sub send_message {
         $self->{irc}->privmsg( "$recip", $message );
         $ui->print("(message sent to $recip)\n");
     }
+
+    return;
 }
 
 ###############################################################################
@@ -610,6 +614,7 @@ sub cmd_detach {
     my ( $self, $message ) = @_;
 
     $self->terminate($message);
+    return;
 }
 
 sub cmd_finger {
