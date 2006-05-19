@@ -121,6 +121,7 @@ lib/TLily/Utils.pm
 lib/TLily/Version.pm
 lib/tlily.global
 t/basic.t
+t/help.t
 t/manifest.t
 t/perlcritic.t
 t/pod.t
