@@ -2,6 +2,7 @@
 # $Id$
 
 use strict;
+use warnings;
 
 sub info_cmd {
     my($ui, $args) = @_;
@@ -9,24 +10,24 @@ sub info_cmd {
     my $server = active_server();
 
     if ($cmd eq 'set') {
-	my @text;
-	edit_text($ui, \@text) or return;
-	$server->store(ui     => $ui,
-		       type   => "info",
-		       target => $disc,
-		       text   => \@text);
+    my @text;
+    edit_text($ui, \@text) or return;
+    $server->store(ui     => $ui,
+                   type   => "info",
+                   target => $disc,
+                   text   => \@text);
     }
     elsif ($cmd eq 'edit') {
-	my $sub = sub {
-	    my(%args) = @_;
-	    edit_text($args{ui}, $args{text}) or return;
-	    $server->store(@_);
-	};
+    my $sub = sub {
+        my(%args) = @_;
+        edit_text($args{ui}, $args{text}) or return;
+        $server->store(@_);
+    };
 
-	$server->fetch(ui     => $ui,
-		       type   => "info",
-		       target => $disc,
-		       call   => $sub);
+    $server->fetch(ui     => $ui,
+                   type   => "info",
+                   target => $disc,
+                   call   => $sub);
     }
     elsif ($cmd eq 'edit') {
         # Attempt to recall deadfile
@@ -34,7 +35,7 @@ sub info_cmd {
         if (!defined($text)) {
             $ui->print("(Unable to recall dead info for \"$disc\": $!)\n");
         } else {
-	    edit_text($ui, $text) or return;
+            edit_text($ui, $text) or return;
             $server->store(ui     => $ui,
                            type   => "info",
                            target => $disc,
@@ -42,8 +43,9 @@ sub info_cmd {
         }
     }
     else {
-	$server->sendln("/info $args");
+        $server->sendln("/info $args");
     }
+    return;
 }
 
 sub helper_cmd {
@@ -70,13 +72,13 @@ sub helper_cmd {
 
 
     if ($cmd eq 'set') {
-	my @text;
-	edit_text($ui, \@text) or return;
-	$server->store(ui     => $ui,
-		       type   => "help",
-		       target => $help_spec->[1],
-		       name   => $help_spec->[2],
-		       text   => \@text);
+        my @text;
+        edit_text($ui, \@text) or return;
+        $server->store(ui     => $ui,
+                       type   => "help",
+                       target => $help_spec->[1],
+                       name   => $help_spec->[2],
+                       text   => \@text);
     }
     elsif ($cmd eq 'diff' || $cmd eq 'copy') {
         my $help2_str = shift @args;
@@ -102,8 +104,8 @@ sub helper_cmd {
         if ($help_spec->[0] eq $help2_spec->[0] &&
             $help_spec->[1] eq $help2_spec->[1] &&
             $help_spec->[2] eq $help2_spec->[2]) {
-            $ui->print("(source and destination are the same)\n");
-            return 0;
+          $ui->print("(source and destination are the same)\n");
+          return 0;
         }
         help_diff($cmd, $ui, $help_spec, $help2_spec) if ($cmd eq 'diff');
         help_copy($cmd, $ui, $help_spec, $help2_spec) if ($cmd eq 'copy');
@@ -114,29 +116,29 @@ sub helper_cmd {
         if (!defined($text)) {
             $ui->print("(Unable to recall dead help for \", join(':', @{$help_spec}[1..2]), \": $!)\n");
         } else {
-	    edit_text($ui, $text) or return;
-	    $server->store(ui     => $ui,
-		           type   => "help",
-		           target => $help_spec->[1],
-		           name   => $help_spec->[2],
-		           text   => $text);
+        edit_text($ui, $text) or return;
+        $server->store(ui     => $ui,
+                   type   => "help",
+                   target => $help_spec->[1],
+                   name   => $help_spec->[2],
+                   text   => $text);
         }
     }
     elsif ($cmd eq 'edit') {
-	my $sub = sub {
-	    my(%args) = @_;
+    my $sub = sub {
+        my(%args) = @_;
         $args{text} = [ grep {! /^\/#/} @{$args{text}} ]; # strip comments
         $args{text} = [ grep {! /^?sethelp/} @{$args{text}} ]; # strip ?sethelp
 
-	    edit_text($args{ui}, $args{text}) or return;
-	    $server->store(%args);
-	};
+        edit_text($args{ui}, $args{text}) or return;
+        $server->store(%args);
+    };
 
-	$server->fetch(ui     => $ui,
-		       type   => "help",
-		       target => $help_spec->[1],
-		       name   => $help_spec->[2],
-		       call   => $sub);
+    $server->fetch(ui     => $ui,
+                   type   => "help",
+                   target => $help_spec->[1],
+                   name   => $help_spec->[2],
+                   call   => $sub);
     }
     elsif ($cmd eq 'list') {
         if (!defined($help_spec->[1])) {
@@ -157,7 +159,7 @@ help_cmd_usage:
         $ui->print("       %helper diff|copy [server::]index:topic [server::]index:topic\n");
 
     }
-
+    return;
 }
 
 sub help_copy {
@@ -187,6 +189,8 @@ sub help_copy {
                     name   => $help1->[2],
                     call   => $sub);
 
+
+    return;
 }
 
 sub help_diff {
@@ -241,7 +245,7 @@ sub help_diff {
                     target => $help2->[1],
                     name   => $help2->[2],
                     call   => $sub);
-
+    return;
 }
 
 
@@ -252,47 +256,47 @@ sub memo_cmd {
 
     my($target, $name);
     if (@args == 1) {
-	($name) = @args;
+        ($name) = @args;
     } else {
-	($target, $name) = @args;
+        ($target, $name) = @args;
     }
 
     if (!defined ($cmd)) {
-	$server->sendln("/memo");
-	return;
+        $server->sendln("/memo");
+        return;
     }
 
     if ($cmd eq 'set') {
-	if ($name =~ /^\d+$/) {
-	    $ui->print("(memo name is a number)\n");
-	    return;
-	}
+        if ($name =~ /^\d+$/) {
+            $ui->print("(memo name is a number)\n");
+            return;
+        }
 
-	my @text;
-	edit_text($ui, \@text) or return;
-	$server->store(ui     => $ui,
-		       type   => "memo",
-		       target => $target,
-		       name   => $name,
-		       text   => \@text);
+        my @text;
+        edit_text($ui, \@text) or return;
+        $server->store(ui     => $ui,
+                       type   => "memo",
+                       target => $target,
+                       name   => $name,
+                       text   => \@text);
     }
     elsif ($cmd eq 'edit') {
-	if ($name =~ /^\d+$/) {
-	    $ui->print("(you can only edit memos by name)\n");
-	    return;
-	}
+        if ($name =~ /^\d+$/) {
+            $ui->print("(you can only edit memos by name)\n");
+            return;
+        }
 
-	my $sub = sub {
-	    my(%args) = @_;
-	    edit_text($args{ui}, $args{text}) or return;
-	    $server->store(@_);
-	};
+        my $sub = sub {
+            my(%args) = @_;
+            edit_text($args{ui}, $args{text}) or return;
+            $server->store(@_);
+        };
 
-	$server->fetch(ui     => $ui,
-		       type   => "memo",
-		       target => $target,
-		       name   => $name,
-		       call   => $sub);
+        $server->fetch(ui     => $ui,
+                       type   => "memo",
+                       target => $target,
+                       name   => $name,
+                       call   => $sub);
     }
     elsif ($cmd eq 'reedit') {
         # Attempt to recall deadfile
@@ -309,8 +313,10 @@ sub memo_cmd {
         }
     }
     else {
-	$server->sendln("/memo $args");
+        $server->sendln("/memo $args");
     }
+
+    return;
 }
 
 sub export_cmd {
@@ -324,57 +330,58 @@ sub export_cmd {
     my($type, $file, $target, $name);
 
     if (@args > 0 && $args[0] eq "memo") {
-	$type = "memo";
-	shift @args;
+        $type = "memo";
+        shift @args;
     } else {
-	$type = "info";
+        $type = "info";
     }
 
     if (@args < 1) {
-	$ui->print($usage); return;
+        $ui->print($usage); return;
     }
     $file = shift @args;
 
     if ($type eq "memo") {
-	if (@args == 1) {
-	    ($name) = @args;
-	} elsif (@args == 2) {
-	    ($target, $name) = @args;
-	} else {
-	    $ui->print($usage); return;
-	}
+        if (@args == 1) {
+            ($name) = @args;
+        } elsif (@args == 2) {
+            ($target, $name) = @args;
+        } else {
+            $ui->print($usage); return;
+        }
     }
     else {
-	if (@args == 1) {
-	    ($target) = @args;
-	} elsif (@args > 0) {
-	    $ui->print($usage); return;
-	}
+        if (@args == 1) {
+            ($target) = @args;
+        } elsif (@args > 0) {
+            $ui->print($usage); return;
+        }
     }
 
-    local *FH;
-    my $rc = open(FH, '<', $file);
+    my $rc = open(my $file_handle, '<', $file);
     unless ($rc) {
-	$ui->print("(\"$file\": $!)\n");
-	return;
+        $ui->print("(\"$file\": $!)\n");
+        return;
     }
-    my @text=<FH>;
+    my @text=<$file_handle>;
     chomp(@text);
-    close(FH);
+    close($file_handle);
 
     my $server = active_server();
     $server->store(ui     => $ui,
-		   type   => $type,
-		   target => $target,
-		   name   => $name,
-		   text   => \@text);
+                   type   => $type,
+                   target => $target,
+                   name   => $name,
+                   text   => \@text);
+
+    return;
 }
 
 command_r('info'   => \&info_cmd);
 command_r('helper' => \&helper_cmd);
 command_r('memo'   => \&memo_cmd);
 command_r('export' => \&export_cmd);
-	       
+
 shelp_r("info", "Improved /info functions");
 help_r("info", "
 %info set  [\<discussion\>]
@@ -425,16 +432,16 @@ shelp_r("helper", "lily help management functions");
 help_r("helper", "
 %helper set index:topic[:subtopic]
    - Loads your editor and allows you to write help text for the given topic
-     in the given index. 
+     in the given index.
 
 %helper edit index:topic[:subtopic]
-   - Allows you to edit help text for the given topic in the given index. 
+   - Allows you to edit help text for the given topic in the given index.
 
 %helper reedit index:topic[:subtopic]
    - Recalls a dead help text from a previously failed edit.
 
 %helper clear index:topic[:subtopic]
-   - Clears the help text for the given topic in the given index. 
+   - Clears the help text for the given topic in the given index.
 
 %helper list [index[:topic][:subtopic]]
    - Prints the index list if given no arguments.  Prints the contents of a
