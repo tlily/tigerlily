@@ -11,11 +11,6 @@ use ExtUtils::Manifest;
 
 t/manifest.t - sanity check the MANIFEST file
 
-=head1 TODO
-
-Add the reverse test, to make sure files that are checked into svn
-are in the MANIFEST: skip this if this isn't an svn sandbox.
-
 =cut
 
 ok(-e $ExtUtils::Manifest::MANIFEST, 'MANIFEST exists');
