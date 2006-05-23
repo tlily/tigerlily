@@ -798,6 +798,71 @@ $response{anagram} = {
     RE   => $anagramRE,
 };
 
+my $convertRE      = qr/
+  (?:
+  \b convert \s+ (\d+ .? \d+?)? \s* ([a-z]*) \s+ (?:(?:in)?to \s+)? ([a-z]*)
+  )
+/ix;
+
+$response{convert} = {
+    CODE => sub {
+        my ($event) = @_;
+        my $args = $event->{VALUE};
+
+        my ($from, $to, $count);
+        if ($2)  {
+          ($count, $from, $to ) = ($1, $2, $3);
+          $count = 1 unless defined ($count);
+        }
+
+        # should be safe, only alpha units are allowed
+        my $units_output = `units $from $to`;
+        if ($units_output =~ m/(conformbility error)/ ) {
+          return $1;
+        } elsif ($units_output =~ m/(unknown unit '[a-z]*')/i ) {
+          return $1
+        }
+        $units_output =~ s/\n.*//smx;
+        $a = eval "$count $units_output";
+        return "$a $to";
+    },
+    HELP => sub {
+        return "convert units: convert (amount) from_units to_units ";
+    },
+    TYPE => [qw/private public emote/],
+    POS  => '1',
+    STOP => 1,
+    RE   => $convertRE,
+};
+
+my $mathRE = qr{^([+*/\d\s().-]*)\??$};
+
+$response{math} = {
+    CODE => sub {
+        my ($event) = @_;
+        my $args = $event->{VALUE};
+        $args =~ $mathRE;
+        my $term = $1;
+
+        my $result = eval $term; # see RE above, must be math-safe.
+        if ($@) { 
+            if ($event->{type} eq "private") {
+                return "that looked mathy, but it isn't." 
+            } else {
+                return;
+            }
+        }
+	return $result;
+    },
+    HELP => sub {
+        return "math stuff";
+    },
+    TYPE => [qw/private/],
+    POS  => '1',
+    STOP => 1,
+    RE   => $mathRE,
+};
+
 $response{shorten} = {
     CODE => sub {
         my ($event) = @_;
@@ -1257,7 +1322,9 @@ sub scrape_anagram{
     if ( $content =~
         m{<PRE>([^<]*)</PRE>}i )
     {
-        return pickRandom( [ split /\n/, $1 ]); 
+        my @results = grep {$_ ne '' && lc $_ ne $term} split /\n/, $1;
+        return unless @results;
+        return pickRandom( [@results]);
     }
     else {
         return;
