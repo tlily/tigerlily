@@ -93,7 +93,7 @@ my $uptime = time();    #uptime indicator.
 my %served;             #stats.
 
 # we don't expect to be changing our name frequently, cache it.
-my $name = active_server()->user_name();
+my $name = TLily::Server->active()->user_name();
 
 # we'll use Eliza to handle any commands we don't understand, so set her up.
 my $eliza = new Chatbot::Eliza { name => $name, prompts_on => 0 };
@@ -1007,7 +1007,8 @@ $response{"poll"} = {
 
                 # Get the current tally:
                 my %results;
-                foreach my $key ( grep( {/-\-*poll-/}, ( keys %prefs ) ) ) {
+                my @list = grep /-\-*poll-/,  ( keys %prefs );
+                foreach my $key ( @list ) {
                     $results{ lc $prefs{$key} }++ if $key =~ /$args[0]$/;
                 }
                 my $key = $handle . "-*poll-" . $args[0];
