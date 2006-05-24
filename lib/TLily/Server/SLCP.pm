@@ -131,6 +131,7 @@ sub init () {
 
      TLily::User::shelp_r(prefer => "List of preferred tab-complete expansions (SLCP only)", 'variables');
      TLily::User::shelp_r(expand_group => "Expand groups into list of members on tab-complete (SLCP only)", 'variables');
+     TLily::User::shelp_r(user_prefix => "Prepend '~' to user names.", 'variables');
 
 }
 
@@ -285,8 +286,8 @@ sub cmd_process {
 Translates a name into a full lily name.  For example, 'cougar' might become
 '~Spineless Cougar', and 'comp' could become '-computer'.  The name returned
 will be identical to canonical one used by lily for that abberviation,
-with the exception that discussions are returned with a preceding '-',
-and users are returned with a preceding '~'.
+with the exception that discussions are returned with a preceding '-'.
+If $config{user_prefix} is set, users are returned with a preceding '~'.
 If the name is an exact match (modulo case) for a group, the group name
 is returned.  Substrings of groups are not, however, expanded.  This is
 in line with current lily behavior.
@@ -309,9 +310,11 @@ sub expand_name {
     $disc = 1 if ($name =~ s/^-//);
     $user = 1 if ($name =~ s/^~//);
 
+    my $userprefix = $config{user_prefix} ? '~' : '';
+
     # Check for "me".
     if (!$disc && $name eq 'me') {
-	return '~' . $self->user_name || 'me';
+	return $userprefix . $self->user_name || 'me';
     }
 
     # Check for a group match.
@@ -327,7 +330,7 @@ sub expand_name {
     # Check for an exact match.
     if ($self->{NAME}->{$name}) {
 	if ($self->{NAME}->{$name}->{LOGIN} && !$disc) {
-	    return '~' . $self->{NAME}->{$name}->{NAME};
+	    return $userprefix . $self->{NAME}->{$name}->{NAME};
 	} elsif ($self->{NAME}->{$name}->{CREATION} && !$user) {
 	    return '-' . $self->{NAME}->{$name}->{NAME};
 	}
@@ -362,7 +365,7 @@ sub expand_name {
     unless ($disc) {
 	@m = grep { index($_, $name) == 0 } @unames;
 	return if (@m > 1 && !wantarray);
-	return map('~'.$self->{NAME}->{$_}->{NAME}, @m) if (@m);
+	return map($userprefix.$self->{NAME}->{$_}->{NAME}, @m) if (@m);
     }
     unless ($user) {
 	@m = grep { index($_, $name) == 0 } @dnames;
@@ -382,7 +385,7 @@ sub expand_name {
 	    $n = \@m;
 	}
 	elsif (@m) {
-	    return '~'.map($self->{NAME}->{$_}->{NAME}, @m);
+	    return map($userprefix.$self->{NAME}->{$_}->{NAME}, @m);
 	}
     }
     unless ($user) {
