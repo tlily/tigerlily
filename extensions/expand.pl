@@ -255,6 +255,8 @@ sub server_change_handler {
     my $newsname = $event->{server}->name();
     my $nline = "";
 
+    return if ($line eq "");
+
     while ($line =~ /\G([^,:;=\/%]*)([,:;=])/g) {
     my($tgt, $sym) = ($1, $2);
 
