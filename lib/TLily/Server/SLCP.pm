@@ -22,7 +22,7 @@ use TLily::Extend;
 use TLily::Config qw(%config);
 use TLily::User qw(&shelp_r);
 use TLily::UI;
-use TLily::Utils qw(&save_deadfile &get_deadfile);
+use TLily::Utils qw(&save_deadfile &get_deadfile &initials_match);
 
 @ISA = qw(TLily::Server);
 
@@ -374,6 +374,24 @@ sub expand_name {
         return if (@m > 1);
     }
 
+    # Check for an initial-letter-match on 
+    # failing this does not fail expansion, we still have an 
+    # in string partial match to fall back on.
+    my $n;
+    SKIP: {
+        unless ($disc) {
+            @m = grep { initials_match($name,$_) } @unames;
+            last SKIP if (@m > 1 && !wantarray);
+
+            return map($userprefix.$self->{NAME}->{$_}->{NAME}, @m);
+        }
+        unless ($user) {
+            @m = grep { initials_match($name, $_) } @dnames;
+            last SKIP if (@m > 1 && !wantarray);
+            return map('-'.$self->{NAME}->{$_}->{NAME}, @m) if (@m);
+        }
+    }
+
     # Check for a substring match.
     my $n;
     unless ($disc) {
@@ -398,6 +416,8 @@ sub expand_name {
 
     return;
 }
+
+
 
 
 =item user_name

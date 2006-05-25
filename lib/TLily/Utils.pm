@@ -17,7 +17,7 @@ use TLily::Config;
 use vars qw(@ISA @EXPORT_OK);
 @ISA = qw(Exporter);
 
-@EXPORT_OK = qw(&max &min &edit_text &diff_text &columnize_list &save_deadfile &get_deadfile);
+@EXPORT_OK = qw(&max &min &edit_text &diff_text &columnize_list &save_deadfile &get_deadfile &initials_match);
 
 # These are handy in a couple of places.
 sub max { return ($_[0] > $_[1]) ? $_[0] : $_[1] }
@@ -229,4 +229,20 @@ sub format_time {
   return sprintf($format, $time->[2], $time->[1], $secs, $ampm);
 }
 
+# does the full name given match the initials given?
+# examples: does "NeuroVic" match "nv" ?
+
+sub initials_match {
+    my $partial = shift;
+    my $full    = shift;
+
+    # what are considered the initials of a full name? initial character,
+    # and then any letters that are capitalized, or appear after a nonalpha
+    # character.
+
+    my @chars = $full =~ m{(^.|[A-Z]|(?<=[^A-Za-z\d])[A-Za-z])}g;
+    my $guess = join('',@chars);
+
+    return lc $guess eq lc $partial;
+}
 1;
