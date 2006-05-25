@@ -384,8 +384,12 @@ END_DEBUG
 
     my(@unames, @dnames);
     foreach (keys %{$self->{NAME}}) {
-        push @unames, $_ if ($self->{NAME}->{$_}->{LOGIN});
-        push @dnames, $_ if ($self->{NAME}->{$_}->{CREATION});
+        if ($self->{NAME}->{$_}->{LOGIN}) {
+            push @unames, $self->{NAME}->{$_}->{NAME}
+        }
+        if ($self->{NAME}->{$_}->{CREATION}) {
+            push @dnames, $self->{NAME}->{$_}->{NAME}
+        }
     }
 
     my @m;
@@ -393,25 +397,26 @@ END_DEBUG
     PREFIX_MATCH: {
         # Check for a prefix match.
         unless ($disc) {
-            @m = grep { index($_, $name) == 0 } @unames;
+            @m = grep { index(lc $_, $name) == 0 } @unames;
             if (@m > 1 && !wantarray) {
                 $ui->print ("### ambiguous prefix for user: " . scalar(@m) . "matches\n") if $debug;
                 last PREFIX_MATCH;
             }
             if (@m) {
-                $ui->print ("### found singleton user-prefix match\n") if $debug;
-                return map($userprefix.$self->{NAME}->{$_}->{NAME}, @m);
+                $ui->print ("### found user-prefix match\n") if $debug;
+                return map($userprefix.$self->{NAME}->{lc $_}->{NAME}, @m);
             }
         }
         unless ($user) {
-            @m = grep { index($_, $name) == 0 } @dnames;
+            @m = grep { index(lc $_, $name) == 0 } @dnames;
+
             if (@m > 1 && !wantarray) {
                 $ui->print ("### ambiguous prefix for disc: " . scalar(@m) . "matches\n") if $debug;
                 last PREFIX_MATCH;
             }
             if (@m) {
-                $ui->print ("### found singleton disc-prefix match\n") if $debug;
-                return map('-'.$self->{NAME}->{$_}->{NAME}, @m) if (@m);
+                $ui->print ("### found disc-prefix match:\n") if $debug;
+                return map('-'.$self->{NAME}->{lc $_}->{NAME}, @m);
             }
         }
     }
@@ -430,8 +435,8 @@ END_DEBUG
             }
 
             if (@m) {
-                $ui->print ("### found singleton user-studlyCaps match\n") if $debug;
-                return map($userprefix.$self->{NAME}->{$_}->{NAME}, @m);
+                $ui->print ("### found user-studlyCaps match\n") if $debug;
+                return map($userprefix.$self->{NAME}->{lc $_}->{NAME}, @m);
             }
         }
         unless ($user) {
@@ -441,8 +446,8 @@ END_DEBUG
                 last STUDLY_CAPS_MATCH;
             }
             if (@m) {
-                $ui->print ("### found singleton disc-studlyCaps match\n") if $debug;
-                return map('-'.$self->{NAME}->{$_}->{NAME}, @m) if (@m);
+                $ui->print ("### found disc-studlyCaps match\n") if $debug;
+                return map('-'.$self->{NAME}->{lc $_}->{NAME}, @m) if (@m);
             }
         }
     }
@@ -451,7 +456,7 @@ END_DEBUG
     $ui->print ("### checking for a substring match\n") if $debug;
     # Check for a substring match.
     unless ($disc) {
-        @m = grep { index($_, $name) != -1 } @unames;
+        @m = grep { index(lc $_, $name) != -1 } @unames;
         if (@m > 1 && !wantarray) {
             $ui->print ("### ambiguous substring for user: " . scalar(@m) . "matches\n") if $debug;
             $ui->print ("### giving up." . scalar(@m) . "matches\n") if $debug;
@@ -463,26 +468,26 @@ END_DEBUG
             $n = \@m;
         }
         elsif (@m) {
-            $ui->print ("### found singleton user substring match\n") if $debug;
-            return map($userprefix.$self->{NAME}->{$_}->{NAME}, @m);
+            $ui->print ("### found user substring match\n") if $debug;
+            return map($userprefix.$self->{NAME}->{lc $_}->{NAME}, @m);
         }
     }
     unless ($user) {
-        @m = grep { index($_, $name) != -1 } @dnames;
+        @m = grep { index(lc $_, $name) != -1 } @dnames;
         if (@m > 1 && !wantarray) {
             $ui->print ("### ambiguous substring for disc: " . scalar(@m) . "matches\n") if $debug;
             $ui->print ("### giving up." . scalar(@m) . "matches\n") if $debug;
             return;
         }
         if (@m) {
-            $ui->print ("### found singleton disc substring match\n") if $debug;
-            return map('-'.$self->{NAME}->{$_}->{NAME}, @m)
+            $ui->print ("### found disc substring match\n") if $debug;
+            return map('-'.$self->{NAME}->{lc $_}->{NAME}, @m)
         }
     }
 
     if ($n) {
         $ui->print ("### \$n was set. no idea what this means\n") if $debug;
-        return map($self->{NAME}->{$_}->{NAME}, @$n);
+        return map($self->{NAME}->{lc $_}->{NAME}, @$n);
     }
 
     return;
