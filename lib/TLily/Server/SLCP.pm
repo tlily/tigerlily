@@ -305,20 +305,36 @@ sub expand_name {
     my $disc;
     my $user;
 
+    my $debug = 0; # This is only used for development. There is no
+                   # user-visible way to enable/disable this.
+
+    my $ui = TLily::UI::name('main');
+
     $name = lc($name);
     $name =~ tr/_/ /;
     $disc = 1 if ($name =~ s/^-//);
     $user = 1 if ($name =~ s/^~//);
 
+    if ($debug) {
+        $ui->print(<<"END_DEBUG");
+### match diagnostics
+### name: $name
+### disc: $disc
+### user: $user
+END_DEBUG
+    }
+
     my $userprefix = $config{user_prefix} ? '~' : '';
 
     # Check for "me".
     if (!$disc && $name eq 'me') {
+        $ui->print ("### it's just me\n") if $debug;
         return $userprefix . $self->user_name || 'me';
     }
 
     # Check for a group match.
     if (!$user && !$disc && $self->{NAME}->{$name}->{MEMBERS}) {
+        $ui->print ("### that's a group\n") if $debug;
         if ($config{expand_group}) {
         return join ',', map { $self->get_name(HANDLE => $_) }
                               split /,/,$self->{NAME}->{$name}->{MEMBERS};
@@ -328,29 +344,41 @@ sub expand_name {
     }
     
     # Check for an exact match.
+    $ui->print ("### checking for exact match\n") if $debug;
     if ($self->{NAME}->{$name}) {
         if ($self->{NAME}->{$name}->{LOGIN} && !$disc) {
+            $ui->print ("### exact match for a user\n") if $debug;
             return $userprefix . $self->{NAME}->{$name}->{NAME};
         } elsif ($self->{NAME}->{$name}->{CREATION} && !$user) {
+            $ui->print ("### exact match for a disc\n") if $debug;
             return '-' . $self->{NAME}->{$name}->{NAME};
         }
     }
-
-    return if $opts{exact};
+ 
+    if ($opts{exact}) {
+        $ui->print ("### exact match requested, but not found\n") if $debug;
+        return;
+    }
 
     # Check the "preferred match" list. XXX Arguably these
     # Should prepend the magic ~/- as well.
 
     if (ref($config{prefer}) eq "ARRAY") {
-        my $m;
-        foreach $m (@{$config{prefer}}) {
+        $ui->print ("### checking for preferred match\n") if $debug;
+        foreach my $m (@{$config{prefer}}) {
             next unless $m =~ /^-?(.*)/;
             next unless $self->{NAME}->{$1};
 
             $m = lc($m);
             $m =~ tr/_/ /;
-            return $m if (index($m, $name) == 0);
-            return $m if ($m =~ /^-/ && index($m, $name) == 1);
+            if (index($m, $name) == 0) {
+                $ui->print ("### found preferred match: user\n") if $debug;
+                return $m;
+            }
+            if ($m =~ /^-/ && index($m, $name) == 1) {
+                $ui->print ("### found preferred match: disc\n") if $debug;
+                return $m;
+            }
         }
     }
 
@@ -361,58 +389,101 @@ sub expand_name {
     }
 
     my @m;
-    # Check for a prefix match.
-    unless ($disc) {
-        @m = grep { index($_, $name) == 0 } @unames;
-        return if (@m > 1 && !wantarray);
-        return map($userprefix.$self->{NAME}->{$_}->{NAME}, @m) if (@m);
+    $ui->print ("### checking for prefix match\n") if $debug;
+    PREFIX_MATCH: {
+        # Check for a prefix match.
+        unless ($disc) {
+            @m = grep { index($_, $name) == 0 } @unames;
+            if (@m > 1 && !wantarray) {
+                $ui->print ("### ambiguous prefix for user: " . scalar(@m) . "matches\n") if $debug;
+                last PREFIX_MATCH;
+            }
+            if (@m) {
+                $ui->print ("### found singleton user-prefix match\n") if $debug;
+                return map($userprefix.$self->{NAME}->{$_}->{NAME}, @m);
+            }
+        }
+        unless ($user) {
+            @m = grep { index($_, $name) == 0 } @dnames;
+            if (@m > 1 && !wantarray) {
+                $ui->print ("### ambiguous prefix for disc: " . scalar(@m) . "matches\n") if $debug;
+                last PREFIX_MATCH;
+            }
+            if (@m) {
+                $ui->print ("### found singleton disc-prefix match\n") if $debug;
+                return map('-'.$self->{NAME}->{$_}->{NAME}, @m) if (@m);
+            }
+        }
     }
-    unless ($user) {
-        @m = grep { index($_, $name) == 0 } @dnames;
-        return if (@m > 1 && !wantarray);
-        return map('-'.$self->{NAME}->{$_}->{NAME}, @m) if (@m);
-        return if (@m > 1);
-    }
+
 
     # Check for an initial-letter-match on 
     # failing this does not fail expansion, we still have an 
     # in string partial match to fall back on.
-    my $n;
-    SKIP: {
+    $ui->print ("### checking for studly caps match\n") if $debug;
+    STUDLY_CAPS_MATCH: {
         unless ($disc) {
             @m = grep { initials_match($name,$_) } @unames;
-            last SKIP if (@m > 1 && !wantarray);
+            if (@m > 1 && !wantarray) {
+                $ui->print ("### ambiguous studlyCaps for user: " . scalar(@m) . "matches\n") if $debug;
+                last STUDLY_CAPS_MATCH;
+            }
 
-            return map($userprefix.$self->{NAME}->{$_}->{NAME}, @m);
+            if (@m) {
+                $ui->print ("### found singleton user-studlyCaps match\n") if $debug;
+                return map($userprefix.$self->{NAME}->{$_}->{NAME}, @m);
+            }
         }
         unless ($user) {
             @m = grep { initials_match($name, $_) } @dnames;
-            last SKIP if (@m > 1 && !wantarray);
-            return map('-'.$self->{NAME}->{$_}->{NAME}, @m) if (@m);
+            if (@m > 1 && !wantarray) {
+                $ui->print ("### ambiguous studlyCaps for disc: " . scalar(@m) . "matches\n") if $debug;
+                last STUDLY_CAPS_MATCH;
+            }
+            if (@m) {
+                $ui->print ("### found singleton disc-studlyCaps match\n") if $debug;
+                return map('-'.$self->{NAME}->{$_}->{NAME}, @m) if (@m);
+            }
         }
     }
 
-    # Check for a substring match.
     my $n;
+    $ui->print ("### checking for a substring match\n") if $debug;
+    # Check for a substring match.
     unless ($disc) {
         @m = grep { index($_, $name) != -1 } @unames;
-        return if (@m > 1 && !wantarray);
+        if (@m > 1 && !wantarray) {
+            $ui->print ("### ambiguous substring for user: " . scalar(@m) . "matches\n") if $debug;
+            $ui->print ("### giving up." . scalar(@m) . "matches\n") if $debug;
+            return; 
+        }
         # If a user /renamed from a name that's like a discussion,
         # it may be found in @m.  We don't want that.
         if (@m && ($m[0] ne $self->{NAME}->{$m[0]}->{NAME})) {
             $n = \@m;
         }
         elsif (@m) {
+            $ui->print ("### found singleton user substring match\n") if $debug;
             return map($userprefix.$self->{NAME}->{$_}->{NAME}, @m);
         }
     }
     unless ($user) {
         @m = grep { index($_, $name) != -1 } @dnames;
-        return if (@m > 1 && !wantarray);
-        return map('-'.$self->{NAME}->{$_}->{NAME}, @m) if (@m);
+        if (@m > 1 && !wantarray) {
+            $ui->print ("### ambiguous substring for disc: " . scalar(@m) . "matches\n") if $debug;
+            $ui->print ("### giving up." . scalar(@m) . "matches\n") if $debug;
+            return;
+        }
+        if (@m) {
+            $ui->print ("### found singleton disc substring match\n") if $debug;
+            return map('-'.$self->{NAME}->{$_}->{NAME}, @m)
+        }
     }
 
-    return map($self->{NAME}->{$_}->{NAME}, @$n) if $n;
+    if ($n) {
+        $ui->print ("### \$n was set. no idea what this means\n") if $debug;
+        return map($self->{NAME}->{$_}->{NAME}, @$n);
+    }
 
     return;
 }
