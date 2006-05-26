@@ -177,7 +177,7 @@ generic event in a similar way to what slcp uses.
 
 =cut
 
-    if ($e->{_collapsable}) { $fmt = '%[ - ]\n%Body'; }
+    if ($e->{_collapsable}) { $fmt = '%|%[ - ]\n%Body'; }
 
 
     $fmts{server} = $e->{server_fmt} || "$e->{type}_server";
