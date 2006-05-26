@@ -464,7 +464,7 @@ END_DEBUG
         }
         # If a user /renamed from a name that's like a discussion,
         # it may be found in @m.  We don't want that.
-        if (@m && ($m[0] ne $self->{NAME}->{$m[0]}->{NAME})) {
+        if (@m && ($m[0] ne $self->{NAME}->{lc $m[0]}->{NAME})) {
             $n = \@m;
         }
         elsif (@m) {
