@@ -48,7 +48,7 @@ my $help = <<END
 #    \\n%[ -> ]%(Server )%(Time )Private message from %From%{ Blurb}:%|
 #    %[ - ]\\n%Body\\n
 #  emote:
-#    %[> ]%(Server )(to %To) %From%|%Body\\n
+#    %[> ]%(Server )(%(Time )to %To) %From%|%Body\\n
 END
   ;
 $help =~ s/^\#//gm;
@@ -150,7 +150,7 @@ sub generic_fmt {
 		'%[ - ]\n%Body\n';
     } elsif ($e->{type} eq 'emote') {
 	    $fmt = $config{emote_fmt} ||
-	      '%[> ]%(Server )(to %To) %From%|%Body\n';
+	      '%[> ]%(Server )(%(Time )to %To) %From%|%Body\n';
     }
 
 =for all evil hacks
