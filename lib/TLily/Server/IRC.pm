@@ -46,6 +46,8 @@ side by side, since IRC is not REALLY a subclass of SLCP.
 
 =head1 FUNCTIONS
 
+=over
+
 =cut
 
 # need an API to get at the one in TLily::Server.. generally need to refactor
