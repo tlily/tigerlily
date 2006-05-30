@@ -93,7 +93,7 @@ my $uptime = time();    #uptime indicator.
 my %served;             #stats.
 
 # we don't expect to be changing our name frequently, cache it.
-my $name = active_server()->user_name();
+my $name = TLily::Server->active()->user_name();
 
 # we'll use Eliza to handle any commands we don't understand, so set her up.
 my $eliza = new Chatbot::Eliza { name => $name, prompts_on => 0 };
@@ -731,6 +731,138 @@ $response{translate} = {
     RE   => $translateRE,
 };
 
+my $anagramRE      = qr/
+  (?:
+  \b anagram \s+ (.*) \s+ with    \s+ (.*) \s+ without \s+ (.*) |
+  \b anagram \s+ (.*) \s+ without \s+ (.*) \s+ with    \s+ (.*) |
+  \b anagram \s+ (.*) \s+ with    \s+ (.*) |
+  \b anagram \s+ (.*) \s+ without \s+ (.*) |
+  \b anagram \s+ (.*)
+  )
+  \s* $
+/ix;
+
+$response{anagram} = {
+    CODE => sub {
+        my ($event) = @_;
+        my $args = $event->{VALUE};
+
+        $args =~ $anagramRE;
+        my ($term, $include, $exclude);
+        my  $url = 
+        "http://wordsmith.org/anagram/anagram.cgi?language=english" ;
+ 
+        if ($1) {
+          ( $term, $include, $exclude) = ( $1, $2, $3) ;
+        } elsif ($4) { 
+          ( $term, $exclude, $include) = ( $4, $5, $6) ;
+        } elsif ($7) { 
+          ( $term, $include) = ( $7, $8 );
+        } elsif ($9) { 
+          ( $term, $exclude) = ( $9, $10 );
+        } else { 
+          ( $term ) = ( $11 );
+        }
+        $url .= "&anagram=" . escape ($term); 
+        if ($include) {
+            $url .= "&include=" . escape ($include);
+        }
+        if ($exclude) {
+            $url .= "&exclude=" . escape ($exclude);
+        }
+        
+
+        add_throttled_HTTP(
+            url      => $url,
+            ui_name  => 'main',
+            callback => sub {
+                my ($response) = @_;
+                my $anagram = scrape_anagram( $term, $response->{_content} );
+                if ($anagram) {
+                    dispatch( $event, $anagram );
+                }
+                else {
+                    dispatch( $event, "That's unanagrammaticatable!" );
+                }
+            }
+        );
+        return;
+    },
+    HELP => sub {
+        return
+ "given a phrase, return an anagram of it.";
+    },
+    TYPE => [qw/private public emote/],
+    POS  => '-1',
+    STOP => 1,
+    RE   => $anagramRE,
+};
+
+my $convertRE      = qr/
+  (?:
+  \b convert \s+ (\d+ .? \d+?)? \s* ([a-z]*) \s+ (?:(?:in)?to \s+)? ([a-z]*)
+  )
+/ix;
+
+$response{convert} = {
+    CODE => sub {
+        my ($event) = @_;
+        my $args = $event->{VALUE};
+
+        my ($from, $to, $count);
+        if ($2)  {
+          ($count, $from, $to ) = ($1, $2, $3);
+          $count = 1 unless defined ($count);
+        }
+
+        # should be safe, only alpha units are allowed
+        my $units_output = `units $from $to`;
+        if ($units_output =~ m/(conformbility error)/ ) {
+          return $1;
+        } elsif ($units_output =~ m/(unknown unit '[a-z]*')/i ) {
+          return $1
+        }
+        $units_output =~ s/\n.*//smx;
+        $a = eval "$count $units_output";
+        return "$a $to";
+    },
+    HELP => sub {
+        return "convert units: convert (amount) from_units to_units ";
+    },
+    TYPE => [qw/private public emote/],
+    POS  => '1',
+    STOP => 1,
+    RE   => $convertRE,
+};
+
+my $mathRE = qr{^([+*/\d\s().-]*)\??$};
+
+$response{math} = {
+    CODE => sub {
+        my ($event) = @_;
+        my $args = $event->{VALUE};
+        $args =~ $mathRE;
+        my $term = $1;
+
+        my $result = eval $term; # see RE above, must be math-safe.
+        if ($@) { 
+            if ($event->{type} eq "private") {
+                return "that looked mathy, but it isn't." 
+            } else {
+                return;
+            }
+        }
+	return $result;
+    },
+    HELP => sub {
+        return "math stuff";
+    },
+    TYPE => [qw/private/],
+    POS  => '1',
+    STOP => 1,
+    RE   => $mathRE,
+};
+
 $response{shorten} = {
     CODE => sub {
         my ($event) = @_;
@@ -875,7 +1007,8 @@ $response{"poll"} = {
 
                 # Get the current tally:
                 my %results;
-                foreach my $key ( grep( {/-\-*poll-/}, ( keys %prefs ) ) ) {
+                my @list = grep /-\-*poll-/,  ( keys %prefs );
+                foreach my $key ( @list ) {
                     $results{ lc $prefs{$key} }++ if $key =~ /$args[0]$/;
                 }
                 my $key = $handle . "-*poll-" . $args[0];
@@ -1182,6 +1315,21 @@ sub scrape_horoscope {
         return cleanHTML("$sign ($dates): $reading");
     }
 
+}
+
+sub scrape_anagram{
+    my ( $term, $content ) = @_;
+
+    if ( $content =~
+        m{<PRE>([^<]*)</PRE>}i )
+    {
+        my @results = grep {$_ ne '' && lc $_ ne $term} split /\n/, $1;
+        return unless @results;
+        return pickRandom( [@results]);
+    }
+    else {
+        return;
+    }
 }
 
 sub scrape_translate {

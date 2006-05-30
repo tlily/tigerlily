@@ -51,7 +51,7 @@ and specifies the number of incoming connections allowed in the listen
 queue.  This defaults to 5.
 
   $serv = TLily::Daemon->new(protocol => "http",
-			     port     => "31337");
+                 port     => "31337");
 
 This will return undef if it was unable to listen on the requested port.
 
@@ -69,9 +69,9 @@ sub new {
     my $name = $args{name};
     $name = "listen:$args{port}" if (!defined($name));
     if ($daemon{$name}) {
-	my $i = 2;
-	while ($daemon{$name."#$i"}) { $i++; }
-	$name .= "#$i";
+    my $i = 2;
+    while ($daemon{$name."#$i"}) { $i++; }
+    $name .= "#$i";
     }
     
     $self->{name}      = $name;
@@ -87,40 +87,40 @@ sub new {
     my $p = getprotobyname($self->{type});
     my $t = (($self->{type} eq 'udp') ? SOCK_DGRAM : SOCK_STREAM);
     if (!(socket(SOCK, PF_INET, $t, $p))) {
-	warn "socket: $!";
-	return undef;
+    warn "socket: $!";
+    return undef;
     }
     
     $self->{sock} = *SOCK;
     
     if (!(setsockopt($self->{sock}, SOL_SOCKET, SO_REUSEADDR, pack("l", 1)))) {
-	warn "setsockopt: $!";
-	close $self->{sock};
-	return undef;
+    warn "setsockopt: $!";
+    close $self->{sock};
+    return undef;
     }
     if (!(bind($self->{sock}, sockaddr_in($self->{port}, INADDR_ANY)))) {
-#	warn "bind: $!";
-	close $self->{sock};
-	return undef;
+#    warn "bind: $!";
+    close $self->{sock};
+    return undef;
     }
     if (!(fcntl($self->{sock}, F_SETFL, O_NONBLOCK))) {
-	warn "fcntl: $!";
-	close $self->{sock};
-	return undef;
+    warn "fcntl: $!";
+    close $self->{sock};
+    return undef;
     }
     if (!(listen($self->{sock}, $self->{queuelen}))) {
-	warn "listen: $!";
-	close $self->{sock};
-	return undef;
+    warn "listen: $!";
+    close $self->{sock};
+    return undef;
     }
     
     my $ui = TLily::UI::name();
     $ui->print("Listening on port " . $self->{port} . "\n");
 
     $self->{io_id} = TLily::Event::io_r (handle => $self->{sock},
-					 mode   => 'r',
-					 obj    => $self,
-					 call   => \&acceptor);
+                     mode   => 'r',
+                     obj    => $self,
+                     call   => \&acceptor);
     $self->{active} = 1;
     
     $daemon{$name} = $self;
@@ -145,7 +145,7 @@ sub terminate {
     TLily::Event::io_u($self->{io_id});
     
     foreach my $cxn ($self->{connected}) {
-	$cxn->close() if defined $cxn;
+    $cxn->close() if defined $cxn;
     }
     $self->{connected} = undef;
     
@@ -191,19 +191,19 @@ sub acceptor {
     my $class = ref($self);
     my $obj = 
       defined($self->{connection_ob}) ? $self->{connection_ob} :
-	"${class}::Connection";
+    "${class}::Connection";
     my $sock = *NEWSOCK;
     
     my $newobj = 
       eval "${obj}->new('sock' => $sock , 'proto' => '$self->{proto}')";
     if (!defined($newobj)) {
-	if ($@) {
-	    warn $@;
-	    return;
-	}
-	warn "${obj}->new() returned undefined value!";
-	close NEWSOCK;
-	return;
+        if ($@) {
+            warn $@;
+            return;
+        }
+        warn "${obj}->new() returned undefined value!";
+        close NEWSOCK;
+        return;
     }
     
     $newobj->{daemon} = $self;

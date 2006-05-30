@@ -48,7 +48,7 @@ my $help = <<END
 #    \\n%[ -> ]%(Server )%(Time )Private message from %From%{ Blurb}:%|
 #    %[ - ]\\n%Body\\n
 #  emote:
-#    %[> ]%(Server )(to %To) %From%|%Body\\n
+#    %[> ]%(Server )(%(Time )to %To) %From%|%Body\\n
 END
   ;
 $help =~ s/^\#//gm;
@@ -150,8 +150,34 @@ sub generic_fmt {
 		'%[ - ]\n%Body\n';
     } elsif ($e->{type} eq 'emote') {
 	    $fmt = $config{emote_fmt} ||
-	      '%[> ]%(Server )(to %To) %From%|%Body\n';
+	      '%[> ]%(Server )(%(Time )to %To) %From%|%Body\n';
     }
+
+=for all evil hacks
+
+If this event is marked as collapsable, then don't use the full format that
+was specified. Instead, just print out the body of the message.  At the time of 
+this writing, this code path is only used by the IRC server.
+
+XXX: the evil hack isn't even quite right. two related issues: public and
+private messages have a trailing newline to help set them off from the
+next rendered event. A non-collapsable event followed by a collapsable event
+has an extra newline separating the two.
+
+Conversely, a non-collapsable event following a collapsable event is *missing*
+a newline.
+
+However, this is a big enough improvement over the previous way of doing this
+(queue collapsable messages), that I'm committing as is. Should only affect
+IRC users.
+
+Another IRC issue is that some sends are not sent as "events", things like
+Mode are just UI prints: to make this usable, that has to be sent as a
+generic event in a similar way to what slcp uses.
+
+=cut
+
+    if ($e->{_collapsable}) { $fmt = '%|%[ - ]\n%Body'; }
 
 
     $fmts{server} = $e->{server_fmt} || "$e->{type}_server";

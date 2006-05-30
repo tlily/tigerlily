@@ -15,7 +15,7 @@ sub do_source {
     
         return if $fname eq "";
     
-        my $rc = open (FH, "<$fname");
+        my $rc = open (FH, '<',  $fname);
         unless ($rc) {
 	    $ui->print("($fname not found)\n");
 	    return;

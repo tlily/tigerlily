@@ -39,7 +39,7 @@ sub send {
     $self->{filealias} = $args{file};
     
     local *IN;
-    if ((! -r $filename) || !(open IN, $filename)) {
+    if ((! -r $filename) || !(open IN, '<', $filename)) {
 	$self->send_error( errno => 403,
 			   title => "Forbidden",
 			   long  => "Unable to open $args{file}.",

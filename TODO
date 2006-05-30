@@ -1,13 +1,13 @@
 To Do
 -----
 
+ -  Move shortening code into TLily::Util
  -  when the last open server connection is closed, provide a exit/reconnect
       option. (integrate with smartexit feature)
  -  multiserver, multiui [in progress]
- -  irc mode/ TLily::Server::SubClient
+ - Flesh out IRC support
  -  thread extension?
      after [;:], if you press some key, have it insert [xxx], where xxx
      is a scrollable list of threads seen in the discussion?
  -  lilyBot support
  -  Need to add passive mode to the %ctc support.    
- -  Add POD docs to all extensions and modules.

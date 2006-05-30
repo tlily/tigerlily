@@ -55,7 +55,7 @@ Establishes an alias for a command line.  See "%help %alias" for details.
 
 sub alias_cmd {
     my ($ui,$args) = @_;
-    
+
     if ($args =~ m/^\s*$/ || $args =~ /^\s*list\s*$/) {
 	if (scalar keys %alias) {
 	    $ui->print("The following aliases are defined:\n");
@@ -67,7 +67,7 @@ sub alias_cmd {
 	}
 	return;
     }
-    
+
     my ($key,$val) = ($args =~ /^\s*(\w+)\s*(.*?)\s*$/);
 
     unless (length($key) > 0) {
@@ -104,8 +104,8 @@ sub alias_cmd {
 sub aliaser {
     my($e, $h) = @_;
     my $server = active_server();
-    
-    if ($e->{text} =~ /^%(\S+)\s*(.*)/) {	
+
+    if ($e->{text} =~ /^%(\S+)\s*(.*)/) {
 	my $newstr = $alias{$1};
 	my $args = $2;
 	my @args = ($1, (split /\s+/,$2));
@@ -120,7 +120,7 @@ sub aliaser {
 		foreach (@rest) {
 		    TLily::Event::send({type => 'user_input',
 					ui   => $e->{ui},
-					text => "$_\n"});		    
+					text => "$_\n"});
 		}
 	    }
 	    $e->{text} = $newstr;

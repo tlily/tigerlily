@@ -83,15 +83,15 @@ sub new {
 sub clone {
     my ($self, $clone, $status, $class) = @_;
 
-    $self->{text}	= $clone->{text};
-    $self->{styles}	= [@{$clone->{styles}}];
-    $self->{indents}	= [@{$clone->{indents}}];
-    $self->{indexes}	= [@{$clone->{indexes}}];
-    $self->{idx_anchor}	= $clone->{idx_anchor};
-    $self->{idx_unseen}	= $clone->{idx_unseen};
-    $self->{status}	= $status;
+    $self->{text}       = $clone->{text};
+    $self->{styles}     = [@{$clone->{styles}}];
+    $self->{indents}    = [@{$clone->{indents}}];
+    $self->{indexes}    = [@{$clone->{indexes}}];
+    $self->{idx_anchor} = $clone->{idx_anchor};
+    $self->{idx_unseen} = $clone->{idx_unseen};
+    $self->{status}     = $status;
     $self->{status}->define(t_more => 'override') if ($self->{status});
-    $self->{'page'}	= defined($config{page}) ? $config{page} : 1;
+    $self->{'page'}     = defined($config{page}) ? $config{page} : 1;
 
     bless($self, $class);
 }
@@ -221,21 +221,21 @@ sub dump_to_file {
     my ($self, $filename) = @_;
 
     local(*FILE);
-    open(FILE, ">$filename") ||
+    open(FILE, '>', $filename) ||
        $self->print("(Unable to open $filename for writing: $!)\n");
 
     my $count = 0;
     foreach my $line ($self->fetch_lines()) {
-        my $start = $line->[0];   
+        my $start = $line->[0];
         for (my $i = 3; $i < @$line; $i+=2) {
             print FILE (substr($self->{text}, $start, $line->[$i+1]));
             $start += $line->[$i+1];
-        }        
-        print FILE "\n";	
+        }
+        print FILE "\n";
 	$count++;
     }
-    
-    close(FILE);  
+
+    close(FILE);
     return $count;
 }
 
@@ -372,7 +372,7 @@ sub print {
         $self->{text} = substr($self->{text}, $linelen);
         my $style = undef;
 
-	# Note: yes, this loop does not autoincrement.  We increment later, 
+	# Note: yes, this loop does not autoincrement.  We increment later,
 	# if we are keeping these elements.
         for (my $i = 0; $i < $#{$self->{styles}}; ) {
             $self->{styles}->[$i] -= $linelen;

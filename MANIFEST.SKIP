@@ -17,3 +17,7 @@ build.cache
 ^foo$
 \.tar\.gz$
 pm_to_blib
+^blib/*
+tlily.curses.plx
+tlily.tk.plx
+tlily.win32.plx

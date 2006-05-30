@@ -10,9 +10,10 @@
 
 # $Id$
 
+use strict;
+
 package TLily::UI::Util;
 
-use strict;
 use vars qw(@ISA @EXPORT_OK);
 use Exporter;
 
@@ -21,8 +22,8 @@ use Exporter;
 
 
 # These are handy in a couple of places.
-sub max($$) { ($_[0] > $_[1]) ? $_[0] : $_[1] }
-sub min($$) { ($_[0] < $_[1]) ? $_[0] : $_[1] }
+sub max { return ($_[0] > $_[1]) ? $_[0] : $_[1] }
+sub min { return ($_[0] < $_[1]) ? $_[0] : $_[1] }
 
 
 # Returns the starting and ending indices of the next line in a string.
@@ -52,15 +53,15 @@ sub next_line {
     # Here is the wordwrapper.
     my $mstart = pos($_[0]);
     $_[0] =~ m(\G
-               # These need not be wrapped.
-	       (?: .{0,$imatch})
-	       (?:
-                  # Either break on a space/newline...
-                  (?: .{0,$nmatch} (?: \s | $ )) |
-                  # Or none is available, so take what we can fit.
-	          (?: ..{0,$nmatch} \n ? )
-	       )
-	      )xg or return;
+        # These need not be wrapped.
+	    (?: .{0,$imatch})
+	    (?:
+            # Either break on a space/newline...
+            (?: .{0,$nmatch} (?: \s | $ )) |
+            # Or none is available, so take what we can fit.
+	        (?: ..{0,$nmatch} \n ? )
+	    )
+	)xg or return;
     my $mend = pos($_[0]);
 
     # I don't think this is strictly necessary, but why take chances?

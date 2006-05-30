@@ -22,7 +22,7 @@ sub parse_http {
 		save_file ($event, $handler);
 		return;
     }
-    
+
     my $text = $$st->{"_partial"} . $event->{data};
 	
     while ($text =~ s/^([^\r\n]+)\r?\n//) {
@@ -38,18 +38,18 @@ sub parse_http {
 						   daemon => $event->{daemon},
 						   data   => $text);
     }
-    
+
     $$st->{"_partial"} = $text;
 }
 
 sub parse_http_line {
     my ($event, $handler) = @_;
-    
+
     my $text = $event->{data};
     my $st;
-    
+
     if (defined $event->{server}) {
-		$st = \$event->{server}->{"_state"}; 
+		$st = \$event->{server}->{"_state"};
     } else {
 		$st = \$event->{daemon}->{"_state"};
     }
@@ -87,7 +87,7 @@ sub parse_http_line {
 		
 		return;
     }
-    
+
     if ($text =~ /^(\w+):(.+)$/) {
 		$$st->{$1} = $2;
 		return;
@@ -96,7 +96,7 @@ sub parse_http_line {
 
 sub complete_http {
     my ($event, $handler) = @_;
-    
+
     my $st;
 	
     if (defined $event->{server}) {
@@ -107,7 +107,7 @@ sub complete_http {
 		$event->{daemon}->{_state}->{_done} = 1;
 		$st = \$event->{daemon}->{_state};
     }
-    
+
     if (($$st->{_command} ne 'GET') &&
 		($$st->{_command} ne 'HEAD')) {
 		$event->{daemon}->send_error (errno => 501,
@@ -117,7 +117,7 @@ sub complete_http {
 		$event->{daemon}->close();
 		return;
     }
-    
+
     # Special case for /
     if ($$st->{_file} =~ m|^/$|) {
 		my $d = $event->{daemon};
@@ -137,9 +137,9 @@ sub complete_http {
 		$d->close();
 		return;
     }
-    
+
     $$st->{_file} =~ s|^/||;
-    
+
     unless ($event->{daemon}->send(file => $$st->{_file},
 								   head => ($$st->{_command} eq 'HEAD'))) {
 		$event->{daemon}->close();
@@ -152,7 +152,7 @@ sub complete_http {
 
 sub save_file {
     my ($event, $handler) = @_;
-    
+
     my $st;
     my $filename;
 	
@@ -164,14 +164,14 @@ sub save_file {
 		return unless $$st->{_passive};
 		$filename = $$st->{_file};
     }
-    
+
     return if $$st->{_nomorewrite};
 
-    if (!defined $event->{server}->{callback}) {    
+    if (!defined $event->{server}->{callback}) {
 
         unless (defined $$st->{_filehandle}) {
             local *FH;
-            unless (open FH, ">$filename") {
+            unless (open FH, '>', $filename) {
                 my $ui = TLily::UI::name();
                 $ui->print ("(Unable to save file $filename: $!)\n");
                 $event->{server}->terminate() if $event->{server};
@@ -179,10 +179,10 @@ sub save_file {
                 return;
             }
             $$st->{_filehandle} = *FH;
-        } 
+        }
     	syswrite ($$st->{_filehandle}, $event->{data}, length($event->{data}));
     } else {
-        $event->{server}->{_content} .= $event->{data};	
+        $event->{server}->{_content} .= $event->{data};
     }
 
     $$st->{_byteswritten} += length($event->{data});
@@ -200,7 +200,7 @@ sub save_file {
 sub cleanup {
     my ($event, $handler) = @_;
 
-    if (!defined $event->{server}->{callback}) {    
+    if (!defined $event->{server}->{callback}) {
         close ($event->{server}->{_state}->{_filehandle})
           if defined $event->{server}->{_state}->{_filehandle};
     }
@@ -208,9 +208,9 @@ sub cleanup {
       if defined $event->{daemon}->{_state}->{_filehandle};
 
 
-    if (defined $event->{server}->{callback}) {    
+    if (defined $event->{server}->{callback}) {
        &{$event->{server}->{callback}}($event->{server});
-    }    
+    }
 
     return;
 }

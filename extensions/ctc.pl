@@ -27,11 +27,11 @@ sub command {
 
 sub ctc_cmd {
     my ($ui, $args) = @_;
-    
+
     my ($cmd, @rest) = split /\s+/, $args;
-    
+
     $cmd = lc($cmd);
-    
+
     if ($cmd eq 'start') {
 	if (defined($http)) {
 	    $ui->print
@@ -42,7 +42,7 @@ sub ctc_cmd {
 	$http = TLily::Daemon::HTTP->new();
 	return;
     }
-    
+
     if ($cmd eq 'get') {
 	my ($from, $file) = @rest;
 	my $lfrom;
@@ -82,12 +82,12 @@ sub ctc_cmd {
 				 ui_name => $ui->{name});
 	return;
     }
-    
+
     if ($cmd eq 'list') {
 	$ui->print(" Type   User                    Filename\n");
 	
 	foreach my $p (keys %pending) {
-	    my $s = "SEND";	# Passive eventually, too.
+	    my $s = "SEND"; # Passive eventually, too.
 	    $ui->printf(" $s   %-23s %s\n", $pending{$p}->{to},
 			$pending{$p}->{file});
 	}
@@ -100,7 +100,7 @@ sub ctc_cmd {
 	}
 	return;
     }
-    
+
     if ($cmd eq 'refuse') {
 	my ($from, $file) = @rest;
 	
@@ -123,18 +123,18 @@ sub ctc_cmd {
 	delete $received{$lfrom} unless (scalar(@{$received{$lfrom}}));
 	return;
     }
-    
+
     if (!defined($http)) {
 	$ui->print("(HTTP service not started.  Try %ctc start)\n");
 	return;
     }
-    
+
     if ($cmd eq 'stop') {
 	$http->terminate();
 	$http = undef;
 	return;
     }
-    
+
     if ($cmd eq 'send') {
 	my ($to, $file) = @rest;
 	
@@ -156,11 +156,11 @@ sub ctc_cmd {
 	}
 	$pending{$alias} = { file => $file, to => $to };
 	$ui->print("(sending file request to $to)\n");
-	command($to, 
+	command($to,
 		";@@@ ctc send @@@ http://$hostaddr:$http->{port}/$alias");
 	return;
     }
-    
+
     if ($cmd eq 'cancel') {
 	my ($to, $file) = @rest;
 	
@@ -174,25 +174,25 @@ sub ctc_cmd {
 	$ui->print("(all pending sends", $o, " cancelled)\n");
 	return;
     }
-    
+
     $ui->print("unknown %ctc command, see %help ctc\n");
 }
 
 sub send_handler {
     my ($event, $handler) = @_;
-    
+
     return 0 unless ($event->{VALUE} =~
 		     s/^@@@ ctc (send|passive|passiveok|refuse) @@@\s*//);
-    
+
     my $cmd = $1;
     my $ui = TLily::UI::name();
-    
+
     $event->{NOTIFY} = 0;
     $event->{BELL} = 0;
-    
+
     my ($addr, $port, $alias, $file) =
       ($event->{VALUE} =~ m|^http://(.+):(\d+)/(.+/(.+))$|);
-    
+
     if (($cmd eq 'send')) {
 	push (@{$received{"\L$event->{SOURCE}"}},
 	      {
@@ -204,7 +204,7 @@ sub send_handler {
 	$ui->print ("(Use %ctc get $event->{SOURCE} to receive)\n");
 	return;
     }
-    
+
     if (($cmd eq 'refuse')) {
 	if (delete $pending{$alias}) {
 	    $ui->print("(", $event->{SOURCE}, " refused the file ", $file,
@@ -216,7 +216,7 @@ sub send_handler {
 
 sub file_done {
     my ($event, $handler) = @_;
-    
+
     if (exists $pending{$event->{daemon}->{filealias}}) {
 	my $ui = TLily::UI::name();
 	
@@ -233,15 +233,15 @@ sub file_done {
 
 sub terminating {
     my ($event, $handler) = @_;
-    
+
     my $ui = TLily::UI::name();
-    
+
     $ui->print("(HTTP service terminating...)\n");
-    
+
     # Everything is invalid now, so clean up our state.
     %pending = ();
     %received = ();
-    
+
     $http = undef;
     return;
 }
@@ -249,22 +249,22 @@ sub terminating {
 
 sub load {
     $hostaddr = inet_ntoa(inet_aton(hostfqdn()));
-    
+
     # Not anymore you're not.
     #    $http = TLily::Daemon::HTTP->new();
-    
+
     $http = undef;
-    
+
     event_r (type => 'http_filedone',
 	     call => \&file_done);
-    
+
     event_r (type  => 'private',
 	     order => 'before',
 	     call  => \&send_handler);
-    
+
     event_r (type  => 'http_terminate',
 	     call  => \&terminating);
-    
+
     command_r('ctc' => \&ctc_cmd);
     shelp_r('ctc' => "Client to client transfer commands");
     help_r ('ctc' => "

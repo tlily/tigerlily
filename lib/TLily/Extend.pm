@@ -23,7 +23,7 @@ use TLily::Utils qw(&edit_text &diff_text &columnize_list);
 
 my %extdata;
 my %extensions = ();
-my @share=qw(%config &help_r &shelp_r &command_r &event_r &event_u 
+my @share=qw(%config &help_r &shelp_r &command_r &event_r &event_u
 	     &ui_name &active_server &edit_text &diff_text &columnize_list);
 
 =head1 NAME
@@ -32,8 +32,7 @@ TLily::Extend - Tigerlily Extension Manager
 
 =head1 SYNOPSIS
 
-     
-use TLily::Extend;
+ use TLily::Extend;
 
 =head1 DESCRIPTION
 
@@ -74,7 +73,7 @@ Loads an extension into tlily.
   TLily::Extend::load($name,$ui,$verbose);
 
 Extensions are executed in a restricted environment called an ExoSafe.
-This means that each one gets its own package, so they don't step on each 
+This means that each one gets its own package, so they don't step on each
 other.   For convenience, each ExoSafe is exported a number of functions so
 that they don't have to be typed out fully (for example, you can type shelp_r() instead of having to type TLily::User::shelp_r()).
 
@@ -85,14 +84,14 @@ For a list of the exported functions and variables, see @share in Extend.pm.
 sub load {
     my ($name, $ui, $verbose)=@_;
     my $filename;
-    
+
     if ($name =~ m|/| && ($name =~ m|^//INTERNAL| || -f $name)) {
 	$filename = $name;
 	# $name = basename($name);
 	$name =~ s|.*[/\\]||;
 	$name =~ s|\.pl$||i;
     }
-    
+
     if (defined $extensions{$name}) {
 	$ui->print("(extension \"$name\" already loaded)\n") if ($ui);
 	return 1;
@@ -109,36 +108,36 @@ sub load {
 	    }
 	}
     }
-    
+
     if (!defined($filename)) {
 	$ui->print("(cannot locate extension \"$name\")\n") if ($ui);
 	return 0;
     }
-    
+
     $ui->print("(loading \"$name\" from \"$filename\")\n")
       if ($ui && $verbose && defined($filename));
 
     my $reg  = TLily::Registrar->new($name)->push_default;
     my $safe = ExoSafe->new;
-    
+
     $safe->share(@share);
     # This only works in perl 5.003_07+
     $safe->share_from('main', [ qw(%ENV %INC @INC $@ $] $$) ]);
-    
+
     $safe->rdo($filename);
     unless ($@) {
 	$safe->reval("load();");
 	$@ = undef if ($@ && $@ =~ /Undefined subroutine \S+load /);
     }
-    
+
     $reg->pop_default;
-    
+
     if ($@) {
 	$ui->print("* error: $@") if ($ui);
 	$reg->unwind;
 	return 0;
     }
-    
+
     $extensions{$name} = { file => $filename,
 			   safe => $safe,
 			   reg  => $reg };
@@ -156,19 +155,19 @@ Unloads a loaded extension.
 
 sub unload {
     my($name, $ui, $verbose) = @_;
-    
+
     if (!defined $extensions{$name}) {
 	$ui->print("(extension \"$name\" is not loaded)\n") if ($ui);
-	return; 
+	return;
     }
-    
+
     $ui->print("(unloading \"$name\")\n") if ($ui && $verbose);
     $extensions{$name}->{reg}->push_default;
     $extensions{$name}->{safe}->reval("unload();");
     $extensions{$name}->{reg}->pop_default;
-    
+
     $extensions{$name}->{reg}->unwind;
-    
+
     delete $extensions{$name};
 }
 
@@ -186,14 +185,17 @@ sub load_extensions {
     foreach $ext (@{$config{'load'}}) {
 	load($ext,$ui);
     }
-    
+
     load($config{'bot'}, $ui) if exists($config{'bot'});
-    
+
     extension_cmd($ui,"list");
 }
 
+=back
 
 =head1 HANDLERS
+
+=over 4
 
 =item extension_cmd()
 
@@ -205,9 +207,9 @@ and reload extensions.
 sub extension_cmd {
     my($ui, $args) = @_;
     my @argv = split /\s+/, $args;
-    
+
     my $cmd = shift @argv || "";
-    
+
     if ($cmd eq 'load') {
 	my $ext;
 	foreach $ext (@argv) {

@@ -64,7 +64,7 @@ sub keepalive {
         if ($pinging{$name} == 0) {
 	    $pinging{$name} = 1;
 	    $ui->print("(sending #\$# ping to $name)\n")
-                if ($config{keepalive_debug});	
+                if ($config{keepalive_debug});
 	    $server->sendln('#$# ping');
         }
 
@@ -82,13 +82,13 @@ sub keepalive {
 
 sub keepalive_handle_pong {
     my($event) = @_;
-	    
-    my $ui = ui_name();	    
+
+    my $ui = ui_name();
     my $name = $event->{server}->name;
-	    
+
     $event->{NOTIFY} = 0;
-	    
-    $ui->print("(received %pong from $name)\n") if ($config{keepalive_debug});	
+
+    $ui->print("(received %pong from $name)\n") if ($config{keepalive_debug});
     if ($pinging{$name} == 2) {
 	$ui->print("(server $name is responding again)\n");
     }

@@ -17,11 +17,11 @@ use TLily::Config;
 use vars qw(@ISA @EXPORT_OK);
 @ISA = qw(Exporter);
 
-@EXPORT_OK = qw(&max &min &edit_text &diff_text &columnize_list &save_deadfile &get_deadfile);
+@EXPORT_OK = qw(&max &min &edit_text &diff_text &columnize_list &save_deadfile &get_deadfile &initials_match);
 
 # These are handy in a couple of places.
-sub max($$) { ($_[0] > $_[1]) ? $_[0] : $_[1] }
-sub min($$) { ($_[0] < $_[1]) ? $_[0] : $_[1] }
+sub max { return ($_[0] > $_[1]) ? $_[0] : $_[1] }
+sub min { return ($_[0] < $_[1]) ? $_[0] : $_[1] }
 
 sub columnize_list {
     my ($ui, $list, $limit) = @_;
@@ -61,23 +61,23 @@ sub edit_text {
     my $mtime = 0;
 
     unlink($tmpfile);
-    open(FH, ">$tmpfile") or die "$tmpfile: $!";
+    open(FH, '>', $tmpfile) or die "$tmpfile: $!";
     if (@{$text}) {
-        foreach (@{$text}) { 
-	    chomp; 
-            if ($^O =~ /cygwin/) {	    
-	        print FH "$_\r\n";
-	    } else {
-	        print FH "$_\n";	    
-	    }
-	}
+        foreach (@{$text}) {
+            chomp;
+            if ($^O =~ /cygwin/) {
+            print FH "$_\r\n";
+        } else {
+            print FH "$_\n";
+        }
+    }
         $mtime = (stat FH)[10];
     }
     close FH;
 
     $ui->suspend;
     TLily::Event::keepalive();
-    
+
     if ($^O =~ /cygwin/) {
          my $tmpfile2 = "C:$tmpfile";
         $tmpfile2 =~ s/\//\\/g;
@@ -90,27 +90,27 @@ sub edit_text {
 
     $ui->resume;
 
-    my $rc = open(FH, "<$tmpfile");
+    my $rc = open(FH, '<', $tmpfile);
     unless ($rc) {
         $ui->print("(edit buffer file not found)\n") unless $quiet;
         return;
-    }  
-     
+    }
+
     if ($^O =~ /cygwin/) {
-	# blah!
+    # blah!
     } elsif ((stat FH)[10] == $mtime) {
         close FH;
         unlink($tmpfile);
         $ui->print("(file unchanged)\n") unless $quiet;
         return;
-    }  
-    
+    }
+
     @{$text} = <FH>;
     if ($^O =~ /cygwin/) {
         local($/ = "\r\n");
-    	chomp(@{$text});
+        chomp(@{$text});
     } else {
-	chomp(@{$text});
+    chomp(@{$text});
     }
     close FH;
     unlink($tmpfile);
@@ -126,15 +126,15 @@ sub diff_text {
 
   my $tmpfile_a = "$::TL_TMPDIR/tlily-diff-a.$$";
   my $tmpfile_b = "$::TL_TMPDIR/tlily-diff-b.$$";
-  open FH, ">$tmpfile_a";
+  open FH, '>', $tmpfile_a;
   foreach (@{$a}) { print FH "$_\n" };
   close FH;
 
-  open FH, ">$tmpfile_b";
+  open FH, '>', $tmpfile_b;
   foreach (@{$b}) { print FH "$_\n" };
   close FH;
 
-  open FH, "diff $tmpfile_a $tmpfile_b |";
+  open FH, '-|', "diff $tmpfile_a $tmpfile_b";
   @{$diff} = <FH>;
   close FH;
 
@@ -154,14 +154,14 @@ sub save_deadfile {
     my $deaddir = $ENV{HOME}."/.lily/tlily";
     if (! -d $deaddir) {
         # use the default explicitly for older perls. -Coke
-        mkdir $deaddir, 0777 or return undef;
+        mkdir $deaddir, 0777 or return;
     }
     my $deadfile = $deaddir . "/dead.$type.$escaped_name";
 
     unlink($deadfile);
 
     local *DF;
-    open(DF, ">$deadfile") || return undef;
+    open(DF, '>', $deadfile) || return;
 
     foreach my $l (@{$text}) {
         print DF $l, "\n";
@@ -179,7 +179,7 @@ sub get_deadfile {
     my $deadfile = $ENV{HOME}."/.lily/tlily/dead.$type.$escaped_name";
 
     local *DF;
-    open(DF, "$deadfile") || return undef;
+    open(DF, '<', $deadfile) || return;
 
     my $text;
     @{$text} = <DF>;
@@ -196,7 +196,7 @@ sub format_time {
   my $type = $args{type};
   my $seconds = $args{seconds};
 
-  if ($delta && $config{$delta}) { 
+  if ($delta && $config{$delta}) {
     my($t) = ($time->[2] * 60) + $time->[1] + $config{$delta};
     $t += (60 * 24) if ($t < 0);
     $t -= (60 * 24) if ($t >= (60 * 24));
@@ -229,4 +229,20 @@ sub format_time {
   return sprintf($format, $time->[2], $time->[1], $secs, $ampm);
 }
 
+# does the full name given match the initials given?
+# examples: does "NeuroVic" match "nv" ?
+
+sub initials_match {
+    my $partial = shift;
+    my $full    = shift;
+
+    # what are considered the initials of a full name? initial character,
+    # and then any letters that are capitalized, or appear after a nonalpha
+    # character.
+
+    my @chars = $full =~ m{(^.|[A-Z]|(?<=[^A-Za-z\d])[A-Za-z])}g;
+    my $guess = join('',@chars);
+
+    return lc $guess eq lc $partial;
+}
 1;

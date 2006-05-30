@@ -41,7 +41,7 @@ sub load {
 
     local *FD;
     foreach my $file (@files) {
-	open(FD, $file) or next;
+	open(FD, '<', $file) or next;
 	while (<FD>) {
 	    next if (/^\s*(\#.*)?$/);
 	    my ($alias, $host, $port, $user, $pass) = split;

@@ -12,6 +12,7 @@
 package TLily::Server::IRC::Driver;
 
 use strict;
+use warnings;
 use vars qw(@ISA);
 
 use Carp;
@@ -33,40 +34,40 @@ BEGIN {
 my %tlily_io_handlers;
 
 sub new {
-    return undef unless $IRC_avail;
+    return unless $IRC_avail;
     my $proto = shift;
     my $class = ref($proto) || $proto;
-    $class->SUPER::new(@_);
+    return $class->SUPER::new(@_);
 }
 
-sub addfh() {
+sub addfh {
     my $self = shift;
     my ($fh, $code, $flag) = @_;
 
     my $id = TLily::Event::io_r(handle => $fh,
                                 mode => lc($flag),
-				call => \&Net::IRC::do_one_loop,
-				obj => $self);
+                                call => \&Net::IRC::do_one_loop,
+                                obj => $self);
 
     push @{$tlily_io_handlers{fileno($fh)}}, $id;
 
-    $self->SUPER::addfh(@_);
+    return $self->SUPER::addfh(@_);
 }
 
-sub removefh() {
+sub removefh {
     my $self = shift;
     my ($fh) = @_;
 
     if (exists $tlily_io_handlers{fileno($fh)}) {
         foreach my $id (@{$tlily_io_handlers{fileno($fh)}}) {
             TLily::Event::io_u($id);
-	    delete $tlily_io_handlers{fileno($fh)};
+            delete $tlily_io_handlers{fileno($fh)};
         }
     } else {
         warn("Could not find tlily handler for IRC filehandle.  Please report this as a bug using '%submit client', and provide details on what you were doing when it happened.  If possible, please give a recipe for reproducing the bug.");
     }
 
-    $self->SUPER::removefh(@_);
+    return $self->SUPER::removefh(@_);
 }
 
 1;

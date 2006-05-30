@@ -30,9 +30,9 @@ sub private_fmt {
     my $sender_fmt = $e->{sender_fmt} || "private_sender";
     my $dest_fmt   = $e->{dest_fmt}   || "private_dest";
     my $body_fmt   = $e->{body_fmt}   || "private_body";
-    
+
     $ui->print("\n");
-    
+
     my $servname = "(" . $e->{server}->name() . ") "
       if (scalar(TLily::Server::find()) > 1);
 
@@ -53,10 +53,10 @@ sub private_fmt {
                     $dest_fmt   => $e->{RECIPS});
     }
     $ui->prints($header_fmt => ":\n");
-    
+
     $ui->indent($body_fmt => " - ");
     $ui->prints($body_fmt => $e->{VALUE}."\n");
-    
+
     $ui->indent();
     $ui->style("default");
     return;
@@ -76,9 +76,9 @@ sub public_fmt {
     my $sender_fmt = $e->{sender_fmt} || "public_sender";
     my $dest_fmt   = $e->{dest_fmt}   || "public_dest";
     my $body_fmt   = $e->{body_fmt}   || "public_body";
-    
+
     $ui->print("\n");
-    
+
     my $servname = "(" . $e->{server}->name() . ") "
       if (scalar(TLily::Server::find()) > 1);
 
@@ -93,7 +93,7 @@ sub public_fmt {
     $ui->prints($header_fmt => ", to ",
                 $dest_fmt   => $e->{RECIPS},
                 $header_fmt => ":\n");
-    
+
     $ui->indent($body_fmt   => " - ");
     $ui->prints($body_fmt   => $e->{VALUE}."\n");
 
@@ -115,7 +115,7 @@ sub emote_fmt {
     my $sender_fmt = $e->{sender_fmt} || "emote_sender";
     my $dest_fmt   = $e->{dest_fmt}   || "emote_dest";
     my $body_fmt   = $e->{body_fmt}   || "emote_body";
-    
+
     my $dest = $e->{RECIPS};
     my $servname = "(" . $e->{server}->name() . ") "
       if (scalar(TLily::Server::find()) > 1);
@@ -276,22 +276,22 @@ my @infomsg = (
     'unappoint'  => 'MC="owner";'  => "*** %S%T%u has rescinded %p offer of ownership of discussion %R ***",
     'unappoint'  => 'SC="owner";'  => "(you have rescinded your ownership offer to %P of discussion %R)",
 
-    'appoint'    => 'tC="speaker";' => "*** Discussion %R is now moderated ***",    
-    'appoint'    => 'MC="speaker";' => "*** You have been made a speaker for discussion %R ***",
-    'appoint'    => 'C="speaker";'  => "*** %P is now a speaker for discussion %R ***",
-    'unappoint'  => 'tC="speaker";' => "*** Discussion %R is no longer moderated ***",
-    'unappoint'  => 'MC="speaker";' => "*** You are no longer a speaker for discussion %R ***",
-    'unappoint'  => 'C="speaker";'  => "*** %P is no longer a speaker for discussion %R ***",
+    'appoint'    => 'tC="speaker";' => "*** %S%TDiscussion %R is now moderated ***",
+    'appoint'    => 'MC="speaker";' => "*** %S%TYou have been made a speaker for discussion %R ***",
+    'appoint'    => 'C="speaker";'  => "*** %S%T%P is now a speaker for discussion %R ***",
+    'unappoint'  => 'tC="speaker";' => "*** %S%TDiscussion %R is no longer moderated ***",
+    'unappoint'  => 'MC="speaker";' => "*** %S%TYou are no longer a speaker for discussion %R ***",
+    'unappoint'  => 'C="speaker";'  => "*** %S%T%P is no longer a speaker for discussion %R ***",
 
-    'appoint'    => 'MC="author";' => "*** You have been made an author for discussion %R ***",
-    'appoint'    => 'C="author";'  => "*** %P is now an author for discussion %R ***",
-    'unappoint'  => 'MC="author";' => "*** You are no longer an author for discussion %R ***",
-    'unappoint'  => 'C="author";'  => "*** %P is no longer an author for discussion %R ***",
+    'appoint'    => 'MC="author";' => "*** %S%TYou have been made an author for discussion %R ***",
+    'appoint'    => 'C="author";'  => "*** %S%T%P is now an author for discussion %R ***",
+    'unappoint'  => 'MC="author";' => "*** %S%TYou are no longer an author for discussion %R ***",
+    'unappoint'  => 'C="author";'  => "*** %S%T%P is no longer an author for discussion %R ***",
 
-    'appoint'    => 'M'            => "*** You are now a %E for %R ***",
-    'appoint'    => ''             => "*** %P is now a %E for %R ***",
-    'unappoint'  => 'M'            => "*** You are no longer a %E for %R ***",
-    'unappoint'  => ''             => "*** %P is no longer a %E for %R ***",
+    'appoint'    => 'M'            => "*** %S%TYou are now a %E for %R ***",
+    'appoint'    => ''             => "*** %S%T%P is now a %E for %R ***",
+    'unappoint'  => 'M'            => "*** %S%TYou are no longer a %E for %R ***",
+    'unappoint'  => ''             => "*** %S%T%P is no longer a %E for %R ***",
 
     'review'     => ''             => '*** %S%T%u has cleared the review for discussion %R ***',
 
@@ -302,12 +302,12 @@ my $sub = sub {
     my ($e, $h) = @_;
     my $serv = $e->{server};
     return unless ($serv);
-    
+
     # optimization?
     return unless ($e->{NOTIFY});
 
     my $Me =  $serv->user_name;
-    
+
     my $i = 0;
     my $found;
     while ($i < $#infomsg) {
@@ -373,7 +373,7 @@ my $sub = sub {
         $found = $msg;
         last;
     }
-    
+
     if ($found) {
         my $servname = $serv->name();
 
@@ -406,7 +406,7 @@ my $sub = sub {
         if ($found =~ m/\%p/) {
             my $pronoun = $serv->get_pronoun(HANDLE => $e->{SHANDLE});
             $found =~ s/\%p/$pronoun/g;
-   	}		
+   	}
         if ($found =~ m/\%B/) {
             if (defined ($blurb) && ($blurb ne "")) {
                 $found =~ s/\%B/ with the blurb [$blurb]/g;
@@ -428,7 +428,7 @@ event_r(type  => 'all',
 
 sub etimestamp {
     my ($time) = @_;
-    
+
     my @a = localtime($time);
     my $str = TLily::Utils::format_time(\@a, delta => "zonedelta",
 					type => "zonetype",

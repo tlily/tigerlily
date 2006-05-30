@@ -121,7 +121,7 @@ sub symtab {
 sub load_internal_files {
     if (keys %internal_files == 0) {
         local *FH;
-        my $rc = open(FH, $0) or die "$0: $!";
+        my $rc = open(FH, '<', $0) or die "$0: $!";
 
         my $name;
         my $data = "";
@@ -186,8 +186,8 @@ sub fetch {
     } else {
         local $/ = undef;
         return undef unless -f $file;
-        my $fh = new IO::Handle; # Needed for older perls -Coke
-        open($fh, $file) or die "Could not open $file: $!\n";
+        my $fh = new IO::Handle; # Needed for old perls -Coke
+        open($fh, '<', $file) or die "Could not open $file: $!\n";
         return $fh;
     }
 }

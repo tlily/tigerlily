@@ -117,24 +117,25 @@ sub new {
     $self->{host}      = $args{host};
     $self->{port}      = $args{port};
     $self->{ui_name}   = $args{ui_name};
+    $self->{secure}    =
+        defined($args{secure})?$args{secure}:$TLily::Config::config{secure};
     $self->{proto}     = defined($args{protocol}) ? $args{protocol}:"server";
     $self->{bytes_in}  = 0;
     $self->{bytes_out} = 0;
 
-    $ui->print("Connecting to $self->{host}, port $self->{port}...") if $ui;
 
 #    $self->{sock} = IO::Socket::INET->new(PeerAddr => $self->{host},
 #					  PeerPort => $self->{port},
 #					  Proto    => 'tcp');
     eval {
-        if ($TLily::Config::config{secure} && $SSL_avail) {
-            $self->{sock} = contact_ssl($self->{host}, $self->{port});
-        } elsif ($TLily::Config::config{secure}) {
+        if ($self->{secure} && $SSL_avail) {
+            $self->{sock} = $self->contact_ssl();
+        } elsif ($self->{secure}) {
             $ui->print("\n\nWARNING: Secure connection requested, but IO::Socket::SSL not installed!\n");
             $ui->print("Terminating connection attempt.\n\n");
             die "No SSL support available.\n";
         } else {
-            $self->{sock} = contact($self->{host}, $self->{port});
+            $self->{sock} = $self->contact();
         }
     };
 
@@ -187,10 +188,17 @@ sub remove_server {
 
 # internal utility function
 sub contact {
-    my($serv, $port) = @_;
+    my $self = shift;
+
+    my $serv = $self->{host};
+    my $port = $self->{port};
 
     my($iaddr, $paddr, $proto);
     local *SOCK;
+
+    my $ui = TLily::UI::name($self->{ui_name}) if ($self->{ui_name});
+    $ui->print("Connecting to $serv, port $port...")
+        if $ui;
 
     $port = getservbyname($port, 'tcp') if ($port =~ /\D/);
     croak "No port" unless $port; 
@@ -207,7 +215,11 @@ sub contact {
 #This is the SSL connection routine. 
 #it also falls back to non-ssl connections.
 sub contact_ssl {
-    my($serv, $port) = @_;
+    my $self = shift;
+
+    my $serv = $self->{host};
+    my $port = $self->{port};
+
     my($iaddr, $paddr, $proto);
     my($sock);
     my($cert,$other_cert, $string_cert);
@@ -215,10 +227,10 @@ sub contact_ssl {
     my($temp);
     my $cert_path = $ENV{HOME}."/.lily/certs";
     my $cert_filename;
-    my $ui = TLily::UI::name();
 
-    $ui->print("trying SSL...") if $ui;;
-
+    my $ui = TLily::UI::name($self->{ui_name}) if ($self->{ui_name});
+    $ui->print("Connecting via SSL to $serv, port " . ($port+1) . "...")
+        if $ui;
     $sock = IO::Socket::SSL->new(PeerAddr => $serv,
                                 PeerPort => $port+1,
                                 SSL_use_cert => 0,
@@ -226,11 +238,10 @@ sub contact_ssl {
                                 );
  
 
-    if(!$sock)
-    {
-        $ui->print("\n*** WARNING: This session is NOT encrypted ***\n")
-            if $ui;;
-        $sock = contact($serv, $port);
+    if (!$sock) {
+        $ui->print("failed.\n*** WARNING: This session is NOT encrypted ***\n")
+            if $ui;
+        $sock = $self->contact();
         return $sock;
     }
 
@@ -253,7 +264,7 @@ sub contact_ssl {
         undef $/;
 
         # Slurp in the whole certificate.
-        open(SSL_CERT,"<".$cert_filename);
+        open(SSL_CERT, '<', $cert_filename);
         sysread(SSL_CERT, $other_cert, 500000);
         close(SSL_CERT);
 
@@ -302,7 +313,7 @@ sub contact_ssl {
 sub write_cert {
     my($cert, $file) = @_;
     my($str_cert);
-    open(SSL_CERT, ">".$file);
+    open(SSL_CERT, '>', $file);
     $str_cert = Net::SSLeay::PEM_get_string_X509($cert);
     print(SSL_CERT $str_cert);
     close(SSL_CERT);
@@ -547,8 +558,11 @@ sub command {
     return;
 }
 
+=back
 
 =head2 HANDLERS
+
+=over 10
 
 =item reader()
 
@@ -561,51 +575,57 @@ sub reader {
     my ($buf, $rc);
     my $bufsize = 16384;
 
+    # We need a loop here, because, for IO::Socket::SSL handles, if we
+    # don't completely drain the underlying buffer, a subsequent select()
+    # will not get notice the handle is ready for reading unless more
+    # data comes in.
     do {
         $rc = sysread($self->{sock}, $buf,  $bufsize);
 
         # Interrupted by a signal or would block
-        return if (!defined($rc) && $! == $::EAGAIN);
+	return if (!defined($rc) && $! == $::EAGAIN && !length($buf));
 
-        # This is a kludge for the SSL layer, I looked into this back when
-        # I wrote the patches and there was no good way around it.
-        # Without this, I disconnect during the SLCP sync to the RPI
-        # server. - Phreaker
+        # Would block.  (win32)
+        return if (($^O eq "MSWin32") &&
+                   (!defined($rc) && $! == &EWOULDBLOCK && !length($buf)));
 
+        # For IO::Socket:SSL connections, returning under from a read does
+        # not always indicate connection closed.  It may also indicate
+        # a condition of the underlying SSL connection that essentially
+        # means we have to retry the read again later.  This is indicated
+        # by the errstr() method returning 'SSL wants a read first!'.
+        #
         # IO::Socket doesn't have an errstr function, so this call needs
-        # to be wrapped.  This should do the trick.
-        # -Steve
-
+        # to be wrapped.
         if ($self->{sock}->can('errstr')) {
-            if ($self->{sock}->errstr eq "SSL read error\nSSL wants a read first!") {
+            if ($self->{sock}->errstr eq
+                  "SSL read error\nSSL wants a read first!") {
                 $self->{sock}->error("");
-                $self->{bytes_in} += length($buf);
-                TLily::Event::send(type   => "$self->{proto}_data",
-                                   server => $self,
-                                   data   => $buf);
-                return if !defined($rc);;
-            }
+                return if !defined($rc);
+	    }
         }
-    } while (ref($self->{'sock'}) eq 'IO::Socket::SSL' && $rc);
 
-    # Would block.  (used only on win32 right now)
-    return if (($^O eq "MSWin32") && (!defined($rc) && $! == &EWOULDBLOCK));
+        # Connection lost/closed
+        if (!defined($rc) || $rc == 0) {
+	    my $ui = TLily::UI::name($self->{"ui_name"})
+              if ($self->{"ui_name"});
+	    $ui->print("*** Lost connection to \"" .
+                       $self->{"name"} . "\" ***\n") if $ui;
+	    $self->terminate();
+        }
 
-    # End of line.
-    if (!defined($rc) || $rc == 0) {
-	my $ui = TLily::UI::name($self->{"ui_name"}) if ($self->{"ui_name"});
-	$ui->print("*** Lost connection to \"" . $self->{"name"} . "\" ***\n") if $ui;
-	$self->terminate();
-    }
-
-    # Data as usual.
-    else {
-	$self->{bytes_in} += length($buf);
+        # Data as usual.
+        else {
+	    $self->{bytes_in} += length($buf);
 	
-	TLily::Event::send(type   => "$self->{proto}_data",
-			   server => $self,
-			   data   => $buf);
-    }
+	    TLily::Event::send(type   => "$self->{proto}_data",
+			       server => $self,
+			       data   => $buf);
+	    $buf = '';
+        }
+
+    # See above comment about this loop at its start (the 'do').
+    } while (ref($self->{'sock'}) eq 'IO::Socket::SSL' && $rc);
 
     return;
 }

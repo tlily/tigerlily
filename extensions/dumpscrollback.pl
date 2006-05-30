@@ -14,9 +14,9 @@ scrollback buffer to file.
 
 =head1 COMMANDS
 
-=item %dumpscrollback
-
 =over 10
+
+=item %dumpscrollback
 
 Dump the entire scrollback buffer to a file.  See "%help %dumpscrollback".
 

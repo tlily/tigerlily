@@ -9,7 +9,7 @@
 #
 # $Id$
 
-require 5.00503; # Might be able to relax this. But don't. -Coke
+require 5.6.1;
 use strict;
 use vars qw($EAGAIN $TL_ETCDIR $TL_LIBDIR $TL_TMPDIR $TL_LIBMODDIR);
 
@@ -70,14 +70,14 @@ sub platform_init {
                         print STDERR "Saving EAGAIN to .tlily-eagain.\n";
                         $EAGAIN = $1;
                         local *FH;
-                        open(FH, "> .tlily-eagain") or die ".tlily-eagain: $!\n";
+                        open(FH, '>', '.tlily-eagain') or die ".tlily-eagain: $!\n";
                         print FH $EAGAIN, "\n";
                     } else {
                         die "Cannot determine value for EAGAIN.\n";
                     }
                 } else {
                     local *FH;
-                    open(FH, ".tlily-eagain") or die ".tlily-eagain: $!\n";
+                    open(FH, '<', '.tlily-eagain') or die ".tlily-eagain: $!\n";
                     $EAGAIN = <FH>;
                     if ($EAGAIN =~ /^(\d+)/) {
                         $EAGAIN = $1;

@@ -18,7 +18,7 @@
 
 Installing
 ----------
-TigerLily requires Perl 5.003 or greater.  You will also need
+TigerLily requires Perl 5.6.1 or greater.  You will also need
 Curses.pm or Term::Readline::Gnu. (from CPAN)
 
 You can run tlily directly from the source directory, by running
@@ -219,7 +219,7 @@ such as TortoiseSVN.
 The repository is currently located on svn.tlily.org.
 
 To access the repository anonymous read-only, do:
-  svn co http://svn.tlily.org/svn/tlily/trunk tlily
+  svn co svn://svn.tlily.org/svn/tlily/trunk tlily
 Which will get you the most recent development version.
 
 To access the repository read-write, once you have an account, do:

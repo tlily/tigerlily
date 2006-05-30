@@ -38,9 +38,9 @@ lines typed by the user in the "text" field..
 
 =head1 FUNCTIONS
 
-=over 10
-
 =head2 FUNCTIONS DEFINED BY UI.pm:
+
+=over 10
 
 =cut
 
@@ -223,7 +223,7 @@ sub log {
 
     if (defined $file) {
 	local *FH;
-	open(FH, ">>$file") or die "$file: $!\n";
+	open(FH, '>>', $file) or die "$file: $!\n";
 	my $fh = select(FH); $|=1; select($fh);
 	$self->{log_file} = $file;
 	$self->{log_fh}   = *FH;
@@ -334,7 +334,6 @@ TLily::Registrar::class_r(global_ui_command => \&command_u);
 TLily::Registrar::class_r(global_istyle_fn  => \&istyle_fn_u);
 
 1;
-
 
 =back
 

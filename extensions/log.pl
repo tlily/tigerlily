@@ -11,9 +11,9 @@ log.pl - Log session to a file
 
 Allows you to log the current session to a file.
 
-=over 10
-
 =head1 COMMANDS
+
+=over 10
 
 =item %log
 

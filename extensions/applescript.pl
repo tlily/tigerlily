@@ -9,7 +9,7 @@ sub applescript_cmd() {
    
     my $cmd = join("",@_); 
     $cmd =~ s/\\n/\n/g;
-    open (FOO,"|osascript") ;
+    open (FOO,'|-','osascript') ;
     print FOO $cmd;
     close(FOO);
     $ui->print($output);
