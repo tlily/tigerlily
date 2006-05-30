@@ -5,6 +5,7 @@
 # send multiline sends. (Worst Offender: SDN)
 
 use strict;
+use warnings;
 
 =head1 NAME
 
@@ -25,16 +26,16 @@ sub handler {
 }
 
 event_r(type  => 'public',
-	call  => \&handler,
-	order => 'before');
+    call  => \&handler,
+    order => 'before');
 
 event_r(type  => 'private',
-	call  => \&handler,
-	order => 'before');
+    call  => \&handler,
+    order => 'before');
 
 event_r(type  => 'emote',
-	call  => \&handler,
-	order => 'before');
+    call  => \&handler,
+    order => 'before');
 
 
 
