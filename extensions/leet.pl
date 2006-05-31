@@ -2,24 +2,25 @@
 # $Id$
 
 use strict;
+use warnings;
 
 my %map = (
-	   "a" => "4",
-	   "b" => "8",
-	   "d" => "/>",
-	   "e" => "3",
-	   "h" => "|-|",
-	   "i" => "1",
-	   "k" => "|<",
-	   "l" => "l",
-	   "m" => "|\\/|",
-	   "n" => "|\|",
-	   "o" => "0",
-	   "s" => "5",
-	   "u" => "|_|",
-	   "v" => "\\/",
-	   "w" => "\\//",
-	  );
+       "a" => "4",
+       "b" => "8",
+       "d" => "/>",
+       "e" => "3",
+       "h" => "|-|",
+       "i" => "1",
+       "k" => "|<",
+       "l" => "l",
+       "m" => "|\\/|",
+       "n" => "|\|",
+       "o" => "0",
+       "s" => "5",
+       "u" => "|_|",
+       "v" => "\\/",
+       "w" => "\\//",
+      );
 
 sub leet_mode {
     my($ui, $command, $key) = @_;
@@ -29,10 +30,10 @@ sub leet_mode {
 
     my $k = $map{lc($key)};
     if (defined $k) {
-	    for my $k (split //, $k) {
-		    $ui->command("insert-self", $k);
-	    }
-	    return 1;
+        for my $k (split //, $k) {
+            $ui->command("insert-self", $k);
+        }
+        return 1;
     }
     return;
 }
@@ -41,9 +42,9 @@ sub toggle_leet_mode {
     my($ui, $command) = @_;
     #$ui->intercept_u("leet-mode") || $ui->intercept_r("leet-mode");
     if ($ui->intercept_u("leet-mode")) {
-	    $ui->set(leet => undef);
+        $ui->set(leet => undef);
     } else {
-	    if ($ui->intercept_r(name => "leet-mode", order => 950)) {
+        if ($ui->intercept_r(name => "leet-mode", order => 950)) {
                 $ui->define(leet => 'left');
                 $ui->set(leet => "L33T");
             } else {
