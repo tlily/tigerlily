@@ -4,6 +4,7 @@
 # strip out leading spaces on sends.
 
 use strict;
+use warnings;
 
 =head1 NAME
 
@@ -16,10 +17,11 @@ or private messages you receive.
 
 =cut
 
-help_r( 'bmw', "Strip leading whitespace from incoming messages.
+help_r( 'bmw', << 'END_HELP');
+Strip leading whitespace from incoming messages.
 
-This extension was named its inspiration, bmw\@RPI.
-");
+This extension was named its inspiration, bmw@RPI.
+END_HELP
 
 sub handler {
     my($event, $handler) = @_;
@@ -29,11 +31,9 @@ sub handler {
 }
 
 event_r(type  => 'public',
-	call  => \&handler,
-	order => 'before');
+    call  => \&handler,
+    order => 'before');
 
 event_r(type  => 'private',
-	call  => \&handler,
-	order => 'before');
-
-
+    call  => \&handler,
+    order => 'before');

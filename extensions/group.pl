@@ -40,6 +40,7 @@ sub print_results {
   } else {
     $ui->print("($msg)\n");
   }
+  return;
 }
 
 sub group_cmd {
@@ -72,8 +73,7 @@ sub group_cmd {
     foreach my $name (keys %groups) {
       foreach my $member (keys %{${groups}{$name}}) {
         foreach my $match (@args) {
-          lc($match);
-          if ($member =~ /$match/) {
+          if ($member =~ /$match/i) {
            $hits{$name}{$member} = 1;
           }
         }
@@ -88,6 +88,7 @@ sub group_cmd {
   } else {
     print_results($ui,"see %help group");
   }
+  return;
 } 
 #TRUE! They return TRUE!
 1;

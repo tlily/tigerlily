@@ -4,6 +4,7 @@
 # strip out leading spaces on sends.
 
 use strict;
+use warnings;
 
 =head1 NAME
 
@@ -27,4 +28,4 @@ sub handler {
 }
 
 event_r(type  => 'user_input',
-	call  => \&handler);
+    call  => \&handler);
