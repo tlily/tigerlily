@@ -42,6 +42,7 @@ sub blurbcheck {
         }
 
         for (@who) {
+            local $config{user_prefix} = 0;   # avoid '~' in resulting username.
             @match = grep(!/^-/, $server->expand_name($_));
             last if @match;
         }
