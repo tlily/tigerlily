@@ -57,7 +57,7 @@ sub init {
     TLily::User::command_r('extension' => \&extension_cmd);
     TLily::User::shelp_r  ('extension' => "manage tlily extensions");
     TLily::User::help_r   ('extension' => "
-usage: %extension list
+usage: %extension list|loaded
        %extension load <extension>
        %extension unload <extension>
        %extension reload <extension>
@@ -231,7 +231,7 @@ sub extension_cmd {
 		load($ext, $ui, 1);
 	    }
 	}
-    } elsif ($cmd eq 'list') {
+    } elsif ($cmd eq 'list' || $cmd eq 'loaded') {
 	$ui->print("(Loaded extensions: ");
 	$ui->print(join(" ", sort keys %extensions));
 	$ui->print(")\n");
