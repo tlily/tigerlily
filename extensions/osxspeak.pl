@@ -2,6 +2,7 @@
 # $Id$
 
 use strict;
+use warnings;
 
 # Based on Josh's experiment in win32 silliness.
 #
@@ -39,14 +40,16 @@ sub sayit {
 
 sub load {
     event_r(type  => 'private',
-	    order => 'after',
-	    call  => \&sayit);
+        order => 'after',
+        call  => \&sayit);
     event_r(type  => 'public',
-	    order => 'after',
-	    call  => \&sayit);
+        order => 'after',
+        call  => \&sayit);
     event_r(type  => 'emote',
-	    order => 'after',
-	    call  => \&sayit);
+        order => 'after',
+        call  => \&sayit);
+
+    return;
 }
 
 1;
