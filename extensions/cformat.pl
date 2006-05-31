@@ -1,6 +1,8 @@
 # -*- Perl -*-
 # $Id$
+
 use strict;
+use warnings;
 
 help_r("cformat" => <<'END_HELP');
 (Warning: This is a work in progress, and not ready for prime time.)
@@ -58,8 +60,8 @@ sub timestamp {
     
     my @a = localtime($time);
     return TLily::Utils::format_time(\@a,
-    				     delta => "zonedelta",
-    				     type => "zonetype");
+                         delta => "zonedelta",
+                         type => "zonetype");
 }
 
 sub compile_fmt {
@@ -71,54 +73,54 @@ sub compile_fmt {
 
     pos($fmt) = 0;
     while (pos($fmt) < length($fmt)) {
-	    if ($fmt =~ /\G \\n/xgc) {
-		    $code .= '  $ui->print("\n");' . "\n";
-	    }
+        if ($fmt =~ /\G \\n/xgc) {
+            $code .= '  $ui->print("\n");' . "\n";
+        }
 
-	    elsif ($fmt =~ /\G \\(.?)/xgc) {
-		    my $arg = $1; $arg =~ s/([\'\\])/\\$1/g;
-		    $code .= '  $ui->prints($default => \''.$arg."\');\n"
-		      if defined($1);
-	    }
+        elsif ($fmt =~ /\G \\(.?)/xgc) {
+            my $arg = $1; $arg =~ s/([\'\\])/\\$1/g;
+            $code .= '  $ui->prints($default => \''.$arg."\');\n"
+              if defined($1);
+        }
 
-	    elsif ($fmt =~ /\G %(\() ([^\)]*) \)/xgc ||
-		   $fmt =~ /\G %(\{) ([^\}]*) \}/xgc ||
-		   $fmt =~ /\G %() (\w+)/xgc) {
+        elsif ($fmt =~ /\G %(\() ([^\)]*) \)/xgc ||
+           $fmt =~ /\G %(\{) ([^\}]*) \}/xgc ||
+           $fmt =~ /\G %() (\w+)/xgc) {
 
-		    my $type = $1;
-		    my $var  = $2;
-		    my $prefix;
-		    my $suffix;
+            my $type = $1;
+            my $var  = $2;
+            my $prefix;
+            my $suffix;
 
-		    ($prefix, $var, $suffix) = $var =~ /^(\W*)(.*?)(\W*)$/;
-		    if ($type eq '(') {
-			    $prefix .= "(";
-			    $suffix  = ")" . $suffix;
-		    }
+            ($prefix, $var, $suffix) = $var =~ /^(\W*)(.*?)(\W*)$/;
+            if ($type eq '(') {
+                $prefix .= "(";
+                $suffix  = ")" . $suffix;
+            }
 
-		    $var = lc($var);
-		    $prefix =~ s/([\'\\])/\\$1/g;
-		    $suffix =~ s/([\'\\])/\\$1/g;
+            $var = lc($var);
+            $prefix =~ s/([\'\\])/\\$1/g;
+            $suffix =~ s/([\'\\])/\\$1/g;
 
-		    $code .= '  $ui->prints($default => \''.$prefix."\',\n";
-		    $code .= '              $fmts->{'.$var.'} || $default => $vars->{'.$var."},\n";
-		    $code .= '              $default => \''.$suffix."\')\n";
-		    $code .= '    if defined($vars->{'.$var."});\n";
-	    }
+            $code .= '  $ui->prints($default => \''.$prefix."\',\n";
+            $code .= '              $fmts->{'.$var.'} || $default => $vars->{'.$var."},\n";
+            $code .= '              $default => \''.$suffix."\')\n";
+            $code .= '    if defined($vars->{'.$var."});\n";
+        }
 
-	    elsif ($fmt =~ /\G %\| /xgc) {
-		    $code .= '  $default = $fmts->{body};' . "\n";
-	    }
+        elsif ($fmt =~ /\G %\| /xgc) {
+            $code .= '  $default = $fmts->{body};' . "\n";
+        }
 
-	    elsif ($fmt =~ /\G %\[ ([^\]]*) \]/xgc) {
-		    my $arg = $1; $arg =~ s/([\'\\])/\\$1/g;
-		    $code .= '  $ui->indent($default => \''.$arg."\');\n";
-	    }
+        elsif ($fmt =~ /\G %\[ ([^\]]*) \]/xgc) {
+            my $arg = $1; $arg =~ s/([\'\\])/\\$1/g;
+            $code .= '  $ui->indent($default => \''.$arg."\');\n";
+        }
 
-	    elsif ($fmt =~ /\G ([^%\\]+)/xgc) {
-		    my $arg = $1; $arg =~ s/([\'\\])/\\$1/g;
-		    $code .= '  $ui->prints($default => \''.$arg."\');\n";
-	    }
+        elsif ($fmt =~ /\G ([^%\\]+)/xgc) {
+            my $arg = $1; $arg =~ s/([\'\\])/\\$1/g;
+            $code .= '  $ui->prints($default => \''.$arg."\');\n";
+        }
     }
 
     $code .= '  $ui->indent();' . "\n";
@@ -135,19 +137,19 @@ sub generic_fmt {
     my $fmt;
 
     if (defined $e->{format}) {
-	    $fmt = $e->{format};
+        $fmt = $e->{format};
     } elsif ($e->{type} eq 'public') {
-	    $fmt = $config{public_fmt} || 
-	      '\n%[ -> ]%(Server )%(Time )From %From%{ Blurb}, to %To:%|'.
-		'%[ - ]\n%Body\n';
+        $fmt = $config{public_fmt} || 
+          '\n%[ -> ]%(Server )%(Time )From %From%{ Blurb}, to %To:%|'.
+        '%[ - ]\n%Body\n';
     } elsif ($e->{type} eq 'private') {
-	    $fmt = $config{private_fmt} || 
-	      '\n%[ -> ]%(Server )%(Time )'.
-		'Private message from %From%{ Blurb}, to %To:%|'.
-		'%[ - ]\n%Body\n';
+        $fmt = $config{private_fmt} || 
+          '\n%[ -> ]%(Server )%(Time )'.
+        'Private message from %From%{ Blurb}, to %To:%|'.
+        '%[ - ]\n%Body\n';
     } elsif ($e->{type} eq 'emote') {
-	    $fmt = $config{emote_fmt} ||
-	      '%[> ]%(Server )(%{Time, }to %To) %From%|%Body\n';
+        $fmt = $config{emote_fmt} ||
+          '%[> ]%(Server )(%{Time, }to %To) %From%|%Body\n';
     }
 
 =for all evil hacks
@@ -190,15 +192,15 @@ generic event in a similar way to what slcp uses.
     $vars{from} = $e->{SOURCE};
     $vars{blurb} = $e->{server}->get_blurb(HANDLE => $e->{SHANDLE});
     if (defined $vars{blurb} && $vars{blurb} ne "") {
-	    $vars{blurb} = "[" . $vars{blurb} . "]";
+        $vars{blurb} = "[" . $vars{blurb} . "]";
     } else {
-	    undef $vars{blurb};
+        undef $vars{blurb};
     }
     $vars{to} = $e->{RECIPS};
     $vars{body} = $e->{VALUE};
 
     if (!$fmt_cache{$fmt}) {
-	    $fmt_cache{$fmt} = eval compile_fmt($fmt);
+        $fmt_cache{$fmt} = eval compile_fmt($fmt);
     }
     $fmt_cache{$fmt}->($ui, \%vars, \%fmts);
 
@@ -213,13 +215,13 @@ event_r(type  => 'emote',
         call  => sub { $_[0]->{formatter} = \&generic_fmt; return });
 
 sub compile_handler {
-	my($ui, $args) = @_;
+    my($ui, $args) = @_;
 
-	my $code = compile_fmt($args);
-	$ui->print($code);
-	my $sub = eval $code;
-	$ui->print("$sub\n");
+    my $code = compile_fmt($args);
+    $ui->print($code);
+    my $sub = eval $code;
+    $ui->print("$sub\n");
 
-	return;
+    return;
 }
 command_r('compile', \&compile_handler);
