@@ -2,59 +2,56 @@
 # $Id$
 use strict;
 
-my $help = <<END
-#(Warning: This is a work in progress, and not ready for prime time.)
-#
-#The 'cformat' extension allows the format of sends to be controlled without
-#writing code.  The 'public_fmt', 'private_fmt', and 'emote_fmt' configuration
-#variables contain strings defining how to format messages.
-#
-#It is also possible to specify the format via the "format" attribute of
-#an event.  For example:
-#  %on public to tigerlily %attr format "TL| %From>%| %Body\\\\n"
-#
-#The current implementation of %set does not allow you to assign values
-#with spaces to a variable, so you will need to use %eval to modify these
-#variables.  For example:
-#  %eval $config{emote_fmt} = '%[> ]%(Server )(to %To) %From%|%Body\\n';
-#
-#The following codes may be used in a format:
-#  %[ ]     Set the indentation string.
-#  %Var     Insert a variable.
-#  %{Var}   Insert a variable.
-#  %(Var)   Insert a variable, surrounded by parenthesis.
-#  %|       Indicate the end of the header, and the start of the body.
-#  \\n       Newline.
-#
-#When a variable is surrounded by brackets (%{Var} or %(Var)), the brackets
-#may also contain non-alphabetic text.  This text will be printed only if
-#the variable is set.  For example, %(Time ) will expand to "(12:00 )" if
-#the Time variable is set, and "" otherwise.
-#
-#Available variables are:
-#  %Server  The server the send was made to.  Set only if there is more than
-#           one server.
-#  %Time    The current time.  Set only if the message timestamp was set.
-#  %From    The sender.
-#  %Blurb   The sender's blurb.
-#  %To      The destination.
-#  %Body    The message body.
-#
-#The default formats are:
-#  public:
-#    \\n%[ -> ]%(Server )%(Time )From %From%{ Blurb}, to %To:%|
-#    %[ - ]\\n%Body\\n
-#  private:
-#    \\n%[ -> ]%(Server )%(Time )Private message from %From%{ Blurb}:%|
-#    %[ - ]\\n%Body\\n
-#  emote:
-#    %[> ]%(Server )(%{Time, }to %To) %From%|%Body\\n
-END
-  ;
-$help =~ s/^\#//gm;
-help_r("cformat" => $help);
+help_r("cformat" => <<'END_HELP');
+(Warning: This is a work in progress, and not ready for prime time.)
 
-my %fmt_cache = ();
+The 'cformat' extension allows the format of sends to be controlled without
+writing code.  The 'public_fmt', 'private_fmt', and 'emote_fmt' configuration
+variables contain strings defining how to format messages.
+
+It is also possible to specify the format via the "format" attribute of
+an event.  For example:
+  %on public to tigerlily %attr format "TL| %From>%| %Body\\\\n"
+
+The current implementation of %set does not allow you to assign values
+with spaces to a variable, so you will need to use %eval to modify these
+variables.  For example:
+  %eval $config{emote_fmt} = '%[> ]%(Server )(to %To) %From%|%Body\\n';
+
+The following codes may be used in a format:
+  %[ ]     Set the indentation string.
+  %Var     Insert a variable.
+  %{Var}   Insert a variable.
+  %(Var)   Insert a variable, surrounded by parenthesis.
+  %|       Indicate the end of the header, and the start of the body.
+  \\n       Newline.
+
+When a variable is surrounded by brackets (%{Var} or %(Var)), the brackets
+may also contain non-alphabetic text.  This text will be printed only if
+the variable is set.  For example, %(Time ) will expand to "(12:00 )" if
+the Time variable is set, and "" otherwise.
+
+Available variables are:
+  %Server  The server the send was made to.  Set only if there is more than
+           one server.
+  %Time    The current time.  Set only if the message timestamp was set.
+  %From    The sender.
+  %Blurb   The sender's blurb.
+  %To      The destination.
+  %Body    The message body.
+
+The default formats are:
+  public:
+    \\n%[ -> ]%(Server )%(Time )From %From%{ Blurb}, to %To:%|
+    %[ - ]\\n%Body\\n
+  private:
+    \\n%[ -> ]%(Server )%(Time )Private message from %From%{ Blurb}:%|
+    %[ - ]\\n%Body\\n
+  emote:
+    %[> ]%(Server )(%{Time, }to %To) %From%|%Body\\n
+END_HELP
+
+my %fmt_cache;
 
 sub timestamp {
     my ($time) = @_;
