@@ -12,6 +12,7 @@
 
 package TLily::Extend;
 use strict;
+use warnings;
 use vars qw(%config);
 
 use TLily::ExoSafe;
@@ -22,9 +23,9 @@ use TLily::Event qw(&event_r &event_u);
 use TLily::Utils qw(&edit_text &diff_text &columnize_list);
 
 my %extdata;
-my %extensions = ();
+my %extensions;
 my @share=qw(%config &help_r &shelp_r &command_r &event_r &event_u
-	     &ui_name &active_server &edit_text &diff_text &columnize_list);
+         &ui_name &active_server &edit_text &diff_text &columnize_list);
 
 =head1 NAME
 
@@ -64,6 +65,8 @@ usage: %extension list|loaded
 ");
     TLily::User::shelp_r  ('load' =>
       'A list of extensions to load on startup', 'variables');
+
+    return;
 }
 
 =item load()
@@ -86,32 +89,32 @@ sub load {
     my $filename;
 
     if ($name =~ m|/| && ($name =~ m|^//INTERNAL| || -f $name)) {
-	$filename = $name;
-	# $name = basename($name);
-	$name =~ s|.*[/\\]||;
-	$name =~ s|\.pl$||i;
+        $filename = $name;
+        # $name = basename($name);
+        $name =~ s|.*[/\\]||;
+        $name =~ s|\.pl$||i;
     }
 
     if (defined $extensions{$name}) {
-	$ui->print("(extension \"$name\" already loaded)\n") if ($ui);
-	return 1;
+        $ui->print("(extension \"$name\" already loaded)\n") if ($ui);
+        return 1;
     }
 
     if (!defined($filename)) {
-	my @ext_dirs = ("$ENV{HOME}/.lily/tlily/extensions",
-			$main::TL_EXTDIR);
-	my $dir;
-	foreach $dir (@ext_dirs) {
+        my @ext_dirs = ("$ENV{HOME}/.lily/tlily/extensions",
+                $main::TL_EXTDIR);
+        my $dir;
+        foreach $dir (@ext_dirs) {
             if (ExoSafe::fetch("${dir}/${name}.pl")) {
-		$filename = "${dir}/${name}.pl";
-		last;
-	    }
-	}
+                $filename = "${dir}/${name}.pl";
+                last;
+            }
+        }
     }
 
     if (!defined($filename)) {
-	$ui->print("(cannot locate extension \"$name\")\n") if ($ui);
-	return 0;
+        $ui->print("(cannot locate extension \"$name\")\n") if ($ui);
+        return 0;
     }
 
     $ui->print("(loading \"$name\" from \"$filename\")\n")
@@ -126,21 +129,21 @@ sub load {
 
     $safe->rdo($filename);
     unless ($@) {
-	$safe->reval("load();");
-	$@ = undef if ($@ && $@ =~ /Undefined subroutine \S+load /);
+        $safe->reval("load();");
+        $@ = undef if ($@ && $@ =~ /Undefined subroutine \S+load /);
     }
 
     $reg->pop_default;
 
     if ($@) {
-	$ui->print("* error: $@") if ($ui);
-	$reg->unwind;
-	return 0;
+        $ui->print("* error: $@") if ($ui);
+        $reg->unwind;
+        return 0;
     }
 
     $extensions{$name} = { file => $filename,
-			   safe => $safe,
-			   reg  => $reg };
+                           safe => $safe,
+                           reg  => $reg };
     return 1;
 }
 
@@ -157,8 +160,8 @@ sub unload {
     my($name, $ui, $verbose) = @_;
 
     if (!defined $extensions{$name}) {
-	$ui->print("(extension \"$name\" is not loaded)\n") if ($ui);
-	return;
+        $ui->print("(extension \"$name\" is not loaded)\n") if ($ui);
+        return;
     }
 
     $ui->print("(unloading \"$name\")\n") if ($ui && $verbose);
@@ -169,6 +172,8 @@ sub unload {
     $extensions{$name}->{reg}->unwind;
 
     delete $extensions{$name};
+
+    return;
 }
 
 
@@ -183,12 +188,14 @@ sub load_extensions {
     my($ui) = @_;
     my $ext;
     foreach $ext (@{$config{'load'}}) {
-	load($ext,$ui);
+        load($ext,$ui);
     }
 
     load($config{'bot'}, $ui) if exists($config{'bot'});
 
     extension_cmd($ui,"list");
+
+    return;
 }
 
 =back
@@ -211,56 +218,57 @@ sub extension_cmd {
     my $cmd = shift @argv || "";
 
     if ($cmd eq 'load') {
-	my $ext;
-	foreach $ext (@argv) {
-	    load($ext,$ui,1);
-	}
+        my $ext;
+        foreach $ext (@argv) {
+            load($ext,$ui,1);
+        }
     } elsif ($cmd eq 'unload') {
-	my $ext;
-	foreach $ext (@argv) {
-	    unload($ext,$ui,1);
-	}
+        my $ext;
+        foreach $ext (@argv) {
+            unload($ext,$ui,1);
+        }
     } elsif ($cmd eq 'reload') {
-	my $ext;
-	foreach $ext (@argv) {
-	    if ($extensions{$ext}) {
-		my $f = $extensions{$ext}->{file};
-		unload($ext, $ui);
-		load($f, $ui, 1);
-	    } else {
-		load($ext, $ui, 1);
-	    }
-	}
+        my $ext;
+        foreach $ext (@argv) {
+            if ($extensions{$ext}) {
+                my $f = $extensions{$ext}->{file};
+                unload($ext, $ui);
+                load($f, $ui, 1);
+            } else {
+                load($ext, $ui, 1);
+            }
+        }
     } elsif ($cmd eq 'list' || $cmd eq 'loaded') {
-	$ui->print("(Loaded extensions: ");
-	$ui->print(join(" ", sort keys %extensions));
-	$ui->print(")\n");
+        $ui->print("(Loaded extensions: ");
+        $ui->print(join(" ", sort keys %extensions));
+        $ui->print(")\n");
     } elsif ($cmd eq 'stats') {
-	my $ext;
-	@argv = sort keys %extensions unless @argv;
-	foreach $ext (@argv) {
-	    next unless $extensions{$ext};
-	    my %stats = $extensions{$ext}->{reg}->stats;
-	    my $stat;
-	    $ui->print("Extension $ext:\n");
-	    for $stat (sort keys %stats) {
-		$ui->print("  $stat: $stats{$stat}\n");
-	    }
-	}
+        my $ext;
+        @argv = sort keys %extensions unless @argv;
+        foreach $ext (@argv) {
+            next unless $extensions{$ext};
+            my %stats = $extensions{$ext}->{reg}->stats;
+            my $stat;
+            $ui->print("Extension $ext:\n");
+            for $stat (sort keys %stats) {
+                $ui->print("  $stat: $stats{$stat}\n");
+            }
+        }
     } else {
-	$ui->print
-	  ("(unknown %extension command: see %help extension)\n");
+        $ui->print
+          ("(unknown %extension command: see %help extension)\n");
     }
+
+    return;
 }
 
 # Convenience functions for the extensions
 sub ui_name {
-    TLily::UI::name(@_);
+    return TLily::UI::name(@_);
 }
 
 sub active_server {
-    TLily::Server::active(@_);
+    return TLily::Server::active(@_);
 }
 
 1;
-
