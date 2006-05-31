@@ -157,7 +157,7 @@ sub exp_complete {
         # Is this a command expansion?
         # XXX: Only supports limited commands
         # XXX: doesn't distinguish between users/discussions
-        if ($line =~ m{^/(who|finger|also|oops|join|quit|where|what|block)\s+(\w+)}i && length($line) == $pos) {
+        if ($line =~ m{^/(who|finger|also|oops|join|quit|where|what|block|destroy)\s+(\w+)}i && length($line) == $pos) {
           my ($command,$partial) = ($1,$2);
           my $expanded = mserv_expand_name($partial);
           if ($expanded) {
