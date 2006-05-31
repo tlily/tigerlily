@@ -4,6 +4,15 @@ Version 2.5.2-post
   * Change default web browser to firefox on non-Windows and non-OSX
     platforms (those have a standard system for opening URLs with the
     user's default browser) [MJR]
+  * add test suite (run 'make test') [WJC]
+  * begin to enforce coding standards (via test suite.) [WJC]
+  * Bump minimum perl to 5.6.1 [WJC]
+  * add badly-formatted collapsible sends to IRC to support the "many small
+    sends" model used there. Replaces older fragile method of queueing sends
+    [WJC]
+  * expansion fixes - flab;           -> ~FliesLikeABrick;
+                      /who   sdn<tab> -> /who ~Sue D. Nymme
+    [WJC]
 
 Version 2.5.2
   * [TLily/Server.pm] Fixes to SSL. [MJR]
