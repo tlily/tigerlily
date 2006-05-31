@@ -6,6 +6,7 @@
 #
 
 use strict;
+use warnings;
 
 shelp_r("keepalive_interval" => "Frequency in seconds of server pings. ",
         "variables");
@@ -62,16 +63,16 @@ sub keepalive {
 
         # 0 - no ping outstanding
         if ($pinging{$name} == 0) {
-	    $pinging{$name} = 1;
-	    $ui->print("(sending #\$# ping to $name)\n")
-                if ($config{keepalive_debug});
-	    $server->sendln('#$# ping');
+            $pinging{$name} = 1;
+            $ui->print("(sending #\$# ping to $name)\n")
+                    if ($config{keepalive_debug});
+            $server->sendln('#$# ping');
         }
 
         # 1 - ping outstanding, carp
         elsif ($pinging{$name} == 1) {
-	    $ui->print("(server $name not responding)\n");
-	    $pinging{$name} = 2;
+            $ui->print("(server $name not responding)\n");
+            $pinging{$name} = 2;
         }
     }
 
@@ -90,7 +91,7 @@ sub keepalive_handle_pong {
 
     $ui->print("(received %pong from $name)\n") if ($config{keepalive_debug});
     if ($pinging{$name} == 2) {
-	$ui->print("(server $name is responding again)\n");
+        $ui->print("(server $name is responding again)\n");
     }
     $pinging{$name} = 0;
     return;
@@ -175,6 +176,8 @@ sub keepalive_command {
             }
         }
     }
+
+    return;
 }
 
 command_r(keepalive => \&keepalive_command);
