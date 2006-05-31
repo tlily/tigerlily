@@ -124,6 +124,7 @@ sub compile_fmt {
     }
 
     $code .= '  $ui->indent();' . "\n";
+    $code .= '  $ui->prints(normal => "");' . "\n"; # reset style to normal
     $code .= "}\n";
 
     return $code;
