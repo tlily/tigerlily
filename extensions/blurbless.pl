@@ -2,6 +2,7 @@
 # $Id$
 
 use strict;
+use warnings;
 
 =head1 NAME
 
@@ -37,7 +38,7 @@ skip the blurb prompt, entering you without a blurb.
 my $saw_blurb_prompt_text;
 
 event_r(type => 'server_connected',
-	order => 'during',
+    order => 'during',
         call => \&connected_handler);
 
 sub connected_handler {
