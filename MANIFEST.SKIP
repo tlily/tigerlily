@@ -1,5 +1,6 @@
 CVS/
 \.svn/
+svn-commit.*.tmp
 \.\#
 \.bak$
 \.BAK$
