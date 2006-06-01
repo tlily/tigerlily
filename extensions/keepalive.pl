@@ -25,10 +25,10 @@ the server every few minutes.  There are two configuration variables:
 In addition, you may modify the keepalive interval with the %keepalive
 command.');
 
-if ($config{keepalive_interval} <= 0) {
+
+if (! exists $config{keepalive_interval} or $config{keepalive_interval} <= 0) {
     $config{keepalive_interval} = 150; # 2.5 minutes
 }
-
 
 ##############################################################################
 # Keepalive state.
