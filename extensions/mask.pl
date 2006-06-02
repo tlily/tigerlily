@@ -35,7 +35,7 @@ appear as:
 
 sub load {
     # XXX If you're ambitious, add more event types.
-    foreach my $type (qw/private public emote/) {
+    foreach my $type (qw/private public emote blurb/) {
         event_r(type  => $type,
                 order => 'before',
                 call  => \&masker);
@@ -61,13 +61,19 @@ sub masker {
   # If you're ambitious, do this for recipients as well.
 
   if (exists($mask{$event->{SHANDLE}})) {
+    my $old_source = $event->{SOURCE};
+    my $repl;
     if ($config{mask_full}) {
-      $event->{SOURCE} = $mask{$event->{SHANDLE}};
+      $repl = $mask{$event->{SHANDLE}}; 
     } else {
-      $event->{SOURCE} = $event->{SOURCE} . " (" . $mask{$event->{SHANDLE}} .")";
-
+      $repl = $event->{SOURCE} . " (" . $mask{$event->{SHANDLE}} .")";
     }
-  }
+    $event->{SOURCE} = $repl;
+    if ($event->{type} eq 'blurb') {
+       $event->{text} =~ s/$old_source/$repl/;
+    }
+  } 
+
   return;
 }
 

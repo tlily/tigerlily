@@ -1,4 +1,5 @@
 Version 2.5.2-post
+  * update mask.pl to deal with blurbs. [WJC]
   * Alter resize code to use ioctl() instead of calling out to resize. [DEC]
   * Add url shortening feature to url.pl [MJR]
   * Change default web browser to firefox on non-Windows and non-OSX
