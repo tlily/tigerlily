@@ -55,7 +55,7 @@
 		1058C7A3FEA54F0111CA2CBB /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
 		29B9732CFDCFA39411CA2CEA /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 29B97316FDCFA39411CA2CEA /* main.m */; settings = {ATTRIBUTES = (); }; };
 		E936541005A1E98F00FFBBD9 /* extensions in Resources */ = {isa = PBXBuildFile; fileRef = E936528805A1E98F00FFBBD9 /* extensions */; };
-		E9365B3F05A1EC9E00FFBBD9 /* TLily in Resources */ = {isa = PBXBuildFile; fileRef = E936598D05A1EC9E00FFBBD9 /* TLily */; };
+		E9365B3F05A1EC9E00FFBBD9 /* lib in Resources */ = {isa = PBXBuildFile; fileRef = E936598D05A1EC9E00FFBBD9 /* lib */; };
 		E93C6AD104D8F20200E20B96 /* Tigerlily.icns in Resources */ = {isa = PBXBuildFile; fileRef = E93C6AD004D8F20200E20B96 /* Tigerlily.icns */; };
 		E9B6B33D05A2350500D0C4D2 /* tlily.global in Resources */ = {isa = PBXBuildFile; fileRef = E9B6B33C05A2350500D0C4D2 /* tlily.global */; };
 		E9CC456305A23B120089078B /* tlily.PL in Resources */ = {isa = PBXBuildFile; fileRef = E9CC456205A23B120089078B /* tlily.PL */; };
@@ -73,11 +73,11 @@
 		29B97319FDCFA39411CA2CEA /* English */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = English; path = English.lproj/MainMenu.nib; sourceTree = "<group>"; };
 		29B97324FDCFA39411CA2CEA /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		29B97325FDCFA39411CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
-		E936528805A1E98F00FFBBD9 /* extensions */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = file; name = extensions; path = ../extensions; sourceTree = "<absolute>"; };
-		E936598D05A1EC9E00FFBBD9 /* TLily */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = file; name = TLily; path = "..//lib/TLily"; sourceTree = "<absolute>"; };
+		E936528805A1E98F00FFBBD9 /* extensions */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = folder; name = extensions; path = ../extensions; sourceTree = SOURCE_ROOT; };
+		E936598D05A1EC9E00FFBBD9 /* lib */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = folder; name = lib; path = ../lib; sourceTree = SOURCE_ROOT; };
 		E93C6AD004D8F20200E20B96 /* Tigerlily.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = Tigerlily.icns; sourceTree = "<group>"; };
-		E9B6B33C05A2350500D0C4D2 /* tlily.global */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = file; name = tlily.global; path = ../lib/tlily.global; sourceTree = "<absolute>"; };
-		E9CC456205A23B120089078B /* tlily.PL */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = file; name = tlily.PL; path = ../tlily.PL; sourceTree = "<absolute>"; };
+		E9B6B33C05A2350500D0C4D2 /* tlily.global */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = tlily.global; path = ../lib/tlily.global; sourceTree = SOURCE_ROOT; };
+		E9CC456205A23B120089078B /* tlily.PL */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.script.perl; name = tlily.PL; path = ../tlily.PL; sourceTree = SOURCE_ROOT; };
 		F55030FA026B86CD01A80164 /* English */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = English; path = English.lproj/MainWindow.nib; sourceTree = "<group>"; };
 		F5D5A3B2026B2D4801A80164 /* CamelBones.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CamelBones.framework; path = /Library/Frameworks/CamelBones.framework; sourceTree = "<absolute>"; };
 		F5D5A3B4026B2DF601A80164 /* main.pl */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.script.perl; path = main.pl; sourceTree = "<group>"; };
@@ -146,7 +146,7 @@
 		29B97315FDCFA39411CA2CEA /* Other Sources */ = {
 			isa = PBXGroup;
 			children = (
-				E936598D05A1EC9E00FFBBD9 /* TLily */,
+				E936598D05A1EC9E00FFBBD9 /* lib */,
 				29B97316FDCFA39411CA2CEA /* main.m */,
 				F5D5A3B4026B2DF601A80164 /* main.pl */,
 				E936528805A1E98F00FFBBD9 /* extensions */,
@@ -213,7 +213,7 @@
 				F55030FB026B86CD01A80164 /* MainWindow.nib in Resources */,
 				E93C6AD104D8F20200E20B96 /* Tigerlily.icns in Resources */,
 				E936541005A1E98F00FFBBD9 /* extensions in Resources */,
-				E9365B3F05A1EC9E00FFBBD9 /* TLily in Resources */,
+				E9365B3F05A1EC9E00FFBBD9 /* lib in Resources */,
 				E9B6B33D05A2350500D0C4D2 /* tlily.global in Resources */,
 				E9CC456305A23B120089078B /* tlily.PL in Resources */,
 			);

@@ -38,11 +38,10 @@ sub directory_init {
 sub platform_init {   
     if ($TLily::Version::VERSION =~ /-aqua$/) {
         eval {
-            require Foundation;
-            require Foundation::Functions;
-            require AppKit;
-            require AppKit::Functions;
-            require MyApp;
+            use CamelBones qw{:All};
+            use AppKit;
+            use AppKit::Functions;
+            use MyApp;
         };
         # This seems... a tad evil.
         $::TL_LIBDIR = $INC[0];

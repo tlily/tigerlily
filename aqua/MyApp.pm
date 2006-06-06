@@ -11,8 +11,7 @@
 # $Id$
 package MyApp;
 
-use Foundation;
-use Foundation::Functions;
+use CamelBones qw{:All};
 use AppKit;
 use AppKit::Functions;
 
@@ -21,23 +20,19 @@ use TLily::UI::Cocoa;
 @ISA = qw(Exporter);
 
 sub new {
-    # Typical Perl constructor
-    # See 'perltoot' for details
     my $proto = shift;
     my $class = ref($proto) || $proto;
     my $self = {
         'wc' => new TLily::UI::Cocoa(@_),
     };
     bless ($self, $class);
-
-
-
     return $self;
 }
 
-sub applicationWillFinishLaunching {
+sub applicationWillFinishLaunching : Selector(applicationWillFinishLaunching:){
     my ($self, $notification) = @_;
 
+    # Nothing to do here.
     return 1;
 }
 

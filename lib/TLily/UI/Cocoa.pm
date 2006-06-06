@@ -16,8 +16,7 @@ use strict;
 use vars qw($AUTOLOAD @ISA $a $b); #) cperl mode is getting confused.
 use Carp;
 
-use Foundation;
-use Foundation::Functions;
+use CamelBones qw{:All};
 use AppKit;
 use AppKit::Functions;
 
@@ -25,9 +24,14 @@ use TLily::Event;
 
 our @ISA = qw(Exporter TLily::UI);
 
+class TLily::UI::Cocoa {
+    'super' => 'NSObject',
+#'properties' => [ 'wc' ],
+};
+
 #XXX There is a lot of stuff missing from TLily::UI right now.
 
-our %OBJC_EXPORT;
+# our %OBJC_EXPORT;
 
 sub new {
     my ($proto,$ui,$name) = @_;
@@ -77,7 +81,7 @@ sub reportBug {
     system("open http://www.centauri.org/cgi-bin/tigerlily");
 }
 
-$OBJC_EXPORT{'doTlilyEvent:'} = { args=>'@', 'return'=>'c'};
+# $OBJC_EXPORT{'doTlilyEvent:'} = { args=>'@', 'return'=>'c'};
 sub doTlilyEvent {
 # Need to integrate tlily's event loop with NSapp's run loop.
 # While it would be nice to rework Tlily::Event to be more NS-ishy,
@@ -94,7 +98,7 @@ sub doTlilyEvent {
 }
 
 #this don't work.
-$OBJC_EXPORT{'keyDown:'} = {args=>'@', 'return' => 'c'};
+# $OBJC_EXPORT{'keyDown:'} = {args=>'@', 'return' => 'c'};
 sub keyDown {
   print "KEYDOWN\n";
   use Data::Dumper;print Dumper(@_);
