@@ -2,6 +2,7 @@
 # $Id$
 
 use strict;
+use warnings;
 
 =head1 NAME
 
@@ -60,7 +61,6 @@ sub set_timer {
         undef $event_id;
         $ui->set(countdown => $timer);
         $ui->bell();
-        $ui->print("(Timer has expired)\n");
         if ($msg eq '') {
             $ui->print("(Timer has expired)\n");
         } else  {
