@@ -2,6 +2,7 @@
 # $Id$
 
 use strict;
+use warnings;
 
 =head1 NAME
 
@@ -79,19 +80,19 @@ sub parse_interval {
     my($s) = @_;
 
     if($s =~ m/^(\d+)s?$/) {
-	return $1;
+        return $1;
     }
     elsif($s =~ m/^(\d+)m$/) {
-	return $1 * 60;
+        return $1 * 60;
     }
     elsif($s =~ m/^(\d+)h$/) {
-	return $1 * 3600;
+        return $1 * 3600;
     }
     elsif($s =~ m/^(\d+)d$/) {
-	return $1 * 86400 ;
+        return $1 * 86400 ;
     }
     else {
-	return;
+        return;
     }
 }
 
@@ -102,42 +103,42 @@ sub cron_command {
 
     # Print all current tasks.
     if(@args == 0) {
-	if (scalar(keys %cron)) {
-        	$ui->printf("(%2s  %-17s  %-6s %s)\n", "Id", "When", "Repeat", "Command");
-		my $k;
-		foreach $k (sort keys %cron) {
-       	    	my($sec,$min,$hour,$mday,$mon,$year) = localtime($cron_when{$k});
-	    	$ui->printf("(%2d  %02d:%02d:%02d %02d/%02d/%02d  %6s %s)\n",
-				$k, $hour, $min, $sec, $mon+1, $mday, $year%100, $cron_interval{$k}, $cron{$k});
-		}
-	} else {
-		$ui->print("(There are no scheduled events)\n");
-	}
-	return;
+    if (scalar(keys %cron)) {
+        $ui->printf("(%2s  %-17s  %-6s %s)\n", "Id", "When", "Repeat", "Command");
+        my $k;
+        foreach $k (sort keys %cron) {
+            my ($sec,$min,$hour,$mday,$mon,$year) = localtime($cron_when{$k});
+            $ui->printf("(%2d  %02d:%02d:%02d %02d/%02d/%02d  %6s %s)\n",
+                $k, $hour, $min, $sec, $mon+1, $mday, $year%100, $cron_interval{$k}, $cron{$k});
+        }
+    } else {
+        $ui->print("(There are no scheduled events)\n");
+    }
+        return;
     }
 
     # Cancel one or more tasks.
     if ($args[0] eq "cancel" || $args[0] eq "delete") {
-	shift @args;
-	while (@args) {
-	    my $tbc = shift @args;
-	    $ui->print("(cancelling task $tbc ($cron{$tbc}))\n");
-	    TLily::Event::time_u($cron_id{$tbc});
-	    delete $cron{$tbc};
-	    delete $cron_id{$tbc};
-	    delete $cron_interval{$tbc};
-	    delete $cron_when{$tbc};
-	}
-	return;
+        shift @args;
+        while (@args) {
+            my $tbc = shift @args;
+            $ui->print("(cancelling task $tbc ($cron{$tbc}))\n");
+            TLily::Event::time_u($cron_id{$tbc});
+            delete $cron{$tbc};
+            delete $cron_id{$tbc};
+            delete $cron_interval{$tbc};
+            delete $cron_when{$tbc};
+        }
+        return;
     }
 
     if ($args[0] eq "after" || $args[0] eq "every") {
-	$command = shift @args;
+        $command = shift @args;
     }
 
     if ($command eq "cron" || @args < 2) {
-	$ui->print($usage);
-	return;
+        $ui->print($usage);
+        return;
     }
 
     my $itext = shift @args;
@@ -145,8 +146,8 @@ sub cron_command {
 
     my $interval = parse_interval($itext);
     if (!defined $interval) {
-	$ui->print($usage);
-	return;
+        $ui->print($usage);
+        return;
     }
 
     my $ui_name = $ui->name();
@@ -158,21 +159,21 @@ sub cron_command {
     my $hid = $id;  # because $id will change, and the closure will see that.
                     # ($id is not local).
     my $sub = sub {
-	my($handler) = @_;
-	my $ui = TLily::UI::name($ui_name);
-	$ui->print("($itext has passed, running \"$cmd\".)\n");
-	foreach my $task (split(/\\n/, $cmd)) {
-		TLily::Event::send(type => 'user_input',
-			   	ui   => $ui,
-			   	server => $serv,
-			   	text => $task);
-	}
-	unless (defined $handler->{interval}) {
-	    delete $cron{$hid};
-	    delete $cron_id{$hid};
-	    delete $cron_interval{$hid};
-	    delete $cron_when{$hid};
-	} else {
+        my($handler) = @_;
+        my $ui = TLily::UI::name($ui_name);
+        $ui->print("($itext has passed, running \"$cmd\".)\n");
+        foreach my $task (split(/\\n/, $cmd)) {
+            TLily::Event::send(type => 'user_input',
+                               ui   => $ui,
+                               server => $serv,
+                               text => $task);
+        }
+        unless (defined $handler->{interval}) {
+            delete $cron{$hid};
+            delete $cron_id{$hid};
+            delete $cron_interval{$hid};
+            delete $cron_when{$hid};
+        } else {
             $cron_when{$hid} += $handler->{interval};
         }
     };
@@ -185,6 +186,7 @@ sub cron_command {
     $id++;
     return 0;
 }
+
 command_r("cron"  => sub { cron_command("cron", @_); });
 command_r("after" => sub { cron_command("after",@_); });
 command_r("every" => sub { cron_command("every",@_); });
@@ -195,14 +197,15 @@ help_r("after" => $cron_help);
 shelp_r("every" => "Run a command every given amount of time.");
 help_r("every" => $cron_help);
 
-sub unload() {
-  my $ui = TLily::UI::name("main");
-  foreach my $k (sort keys %cron) {
-    $ui->print("(cancelling task $k ($cron{$k}))\n");
-    TLily::Event::time_u($cron_id{$k});
-    delete $cron{$k}; delete $cron_id{$k};
-    delete $cron_when{$k}; delete $cron_interval{$id};
-  }
+sub unload {
+    my $ui = TLily::UI::name("main");
+    foreach my $k (sort keys %cron) {
+        $ui->print("(cancelling task $k ($cron{$k}))\n");
+        TLily::Event::time_u($cron_id{$k});
+        delete $cron{$k}; delete $cron_id{$k};
+        delete $cron_when{$k}; delete $cron_interval{$id};
+    }
+    return;
 }
 
 1;
