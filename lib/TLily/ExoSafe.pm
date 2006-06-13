@@ -66,19 +66,19 @@ sub share_from {
     croak("Package \"$pkg\" does not exist")
       unless keys %{"$pkg\::"};
     foreach $arg (@$vars) {
-	# catch some $safe->share($var) errors:
-	croak("'$arg' not a valid symbol table name")
-	  unless $arg =~ /^[\$\@%*&]?\w[\w:]*$/
-	    or $arg =~ /^\$\W$/;
-	($var = $arg) =~ s/^(\W)//; # get type char
-	# warn "share_from $pkg $1 $var";
-	*{$root."::$var"} = ($1 eq '$') ? \${$pkg."::$var"}
-                      : ($1 eq '@') ? \@{$pkg."::$var"}
-                      : ($1 eq '%') ? \%{$pkg."::$var"}
-                      : ($1 eq '*') ?  *{$pkg."::$var"}
-                      : ($1 eq '&') ? \&{$pkg."::$var"}
-                      : (!$1)       ? \&{$pkg."::$var"}
-                      : croak(qq(Can't share "$1$var" of unknown type));
+        # catch some $safe->share($var) errors:
+        croak("'$arg' not a valid symbol table name")
+          unless $arg =~ /^[\$\@%*&]?\w[\w:]*$/
+            or $arg =~ /^\$\W$/;
+        ($var = $arg) =~ s/^(\W)//; # get type char
+        # warn "share_from $pkg $1 $var";
+        *{$root."::$var"} = ($1 eq '$') ? \${$pkg."::$var"}
+                          : ($1 eq '@') ? \@{$pkg."::$var"}
+                          : ($1 eq '%') ? \%{$pkg."::$var"}
+                          : ($1 eq '*') ?  *{$pkg."::$var"}
+                          : ($1 eq '&') ? \&{$pkg."::$var"}
+                          : (!$1)       ? \&{$pkg."::$var"}
+                          : croak(qq(Can't share "$1$var" of unknown type));
     }
 }
 
@@ -88,12 +88,12 @@ sub rdo {
     my $subref;
 
     if ($file =~ s|^//INTERNAL/||) {
-	load_internal_files();
-	die "cannot open \"$file\"" unless defined($internal_files{$file});
-	my $evalcode = sprintf('package %s; sub { eval $internal_files{$file}; }', $root);
-	{ no strict; $subref = eval $evalcode; }
+        load_internal_files();
+        die "cannot open \"$file\"" unless defined($internal_files{$file});
+        my $evalcode = sprintf('package %s; sub { eval $internal_files{$file}; }', $root);
+        { no strict; $subref = eval $evalcode; }
     } else {
-	$subref = eval "package $root; sub { do \$file }";
+        $subref = eval "package $root; sub { do \$file }";
     }
 
     ${$root . "::__FILE__"} = $file;

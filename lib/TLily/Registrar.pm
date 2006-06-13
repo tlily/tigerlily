@@ -182,10 +182,10 @@ sub unwind {
     
     my $class;
     foreach $class (keys %$self) {
-	my $data;
-	foreach $data (@{$self->{$class}}) {
-	    $classes{$class}->($data);
-	}
+        my $data;
+        foreach $data (@{$self->{$class}}) {
+            $classes{$class}->($data);
+        }
     }
 }
 
@@ -203,7 +203,7 @@ sub stats {
 
     my %r;
     while (my($class, $data) = each %$self) {
-	$r{$class} = @$data;
+        $r{$class} = @$data;
     }
 
     return %r;
@@ -228,15 +228,15 @@ sub tracking {
     TLily::Registrar::class_r("memory", \&free);
 
     sub xmalloc {
-	my $mem = malloc(@_);
-	TLily::Registrar::add("memory", $mem);
-	return $mem;
+        my $mem = malloc(@_);
+        TLily::Registrar::add("memory", $mem);
+        return $mem;
     }
 
     sub xfree {
-	my($mem) = @_;
-	TLily::Registrar::remove("memory", $mem);
-	free($mem);
+        my($mem) = @_;
+        TLily::Registrar::remove("memory", $mem);
+        free($mem);
     }
 
     my $reg = Registrar->new();

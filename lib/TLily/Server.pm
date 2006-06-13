@@ -105,9 +105,9 @@ sub new {
         $name =~ s/^([^\.]+).*$/$1/;
     }
     if ($server{$name}) {
-	my $i = 2;
-	while ($server{$name."#$i"}) { $i++; }
-	$name .= "#$i";
+        my $i = 2;
+        while ($server{$name."#$i"}) { $i++; }
+        $name .= "#$i";
     }
 
     $self->{name}      = $name if (defined($args{name}));
@@ -125,8 +125,8 @@ sub new {
 
 
 #    $self->{sock} = IO::Socket::INET->new(PeerAddr => $self->{host},
-#					  PeerPort => $self->{port},
-#					  Proto    => 'tcp');
+#                      PeerPort => $self->{port},
+#                      Proto    => 'tcp');
     eval {
         if ($self->{secure} && $SSL_avail) {
             $self->{sock} = $self->contact_ssl();
@@ -140,8 +140,8 @@ sub new {
     };
 
     if ($@) {
-	$ui->print("failed: $@") if $ui;
-	return;
+        $ui->print("failed: $@") if $ui;
+        return;
     }
 
     $self->{secure} = (ref($self->{sock}) eq 'IO::Socket::SSL');
@@ -151,14 +151,14 @@ sub new {
     tl_nonblocking($self->{sock});
 
     $self->{io_id} = TLily::Event::io_r(handle => $self->{sock},
-					mode   => 'r',
-					obj    => $self,
-					call   => \&reader);
+                                        mode   => 'r',
+                                        obj    => $self,
+                                        call   => \&reader);
 
     $self->add_server();
 
     TLily::Event::send(type   => 'server_connected',
-		       server => $self);
+                       server => $self);
 
     return $self;
 }
@@ -340,7 +340,7 @@ sub terminate {
     TLily::Event::io_u($self->{io_id});
     
     TLily::Event::send(type   => 'server_disconnected',
-		       server => $self);
+               server => $self);
 
     return;
 }
@@ -489,19 +489,19 @@ sub send {
         $t =~ s/\t/\\t/g;
         $t =~ s/([\x00-\x17\x7f-\xff])/"\\x " . printf("%x", $1)/ge;
         TLily::UI::name($self->{ui_name})->print
-					("Send $self->{ui_name}: $t\n");
+                    ("Send $self->{ui_name}: $t\n");
     }
 
     my $written = 0;
     while ($written < length($s)) {
-	my $bytes = syswrite($self->{sock}, $s, length($s), $written);
+        my $bytes = syswrite($self->{sock}, $s, length($s), $written);
 
-	if (!defined $bytes) {
-	    # The following is broken, and must be fixed.
-	    #next if ($errno == $::EAGAIN);
-	    die "syswrite: $!\n";
+        if (!defined $bytes) {
+            # The following is broken, and must be fixed.
+            #next if ($errno == $::EAGAIN);
+            die "syswrite: $!\n";
         }
-	$written += $bytes;
+        $written += $bytes;
     }
 
     return;
@@ -552,7 +552,7 @@ sub command {
                            RECIPS => [split /,/, $1],
                            dtype  => $2,
                            text   => $3);
-	return 1;
+        return 1;
     }
 
     return;
@@ -583,7 +583,7 @@ sub reader {
         $rc = sysread($self->{sock}, $buf,  $bufsize);
 
         # Interrupted by a signal or would block
-	return if (!defined($rc) && $! == $::EAGAIN && !length($buf));
+        return if (!defined($rc) && $! == $::EAGAIN && !length($buf));
 
         # Would block.  (win32)
         return if (($^O eq "MSWin32") &&
@@ -602,26 +602,26 @@ sub reader {
                   "SSL read error\nSSL wants a read first!") {
                 $self->{sock}->error("");
                 return if !defined($rc);
-	    }
+            }
         }
 
         # Connection lost/closed
         if (!defined($rc) || $rc == 0) {
-	    my $ui = TLily::UI::name($self->{"ui_name"})
+            my $ui = TLily::UI::name($self->{"ui_name"})
               if ($self->{"ui_name"});
-	    $ui->print("*** Lost connection to \"" .
+            $ui->print("*** Lost connection to \"" .
                        $self->{"name"} . "\" ***\n") if $ui;
-	    $self->terminate();
+            $self->terminate();
         }
 
         # Data as usual.
         else {
-	    $self->{bytes_in} += length($buf);
-	
-	    TLily::Event::send(type   => "$self->{proto}_data",
-			       server => $self,
-			       data   => $buf);
-	    $buf = '';
+            $self->{bytes_in} += length($buf);
+    
+            TLily::Event::send(type   => "$self->{proto}_data",
+                               server => $self,
+                               data   => $buf);
+            $buf = '';
         }
 
     # See above comment about this loop at its start (the 'do').

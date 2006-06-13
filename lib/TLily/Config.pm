@@ -26,10 +26,10 @@ sub TIEHASH {
     my $self = shift;
 
     my $it = {
-	LIST => {},
-	STORE_CALLBACKS => {},
-	FETCH_CALLBACKS => {},
-	DELETE_CALLBACKS => {},
+        LIST => {},
+        STORE_CALLBACKS => {},
+        FETCH_CALLBACKS => {},
+        DELETE_CALLBACKS => {},
     };
 
     return bless $it, $self;
@@ -40,7 +40,7 @@ sub FETCH {
     foreach $tr (@{$self->{FETCH_CALLBACKS}{$key}},
                  @{$self->{FETCH_CALLBACKS}{'-ALL-'}})
     {
-	&{$tr->{Call}}($tr, Key => \$key);
+        &{$tr->{Call}}($tr, Key => \$key);
     }
     return $self->{LIST}{$key};
 }
@@ -55,7 +55,7 @@ sub STORE {
     foreach $tr (@{$self->{STORE_CALLBACKS}{$key}},
                  @{$self->{STORE_CALLBACKS}{'-ALL-'}})
     {
-	&{$tr->{Call}}($tr, Key => \$key, Value => \$val);
+        &{$tr->{Call}}($tr, Key => \$key, Value => \$val);
     }
 #    print STDERR "STORE key after\n";
 #    main::dumpValue($key);
@@ -69,7 +69,7 @@ sub DELETE {
     foreach $tr (@{$self->{DELETE_CALLBACKS}{$key}},
                  @{$self->{DELETE_CALLBACKS}{'-ALL-'}})
     {
-	&{$tr->{Call}}($tr, Key => \$key);
+        &{$tr->{Call}}($tr, Key => \$key);
     }
     delete $self->{LIST}{$key};
 }
@@ -78,7 +78,7 @@ sub CLEAR {
     my($self) = @_;
     my $k;
     foreach $k (keys %{$self->{LIST}}) {
-	$self->DELETE($k);
+        $self->DELETE($k);
     }
 }
 
@@ -108,7 +108,7 @@ sub callback_r {
     $args{Id} = $nextid++;
     if(!$args{List}) { $args{List} = 'config'; }
     push @{$obj{$args{List}}->{$args{State}."_CALLBACKS"}{$args{Variable}}},
-	\%args;
+        \%args;
     return $args{Id};
 }
 
@@ -117,14 +117,14 @@ sub callback_u {
 #    my $id = @_;
 #    my($lst,$mode,$var);
 #    foreach $lst (keys %obj) {
-#	foreach $mode (qw(STORE FETCH DELETE)) {
-#	    foreach $var (keys %{$obj{$lst}->{$mode."_CALLBACKS"}}) {
-#		print STDERR "remove $id\n";
-#		main::dumpValue($obj{$lst}->{$mode."_CALLBACKS"}{$var});
-#		@{$obj{$lst}->{$mode."_CALLBACKS"}{$var}} =
-#		    grep {$_->{Id} != $id} @{$obj{$lst}->{$mode."_CALLBACKS"}{$var}};
-#	    }
-#	}
+#    foreach $mode (qw(STORE FETCH DELETE)) {
+#        foreach $var (keys %{$obj{$lst}->{$mode."_CALLBACKS"}}) {
+#        print STDERR "remove $id\n";
+#        main::dumpValue($obj{$lst}->{$mode."_CALLBACKS"}{$var});
+#        @{$obj{$lst}->{$mode."_CALLBACKS"}{$var}} =
+#            grep {$_->{Id} != $id} @{$obj{$lst}->{$mode."_CALLBACKS"}{$var}};
+#        }
+#    }
 #    }
 }
 
@@ -147,13 +147,13 @@ sub init {
     $config{mono_attrs}  = \%mono_attrs;
 
     callback_r(Variable => 'load',
-	       List => 'config',
-	       State => 'STORE',
-	       Call => \&collapse_tr);
+               List => 'config',
+               State => 'STORE',
+               Call => \&collapse_tr);
     callback_r(Variable => 'slash',
-	       List => 'config',
-	       State => 'STORE',
-	       Call => \&collapse_tr);
+               List => 'config',
+               State => 'STORE',
+               Call => \&collapse_tr);
 
     read_init_files();
     parse_command_line();
@@ -164,61 +164,61 @@ sub read_init_files {
 
     if($main::TL_LIBDIR !~ m|^//INTERNAL| &&
        ! -f $main::TL_LIBDIR."/tlily.global") {
-	print STDERR "Warning: Global configuration file ",
-	    $main::TL_LIBDIR."/tlily.global", "\nnot found.  ";
-	print STDERR "TigerLily may not be properly installed.\n";
-	sleep 2;
+        print STDERR "Warning: Global configuration file ",
+            $main::TL_LIBDIR."/tlily.global", "\nnot found.  ";
+        print STDERR "TigerLily may not be properly installed.\n";
+        sleep 2;
     }
 
     foreach $ifile ($main::TL_LIBDIR."/tlily.global",
-		    $main::TL_ETCDIR."/tlily.site",
-		    $ENV{HOME}."/.lily/tlily/tlily.cf")
+            $main::TL_ETCDIR."/tlily.site",
+            $ENV{HOME}."/.lily/tlily/tlily.cf")
     {
-	if($ifile =~ m|^//INTERNAL/| || -f $ifile) {
-#	    print STDERR "Loading $ifile\n";
+    if($ifile =~ m|^//INTERNAL/| || -f $ifile) {
+#        print STDERR "Loading $ifile\n";
 
-	    my $safe=new ExoSafe;
-	    snarf_file($ifile, $safe);
+        my $safe=new ExoSafe;
+        snarf_file($ifile, $safe);
 
-	    #local(*stab) = $safe->reval("*::");
-	    local(*stab) = $safe->symtab;
-	    my $key;
-#	    print STDERR "*** Examining ", $safe->root, "\n";
-	    foreach $key (keys %stab) {
-		next if($key =~ /^_/ || $key =~ /::/ || $key eq ENV || $key eq VERSION);
-#		print STDERR "KEY: $key\n";
-		local *entry = $stab{$key};
-		if(defined $entry) {
-#		    print STDERR "TYPE: SCALAR\n";
-		    $config{$key} = $entry;
-		}
-		if(defined @entry) {
-#		    print STDERR "TYPE: ARRAY\n";
-		    if(scalar(@entry) == 1 && !defined $entry[0]) {
-			if(not exists $config{$key}) {
-			    $config{$key} = [];
-			}
-		    } else {
-			if(exists($config{$key})) {
-			    $config{$key} = [ @{$config{$key}}, @entry ];
-			} else {
-			    $config{$key} = \@entry;
-			}
-		    }
-		}
-		if(defined %entry) {
-#		    print STDERR "TYPE: HASH\n";
-		    my($k);
-		    foreach $k (keys %entry) {
-			$config{$key}->{$k} = $entry{$k};
-		    }
-		}
-	    }
-#	    print STDERR "*** Done examining ", $safe->root, "\n";
-#	    print STDERR "*** \%config after $ifile:\n";
-#	    main::dumpValue(\%config);
-#	    print STDERR "*** Done \%config after $ifile\n";
-	}
+        #local(*stab) = $safe->reval("*::");
+        local(*stab) = $safe->symtab;
+        my $key;
+#        print STDERR "*** Examining ", $safe->root, "\n";
+        foreach $key (keys %stab) {
+        next if($key =~ /^_/ || $key =~ /::/ || $key eq ENV || $key eq VERSION);
+#        print STDERR "KEY: $key\n";
+        local *entry = $stab{$key};
+        if(defined $entry) {
+#            print STDERR "TYPE: SCALAR\n";
+            $config{$key} = $entry;
+        }
+        if(defined @entry) {
+#            print STDERR "TYPE: ARRAY\n";
+            if(scalar(@entry) == 1 && !defined $entry[0]) {
+                if(not exists $config{$key}) {
+                    $config{$key} = [];
+                }
+            } else {
+                if(exists($config{$key})) {
+                    $config{$key} = [ @{$config{$key}}, @entry ];
+                } else {
+                    $config{$key} = \@entry;
+                }
+            }
+        }
+        if(defined %entry) {
+#            print STDERR "TYPE: HASH\n";
+            my($k);
+            foreach $k (keys %entry) {
+                $config{$key}->{$k} = $entry{$k};
+            }
+        }
+        }
+#        print STDERR "*** Done examining ", $safe->root, "\n";
+#        print STDERR "*** \%config after $ifile:\n";
+#        main::dumpValue(\%config);
+#        print STDERR "*** Done \%config after $ifile\n";
+    }
     }
 }
 
@@ -227,10 +227,10 @@ sub snarf_file {
 
     # Copied from Expand.pm
 #    if ($Safe::VERSION >= 2) {
-#	$safe->deny_only("system");
-#	$safe->permit("system");
+#    $safe->deny_only("system");
+#    $safe->permit("system");
 #    } else {
-#	$safe->mask($safe->emptymask());
+#    $safe->mask($safe->emptymask());
 #    }
 
     $safe->share_from('main', [ qw(%ENV) ]);
@@ -251,45 +251,45 @@ sub parse_command_line {
     my ($snrub,$xyzzy);
 
     while(@ARGV) {
-	if($ARGV[0] =~ /^-(H|help|\?)$/) {
-	    &Usage; exit;
-	}
-	if($ARGV[0] =~ /^-(h|host|s|server)$/) {
-	    shift @ARGV; $config{server} = shift @ARGV; next;
-	}
-	if($ARGV[0] =~ /^-(p|port)$/) {
-	    shift @ARGV; $config{port} = shift @ARGV; next;
-	}
-	if($ARGV[0] =~ /^-(m|mono)$/) {
-	    shift @ARGV; $config{mono} = 1; next;
-	}
-#	print STDERR "$ARGV[0]\n";
-	if($ARGV[0] =~ /^-(\w+)=(\S+)$/) {
-	    my($var,$val) = ($1,$2);
-	    $config{$var} = $val;
-	    shift @ARGV; next;
-	}
-	if($ARGV[0] =~ /^-(\w+)$/) {
-	    my($var) = $1;
-	    $config{$var} = 1;
-	    shift @ARGV; next;
-	}
-	else {
-	    warn "Unknown option: $ARGV[0], skipping.\n";
-	    shift @ARGV; next;
-	}
+        if($ARGV[0] =~ /^-(H|help|\?)$/) {
+            &Usage; exit;
+        }
+        if($ARGV[0] =~ /^-(h|host|s|server)$/) {
+            shift @ARGV; $config{server} = shift @ARGV; next;
+        }
+        if($ARGV[0] =~ /^-(p|port)$/) {
+            shift @ARGV; $config{port} = shift @ARGV; next;
+        }
+        if($ARGV[0] =~ /^-(m|mono)$/) {
+            shift @ARGV; $config{mono} = 1; next;
+        }
+#    print STDERR "$ARGV[0]\n";
+        if($ARGV[0] =~ /^-(\w+)=(\S+)$/) {
+            my($var,$val) = ($1,$2);
+            $config{$var} = $val;
+            shift @ARGV; next;
+        }
+        if($ARGV[0] =~ /^-(\w+)$/) {
+            my($var) = $1;
+            $config{$var} = 1;
+            shift @ARGV; next;
+        }
+        else {
+            warn "Unknown option: $ARGV[0], skipping.\n";
+            shift @ARGV; next;
+        }
     }
 
     if ($config{snrub}) {
-	print "Now is the time for all good women to foo their bars at their nation.  Random text is indeed random, and foo bar baz to you and me.  Bizboz, barf, fooble the toys.  Narf.  Feeb.  Frizt the cat.  There is a chair.  Behind the chair is a desk.  Atop the desk is a computer.  Before the computer is a Kosh.  Below the Kosh is a chair.\nPerl is a computer language used by computer geeks, hackers, users, administrators, and other people of all stripes.  It was written by Larry Wall, and has been hacked on by many, many others.  http://www.rpi.edu/~neild/pictures/hot-sex-gif.I-dare-you-to-work-out-how-to-wrap-this\n";
-	exit(42);
+        print "Now is the time for all good women to foo their bars at their nation.  Random text is indeed random, and foo bar baz to you and me.  Bizboz, barf, fooble the toys.  Narf.  Feeb.  Frizt the cat.  There is a chair.  Behind the chair is a desk.  Atop the desk is a computer.  Before the computer is a Kosh.  Below the Kosh is a chair.\nPerl is a computer language used by computer geeks, hackers, users, administrators, and other people of all stripes.  It was written by Larry Wall, and has been hacked on by many, many others.  http://www.rpi.edu/~neild/pictures/hot-sex-gif.I-dare-you-to-work-out-how-to-wrap-this\n";
+        exit(42);
     }
 
     if ($config{xyzzy}) {
-	print "\nconfig options:\n";
+        print "\nconfig options:\n";
 
-	foreach (keys %config) { print "$_: $config{$_}\n"; }
-	exit(0);
+        foreach (keys %config) { print "$_: $config{$_}\n"; }
+        exit(0);
     }
 
 }
@@ -300,15 +300,15 @@ sub collapse_list {
 #    print STDERR "collapse lref\n";
 #    main::dumpValue($lref);
     foreach $ext (@{$lref}) {
-	next if (! defined($ext));
-	if($ext =~ /^-(.*)$/) {
-	    delete $list{$1};
-	} else {
-	    $list{$ext} = 1;
-	}
-#	print STDERR "*** interim list ($ext)***\n";
-#	print STDERR join(", ",keys(%list)), "\n";
-#	print STDERR "*** Done interim list ***\n";
+    next if (! defined($ext));
+    if($ext =~ /^-(.*)$/) {
+        delete $list{$1};
+    } else {
+        $list{$ext} = 1;
+    }
+#    print STDERR "*** interim list ($ext)***\n";
+#    print STDERR join(", ",keys(%list)), "\n";
+#    print STDERR "*** Done interim list ***\n";
    }
     [keys %list];
 }
@@ -316,12 +316,12 @@ sub collapse_list {
 # Tells the caller whether the named /command can
 # be intercepted.
 sub ask {
-	my($cmd) = @_;
-	return (grep($_ eq $cmd, @{$config{slash}}));
+    my($cmd) = @_;
+    return (grep($_ eq $cmd, @{$config{slash}}));
 }
 
 sub Usage {
-	print STDERR qq(
+    print STDERR qq(
 Usage: $0 [-m[ono]] [-zonedelta=<delta>] [-[s]erver servername] [-[p]ort number] [-pager=0|1] [-<configvar>[=<configvalue>]\n
 );
 }
@@ -337,16 +337,16 @@ TLily::Config - Configuration Handling
     TLily::Config::init();
 
     $id = TLily::Config::callback_r(State => STORE,
-				    Variable => mono,
+                    Variable => mono,
                                     List => 'config'
-				    Call => \&set_colors);
+                    Call => \&set_colors);
 
     if(TLily::Config::ask('info')) {
-	&do_something();
+        &do_something();
     }
 
     if($config{zonedelta} != 0) {
-	&do_something_else();
+        &do_something_else();
     }
 
 =head1 DESCRIPTION

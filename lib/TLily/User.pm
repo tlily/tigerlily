@@ -105,8 +105,8 @@ sub init {
     TLily::Registrar::class_r("help"       => \&command_u);
 
     TLily::Event::event_r(type  => "user_input",
-			  order => "during",
-			  call  => \&input_handler);
+              order => "during",
+              call  => \&input_handler);
 
     command_r(help => \&help_command);
     shelp_r(help => "Display help pages.");
@@ -245,7 +245,7 @@ sub rebuild_file_help_idx {
 
             open(F, '<', $file) ||
               warn "Can't open $file: $!\n";
-	   
+       
             my $namehead=0;
             while(<F>) {
                 if (/=head1 NAME/) { $namehead = 1; next }
@@ -289,7 +289,7 @@ sub command_r {
     my($command, $sub) = @_;
     TLily::Registrar::add("command" => $command);
     $commands{$command} = { sub => $sub,
-			    reg => TLily::Registrar::default() };
+                reg => TLily::Registrar::default() };
     %abbrevs = abbrev keys %commands;
 }
 
@@ -327,8 +327,8 @@ sub shelp_r {
     my($command, $help, $index) = @_;
     TLily::Registrar::add("short_help" => $command);
     if (! $index) {
-	$index = "commands";
-	$command = "%" . $command;
+        $index = "commands";
+        $command = "%" . $command;
     }
     $shelp{$index}{$command} = $help;
 }
@@ -346,7 +346,7 @@ sub shelp_u {
     my($command) = @_;
     TLily::Registrar::remove("short_help" => $command);
     foreach (keys %shelp) {
-	delete $shelp{$_}{$command};
+        delete $shelp{$_}{$command};
     }
 }
 
@@ -363,8 +363,8 @@ sub help_r {
     my($topic, $help) = @_;
     TLily::Registrar::add("help" => $topic);
     if (!ref($help)) {
-	# Eliminate all leading newlines, and enforce only one trailing
-	$help =~ s/^\n*//s; $help =~ s/\n*$/\n/s;
+        # Eliminate all leading newlines, and enforce only one trailing
+        $help =~ s/^\n*//s; $help =~ s/\n*$/\n/s;
     }
     $help{$topic} = $help;
 }
@@ -405,8 +405,8 @@ sub input_handler {
     my $command = $abbrevs{lc($2)};
 
     unless (length($command) > 0 || $char eq '/' ) {
-	$e->{ui}->print("(The \"$2\" command is unknown.)\n");
-	return 1;
+        $e->{ui}->print("(The \"$2\" command is unknown.)\n");
+        return 1;
     }
 
     return if ($char ne "%" && !TLily::Config::ask($command));
@@ -441,9 +441,9 @@ sub help_index {
 
     my $c;
     foreach $c (sort keys %{$shelp{$index}}) {
-	$ui->printf("  %-${length}s", $c);
-	$ui->print($shelp{$index}{$c}) if ($shelp{$index}{$c});
-	$ui->print("\n");
+        $ui->printf("  %-${length}s", $c);
+        $ui->print($shelp{$index}{$c}) if ($shelp{$index}{$c});
+        $ui->print("\n");
     }
 
     $ui->indent("");
@@ -462,11 +462,11 @@ sub help_command {
     $arg =~ s/^%//;
 
     unless ($help{$arg}) {
-	$ui->print("(there is no help on \"$arg\")\n");
+        $ui->print("(there is no help on \"$arg\")\n");
     }
 
     elsif (ref($help{$arg}) eq "CODE") {
-	$help{$arg}->($ui, $arg);
+        $help{$arg}->($ui, $arg);
     } 
     
     elsif ($help{$arg} =~ /^POD:(\S+)/) {
@@ -492,9 +492,9 @@ sub help_command {
     }
 
     else {
-	$ui->indent("? ");
-	$ui->print($help{$arg});
-	$ui->indent("");
+        $ui->indent("? ");
+        $ui->print($help{$arg});
+        $ui->indent("");
     }
 }
 

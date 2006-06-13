@@ -13,6 +13,7 @@
 package TLily::Daemon;
 
 use strict;
+use warnings;
 
 use Socket;
 use Fcntl;
@@ -87,45 +88,45 @@ sub new {
     my $p = getprotobyname($self->{type});
     my $t = (($self->{type} eq 'udp') ? SOCK_DGRAM : SOCK_STREAM);
     if (!(socket(SOCK, PF_INET, $t, $p))) {
-    warn "socket: $!";
-    return undef;
+        warn "socket: $!";
+        return;
     }
     
     $self->{sock} = *SOCK;
     
     if (!(setsockopt($self->{sock}, SOL_SOCKET, SO_REUSEADDR, pack("l", 1)))) {
-    warn "setsockopt: $!";
-    close $self->{sock};
-    return undef;
+        warn "setsockopt: $!";
+        close $self->{sock};
+        return;
     }
     if (!(bind($self->{sock}, sockaddr_in($self->{port}, INADDR_ANY)))) {
 #    warn "bind: $!";
-    close $self->{sock};
-    return undef;
+        close $self->{sock};
+        return;
     }
     if (!(fcntl($self->{sock}, F_SETFL, O_NONBLOCK))) {
-    warn "fcntl: $!";
-    close $self->{sock};
-    return undef;
+        warn "fcntl: $!";
+        close $self->{sock};
+        return;
     }
     if (!(listen($self->{sock}, $self->{queuelen}))) {
-    warn "listen: $!";
-    close $self->{sock};
-    return undef;
+        warn "listen: $!";
+        close $self->{sock};
+        return;
     }
     
     my $ui = TLily::UI::name();
     $ui->print("Listening on port " . $self->{port} . "\n");
 
     $self->{io_id} = TLily::Event::io_r (handle => $self->{sock},
-                     mode   => 'r',
-                     obj    => $self,
-                     call   => \&acceptor);
+                                         mode   => 'r',
+                                         obj    => $self,
+                                         call   => \&acceptor);
     $self->{active} = 1;
     
     $daemon{$name} = $self;
     
-    bless $self, $class;
+    return bless $self, $class;
 }
 
 =item terminate()
@@ -165,7 +166,7 @@ sub name {
     return values(%daemon) if (wantarray);
     shift if (@_ > 1);
     my ($a) = @_;
-    return undef if (!defined $a);
+    return if (!defined $a);
     return $a->{"name"} if ref($a);
     return $daemon{$a};
 }
@@ -177,6 +178,7 @@ sub cxn_u {
     
     $self->{connected} = grep { $_ != $obj } @{$self->{connected}};
     $self->{connected} = () unless $self->{connected};
+    return;
 }
 
 sub acceptor {

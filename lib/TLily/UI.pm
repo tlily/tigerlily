@@ -90,7 +90,7 @@ sub inherit_global_bindings {
     my($self) = @_;
 
     while (my($command, $func) = each %gcommand) {
-	$self->command_r($command, $func);
+        $self->command_r($command, $func);
     }
 
     my $user_bindings = $config{bindings} || {};
@@ -98,7 +98,7 @@ sub inherit_global_bindings {
     my %bindings = %{{(%{$user_bindings}, %gbind)}};
 
     while (my($key, $command) = each %bindings) {
-	$self->bind($key, $command);
+        $self->bind($key, $command);
     }
 
     $self->istyle_fn_r($gstyle_fn) if ($gstyle_fn);
@@ -122,9 +122,9 @@ sub name {
     my($a) = @_;
     $a ||= "";
     if (ref($a)) {
-	return $a->{"name"};
+        return $a->{"name"};
     } else {
-	return $ui{$a} || $ui{"main"};
+        return $ui{$a} || $ui{"main"};
     }
 }
 
@@ -163,8 +163,8 @@ Takes a list of style/text pairs.  Prints each piece of text in the given
 style.
 
     $ui->prints(normal => "This is ",
-		em     => "important",
-		normal => ".");
+        em     => "important",
+        normal => ".");
 
 =cut
 
@@ -172,11 +172,11 @@ sub prints {
     my($self, @args) = @_;
 
     while (@args) {
-	my ($style) = shift @args;
-	my ($text)  = shift @args;
+        my ($style) = shift @args;
+        my ($text)  = shift @args;
 
-	$self->style($style);
-	$self->print($text);
+        $self->style($style);
+        $self->print($text);
     }
 }
 
@@ -222,11 +222,11 @@ sub log {
     $self->{log_queued} = "";
 
     if (defined $file) {
-	local *FH;
-	open(FH, '>>', $file) or die "$file: $!\n";
-	my $fh = select(FH); $|=1; select($fh);
-	$self->{log_file} = $file;
-	$self->{log_fh}   = *FH;
+        local *FH;
+        open(FH, '>>', $file) or die "$file: $!\n";
+        my $fh = select(FH); $|=1; select($fh);
+        $self->{log_file} = $file;
+        $self->{log_fh}   = *FH;
     }
 
     return;
@@ -249,7 +249,7 @@ sub command_r {
 
     my $ui;
     foreach $ui (values %ui) {
-	$ui->command_r($command, $func);
+        $ui->command_r($command, $func);
     }
 
     TLily::Registrar::add("global_ui_command", $command);
@@ -271,7 +271,7 @@ sub command_u {
 
     my $ui;
     foreach $ui (values %ui) {
-	$ui->command_u($command);
+        $ui->command_u($command);
     }
 
     TLily::Registrar::remove("global_ui_command", $command);
@@ -295,7 +295,7 @@ sub bind {
 
     my $ui;
     foreach $ui (values %ui) {
-	$ui->bind($key, $command);
+        $ui->bind($key, $command);
     }
 }
 
@@ -309,7 +309,7 @@ sub istyle_fn_r {
 
     my $ui;
     foreach $ui (values %ui) {
-	$ui->istyle_fn_r($style_fn);
+        $ui->istyle_fn_r($style_fn);
     }
 
     TLily::Registrar::add("global_istyle_fn", $style_fn);
@@ -324,7 +324,7 @@ sub istyle_fn_u {
 
     my $ui;
     foreach $ui (values %ui) {
-	$ui->istyle_fn_u($style_fn);
+        $ui->istyle_fn_u($style_fn);
     }
 
     TLily::Registrar::remove("global_istyle_fn", $style_fn);
@@ -381,8 +381,8 @@ a prompt, and if "password" is set, the response will not be echoed to
 the screen.
 
     $ui->prompt_for(prompt => "password:"
-		    password => 1,
-		    call => sub { my($ui, $password) = @_; ... });
+            password => 1,
+            call => sub { my($ui, $password) = @_; ... });
 
 =item suspend
 
@@ -406,7 +406,7 @@ command which use key intercepting have the following 'order' values:
     name-self           100
     input-search-mode   100
     paste-mode          900
-    leet-mode		950
+    leet-mode        950
 
 Observe that it is perfectly ok for more than one function to have the same
 order value.  You cannot get into name-self from input-search-mode and vice
@@ -453,8 +453,8 @@ keystrokes with the intercept() method.
 The following example will convert all 'a's input to 'b's.
 
     sub a_to_b {
-	my($ui, $command, $key) = @_;
-	$ui->command('insert-self', 'z');
+        my($ui, $command, $key) = @_;
+        $ui->command('insert-self', 'z');
     }
     $ui->command('a-to-b' => \&a_to_b);
     $ui->bind('a' => 'a-to-b');
