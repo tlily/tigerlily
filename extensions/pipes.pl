@@ -58,7 +58,7 @@ sub pipe_handler {
     }
 
     my $fd = gensym;
-    my $rc = open($fd, '<', $run);
+    my $rc = open($fd, $run);
     if ($rc == 0) {
 	my $l = $@; $l =~ s/(\\<)/\\$1/g;
 	$ui->print("Error in pipe: $l\n");
@@ -72,7 +72,7 @@ sub pipe_handler {
 	    close $fd;
 	    if ($mode != $3) {
 		local(*FD);
-		open(FD, '<', $tmpfile);
+		open(FD, "<$tmpfile");
 		my @l = <FD>;
 		foreach (@l) {
 		    chomp;
