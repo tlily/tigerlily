@@ -28,15 +28,15 @@ sub load {
     command_r(alias => \&alias_cmd);
 
     shelp_r(alias => "Define client aliases");
-    help_r(alias => qq{%alias <command> <newcommand>
-%alias clear <command>
-%alias list [<command>]
+    help_r(alias => qq{%alias <alias> <commands>
+%alias clear <alias>
+%alias list [<alias>]
 
-<command> must contain only A-Z, a-z, 0-9 and _.
+<alias> must contain only A-Z, a-z, 0-9 and _.
 
 You cannot alias "clear" or "list".
 
-Supports the following special characters in \"newcommand]\":
+Supports the following special characters in <commands>:
 \$1 .. \$9  arguments to command
 \$*        all arguments to command
 \\n        command separator
