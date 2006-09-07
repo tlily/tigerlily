@@ -206,7 +206,7 @@ sub private_handler {
     
     my @group = split /, /, $event->{RECIPS};
     if (@group > 1) {
-        push @group, $event->{SOURCE};
+        unshift @group, $event->{SOURCE};
         @group = grep { $_ ne $me } @group;
         $expansions{sendgroup} = join(",", map($_."@".$serv_name, @group));
     }
