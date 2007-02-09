@@ -37,7 +37,7 @@ HANDLE:
 
 sub state_cmd {
     my ($ui,$args) = @_;
-    my ($dindex,$dkey) = split /\s+/,$args;
+    my ($dindex,$dkey) = ($args =~ /(\S+)\s+(.*)/);
     my ($rec,$index,$key);
 
     my $server = active_server();
