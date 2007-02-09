@@ -12,14 +12,16 @@ sub parse_http {
 
     $daemon = TLily::Daemon::HTTP::daemon() unless defined($daemon);
     
-    if (defined $event->{server}) {   # Server instance, not daemon instance
-        $st = \$event->{server}->{_state};
-    } else {
+    if ($event->{daemon}) {   
+        $event->{server} = undef;
+
         $st = \$event->{daemon}->{_state};
+    } else {
+        $st = \$event->{server}->{_state};
     }
-    
+
     if ($$st->{_done}) {
-        save_file ($event, $handler);
+        save_file($event, $handler);
         return;
     }
 
@@ -48,11 +50,13 @@ sub parse_http_line {
     my $text = $event->{data};
     my $st;
 
-    if (defined $event->{server}) {
-        $st = \$event->{server}->{"_state"};
-    } else {
+    if ($event->{daemon}) {   
+        $event->{server} = undef;
+
         $st = \$event->{daemon}->{"_state"};
-    }
+    } else {
+        $st = \$event->{server}->{"_state"};
+   } 
     
     #    my $ui = TLily::UI::name();
     
@@ -98,14 +102,18 @@ sub complete_http {
     my ($event, $handler) = @_;
 
     my $st;
-    
-    if (defined $event->{server}) {
-        $event->{server}->{_state}->{_done} = 1;
+
+    if ($event->{daemon}) {   
+        $event->{server} = undef;
+
+        $st = \$event->{daemon}->{_state};
+        $$st->{_done} = 1;        
+    } else {
+        $st = \$event->{server}->{_state};
+        $$st->{_done} = 1;        
+
         save_file($event, $handler);
         return;
-    } else {
-        $event->{daemon}->{_state}->{_done} = 1;
-        $st = \$event->{daemon}->{_state};
     }
 
     if (($$st->{_command} ne 'GET') &&
@@ -155,14 +163,16 @@ sub save_file {
 
     my $st;
     my $filename;
-    
-    if (defined $event->{server}) {
-        $st = \$event->{server}->{"_state"};
-        $filename = $event->{server}->{filename};
-    } else {
+
+    if ($event->{daemon}) {   
+        $event->{server} = undef;
+
         $st = \$event->{daemon}->{"_state"};
         return unless $$st->{_passive};
         $filename = $$st->{_file};
+    } else {
+        $st = \$event->{server}->{"_state"};
+        $filename = $event->{server}->{filename};
     }
 
     return if $$st->{_nomorewrite};
