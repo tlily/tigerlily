@@ -78,14 +78,8 @@ my %added;
 if ($file_to_build =~ /tlily\.(.*)\.plx/) {
     my $moduleset = $1;
 
-    # Override some settings.
-    $TL_EXTDIR = "//INTERNAL/extensions";
-    $TL_LIBDIR = "//INTERNAL/lib";
-    $TL_LIBMODDIR = "//INTERNAL";
-    
     my $outfile = "tlily.${moduleset}.plx";
     open(TLILY, ">$outfile") or die "Can't write $outfile: $!\n";
-    print TLILY get_script_header();
     print TLILY get_tlily_plx($moduleset);
     close TLILY;
     chmod(0777, $outfile);
