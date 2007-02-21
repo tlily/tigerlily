@@ -453,9 +453,11 @@ sub shorten {
                   . $response->{_state}{_status} . ")";
             }
             else {
-                $response->{_content} =~ m/(http.*)/;
+                # response should be on first line:
+                $response->{_content} =~ s/^([^\n]*)//;  
+                #$response->{_content} =~ m/(http.*)/;
                 $ans = $1;
-                $ans =~ s/\s//g;
+                #$ans =~ s/\s//g;
                 if ($ans) { 
                   $ans .= " [$original_host]";
                   $shorts{$short} = $ans;
@@ -476,14 +478,10 @@ $annotation_code{shorten} = {
         my ($event)   = shift;
         my ($shorten) = shift;
 
-        if ( length($shorten) <= 32 ) { return; }
+        my $start = index($event->{VALUE}, $shorten) + 4; # prefix on send.
+        my $end = $start + length($shorten);
 
-        if ( ( index( $event->{VALUE}, $shorten ) == 0 )
-            && length($shorten) <= 64 )
-        {
-            return;
-        }
-
+        if ($end <= 79 ) {return; } # don't shorten if it fit on one line anyway.
         if ( $shorten !~ m|^http://xrl.us| ) {
             shorten(
                 $shorten,
@@ -555,6 +553,72 @@ have wanted it.
 
 =cut
 
+
+my $bibles = {
+  "niv"   => {id => 31, name => "New International Version"},
+  "nasb"  => {id => 49, name => "New American Standard Bible"},
+  "tm"    => {id => 65, name => "The Message"},
+  "ab"    => {id => 45, name => "Amplified Bible"},
+  "nlt"   => {id => 51, name => "New Living Translation"},
+  "kjv"   => {id =>  9, name => "King James Version"},
+  "esv"   => {id => 47, name => "English Standard Version"},
+  "cev"   => {id => 46, name => "Contemporary English Version"},
+  "nkjv"  => {id => 50, name => "New King James Version"},
+  "21kjv" => {id => 48, name => "21st Century King James Version"},
+  "asv"   => {id =>  8, name => "American Standard Version"},
+  "ylt"   => {id => 15, name => "Young's Literal Translation"},
+  "dt"    => {id => 16, name => "Darby Translation"},
+  "nlv"   => {id => 74, name => "New Life Version"},
+  "hcsb"  => {id => 77, name => "Holman Christian Standard Bible"},
+  "wnt"   => {id => 53, name => "Wycliffe New Testament"},
+  "we"    => {id => 73, name => "Worldwide English (New Testament)"},
+  "nivuk" => {id => 64, name => "New International Version - UK"},
+  "tniv"  => {id => 72, name => "Today's New International Version"},
+};
+
+$response{bible} = {
+    CODE => sub {
+        my ($event) = @_;
+        my $args = $event->{VALUE};
+        my $bible    = $1;
+        my $term     = escape $2;
+
+        $bible = "kjv" unless $bible;
+        $bible = $bibles->{$bible}->{id};
+
+        my $url      =
+            "http://www.biblegateway.com/passage/?search=$term&version=$bible";
+        # nine is king james
+        add_throttled_HTTP(
+            url      => $url,
+            ui_name  => 'main',
+            callback => sub {
+                my ($response) = @_;
+                my $passage = 
+                  scrape_bible( $term, $response->{_content} );
+                if ($passage)
+                {
+                    dispatch( $event, $passage) ;
+                }
+                # silently fail 
+            }
+        );
+        return;
+    },
+
+    HELP => sub { 
+        my $help = "Quote chapter and verse. Syntax: bible or passage, followed by an optional bible version, and then the name of the book and chapter:verse. Possible translations include: ";
+        foreach my $key (keys %$bibles) {
+            $help .= $key . " {" . $bibles->{$key}->{name} . "} ";
+        }
+        return $help;
+    },
+    TYPE => [qw/private public emote/],
+    POS  => '-1',
+    STOP => 1,
+    RE   => qr/\b(?:bible|passage)\s*(niv|nasb|tm|ab|nlt|kjv|esv|cev|nkjv|21kjv|asv|ylt|dt|nlv|hcsb|wnt|we|nivuk|tniv)?\s+(.*\d+:\d+)/i,
+};
+
 $response{weather} = {
     CODE => sub {
         my ($event) = @_;
@@ -562,7 +626,9 @@ $response{weather} = {
         if ( $args !~ m/weather\s*(.*)\s*$/i ) {
             return "ERROR: Expected RE not matched!";
         }
-        my $term     = escape $1;
+        my $term = $1;
+        $term =~ s/\?$//; #XXX add this to RE above...
+        $term     = escape $term;
         my $url      =
             "http://mobile.wunderground.com/cgi-bin/findweather/getForecast?brand=mobile&query=$term";
         add_throttled_HTTP(
@@ -578,7 +644,55 @@ $response{weather} = {
                 }
                 else
                 {
-                    dispatch( $event, "I don't know where '$term' is.");
+                    $term = unescape($term);
+                    if (length($term) > 10) {
+                        $term  = substr($term,0,7);
+                        $term .= '...';
+                    }
+                    dispatch( $event, "Can't find weather for '$term'.");
+                }
+            }
+        );
+        return;
+    },
+    HELP => sub { return "Given a location, get the current weather." },
+    TYPE => [qw/private public emote/],
+    POS  => '-1',
+    STOP => 1,
+    RE   => qr/\bweather\b/i
+
+};
+$response{forecast} = {
+    CODE => sub {
+        my ($event) = @_;
+        my $args = $event->{VALUE};
+        if ( $args !~ m/forecast\s*(.*)\s*$/i ) {
+            return "ERROR: Expected RE not matched!";
+        }
+        my $term = $1;
+        $term =~ s/\?$//; #XXX add this to RE above...
+        $term     = escape $term;
+        my $url      =
+            "http://mobile.wunderground.com/cgi-bin/findweather/getForecast?brand=mobile&query=$term";
+        add_throttled_HTTP(
+            url      => $url,
+            ui_name  => 'main',
+            callback => sub {
+                my ($response) = @_;
+                my $conditions = 
+                  scrape_forecast( $term, $response->{_content} );
+                if ($conditions )
+                {
+                    dispatch( $event, $conditions) ;
+                }
+                else
+                {
+                    $term = unescape($term);
+                    if (length($term) > 10) {
+                        $term  = substr($term,0,7);
+                        $term .= '...';
+                    }
+                    dispatch( $event, "Can't find forecast for '$term'.");
                 }
             }
         );
@@ -588,7 +702,7 @@ $response{weather} = {
     TYPE => [qw/private public emote/],
     POS  => '-1',
     STOP => 1,
-    RE   => qr/\bweather\b/i
+    RE   => qr/\bforecast\b/i
 };
 
 $response{engrish} = {
@@ -972,7 +1086,7 @@ $response{"unset"} = {
     TYPE => [qw/private/],
     POS  => '0',
     STOP => 1,
-    RE   => qr(\bunset\b),
+    RE   => qr(\bunset\b)i,
 };
 
 $response{"poll"} = {
@@ -1052,7 +1166,7 @@ $response{"poll"} = {
     TYPE => [qw/private/],
     POS  => '0',
     STOP => 1,
-    RE   => qr(\bpoll\b),
+    RE   => qr(\bpoll\b)i,
 };
 
 $response{"set"} = {
@@ -1097,7 +1211,7 @@ $response{"set"} = {
     TYPE => [qw/private/],
     POS  => '0',
     STOP => 1,
-    RE   => qr(\bset\b),
+    RE   => qr(\bset\b)i,
 };
 
 my $min  = 60;
@@ -1141,7 +1255,7 @@ $response{"ping"} = {
     TYPE => [qw/private/],
     POS  => '0',
     STOP => 1,
-    RE   => qr/ping/,
+    RE   => qr/ping/i,
 };
 
 $response{"stomach pump"} = {
@@ -1152,7 +1266,7 @@ $response{"stomach pump"} = {
     TYPE => [qw/private public emote/],
     POS  => '0',
     STOP => 1,
-    RE   => qr/stomach pump/,
+    RE   => qr/stomach pump/i,
 };
 
 $response{cmd} = {
@@ -1188,7 +1302,7 @@ $response{cmd} = {
     TYPE => [qw/private/],
     POS  => '0',
     STOP => 1,
-    RE   => qr/\bcmd\b/,
+    RE   => qr/\bcmd\b/i,
 };
 
 $response{buzz} = {
@@ -1205,7 +1319,7 @@ $response{buzz} = {
     TYPE => [qw/private/],
     POS  => '1',
     STOP => 1,
-    RE   => qr/\bbuzz\b/,
+    RE   => qr/\bbuzz\b/i,
 };
 
 $response{stock} = {
@@ -1227,7 +1341,7 @@ $response{stock} = {
     TYPE => [qw/private public emote/],
     POS  => '0',
     STOP => 1,
-    RE   => qr/\bstock\b/,
+    RE   => qr/\bstock\b/i,
 };
 
 $response{drink} = {
@@ -1248,7 +1362,7 @@ $response{drink} = {
     TYPE => [qw/emote/],
     POS  => '0',
     STOP => 1,
-    RE => qr/down the bar to CJ\.$/,
+    RE => qr/down the bar to CJ\.$/i,
 };
 
 $response{kibo} = {
@@ -1290,9 +1404,25 @@ sub scrape_weather {
     my ( $term, $content ) = @_;
 
     $content =~ m/(Updated:.*)Current Radar/s;
-    my $results = $1;
-    $results =~ s/<tr>/; /g ;
-    return cleanHTML($results);
+    my @results = map {cleanHTML($_)} split(/<tr>/, $1);
+    return wrap(@results);
+}
+
+sub scrape_forecast {
+    my ( $term, $content ) = @_;
+
+    $content =~ m/(Forecast as of .*)Units:/s;
+    my @results = map {cleanHTML($_), ""} split(/<b>/, $1);
+    pop @results; # remove trailing empty line.
+    @results = @results[0..10]; # limit responses. 5 days, 1 header, 5 blanks
+    return wrap(@results);
+}
+
+sub scrape_bible {
+    my ( $term, $content ) = @_;
+
+    $content =~ m{result-text-style-normal"(.*)<div id="result-options-info2}sm;
+    return cleanHTML($1);
 }
 
 sub scrape_horoscope {
@@ -1349,6 +1479,56 @@ sub scrape_translate {
     }
 }
 
+sub scrape_wiktionary {
+    my ( $term, $content ) = @_;
+
+    if ( $content =~ m/Wiktionary does not have an entry for this exact word/ ||
+         $content =~ m/Sorry, there were no exact matches to your query/ ) {
+      return;
+    }
+
+    my ($lookup, @retval);
+
+    $content =~ s/\n/ /g;
+
+    $content =~ s/.*<a name="English" id="English">//;
+
+    my $skip;
+    foreach my $chunk (split /<span class="mw-headline">/sm, $content) {
+      my ($m,$n) = split (/<\/span>/, $chunk);
+      $m = cleanHTML($m);
+      $n = cleanHTML($n);
+      $m =~ s/^\s+//;
+      $m =~ s/\s*\[\s*edit\s*\]//;
+      next unless $m;
+      $n =~ s/\s*\[\s*edit\s*\]//;
+      next unless $n;
+      next if lc $m eq 'derived terms';
+      next if lc $m eq 'english';
+      next if lc $m eq 'pronunciation';
+      next if lc $m eq 'translations';
+      next if lc $m eq 'translations to be checked';
+      $chunk = $m . ' :: ' . $n;
+      push @retval, $chunk;
+    }
+
+    unshift @retval, "According to Wiktionary:";
+    return wrap(@retval);
+
+}
+
+sub scrape_google_guess {
+    my $term = shift;
+    my $content = shift;
+
+    my ($lookup, @retval);
+
+    $content =~ s/\n/ /g;
+    if ($content =~ m{Did you mean.*<i>([^>]+)</i>}) { 
+      return "No match for '$term', did you mean: '$1'?";
+    }
+    return;
+} 
 sub scrape_webster {
     my ( $term, $content ) = @_;
 
@@ -1550,6 +1730,51 @@ $response{horoscope} = {
     RE   => $horoscopeRE,
 };
 
+$response{define2} = {
+    CODE => sub {
+        my ($event) = @_;
+        my $args = $event->{VALUE};
+        if ( !( $args =~ m/define2*\s*(.*)\s*$/i ) ) {
+            return "ERROR: Expected RE not matched!";
+        }
+        my $term = escape $1;
+        my $url  = "http://en.wiktionary.org/w/index.php?printable=yes&title=$term";
+        add_throttled_HTTP(
+            url      => $url,
+            ui_name  => 'main',
+            callback => sub {
+
+                my ($response) = shift;
+                my $answer = scrape_wiktionary( $term, $response->{_content});  
+                if ($answer) {
+                  dispatch( $event,$answer);
+                } else  {
+                  my $url2 = "http://www.google.com/search?num=0&hl=en&lr=&as_qdr=all&q=$term&btnG=Search";
+                  add_throttled_HTTP(
+                      url      =>  $url2,
+                      ui_name  => 'main',
+                      callback => sub {
+                          my ($response2) = shift;
+                          $answer= scrape_google_guess( $term, $response2->{_content} );
+			if ($answer) {
+                          dispatch( $event, $answer);
+                        } else {
+                          dispatch( $event, "Sorry, '$term' not found");
+                        }
+                      }
+                  );
+                }
+            }
+        );
+        "";    #muahaah
+    },
+    HELP => sub { return "Look up a word on wiktionary.org/en"; },
+    TYPE => [qw/private/],
+    POS  => '-1',
+    STOP => 1,
+    RE   => qr/\bdefine2\b/i
+};
+
 $response{define} = {
     CODE => sub {
         my ($event) = @_;
@@ -1630,7 +1855,7 @@ $response{foldoc} = {
     TYPE => [qw/private public emote/],
     POS  => '0',
     STOP => 1,
-    RE   => qr/foldoc/,
+    RE   => qr/foldoc/i,
 };
 
 $response{lynx} = {
@@ -1668,7 +1893,7 @@ $response{lynx} = {
     TYPE => [qw/private public emote/],
     POS  => '0',
     STOP => 1,
-    RE   => qr/lynx/,
+    RE   => qr/lynx/i,
 };
 
 my @ascii =
