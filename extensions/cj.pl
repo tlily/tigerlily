@@ -1345,24 +1345,21 @@ $response{stock} = {
 };
 
 $response{drink} = {
-    DISABLED => 1,
     CODE     => sub {
         my ($event) = @_;
         my $args = $event->{VALUE};
-        if ( !( $args =~ m/slides a\s+(.*)\s+down the bar to CJ\.$1/ ) ) {
-            return "";
-        }
-        else {
+        if ( $args =~ m/slides a\b(.*)\bdown the bar to CJ\b/ ) {
+            my $cmd = "/drink $1";
             TLily::Server->active()
-              ->cmd_process( "/drink $1", sub { $_[0]->{NOTIFY} = 0; } );
-            return "";
+              ->cmd_process( $cmd, sub { $_[0]->{NOTIFY} = 0; } );
         }
+        return q{};
     },
-    HELP => sub { return "/slide me a drink, I'm game."; },
+    HELP => sub { return "slide me a drink, I'm game."; },
     TYPE => [qw/emote/],
     POS  => '0',
     STOP => 1,
-    RE => qr/down the bar to CJ\.$/i,
+    RE => qr/down the bar/i,
 };
 
 $response{kibo} = {
@@ -2253,9 +2250,12 @@ sub cj_event {
                 next
                   if !grep { /$event->{type}/ } @{ $response{$handler}{TYPE} };
                 my $re = $response{$handler}->{RE};
-                if ( $event->{type} eq "public" || $event->{type} eq "emote" ) {
+                if ( $event->{type} eq "public" ) {
                     $re = qr/^\s*(?i:$name\s*,?\s*)?$re/;
+                } elsif ( $event->{type} eq "emote" ) {
+                    $re = qr/(?i:\b$name\s*,?\s*)?$re/;
                 }
+
                 if ( $event->{VALUE} =~ m/$re/ ) {
                     $served{ $event->{type} . " messages" }++;
                     $served{$handler}++;
