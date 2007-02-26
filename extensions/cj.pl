@@ -1345,6 +1345,7 @@ $response{stock} = {
 };
 
 $response{drink} = {
+    DISABLED => 1,
     CODE     => sub {
         my ($event) = @_;
         my $args = $event->{VALUE};
@@ -2253,7 +2254,10 @@ sub cj_event {
                 if ( $event->{type} eq "public" ) {
                     $re = qr/^\s*(?i:$name\s*,?\s*)?$re/;
                 } elsif ( $event->{type} eq "emote" ) {
-                    $re = qr/(?i:\b$name\s*,?\s*)?$re/;
+                    # XXX must anchor emotes by default. 
+                    # fixup so things like "drink" work.
+                    $re = qr/^\s*(?i:$name\s*,?\s*)?$re/;
+                    #$re = qr/(?i:\b$name\s*,?\s*)?$re/;
                 }
 
                 if ( $event->{VALUE} =~ m/$re/ ) {
