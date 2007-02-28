@@ -284,8 +284,6 @@ sub get_stock {
             my $purchase = $3;
             $stock{$stock}     = $shares;
             $purchased{$stock} = $purchase;
-
-            #push @retval ,"$shares shares of $stock at $purchase";
         }
         @stock = keys %stock;
     }
@@ -305,9 +303,10 @@ sub get_stock {
             my ($response) = @_;
 
             my @chunks = split( /\n/, $response->{_content} );
-            foreach (@chunks) {
+            foreach my $chunk (@chunks) {
                 my ( $stock, $value, $date, $time, $change, $volume ) =
-                  map { s/^"(.*)"$/$1/; $_ } split( /,/, $_ );
+                  map { s/^"(.*)"$/$1/; $_ } split( /,/, $chunk );
+                next if $volume =~ m{N/A}; # skip unknown stocks.
                 $change =~ s/^(.*) - (.*)$/$1 ($2)/;
                 if (%stock) {
                     my $sub = $value * $stock{$stock};
@@ -347,6 +346,9 @@ subgain";
             }
 
             $retval =~ s/\s*$//;
+            if ($retval eq q{} and $event->{type} eq 'private') {
+                dispatch ($event, 'No matching stocks.');
+            }
             dispatch( $event, $retval );
         }
     );
@@ -634,7 +636,9 @@ $response{weather} = {
                         $term  = substr($term,0,7);
                         $term .= '...';
                     }
-                    dispatch( $event, "Can't find weather for '$term'.");
+                    if ($event->{type} eq 'private') {
+                        dispatch ($event, "Can't find weather for '$term'.");
+                    }
                 }
             }
         );
@@ -677,7 +681,9 @@ $response{forecast} = {
                         $term  = substr($term,0,7);
                         $term .= '...';
                     }
-                    dispatch( $event, "Can't find forecast for '$term'.");
+                    if ($event->{type} eq 'private') {
+                        dispatch ($event, "Can't find forecast for '$term'.");
+                    }
                 }
             }
         );
