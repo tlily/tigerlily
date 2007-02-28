@@ -71,8 +71,8 @@ my $throttle_interval = 1;    #seconds
 my $throttle_safety   = 5;    #seconds
 my %prefs;     #dbmopen'd hash of lily user prefs. (XXX KILL THIS)
 my $config;    # Config::IniFiles object storing preferences.
-my $disc       = "cj-admin";    #where we keep our memos.
-my $debug_disc = "cj-admin";
+my $disc       = 'cj-admin';    #where we keep our memos.
+my $debug_disc = 'cj-admin';
 my %disc_feed;    # A cached copy of which discussions each feed goes to
 my %disc_annotations
   ;               # A cached copy of which discussions each annotation goes to.
@@ -111,7 +111,7 @@ sub debug {
 }
 
 # XXX use File::*
-my $config_file = $ENV{HOME} . "/.lily/tlily/CJ.ini";
+my $config_file = $ENV{HOME} . '/.lily/tlily/CJ.ini';
 
 =head2 asAdmin( $event, $callback) 
 
@@ -149,9 +149,9 @@ sub pickRandom {
 # URL => {headline,provider,summary,age,headlines,short_url}
 
 sub get_feeds {
-    my @feeds = $config->GroupMembers("feed");
+    my @feeds = $config->GroupMembers('feed');
     foreach my $feed (@feeds) {
-        my $url = $config->val( $feed, "url" );
+        my $url = $config->val( $feed, 'url' );
         get_feed( $feed, $url );
     }
 }
@@ -202,11 +202,11 @@ sub get_feed {
 sub send_headline {
     my ( $feed, $target, $url, $title, $description ) = @_;
 
-    next if $url   eq "";
-    next if $title eq "";
+    next if $url   eq q{};
+    next if $title eq q{};
 
     if ( length($description) > 512 ) {
-        $description = substr( $description, 0, 512 ) . " ...";
+        $description = substr( $description, 0, 512 ) . ' ...';
     }
     my $uri = URI->new($url);
     shorten(
@@ -214,24 +214,24 @@ sub send_headline {
         sub {
             my ($shorty) = @_;
 
-            my $line = $target . ":";
-            if ( $shorty eq "" ) {
+            my $line = $target . ':';
+            if ( $shorty eq q{} ) {
 
                 # shortening failed for some reason.
                 $line .= $url;
             }
             else {
-                $line .= "$shorty (" . $uri->host . ")";
+                $line .= "$shorty (" . $uri->host . ')';
             }
-            $line .= " :: ";
+            $line .= ' :: ';
 
             $line .= "$title :: $description";
             TLily::Server->active()->cmd_process($line);
 
             #and, now that we've displayed it, save this fact in the config.
-            my @shown = split /\n/, $config->val( $feed, "shown" );
+            my @shown = split /\n/, $config->val( $feed, 'shown' );
             push @shown, $url;
-            save_value( $feed, "shown", join( "\n", @shown ) );
+            save_value( $feed, 'shown', join( "\n", @shown ) );
         }
     );
 }
@@ -241,7 +241,7 @@ sub broadcast_feeds {
     foreach my $feed ( keys %rss_feeds ) {
         foreach my $item ( keys %{ $rss_feeds{$feed} } ) {
             my $story = $rss_feeds{$feed}{$item};
-            my @shown = split /\n/, $config->val( $feed, "shown" );
+            my @shown = split /\n/, $config->val( $feed, 'shown' );
             if ( !grep { $_ eq $item } @shown ) {
 
                 # What discussions does this go to?
@@ -294,9 +294,9 @@ sub get_stock {
     my $gain  = 0;
 
     my $url =
-        "http://finance.yahoo.com/d/quotes.csv?s="
-      . join( ",", @stock )
-      . "&f=sl1d1t1c2v";
+        'http://finance.yahoo.com/d/quotes.csv?s='
+      . join( ',', @stock )
+      . '&f=sl1d1t1c2v';
     add_throttled_HTTP(
         url      => $url,
         ui_name  => 'main',
@@ -338,11 +338,11 @@ subgain";
                 push @retval, "Total value: $total";
             }
 
-            my $retval = "";
+            my $retval;
             foreach my $tmp (@retval) {
                 $tmp = cleanHTML($tmp);
 
-                my $pad = " " x ( $wrap - ( ( length $tmp ) % $wrap ) );
+                my $pad = ' ' x ( $wrap - ( ( length $tmp ) % $wrap ) );
                 $retval .= $tmp . $pad;
             }
 
@@ -356,7 +356,7 @@ sub wrap {
     my $wrap = 76;
     my $retval;
     foreach my $tmp (@_) {
-        my $pad = " " x ( $wrap - ( ( length $tmp ) % $wrap ) );
+        my $pad = ' ' x ( $wrap - ( ( length $tmp ) % $wrap ) );
         $retval .= $tmp . $pad;
     }
     $retval =~ s/\s+$//;
@@ -398,8 +398,8 @@ sub unshorten {
 
             my ($response) = @_[0];
 
-            my $ans = "";
-            if ( $response->{_content} =~ "ERROR" ) {
+            my $ans;
+            if ( $response->{_content} =~ 'ERROR' ) {
                 $ans = "Pshaw. That's not right, and you know it.";
             }
             else {
@@ -434,11 +434,11 @@ sub shorten {
 
             my ($response) = @_[0];
 
-            my $ans = "";
-            if ( $response->{_state}{_status} ne "200" ) {
+            my $ans;
+            if ( $response->{_state}{_status} != 200 ) {
                 $ans =
-                  "unreachable. (HTTP Status "
-                  . $response->{_state}{_status} . ")";
+                  'unreachable. (HTTP Status '
+                  . $response->{_state}{_status} . ')';
             }
             else {
                 # response should be on first line:
@@ -540,25 +540,25 @@ have wanted it.
 
 
 my $bibles = {
-  "niv"   => {id => 31, name => "New International Version"},
-  "nasb"  => {id => 49, name => "New American Standard Bible"},
-  "tm"    => {id => 65, name => "The Message"},
-  "ab"    => {id => 45, name => "Amplified Bible"},
-  "nlt"   => {id => 51, name => "New Living Translation"},
-  "kjv"   => {id =>  9, name => "King James Version"},
-  "esv"   => {id => 47, name => "English Standard Version"},
-  "cev"   => {id => 46, name => "Contemporary English Version"},
-  "nkjv"  => {id => 50, name => "New King James Version"},
-  "21kjv" => {id => 48, name => "21st Century King James Version"},
-  "asv"   => {id =>  8, name => "American Standard Version"},
-  "ylt"   => {id => 15, name => "Young's Literal Translation"},
-  "dt"    => {id => 16, name => "Darby Translation"},
-  "nlv"   => {id => 74, name => "New Life Version"},
-  "hcsb"  => {id => 77, name => "Holman Christian Standard Bible"},
-  "wnt"   => {id => 53, name => "Wycliffe New Testament"},
-  "we"    => {id => 73, name => "Worldwide English (New Testament)"},
-  "nivuk" => {id => 64, name => "New International Version - UK"},
-  "tniv"  => {id => 72, name => "Today's New International Version"},
+  'niv'   => {id => 31, name => 'New International Version'},
+  'nasb'  => {id => 49, name => 'New American Standard Bible'},
+  'tm'    => {id => 65, name => 'The Message'},
+  'ab'    => {id => 45, name => 'Amplified Bible'},
+  'nlt'   => {id => 51, name => 'New Living Translation'},
+  'kjv'   => {id =>  9, name => 'King James Version'},
+  'esv'   => {id => 47, name => 'English Standard Version'},
+  'cev'   => {id => 46, name => 'Contemporary English Version'},
+  'nkjv'  => {id => 50, name => 'New King James Version'},
+  '21kjv' => {id => 48, name => '21st Century King James Version'},
+  'asv'   => {id =>  8, name => 'American Standard Version'},
+  'ylt'   => {id => 15, name => "Young's Literal Translation"},
+  'dt'    => {id => 16, name => 'Darby Translation'},
+  'nlv'   => {id => 74, name => 'New Life Version'},
+  'hcsb'  => {id => 77, name => 'Holman Christian Standard Bible'},
+  'wnt'   => {id => 53, name => 'Wycliffe New Testament'},
+  'we'    => {id => 73, name => 'Worldwide English (New Testament)'},
+  'nivuk' => {id => 64, name => 'New International Version - UK'},
+  'tniv'  => {id => 72, name => "Today's New International Version"},
 };
 
 $response{bible} = {
@@ -568,7 +568,7 @@ $response{bible} = {
         my $bible    = $1;
         my $term     = escape $2;
 
-        $bible = "kjv" unless $bible;
+        $bible = 'kjv' unless $bible;
         $bible = $bibles->{$bible}->{id};
 
         my $url      =
@@ -592,9 +592,9 @@ $response{bible} = {
     },
 
     HELP => sub { 
-        my $help = "Quote chapter and verse. Syntax: bible or passage, followed by an optional bible version, and then the name of the book and chapter:verse. Possible translations include: ";
+        my $help = 'Quote chapter and verse. Syntax: bible or passage, followed by an optional bible version, and then the name of the book and chapter:verse. Possible translations include: ';
         foreach my $key (keys %$bibles) {
-            $help .= $key . " {" . $bibles->{$key}->{name} . "} ";
+            $help .= $key . ' {' . $bibles->{$key}->{name} . '} ';
         }
         return $help;
     },
@@ -609,7 +609,7 @@ $response{weather} = {
         my ($event) = @_;
         my $args = $event->{VALUE};
         if ( $args !~ m/weather\s*(.*)\s*$/i ) {
-            return "ERROR: Expected RE not matched!";
+            return 'ERROR: Expected RE not matched!';
         }
         my $term = $1;
         $term =~ s/\?$//; #XXX add this to RE above...
@@ -640,7 +640,7 @@ $response{weather} = {
         );
         return;
     },
-    HELP => sub { return "Given a location, get the current weather." },
+    HELP => sub { return 'Given a location, get the current weather.' },
     TYPE => [qw/private public emote/],
     POS  => '-1',
     STOP => 1,
@@ -652,7 +652,7 @@ $response{forecast} = {
         my ($event) = @_;
         my $args = $event->{VALUE};
         if ( $args !~ m/forecast\s*(.*)\s*$/i ) {
-            return "ERROR: Expected RE not matched!";
+            return 'ERROR: Expected RE not matched!';
         }
         my $term = $1;
         $term =~ s/\?$//; #XXX add this to RE above...
@@ -683,7 +683,7 @@ $response{forecast} = {
         );
         return;
     },
-    HELP => sub { return "Given a location, get the weather forecast." },
+    HELP => sub { return 'Given a location, get the weather forecast.' },
     TYPE => [qw/private public emote/],
     POS  => '-1',
     STOP => 1,
@@ -695,10 +695,10 @@ $response{engrish} = {
         my ($event) = @_;
         my $args = $event->{VALUE};
         if ( $args !~ m/engrish*\s*(.*)\s*$/i ) {
-            return "ERROR: Expected RE not matched!";
+            return 'ERROR: Expected RE not matched!';
         }
         my $term     = escape $1;
-        my $language = "nl";
+        my $language = 'nl';
         my $url      =
           "http://babelfish.altavista.com/tr?trtext=$term&lp=en_$language";
         add_throttled_HTTP(
@@ -711,7 +711,7 @@ $response{engrish} = {
 
                 my $url =
 "http://babelfish.altavista.com/tr?trtext=$xlated&lp=$language"
-                  . "_en";
+                  . '_en';
                 add_throttled_HTTP(
                     url      => $url,
                     ui_name  => 'main',
@@ -726,7 +726,7 @@ $response{engrish} = {
         );
         return;
     },
-    HELP => sub { return "Given an english phrase, botch it." },
+    HELP => sub { return 'Given an english phrase, botch it.' },
     TYPE => [qw/private public emote/],
     POS  => '-1',
     STOP => 1,
@@ -759,7 +759,7 @@ sub get_lang {
     return;
 }
 
-my $default_language = "English";
+my $default_language = 'English';
 my $translateRE      = qr/
   (?:
   \b translate \s+ (.*) \s+ from      \s+ (.*) \s+ (?:in)?to \s+ (.*) |
@@ -821,7 +821,7 @@ $response{translate} = {
     HELP => sub {
         return
 "for example, 'translate some text from english to german' (valid languages: "
-          . join( ", ", keys %languages )
+          . join( ', ', keys %languages )
           . ") (either the from or to is optional, and defaults to $default_language)";
     },
     TYPE => [qw/private public emote/],
@@ -849,7 +849,7 @@ $response{anagram} = {
         $args =~ $anagramRE;
         my ($term, $include, $exclude);
         my  $url = 
-        "http://wordsmith.org/anagram/anagram.cgi?language=english" ;
+        'http://wordsmith.org/anagram/anagram.cgi?language=english' ;
  
         if ($1) {
           ( $term, $include, $exclude) = ( $1, $2, $3) ;
@@ -862,12 +862,12 @@ $response{anagram} = {
         } else { 
           ( $term ) = ( $11 );
         }
-        $url .= "&anagram=" . escape ($term); 
+        $url .= '&anagram=' . escape ($term); 
         if ($include) {
-            $url .= "&include=" . escape ($include);
+            $url .= '&include=' . escape ($include);
         }
         if ($exclude) {
-            $url .= "&exclude=" . escape ($exclude);
+            $url .= '&exclude=' . escape ($exclude);
         }
         
 
@@ -889,7 +889,7 @@ $response{anagram} = {
     },
     HELP => sub {
         return
- "given a phrase, return an anagram of it.";
+ 'given a phrase, return an anagram of it.';
     },
     TYPE => [qw/private public emote/],
     POS  => '-1',
@@ -926,7 +926,7 @@ $response{convert} = {
         return "$a $to";
     },
     HELP => sub {
-        return "convert units: convert (amount) from_units to_units ";
+        return 'convert units: convert (amount) from_units to_units ';
     },
     TYPE => [qw/private public emote/],
     POS  => '1',
@@ -945,7 +945,7 @@ $response{math} = {
 
         my $result = eval $term; # see RE above, must be math-safe.
         if ($@) { 
-            if ($event->{type} eq "private") {
+            if ($event->{type} eq 'private') {
                 return "that looked mathy, but it isn't." 
             } else {
                 return;
@@ -954,7 +954,7 @@ $response{math} = {
 	return $result;
     },
     HELP => sub {
-        return "math stuff";
+        return 'math stuff';
     },
     TYPE => [qw/private/],
     POS  => '1',
@@ -967,7 +967,7 @@ $response{shorten} = {
         my ($event) = @_;
         my $args = $event->{VALUE};
         if ( !( $args =~ s/shorten*\s*(.*)\s*$/$1/i ) ) {
-            return "ERROR: Expected RE not matched!";
+            return 'ERROR: Expected RE not matched!';
         }
         my $shorten = $1;
         if ( $shorten =~ m|^http://xrl.us/(.*)| ) {
@@ -976,10 +976,10 @@ $response{shorten} = {
         else {
             shorten( $shorten, sub { dispatch( $event, shift ) } );
         }
-        return "";
+        return;
     },
     HELP => sub {
-        return "Given a URL, return an xrl.us shortened version of the url. Or, vice versa.";
+        return 'Given a URL, return an xrl.us shortened version of the url. Or, vice versa.';
     },
     TYPE => [qw/private/],
     POS  => '-1',
@@ -992,18 +992,18 @@ $response{help} = {
         my ($event) = @_;
         my $args = $event->{VALUE};
         if ( !( $args =~ s/help\s*(.*)\s*$/$1/i ) ) {
-            return "ERROR: Expected RE not matched!";
+            return 'ERROR: Expected RE not matched!';
         }
-        if ( $args eq "" ) {
+        if ( $args eq q{} ) {
 
             # XXX respect PRIVILEGE
             my @cmds =
               sort grep { !$response{$_}->{DISABLED} }
-              grep { $_ ne "help" } keys %response;
+              grep { $_ ne 'help' } keys %response;
             return
 "Hello. I'm a bot. Try 'help' followed by one of the following for more information: "
-              . join( ", ", @cmds )
-              . ". In general, commands can appear anywhere in private sends, but must begin public sends.";
+              . join( ', ', @cmds )
+              . '. In general, commands can appear anywhere in private sends, but must begin public sends.';
         }
         if ( exists ${response}{$args} ) {
             return &{ $response{$args}{HELP} }();
@@ -1031,7 +1031,7 @@ $response{cal} = {
         }
         elsif ( $args =~ m/cal\s+($year)/i ) {
             $retval =
-"A fine year. Nice vintage. Too much output, though, pick a month.";
+'A fine year. Nice vintage. Too much output, though, pick a month.';
         }
         elsif ( $args =~ m/\bcal\s*$/ ) {
             $retval = `cal 2>&1`;
@@ -1041,23 +1041,23 @@ $response{cal} = {
         }
         return wrap( split( /\n/, $retval ) );
     },
-    HELP => sub { return "like the unix command"; },
+    HELP => sub { return 'like the unix command'; },
     TYPE => [qw/private/],
     POS  => '0',
     STOP => 1,
     RE   => qr/\bcal\b/i,
 };
 
-$response{"unset"} = {
+$response{'unset'} = {
     CODE => sub {
         my ($event) = @_;
         my $args = $event->{VALUE};
         if ( !( $args =~ s/\bunset\s+(.*)$/$1/ ) ) {
-            return "ERROR: Expected RE not matched!";
+            return 'ERROR: Expected RE not matched!';
         }
 
         my $handle = $event->{SHANDLE};
-        my $key    = $handle . "-" . $args;
+        my $key    = $handle . '-' . $args;
 
         if ( exists $prefs{$key} ) {
             delete $prefs{$key};
@@ -1074,12 +1074,12 @@ $response{"unset"} = {
     RE   => qr(\bunset\b)i,
 };
 
-$response{"poll"} = {
+$response{'poll'} = {
     CODE => sub {
         my ($event) = @_;
         my $args = $event->{VALUE};
         if ( !( $args =~ s/\bpoll\s?(.*)\s*$/$1/ ) ) {
-            return "ERROR: Expected RE not matched!";
+            return 'ERROR: Expected RE not matched!';
         }
         $args =~ s/^\s+//;
         $args =~ s/\s+$//;
@@ -1089,9 +1089,9 @@ $response{"poll"} = {
 
         # This should be configable.
         my %polls = (
-            "pres"  => "2000 Presidential Campaign",
-            "ny"    => "2000 NYS Senate Campaign",
-            "spice" => "Your Favourite Spice Girl"
+            'pres'  => '2000 Presidential Campaign',
+            'ny'    => '2000 NYS Senate Campaign',
+            'spice' => 'Your Favourite Spice Girl'
         );
 
         if ( scalar @args == 0 ) {
@@ -1099,7 +1099,7 @@ $response{"poll"} = {
             foreach my $key ( keys %polls ) {
                 push @tmp, $key . ", \'" . $polls{$key} . "\'";
             }
-            return "The currently available polls are: " . join( "; ", @tmp );
+            return 'The currently available polls are: ' . join( '; ', @tmp );
         }
         elsif ( scalar @args == 1 ) {
             if ( exists $polls{ $args[0] } ) {
@@ -1110,43 +1110,43 @@ $response{"poll"} = {
                 foreach my $key ( @list ) {
                     $results{ lc $prefs{$key} }++ if $key =~ /$args[0]$/;
                 }
-                my $key = $handle . "-*poll-" . $args[0];
+                my $key = $handle . '-*poll-' . $args[0];
 
-                my $personal = "You have not voted in this poll.";
+                my $personal = 'You have not voted in this poll.';
                 if ( exists $prefs{$key} ) {
                     $personal = "You voted for '" . $prefs{$key} . "'";
                 }
-                return "Results: " . join(
-                    ", ",
+                return 'Results: ' . join(
+                    ', ',
                     map {
-                        $_ . ": "
-                          . $results{$_} . " vote"
-                          . ( ( $results{$_} == 1 ) ? "" : "s" )
+                        $_ . ': '
+                          . $results{$_} . ' vote'
+                          . ( ( $results{$_} == 1 ) ? q{} : 's' )
                       } ( keys %results )
                   )
-                  . ". "
+                  . '. '
                   . $personal;
             }
             else {
-                return $args[0] . " is not an active poll";
+                return $args[0] . ' is not an active poll';
             }
         }
         elsif ( scalar @args == 2 ) {
             if ( exists $polls{ $args[0] } ) {
-                $prefs{ $handle . "-*poll-" . $args[0] } = $args[1];
-                return "Your ballot has been cast.";
+                $prefs{ $handle . '-*poll-' . $args[0] } = $args[1];
+                return 'Your ballot has been cast.';
             }
             else {
-                return $args[0] . " is not an active poll";
+                return $args[0] . ' is not an active poll';
             }
         }
         else {
-            return "ERROR: Expected RE not matched!";
+            return 'ERROR: Expected RE not matched!';
         }
     },
     HELP => sub {
         return
-"Similar to /vote. By itself, list current polls. given a poll name, return the current results. You can also specify a value to cast your ballot. Usage: poll [<poll> [<vote>]]";
+'Similar to /vote. By itself, list current polls. given a poll name, return the current results. You can also specify a value to cast your ballot. Usage: poll [<poll> [<vote>]]';
     },
     TYPE => [qw/private/],
     POS  => '0',
@@ -1154,12 +1154,12 @@ $response{"poll"} = {
     RE   => qr(\bpoll\b)i,
 };
 
-$response{"set"} = {
+$response{'set'} = {
     CODE => sub {
         my ($event) = @_;
         my $args = $event->{VALUE};
         if ( !( $args =~ s/\bset(.*)$/$1/ ) ) {
-            return "ERROR: Expected RE not matched!";
+            return 'ERROR: Expected RE not matched!';
         }
         my @args = split( ' ', $args, 2 );
 
@@ -1172,18 +1172,18 @@ $response{"set"} = {
                 my $val = $config->val($section,$key);
                 push @tmp,  $key . " = \'" . $val . "\'";
             }
-            return join( ", ", @tmp );
+            return join( ', ', @tmp );
         }
         elsif ( scalar @args == 1 ) {
             my $val = $config->val($section,$args[0]);
-            return (defined($val)? "\"$val\"":"undef");
+            return (defined($val)? "\"$val\"":'undef');
         }
         else
         {
             my $key = shift @args;
-            my $val = join(" ",@args);
+            my $val = join(' ',@args);
             if ( $key =~ m:^\*: ) {
-                return "You may not modify " . $key . " directly.";
+                return 'You may not modify ' . $key . ' directly.';
             }
             $config->setval($section,$key,$val);
             return $key . " = \'" . $val . "\'";
@@ -1191,7 +1191,7 @@ $response{"set"} = {
     },
     HELP => sub {
         return
-"Purpose: provide a generic mechanism for preference management. Usage: set [ <var> [ <value> ] ]. Only works in private. I should really limit what data can be set here. Also, we use your SHANDLE via SLCP, in violation of the geneva convention.";
+'Purpose: provide a generic mechanism for preference management. Usage: set [ <var> [ <value> ] ]. Only works in private. I should really limit what data can be set here. Also, we use your SHANDLE via SLCP, in violation of the geneva convention.';
     },
     TYPE => [qw/private/],
     POS  => '0',
@@ -1209,31 +1209,31 @@ sub humanTime {
     my ( @result, $chunk );
     if ( $seconds >= $day ) {
         $chunk = int( $seconds / $day );
-        push @result, $chunk . " days";
+        push @result, $chunk . ' days';
         $seconds -= ( $chunk * $day );
     }
     if ( $seconds >= $hour ) {
         $chunk = int( $seconds / $hour );
-        push @result, $chunk . " hours";
+        push @result, $chunk . ' hours';
         $seconds -= ( $chunk * $hour );
     }
     if ( $seconds >= $min ) {
         $chunk = int( $seconds / $min );
-        push @result, $chunk . " minutes";
+        push @result, $chunk . ' minutes';
         $seconds -= ( $chunk * $min );
     }
     if ($seconds) {
-        push @result, $seconds . " seconds";
+        push @result, $seconds . ' seconds';
     }
 
-    return ( join( ", ", @result ) );
+    return ( join( ', ', @result ) );
 }
 
-$response{"ping"} = {
+$response{'ping'} = {
     CODE => sub {
         my $a = cleanHTML( Dumper( \%served ) );
         $a =~ s/\$VAR1 =/ number of commands and messages processed: /;
-        return "pong. uptime: " . humanTime( time() - $uptime ) . "; $a";
+        return 'pong. uptime: ' . humanTime( time() - $uptime ) . "; $a";
     },
     HELP =>
       sub { return "Yes, I'm alive. And have some stats while you're at it."; },
@@ -1243,11 +1243,11 @@ $response{"ping"} = {
     RE   => qr/ping/i,
 };
 
-$response{"stomach pump"} = {
+$response{'stomach pump'} = {
     CODE => sub {
-        return "Eeeek!";
+        return 'Eeeek!';
     },
-    HELP => sub { return "stomach pumps scare me."; },
+    HELP => sub { return 'stomach pumps scare me.'; },
     TYPE => [qw/private public emote/],
     POS  => '0',
     STOP => 1,
@@ -1255,7 +1255,7 @@ $response{"stomach pump"} = {
 };
 
 $response{cmd} = {
-    PRIVILEGE => "admin",
+    PRIVILEGE => 'admin',
     CODE      => sub {
         my ($event) = @_;
         ( my $cmd = $event->{VALUE} ) =~ s/.*\bcmd\b\s*(.*)/$1/;
@@ -1268,11 +1268,11 @@ $response{cmd} = {
                     sub {
                         my ($newevent) = @_;
                         $newevent->{NOTIFY} = 0;
-                        return if ( $newevent->{type} eq "begincmd" );
-                        if ( $newevent->{type} eq "endcmd" ) {
+                        return if ( $newevent->{type} eq 'begincmd' );
+                        if ( $newevent->{type} eq 'endcmd' ) {
                             dispatch( $event, wrap(@response) );
                         }
-                        if ( $newevent->{text} ne "" ) {
+                        if ( $newevent->{text} ne q{} ) {
                             push @response, $newevent->{text};
                         }
                     }
@@ -1282,7 +1282,7 @@ $response{cmd} = {
     },
     HELP => sub {
         return
-          "If you are a cj admin, you can use this command to boss me around.";
+          'If you are a cj admin, you can use this command to boss me around.';
     },
     TYPE => [qw/private/],
     POS  => '0',
@@ -1297,10 +1297,10 @@ $response{buzz} = {
         foreach ( 1 .. 3 ) {
             push @tmp, pickRandom($buzzwords);
         }
-        return join( " ", @tmp ) . "!";
+        return join( ' ', @tmp ) . '!';
     },
     HELP =>
-      sub { return "random buzzword generator. Active with keyword \"buzz\""; },
+      sub { return 'random buzzword generator. Active with keyword "buzz"'; },
     TYPE => [qw/private/],
     POS  => '1',
     STOP => 1,
@@ -1312,11 +1312,11 @@ $response{stock} = {
         my ($event) = @_;
         my $args = $event->{VALUE};
         if ( !( $args =~ s/stock\s+(.*)/$1/i ) ) {
-            return "ERROR: Expected RE not matched!";
+            return 'ERROR: Expected RE not matched!';
         }
         else {
             get_stock( $event, split( /[, ]+/, $args ) );
-            return "";
+            return;
         }
     },
     HELP => sub {
@@ -1352,16 +1352,16 @@ $response{kibo} = {
     CODE => sub {
         my ($event) = @_;
         my $list = $sayings;
-        if ( $event->{RECIPS} eq "unified" ) {
+        if ( $event->{RECIPS} eq 'unified' ) {
             $list = [ (@$unified) x 2, @$list ];
         }
-        elsif ( $event->{RECIPS} eq "beener" ) {
+        elsif ( $event->{RECIPS} eq 'beener' ) {
             $list = [ (@$beener) x 2, @$list ];
         }
         my ($message) = sprintf( pickRandom($list), $event->{SOURCE} );
         return $message;
     },
-    HELP => sub { return "I respond to public questions addressed to me."; },
+    HELP => sub { return 'I respond to public questions addressed to me.'; },
     TYPE => [qw/public emote/],
     POS  => '1',
     STOP => 1,
@@ -1377,7 +1377,7 @@ $response{eliza} = {
         return
 "I've been doing some research into psychotherapy, I'd be glad to help you work through your agression.";
     },
-    TYPE => ["private"],
+    TYPE => ['private'],
     POS  => '2',
     STOP => 1,
     RE   => qr/.*/,
@@ -1395,7 +1395,7 @@ sub scrape_forecast {
     my ( $term, $content ) = @_;
 
     $content =~ m/(Forecast as of .*)Units:/s;
-    my @results = map {cleanHTML($_), ""} split(/<b>/, $1);
+    my @results = map {cleanHTML($_), q{}} split(/<b>/, $1);
     pop @results; # remove trailing empty line.
     @results = @results[0..10]; # limit responses. 5 days, 1 header, 5 blanks
     return wrap(@results);
@@ -1414,7 +1414,7 @@ sub scrape_horoscope {
     $content =~ m/<big class="yastshsign">([^<]*)<\/big>/i;
     my $sign = $1;
 
-    if ($type eq "chinese") {
+    if ($type eq 'chinese') {
         $content =~ m:<small>Year In General(.*)Previous Day</a>:s;
         my $reading = $1;
         return cleanHTML("$sign : $reading");
@@ -1453,9 +1453,8 @@ sub scrape_translate {
     {
         return cleanHTML($1);
     }
-    else {
-        return "";
-    }
+
+    return;
 }
 
 sub scrape_wiktionary {
@@ -1491,7 +1490,7 @@ sub scrape_wiktionary {
       push @retval, $chunk;
     }
 
-    unshift @retval, "According to Wiktionary:";
+    unshift @retval, 'According to Wiktionary:';
     return wrap(@retval);
 
 }
@@ -1529,7 +1528,7 @@ sub scrape_webster {
             if ( $tmp eq $term ) {
 
                 # we get the first term for free already...
-                my $blah = quotemeta "[1,";
+                my $blah = quotemeta '[1,';
                 if ( $option !~ /$blah/ ) {
                     push @other_forms, $option;
                 }
@@ -1562,16 +1561,16 @@ sub scrape_webster {
 
             foreach my $other_term (@other_forms) {
                 my $sub_url =
-                    "http://www.m-w.com/cgi-bin/dictionary?hdwd=" . $term
-                  . "&jump="
+                    'http://www.m-w.com/cgi-bin/dictionary?hdwd=' . $term
+                  . '&jump='
                   . $other_term
-                  . "&list="
+                  . '&list='
                   . $list;
 
 #my $sub_response = $ua->request(HTTP::Request->new(GET => $sub_url));
 #if ($sub_response->is_success) {
 #($sub_content= cleanHTML($sub_response->content)) =~ s/^.*Main Entry: (.*)Get the Top 10.*/$1/;
-#$retval .= "; " . $sub_content;
+#$retval .= '; ' . $sub_content;
 #}
             }
         }
@@ -1580,9 +1579,9 @@ sub scrape_webster {
 
     # tack on any other items that turned up on the main list, for kicks.
     if ( scalar(@see_also) ) {
-        $retval .= "| SEE ALSO: " . join( ", ", @see_also );
+        $retval .= '| SEE ALSO: ' . join( ', ', @see_also );
     }
-    return "According to Webster: " . $retval;
+    return 'According to Webster: ' . $retval;
 
 }
 
@@ -1613,11 +1612,11 @@ $response{bacon} = {
         my ($event) = @_;
         my $args = $event->{VALUE};
         if ( !( $args =~ m/\bbacon*\s*(.*)\s*$/i ) ) {
-            return "ERROR: Expected RE not matched!";
+            return 'ERROR: Expected RE not matched!';
         }
         my $term = $1;
-        if (lc($term) eq "kevin bacon") {
-            dispatch($event,"Are you congenitally insane or irretrievably stupid?");
+        if (lc($term) eq 'kevin bacon') {
+            dispatch($event,'Are you congenitally insane or irretrievably stupid?');
             return;
         }
         if ($term =~ m/ \s* (\w+) \s+ (\w+) \s+ \(([ivxlcm]*)\) /smix) {
@@ -1626,7 +1625,7 @@ $response{bacon} = {
 
         $term = escape($term);
         my $url  =
-"http://oracleofbacon.org/cgi-bin/oracle/movielinks?firstname=Bacon%2C+Kevin&game=1&secondname="
+'http://oracleofbacon.org/cgi-bin/oracle/movielinks?firstname=Bacon%2C+Kevin&game=1&secondname='
           . $term;
         add_throttled_HTTP(
             url      => $url,
@@ -1636,7 +1635,7 @@ $response{bacon} = {
                 dispatch( $event, scrape_bacon( $response->{_content} ) );
             }
         );
-        "";
+        return;
     },
     HELP => sub {
         return "Find someone's bacon number using http://oracleofbacon.org/";
@@ -1673,20 +1672,20 @@ $response{horoscope} = {
         if ($1)
         {
             $term = $1;
-            if (lc($term) eq "ophiuchus") {
+            if (lc($term) eq 'ophiuchus') {
                 # support those unlucky enough to be in this sign.
-                $term = "sagittarius";
+                $term = 'sagittarius';
             }
             $url  =
-              "http://astrology.yahoo.com/astrology/general/dailyoverview/";
-            $type = "western";
+              'http://astrology.yahoo.com/astrology/general/dailyoverview/';
+            $type = 'western';
         }
         else 
         {
             $term = $2;
             $url  =
-              "http://astrology.yahoo.com/chinese/general/dailyoverview/";
-            $type = "chinese";
+              'http://astrology.yahoo.com/chinese/general/dailyoverview/';
+            $type = 'chinese';
         }
 
         $term = lc $term;
@@ -1700,9 +1699,9 @@ $response{horoscope} = {
                     scrape_horoscope( $term, $response->{_content}, $type ) );
             }
         );
-        "";
+        return;
     },
-    HELP => sub { return "ask me about your sign to get a daily horoscope. We speak chinese. (Usage: horoscope [for] sign)"; },
+    HELP => sub { return 'ask me about your sign to get a daily horoscope. We speak chinese. (Usage: horoscope [for] sign)'; },
     TYPE => [qw/private public emote/],
     POS  => '-1',
     STOP => 1,
@@ -1714,7 +1713,7 @@ $response{define2} = {
         my ($event) = @_;
         my $args = $event->{VALUE};
         if ( !( $args =~ m/define2*\s*(.*)\s*$/i ) ) {
-            return "ERROR: Expected RE not matched!";
+            return 'ERROR: Expected RE not matched!';
         }
         my $term = escape $1;
         my $url  = "http://en.wiktionary.org/w/index.php?printable=yes&title=$term";
@@ -1745,9 +1744,9 @@ $response{define2} = {
                 }
             }
         );
-        "";
+        return;
     },
-    HELP => sub { return "Look up a word on wiktionary.org/en"; },
+    HELP => sub { return 'Look up a word on wiktionary.org/en'; },
     TYPE => [qw/private/],
     POS  => '-1',
     STOP => 1,
@@ -1759,7 +1758,7 @@ $response{define} = {
         my ($event) = @_;
         my $args = $event->{VALUE};
         if ( !( $args =~ m/define*\s*(.*)\s*$/i ) ) {
-            return "ERROR: Expected RE not matched!";
+            return 'ERROR: Expected RE not matched!';
         }
         my $term = $1;
         my $url  = "http://www.m-w.com/cgi-bin/dictionary?$term";
@@ -1773,9 +1772,9 @@ $response{define} = {
                     scrape_webster( $term, $response->{_content} ) );
             }
         );
-        "";
+        return;
     },
-    HELP => sub { return "Look up a word on m-w.com"; },
+    HELP => sub { return 'Look up a word on m-w.com'; },
     TYPE => [qw/private/],
     POS  => '-1',
     STOP => 1,
@@ -1788,7 +1787,7 @@ $response{foldoc} = {
         my ($event) = @_;
         my $args = $event->{VALUE};
         if ( !( $args =~ s/.*foldoc\s+(.*)/$1/i ) ) {
-            return "ERROR: Expected RE not matched!";
+            return 'ERROR: Expected RE not matched!';
         }
         add_throttled_HTTP(
             url => 'http://www.nightflight.com/foldoc-bin/foldoc.cgi?query='
@@ -1801,31 +1800,31 @@ $response{foldoc} = {
                 my ($response) = @_;
 
                 my $tmp =
-                  cleanHTML( ( split( "</FORM>", $response->{_content} ) )[0] );
+                  cleanHTML( ( split( '</FORM>', $response->{_content} ) )[0] );
 
                 if ( $tmp =~ /No match for/ ) {
-                    dispatch( $event, "No match, sorry" );
-                    return "";
+                    dispatch( $event, 'No match, sorry' );
+                    return;
                 }
 
-                my @chunks = split( "<HR>", $response->{_content} );
+                my @chunks = split( '<HR>', $response->{_content} );
 
                 if ( scalar(@chunks) == 3 ) {
                     my $tmp =
-                      cleanHTML( ( split( "</FORM>", $chunks[0] ) )[1] );
+                      cleanHTML( ( split( '</FORM>', $chunks[0] ) )[1] );
                     $tmp =~ s/Try this search on OneLook \/ Google//;
 
-                    dispatch( $event, "According to FOLDOC: " . $tmp );
+                    dispatch( $event, 'According to FOLDOC: ' . $tmp );
                 }
                 else {
-                    dispatch( $event, "foldoc: Screen Scrape failed!" );
+                    dispatch( $event, 'foldoc: Screen Scrape failed!' );
                 }
             }
         );
         return;
     },
     HELP => sub {
-        return "Define things from the Free Online Dictionary of Computing";
+        return 'Define things from the Free Online Dictionary of Computing';
     },
     TYPE => [qw/private public emote/],
     POS  => '0',
@@ -1839,7 +1838,7 @@ $response{lynx} = {
         my ($event) = @_;
         my $args = $event->{VALUE};
         if ( !( $args =~ s/.*lynx\s+(.*)/$1/i ) ) {
-            return "ERROR: Expected RE not matched!";
+            return 'ERROR: Expected RE not matched!';
         }
         add_throttled_HTTP(
             url      => $args,
@@ -1851,16 +1850,16 @@ $response{lynx} = {
                 my ($response) = @_;
                 my $message;
 
-                $message = "status: " . $response->{_state}{_msg};
-                $message .= " url: " . $response->{url};
-                $message .= " size: " . length( $response->{_content} );
+                $message = 'status: ' . $response->{_state}{_msg};
+                $message .= ' url: ' . $response->{url};
+                $message .= ' size: ' . length( $response->{_content} );
 
                 dispatch( $event, $message );
             }
         );
         return;
     },
-    HELP => sub { return "trying to find a nice way to suck down web pages."; },
+    HELP => sub { return 'trying to find a nice way to suck down web pages.'; },
     TYPE => [qw/private public emote/],
     POS  => '0',
     STOP => 1,
@@ -1879,16 +1878,16 @@ $ascii{DEL} = 0x7f;
 sub format_ascii {
     my $val = @_[0];
 
-    my $format = "%s => %d (dec); 0x%x (hex); 0%o (oct)";
+    my $format = '%s => %d (dec); 0x%x (hex); 0%o (oct)';
 
     if ( $val < 0 || $val > 255 ) {
-        return "Ascii is 7 bit, silly!";
+        return 'Ascii is 7 bit, silly!';
     }
     my $chr = "'" . chr($val) . "'";
 
-    my $control = "";
+    my $control;
     if ( $val >= 1 && $val <= 26 ) {
-        $control = "; control-" . chr( $val + ord('A') - 1 );
+        $control = '; control-' . chr( $val + ord('A') - 1 );
     }
 
     if ( $val < $#ascii ) {
@@ -1896,7 +1895,7 @@ sub format_ascii {
     }
 
     if ( $val == 0x7f ) {
-        $chr = "DEL";
+        $chr = 'DEL';
     }
 
     return sprintf( $format, $chr, $val, $val, $val ) . $control;
@@ -1907,14 +1906,14 @@ $response{rot13} = {
         my ($event) = @_;
         my $args = $event->{VALUE};
         if ( !( $args =~ s/.*rot13\s+(.*)/$1/i ) ) {
-            return "ERROR: Expected RE not matched!";
+            return 'ERROR: Expected RE not matched!';
         }
 
         $args =~ tr/[A-Za-z]/[N-ZA-Mn-za-m]/;
 
         return $args;
     },
-    HELP => sub { return "Usage: rot13 <val>"; },
+    HELP => sub { return 'Usage: rot13 <val>'; },
     TYPE => [qw/private/],
     POS  => '0',
     STOP => 1,
@@ -1926,12 +1925,12 @@ $response{urldecode} = {
         my ($event) = @_;
         my $args = $event->{VALUE};
         if ( !( $args =~ s/.*urldecode\s+(.*)/$1/i ) ) {
-            return "ERROR: Expected RE not matched!";
+            return 'ERROR: Expected RE not matched!';
         }
 
         return unescape $args;
     },
-    HELP => sub { return "Usage: urldecode <val>"; },
+    HELP => sub { return 'Usage: urldecode <val>'; },
     TYPE => [qw/private/],
     POS  => '0',
     STOP => 1,
@@ -1943,12 +1942,12 @@ $response{urlencode} = {
         my ($event) = @_;
         my $args = $event->{VALUE};
         if ( !( $args =~ s/.*urlencode\s+(.*)/$1/i ) ) {
-            return "ERROR: Expected RE not matched!";
+            return 'ERROR: Expected RE not matched!';
         }
 
         return escape $args;
     },
-    HELP => sub { return "Usage: urlencode <val>"; },
+    HELP => sub { return 'Usage: urlencode <val>'; },
     TYPE => [qw/private/],
     POS  => '0',
     STOP => 1,
@@ -1960,7 +1959,7 @@ $response{ascii} = {
         my ($event) = @_;
         my $args = $event->{VALUE};
         if ( !( $args =~ s/.*ascii\s+(.*)/$1/i ) ) {
-            return "ERROR: Expected RE not matched!";
+            return 'ERROR: Expected RE not matched!';
         }
         if ( $args =~ m/^'(.)'$/ ) {
             return format_ascii( ord($1) );
@@ -2008,22 +2007,22 @@ $response{country} = {
         my ($event) = @_;
         my $args = $event->{VALUE};
         if ( !( $args =~ s/.*country\s+(.*)/$1/i ) ) {
-            return "ERROR: Expected RE not matched!";
+            return 'ERROR: Expected RE not matched!';
         }
         if ( $args =~ m/^(..)$/ ) {
 
             my $a = `grep -i '\|$1\$' /Users/cjsrv/CJ/countries.txt`;
             $a =~ m/^([^\|]*)/;
-            return $1 unless ( $1 eq "" );
-            return "No Match.";
+            return $1 unless ( $1 eq q{} );
+            return 'No Match.';
         }
         else {
             my @a =
               split( /\n/, `grep -i \'$args\' /Users/cjsrv/CJ/countries.txt` );
             if ( scalar(@a) > 10 ) {
-                return "Your search found "
+                return 'Your search found '
                   . scalar(@a)
-                  . " countries. Be more specific (I can only show you 10).";
+                  . ' countries. Be more specific (I can only show you 10).';
             }
             elsif ( scalar(@a) > 0 ) {
                 my $tmp = join( "\'; ", @a );
@@ -2031,13 +2030,13 @@ $response{country} = {
                 return $tmp . "'";
             }
             else {
-                return "Found no matches.";
+                return 'Found no matches.';
             }
         }
     },
     HELP => sub {
         return
-"Usage: country <val>, where val is either a 2 character country code, or a string to match against possible countries.";
+'Usage: country <val>, where val is either a 2 character country code, or a string to match against possible countries.';
     },
     TYPE => [qw/private/],
     POS  => '0',
@@ -2050,7 +2049,7 @@ $response{utf8} = {
         my ($event) = @_;
         my $args = $event->{VALUE};
         if ( !( $args =~ s/.*utf8\s+(.*)/$1/i ) ) {
-            return "ERROR: Expected RE not matched!";
+            return 'ERROR: Expected RE not matched!';
         }
         if ( $args =~ m/^[Uu]\+([0-9A-Fa-f]*)$/ ) {
             my $a = `grep -i '^$1\|' /Users/cjsrv/CJ/unicode2.txt`;
@@ -2062,9 +2061,9 @@ $response{utf8} = {
               split( /\n/,
                 `grep -i \'\|\.\*$args\' /Users/cjsrv/CJ/unicode2.txt` );
             if ( scalar(@a) > 10 ) {
-                return "Your search found "
+                return 'Your search found '
                   . scalar(@a)
-                  . " glyphs. Please be more specific.";
+                  . ' glyphs. Please be more specific.';
             }
             elsif ( scalar(@a) > 0 ) {
                 my $tmp = join( "\'; ", @a );
@@ -2072,13 +2071,13 @@ $response{utf8} = {
                 return $tmp . "'";
             }
             else {
-                return "Found no matches.";
+                return 'Found no matches.';
             }
         }
     },
     HELP => sub {
         return
-"Usage: utf8 <val>, where val is either U+<hex> or a string to match against possible characters.";
+'Usage: utf8 <val>, where val is either U+<hex> or a string to match against possible characters.';
     },
     TYPE => [qw/private/],
     POS  => '0',
@@ -2091,7 +2090,7 @@ $response{utf8} = {
 sub cleanHTML {
 
     # join blank lines, remove excess whitespace and kill tags.
-    $a = join( " ", @_ );
+    $a = join( ' ', @_ );
     $a =~ s/\n/ /;
     $a =~ s/<[^>]*>/ /g;
 
@@ -2122,12 +2121,12 @@ sub dispatch {
 
     my ( $event, $message ) = @_;
 
-    return if ( $message eq "" );
+    return if ( $message eq q{} );
 
-    if ( $event->{type} eq "emote" ) {
+    if ( $event->{type} eq 'emote' ) {
         $message = '"' . $message;
     }
-    my $line = $event->{_recips} . ":" . $message;
+    my $line = $event->{_recips} . ':' . $message;
     TLily::Server->active()->cmd_process( $line, sub { $_[0]->{NOTIFY} = 0; } );
 }
 
@@ -2136,7 +2135,7 @@ sub away_event {
     my ( $event, $handler ) = @_;
 
     if ( $event->{SOURCE} eq $name ) {
-        my $line = "/here";
+        my $line = '/here';
         TLily::Server->active()
           ->cmd_process( $line, sub { $_[0]->{NOTIFY} = 0; } );
     }
@@ -2163,7 +2162,7 @@ sub cj_event {
     if ( ( $throttle{ $event->{SOURCE} }{last} - $last ) < $throttle_interval )
     {
 
-        #TLily::UI->name("main")->print("$event->{SOURCE} tripped throttle!\n");
+        #TLily::UI->name('main')->print("$event->{SOURCE} tripped throttle!\n");
         $throttle{ $event->{SOURCE} }{count} += 1;
     }
     elsif ( ( $throttle{ $event->{SOURCE} }{last} - $last ) > $throttle_safety )
@@ -2194,10 +2193,10 @@ sub cj_event {
     # and all recips. If public/emote, just the recips.
 
     my @recips = split( /, /, $event->{RECIPS} );
-    if ( $event->{type} eq "private" ) {
+    if ( $event->{type} eq 'private' ) {
         push @recips, $event->{SOURCE};
     }
-    elsif ( $event->{type} eq "emote" ) {
+    elsif ( $event->{type} eq 'emote' ) {
         if ( $event->{VALUE} =~ /^ . o O \((.*)\)$/ ) {
             $event->{VALUE} = $1;
         }
@@ -2207,12 +2206,12 @@ sub cj_event {
     }
 
     @recips = grep { !/^$name$/ } @recips;
-    my $recips = join( ",", @recips );
+    my $recips = join( ',', @recips );
     $recips =~ s/ /_/g;
     $event->{_recips} = $recips;
 
     # Workhorse for responses:
-    my $message = "";
+    my $message;
   HANDLE_OUTER: foreach my $order (qw/-2 -1 0 1 2/) {
       HANDLE_INNER: foreach my $handler ( keys %response ) {
 
@@ -2222,16 +2221,16 @@ sub cj_event {
                 next
                   if !grep { /$event->{type}/ } @{ $response{$handler}{TYPE} };
                 my $re = $response{$handler}->{RE};
-                if ( $event->{type} eq "public" ) {
+                if ( $event->{type} eq 'public' ) {
                     $re = qr/^\s*(?i:$name\s*,?\s*)?$re/;
-                } elsif ( $event->{type} eq "emote" ) {
+                } elsif ( $event->{type} eq 'emote' ) {
                     # XXX must anchor emotes by default. 
                     # fixup so things like "drink" work, though.
                     $re = qr/^\s*(?i:$name\s*,?\s*)?$re/;
                 }
 
                 if ( $event->{VALUE} =~ m/$re/ ) {
-                    $served{ $event->{type} . " messages" }++;
+                    $served{ $event->{type} . ' messages' }++;
                     $served{$handler}++;
                     $message .= &{ $response{$handler}{CODE} }($event);
                     if ( $response{$handler}->{STOP} ) {
@@ -2263,7 +2262,7 @@ sub cj_event {
         my $ds = $notations->{$annotation};
         next unless $ds->{VALUES};
         my $local_event = $event;
-        $local_event->{_recips} = join( ",", @{ $ds->{TARGETS} } );
+        $local_event->{_recips} = join( ',', @{ $ds->{TARGETS} } );
         foreach my $value ( @{ $ds->{VALUES} } ) {
             &{ $annotation_code{$annotation}{CODE} }( $local_event, $value );
         }
@@ -2277,65 +2276,65 @@ sub cj_event {
 for (qw/public private emote/) {
     event_r( type => $_, order => 'before', call => \&cj_event );
 }
-event_r( type => "away", order => 'after', call => \&away_event );
+event_r( type => 'away', order => 'after', call => \&away_event );
 
 sub load {
     my $server = TLily::Server->active();
-    dbmopen( %prefs, "/Users/cjsrv/CJ_prefs.db", 0666 )
+    dbmopen( %prefs, '/Users/cjsrv/CJ_prefs.db', 0666 )
       or die "couldn't open DBM file!";
     $config = new Config::IniFiles( -file => $config_file )
       or die @Config::IniFiles::errors;
 
-    foreach my $disc ( $config->GroupMembers("discussion") ) {
+    foreach my $disc ( $config->GroupMembers('discussion') ) {
         my $discname = $disc;
         $discname =~ s/^discussion //;
 
-        my @feeds = split /\n/, $config->val( $disc, "feeds" );
+        my @feeds = split /\n/, $config->val( $disc, 'feeds' );
         foreach my $feed (@feeds) {
             push @{ $disc_feed{"feed $feed"} }, $discname;
         }
-        my @annotations = split /\n/, $config->val( $disc, "annotations" );
+        my @annotations = split /\n/, $config->val( $disc, 'annotations' );
         foreach my $annotation (@annotations) {
             $disc_annotations{$discname}{$annotation} = 1;
         }
 
     }
-    foreach my $annotation ( $config->GroupMembers("annotation") ) {
+    foreach my $annotation ( $config->GroupMembers('annotation') ) {
         my $ann_name = $annotation;
         $ann_name =~ s/^annotation //;
-        $annotations{$ann_name}{RE}     = $config->val( $annotation, "regexp" );
-        $annotations{$ann_name}{action} = $config->val( $annotation, "action" );
+        $annotations{$ann_name}{RE}     = $config->val( $annotation, 'regexp' );
+        $annotations{$ann_name}{action} = $config->val( $annotation, 'action' );
     }
 
     $server->fetch(
         call => sub { my %event = @_; $sayings = $event{text} },
-        type   => "memo",
+        type   => 'memo',
         target => $disc,
-        name   => "sayings"
+        name   => 'sayings'
     );
     $server->fetch(
         call => sub { my %event = @_; $overhear = $event{text} },
-        type   => "memo",
+        type   => 'memo',
         target => $disc,
-        name   => "overhear"
+        name   => 'overhear'
     );
     $server->fetch(
         call => sub { my %event = @_; $buzzwords = $event{text} },
-        type   => "memo",
+        type   => 'memo',
         target => $disc,
-        name   => "buzzwords"
+        name   => 'buzzwords'
     );
     $server->fetch(
         call => sub { my %event = @_; $unified = $event{text} },
-        type   => "memo",
+        type   => 'memo',
         target => $disc,
-        name   => "-unified"
+        name   => '-unified'
     );
     $server->fetch(
         call => sub { my %event = @_; $beener = $event{text} },
-        type   => "memo",
+        type   => 'memo',
         target => $disc,
-        name   => "-beener"
+        name   => '-beener'
     );
 
     $every_10m = TLily::Event::time_r(
@@ -2357,7 +2356,7 @@ sub load {
         },
         interval => 2.0
     );
-    TLily::Server->active()->cmd_process("/blurb off");
+    TLily::Server->active()->cmd_process('/blurb off');
 }
 
 =head2 checkpoint ()
