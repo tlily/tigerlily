@@ -16,8 +16,6 @@ use DB_File;    # get rid of this now that we have Config::IniFiles...
 
 use Chatbot::Eliza;
 
-#use Net::IRC
-
 =head1 AUTHOR
 
 Will "Coke" Coleda
@@ -51,8 +49,11 @@ from an RSS feed), and then announce this information to certain discussions.
 CJ was a bot. He did a lot of things that some folks found useful,
 and did a lot of things that some folks thought was waaaaay too chatty.
 He began as a lily-server based magic 8-ball, was ported to a bot using
-tlily version 1. This brings CJ up to tlily version 2 as a fresh
-implementation. I was going to use Josh's Bot.pm to handle a good chunk 
+tlily version 1. He is now using bleeding edge tlily 2.
+
+=head1 MISC 
+
+I was going to use Josh's Bot.pm to handle a good chunk 
 of the guts for me, but Bot.pm didn't really seem to meet my needs.
 This rewrite is intended as an exercize to (a) improve stability, (b) 
 improve maintainability, (c) prepare for a similar capability for Flow.
@@ -65,7 +66,6 @@ a ComplexBot module.
 my %response;    #Container for all response handlers.
 my %throttle;    #Container for all throttling information.
 
-#my $irc_obj = new Net::IRC;
 my %irc;         #Container for all irc channel information
 my $throttle_interval = 1;    #seconds
 my $throttle_safety   = 5;    #seconds
@@ -225,17 +225,6 @@ sub send_headline {
             }
             $line .= " :: ";
 
-            #my $tmp = "$title--NADA--$description" ;
-            #debug("target: $target");
-            #if ($tmp =~ s/(.*)\.+?\s*--NADA--\s*\1/$1 :: ... /) {
-            #debug("the RE matched...");
-            #} else {
-            #debug("the RE did not match...");
-            #}
-            #$tmp =~ s/ :: \.\.\. $//;
-            #debug("temp is '$tmp'");
-            #$line .= $tmp;
-
             $line .= "$title :: $description";
             TLily::Server->active()->cmd_process($line);
 
@@ -315,7 +304,6 @@ sub get_stock {
 
             my ($response) = @_;
 
-            #return "Quote for @stock failed." unless $response->is_success();
             my @chunks = split( /\n/, $response->{_content} );
             foreach (@chunks) {
                 my ( $stock, $value, $date, $time, $change, $volume ) =
@@ -455,15 +443,10 @@ sub shorten {
             else {
                 # response should be on first line:
                 $response->{_content} =~ s/^([^\n]*)//;  
-                #$response->{_content} =~ m/(http.*)/;
                 $ans = $1;
-                #$ans =~ s/\s//g;
                 if ($ans) { 
                   $ans .= " [$original_host]";
                   $shorts{$short} = $ans;
-                } else {
-                  # XXX - this is really not very helpful. 
-                  # $ans = "unresolvable, sorry."
                 }
             }
             &$callback($ans) if $ans;
@@ -545,6 +528,8 @@ possible settings: Admin (Must be one of CJ's administrators), and User
 
 TODO: Moderator (must moderator/own a discussion the request is on behalf of)
 
+TODO: this declaration isn't actually used at the moment.
+
 =back
 
 There is no special default handler. You must define one explicitly.
@@ -588,7 +573,7 @@ $response{bible} = {
 
         my $url      =
             "http://www.biblegateway.com/passage/?search=$term&version=$bible";
-        # nine is king james
+
         add_throttled_HTTP(
             url      => $url,
             ui_name  => 'main',
@@ -1463,10 +1448,6 @@ sub scrape_anagram{
 sub scrape_translate {
     my ( $term, $content ) = @_;
 
-    #my $joe = $content;
-#$joe =~ s{\n}{\\n}xgms;
-    #TLily::Server->active()->cmd_process( "Coke:$joe" );
-
     if ( $content =~
         m{<td bgcolor=white class=s><div style=padding:10px;>([^<]*)</div></td>}i )
     {
@@ -1572,7 +1553,7 @@ sub scrape_webster {
 
         if ( scalar(@other_forms) >= 1 ) {
 
-#Need to figure out the magic incation to get the secondary data...
+#XXX Need to figure out the magic incation to get the secondary data...
 #http://www.m-w.com/cgi-bin/dictionary?hdwd=murder&jump=a&list=a=700349
 #<input type=hidden name=list value="murder[1,noun]=700416;murder[2,verb]=700439;bloody murder=109479;self-murder=972362">
 
@@ -1719,7 +1700,7 @@ $response{horoscope} = {
                     scrape_horoscope( $term, $response->{_content}, $type ) );
             }
         );
-        "";    #muahaah
+        "";
     },
     HELP => sub { return "ask me about your sign to get a daily horoscope. We speak chinese. (Usage: horoscope [for] sign)"; },
     TYPE => [qw/private public emote/],
@@ -1764,7 +1745,7 @@ $response{define2} = {
                 }
             }
         );
-        "";    #muahaah
+        "";
     },
     HELP => sub { return "Look up a word on wiktionary.org/en"; },
     TYPE => [qw/private/],
@@ -1792,7 +1773,7 @@ $response{define} = {
                     scrape_webster( $term, $response->{_content} ) );
             }
         );
-        "";    #muahaah
+        "";
     },
     HELP => sub { return "Look up a word on m-w.com"; },
     TYPE => [qw/private/],
@@ -1825,10 +1806,6 @@ $response{foldoc} = {
                 if ( $tmp =~ /No match for/ ) {
                     dispatch( $event, "No match, sorry" );
                     return "";
-                }
-                else {
-
-                    #dispatch($event,"a match, sorry");
                 }
 
                 my @chunks = split( "<HR>", $response->{_content} );
@@ -1874,14 +1851,10 @@ $response{lynx} = {
                 my ($response) = @_;
                 my $message;
 
-         #$message = "keys: ". (join " ", (keys %$response));
-         #$message = "status keys: ". (join " ", (keys %{$response->{_state}}));
                 $message = "status: " . $response->{_state}{_msg};
                 $message .= " url: " . $response->{url};
                 $message .= " size: " . length( $response->{_content} );
 
-                #$response->{_content} =~ s/\s+/ /g;
-                #$message = "content: ". $response->{_content};
                 dispatch( $event, $message );
             }
         );
@@ -2134,7 +2107,7 @@ sub cleanHTML {
     $a =~ s/&nbsp;/ /ig;
     $a =~ s/&uuml;/u"/ig;
 
-    # translate any utf8 codes to ascii representations:
+    # XXX translate any utf8 codes to ascii representations:
     # Use Text::Unidecode if it's available...
 
     # cleanup whitespace.
@@ -2196,7 +2169,6 @@ sub cj_event {
     elsif ( ( $throttle{ $event->{SOURCE} }{last} - $last ) > $throttle_safety )
     {
 
-  #TLily::UI->name("main")->print("$event->{SOURCE} is no longer dangerous!\n");
         $throttle{ $event->{SOURCE} }{count}  = 0;
         $throttle{ $event->{SOURCE} }{status} = 0;
     }
@@ -2209,7 +2181,6 @@ sub cj_event {
         }
         else {
 
-        #TLily::UI->name("main")->print("$event->{SOURCE} is now dangerous!\n");
             $throttle{ $event->{SOURCE} }{status} = 1;
             $throttle{ $event->{SOURCE} }{count}  = 0;
         }
@@ -2255,9 +2226,8 @@ sub cj_event {
                     $re = qr/^\s*(?i:$name\s*,?\s*)?$re/;
                 } elsif ( $event->{type} eq "emote" ) {
                     # XXX must anchor emotes by default. 
-                    # fixup so things like "drink" work.
+                    # fixup so things like "drink" work, though.
                     $re = qr/^\s*(?i:$name\s*,?\s*)?$re/;
-                    #$re = qr/(?i:\b$name\s*,?\s*)?$re/;
                 }
 
                 if ( $event->{VALUE} =~ m/$re/ ) {
@@ -2329,10 +2299,6 @@ sub load {
             $disc_annotations{$discname}{$annotation} = 1;
         }
 
-        #my $irc = $config->val($disc,"irc");
-        #if (defined($irc)) {
-        #$irc{$discname} = $irc;
-        #}
     }
     foreach my $annotation ( $config->GroupMembers("annotation") ) {
         my $ann_name = $annotation;
@@ -2340,22 +2306,6 @@ sub load {
         $annotations{$ann_name}{RE}     = $config->val( $annotation, "regexp" );
         $annotations{$ann_name}{action} = $config->val( $annotation, "action" );
     }
-
-    #foreach my $irc_cxn ($config->GroupMembers("irc")) {
-    #my $irc_name = $irc_cxn;
-    #$irc_name =~ s/^irc //;
-    #my $server = $config->val($irc_cxn,"server");
-    #my $port = $config->val($irc_cxn,"port");
-    #my $nick = $config->val($irc_cxn,"nick");
-    #my $channel= $config->val($irc_cxn,"channel");
-    #$irc_cxn{$channel} = $irc_obj->newconn(Nick=>$nick,
-    #Server=>$server,
-    #Port=>$port,
-    #Server=>$server,
-    #Ircname => "Lily/IRC Bridge");
-    #}
-    #TLily::Event::event_r("idle", "after", sub {
-    #$irc_obj->do_one_loop() });
 
     $server->fetch(
         call => sub { my %event = @_; $sayings = $event{text} },
