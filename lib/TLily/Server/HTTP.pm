@@ -61,6 +61,7 @@ sub send_url {
     return unless exists ($event->{server}->{url});
    
     my $request = "GET " . $event->{server}->{url} . " HTTP/1.0\r\n";
+    $request .= "USER-AGENT: Tigerlily\r\n";
     $request .= "host: " . $event->{server}->{host} . "\r\n";
     $request .= "\r\n";
     $event->{server}->send($request);
