@@ -509,8 +509,8 @@ Lowest is checked first.
 
 =item HELP
 
-Coderef that will be run when someone asks for help with this handler. See
-the help response handler for more details. 
+A string with the helptext, or a Coderef that will be run when someone asks 
+for help with this handler. See the help response handler for more details. 
 
 =item STOP
 
@@ -644,7 +644,7 @@ $response{weather} = {
         );
         return;
     },
-    HELP => sub { return 'Given a location, get the current weather.' },
+    HELP => 'Given a location, get the current weather.',
     TYPE => [qw/private public emote/],
     POS  => '-1',
     STOP => 1,
@@ -689,7 +689,7 @@ $response{forecast} = {
         );
         return;
     },
-    HELP => sub { return 'Given a location, get the weather forecast.' },
+    HELP => 'Given a location, get the weather forecast.',
     TYPE => [qw/private public emote/],
     POS  => '-1',
     STOP => 1,
@@ -732,7 +732,7 @@ $response{engrish} = {
         );
         return;
     },
-    HELP => sub { return 'Given an english phrase, botch it.' },
+    HELP => 'Given an english phrase, botch it.',
     TYPE => [qw/private public emote/],
     POS  => '-1',
     STOP => 1,
@@ -893,10 +893,7 @@ $response{anagram} = {
         );
         return;
     },
-    HELP => sub {
-        return
- 'given a phrase, return an anagram of it.';
-    },
+    HELP => 'given a phrase, return an anagram of it.',
     TYPE => [qw/private public emote/],
     POS  => '-1',
     STOP => 1,
@@ -931,9 +928,7 @@ $response{convert} = {
         $a = eval "$count $units_output";
         return "$a $to";
     },
-    HELP => sub {
-        return 'convert units: convert (amount) from_units to_units ';
-    },
+    HELP => 'convert units: convert (amount) from_units to_units',
     TYPE => [qw/private public emote/],
     POS  => '1',
     STOP => 1,
@@ -959,9 +954,7 @@ $response{math} = {
         }
 	return $result;
     },
-    HELP => sub {
-        return 'math stuff';
-    },
+    HELP => 'math stuff',
     TYPE => [qw/private/],
     POS  => '1',
     STOP => 1,
@@ -984,9 +977,9 @@ $response{shorten} = {
         }
         return;
     },
-    HELP => sub {
-        return 'Given a URL, return an xrl.us shortened version of the url. Or, vice versa.';
-    },
+    HELP => <<'END_HELP',
+Given a URL, return an xrl.us shortened version of the url.  Or, vice versa.
+END_HELP
     TYPE => [qw/private/],
     POS  => '-1',
     STOP => 1,
@@ -1012,11 +1005,16 @@ $response{help} = {
               . '. In general, commands can appear anywhere in private sends, but must begin public sends.';
         }
         if ( exists ${response}{$args} ) {
-            return &{ $response{$args}{HELP} }();
+            my $helper = $response{$args}{HELP};
+            if (ref $helper) {
+                return &{ $helper }();
+            } else {
+                return join(' ', ( split /\n/, $helper ) );
+            }
         }
-        return "ERROR: \'$args\' , unknown help topic.";
+        return "ERROR: '$args' , unknown help topic.";
     },
-    HELP => sub { return "You're kidding, right?"; },
+    HELP => "You're kidding, right?",
     TYPE => [qw/private/],
     POS  => '-2',
     STOP => 1,
@@ -1047,7 +1045,7 @@ $response{cal} = {
         }
         return wrap( split( /\n/, $retval ) );
     },
-    HELP => sub { return 'like the unix command'; },
+    HELP => 'like the unix command',
     TYPE => [qw/private/],
     POS  => '0',
     STOP => 1,
@@ -1073,7 +1071,7 @@ $response{'unset'} = {
             return "ERROR: invalid variable: $args";
         }
     },
-    HELP => sub { return "Purpose: provide a way to undo \"set\""; },
+    HELP => 'Purpose: provide a way to undo "set"',
     TYPE => [qw/private/],
     POS  => '0',
     STOP => 1,
@@ -1150,10 +1148,12 @@ $response{'poll'} = {
             return 'ERROR: Expected RE not matched!';
         }
     },
-    HELP => sub {
-        return
-'Similar to /vote. By itself, list current polls. given a poll name, return the current results. You can also specify a value to cast your ballot. Usage: poll [<poll> [<vote>]]';
-    },
+    HELP => <<'END_HELP',
+Similar to /vote. By itself, list current polls.
+Given a poll name, return the current results.
+You can also specify a value to cast your ballot.
+Usage: poll [<poll> [<vote>]]
+END_HELP
     TYPE => [qw/private/],
     POS  => '0',
     STOP => 1,
@@ -1195,10 +1195,12 @@ $response{'set'} = {
             return $key . " = \'" . $val . "\'";
         }
     },
-    HELP => sub {
-        return
-'Purpose: provide a generic mechanism for preference management. Usage: set [ <var> [ <value> ] ]. Only works in private. I should really limit what data can be set here. Also, we use your SHANDLE via SLCP, in violation of the geneva convention.';
-    },
+    HELP => <<'END_HELP',
+Purpose: provide a generic mechanism for preference management. 
+Usage: set [ <var> [ <value> ] ]. 
+Only works in private. Also, we use your SHANDLE via SLCP, in violation of
+the Geneva convention.
+END_HELP
     TYPE => [qw/private/],
     POS  => '0',
     STOP => 1,
@@ -1241,8 +1243,7 @@ $response{'ping'} = {
         $a =~ s/\$VAR1 =/ number of commands and messages processed: /;
         return 'pong. uptime: ' . humanTime( time() - $uptime ) . "; $a";
     },
-    HELP =>
-      sub { return "Yes, I'm alive. And have some stats while you're at it."; },
+    HELP => "Yes, I'm alive. And have some stats while you're at it.",
     TYPE => [qw/private/],
     POS  => '0',
     STOP => 1,
@@ -1325,10 +1326,10 @@ $response{stock} = {
             return;
         }
     },
-    HELP => sub {
-        return
-"Give a list of ticker symbols, I'll be your web proxy to finance.yahoo.com";
-    },
+    HELP => <<'END_HELP',
+Give a list of ticker symbols, I'll be your web proxy to
+http://finance.yahoo.com
+END_HELP
     TYPE => [qw/private public emote/],
     POS  => '0',
     STOP => 1,
@@ -1347,7 +1348,7 @@ $response{drink} = {
         }
         return q{};
     },
-    HELP => sub { return "slide me a drink, I'm game."; },
+    HELP => "slide me a drink, I'm game.",
     TYPE => [qw/emote/],
     POS  => '0',
     STOP => 1,
@@ -1367,7 +1368,7 @@ $response{kibo} = {
         my ($message) = sprintf( pickRandom($list), $event->{SOURCE} );
         return $message;
     },
-    HELP => sub { return 'I respond to public questions addressed to me.'; },
+    HELP => 'I respond to public questions addressed to me.',
     TYPE => [qw/public emote/],
     POS  => '1',
     STOP => 1,
@@ -1379,10 +1380,10 @@ $response{eliza} = {
         my ($event) = @_;
         return $eliza->transform( $event->{VALUE} );
     },
-    HELP => sub {
-        return
-"I've been doing some research into psychotherapy, I'd be glad to help you work through your agression.";
-    },
+    HELP => <<'END_HELP',
+I've been doing some research into psychotherapy,
+I'd be glad to help you work through your agression.
+END_HELP
     TYPE => ['private'],
     POS  => '2',
     STOP => 1,
@@ -1643,9 +1644,7 @@ $response{bacon} = {
         );
         return;
     },
-    HELP => sub {
-        return "Find someone's bacon number using http://oracleofbacon.org/";
-    },
+    HELP => "Find someone's bacon number using http://oracleofbacon.org/",
     TYPE => [qw/private/],
     POS  => '-1',
     STOP => 1,
@@ -1707,7 +1706,10 @@ $response{horoscope} = {
         );
         return;
     },
-    HELP => sub { return 'ask me about your sign to get a daily horoscope. We speak chinese. (Usage: horoscope [for] sign)'; },
+    HELP => <<'END_HELP',
+Ask me about your sign to get a daily horoscope. We speak chinese.
+(Usage: horoscope [for] sign)
+END_HELP
     TYPE => [qw/private public emote/],
     POS  => '-1',
     STOP => 1,
@@ -1752,7 +1754,7 @@ $response{define2} = {
         );
         return;
     },
-    HELP => sub { return 'Look up a word on wiktionary.org/en'; },
+    HELP => 'Look up a word on wiktionary.org/ (english only)',
     TYPE => [qw/private/],
     POS  => '-1',
     STOP => 1,
@@ -1780,7 +1782,7 @@ $response{define} = {
         );
         return;
     },
-    HELP => sub { return 'Look up a word on m-w.com'; },
+    HELP => 'Look up a word on m-w.com',
     TYPE => [qw/private/],
     POS  => '-1',
     STOP => 1,
@@ -1829,9 +1831,7 @@ $response{foldoc} = {
         );
         return;
     },
-    HELP => sub {
-        return 'Define things from the Free Online Dictionary of Computing';
-    },
+    HELP => 'Define things from the Free Online Dictionary of Computing',
     TYPE => [qw/private public emote/],
     POS  => '0',
     STOP => 1,
@@ -1865,7 +1865,7 @@ $response{lynx} = {
         );
         return;
     },
-    HELP => sub { return 'trying to find a nice way to suck down web pages.'; },
+    HELP => 'trying to find a nice way to suck down web pages.',
     TYPE => [qw/private public emote/],
     POS  => '0',
     STOP => 1,
@@ -1919,7 +1919,7 @@ $response{rot13} = {
 
         return $args;
     },
-    HELP => sub { return 'Usage: rot13 <val>'; },
+    HELP => 'Usage: rot13 <val>',
     TYPE => [qw/private/],
     POS  => '0',
     STOP => 1,
@@ -1936,7 +1936,7 @@ $response{urldecode} = {
 
         return unescape $args;
     },
-    HELP => sub { return 'Usage: urldecode <val>'; },
+    HELP => 'Usage: urldecode <val>',
     TYPE => [qw/private/],
     POS  => '0',
     STOP => 1,
@@ -1953,7 +1953,7 @@ $response{urlencode} = {
 
         return escape $args;
     },
-    HELP => sub { return 'Usage: urlencode <val>'; },
+    HELP => 'Usage: urlencode <val>',
     TYPE => [qw/private/],
     POS  => '0',
     STOP => 1,
@@ -1998,10 +1998,11 @@ $response{ascii} = {
             return "Sorry, $args doesn't make any sense to me.";
         }
     },
-    HELP => sub {
-        return
-"Usage: ascii <val>, where val can be a char ('a'), hex (0x1), octal (01), decimal (1) an emacs (C-A) or perl (\\cA) control sequence, or an ASCII control name (SOH).";
-    },
+    HELP => <<'END_HELP',
+Usage: ascii <val>, where val can be a char ('a'), hex (0x1), octal (01),
+decimal (1) an emacs (C-A) or perl (\cA) control sequence, or an ASCII
+control name (SOH)
+END_HELP
     TYPE => [qw/private/],
     POS  => '0',
     STOP => 1,
@@ -2040,10 +2041,10 @@ $response{country} = {
             }
         }
     },
-    HELP => sub {
-        return
-'Usage: country <val>, where val is either a 2 character country code, or a string to match against possible countries.';
-    },
+    HELP => <<'END_HELP',
+Usage: country <val>, where val is either a 2 character country code, or a
+string to match against possible countries.
+END_HELP
     TYPE => [qw/private/],
     POS  => '0',
     STOP => 1,
@@ -2081,10 +2082,10 @@ $response{utf8} = {
             }
         }
     },
-    HELP => sub {
-        return
-'Usage: utf8 <val>, where val is either U+<hex> or a string to match against possible characters.';
-    },
+    HELP => <<'END_HELP',
+Usage: utf8 <val>, where val is either U+<hex> or a string to match
+against possible characters.
+END_HELP
     TYPE => [qw/private/],
     POS  => '0',
     STOP => 1,
