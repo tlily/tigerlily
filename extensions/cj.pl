@@ -1222,7 +1222,7 @@ $response{'stomach pump'} = {
     CODE => sub {
         return 'Eeeek!';
     },
-    HELP => sub { return 'stomach pumps scare me.'; },
+    HELP => 'stomach pumps scare me.',
     TYPE => 'all',
     POS  => '0',
     STOP => 1,
@@ -1255,10 +1255,9 @@ $response{cmd} = {
             }
         );
     },
-    HELP => sub {
-        return
-          'If you are a cj admin, you can use this command to boss me around.';
-    },
+    HELP => <<'END_HELP',
+If you're a cj admin, use this command to boss me around.
+Usage: cmd <lily command>
     POS  => '0',
     STOP => 1,
     RE   => qr/\bcmd\b/i,
@@ -1273,8 +1272,7 @@ $response{buzz} = {
         }
         return join( ' ', @tmp ) . '!';
     },
-    HELP =>
-      sub { return 'random buzzword generator. Active with keyword "buzz"'; },
+    HELP => 'random buzzword generator. Active with keyword "buzz"',
     POS  => '1',
     STOP => 1,
     RE   => qr/\bbuzz\b/i,
