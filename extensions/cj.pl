@@ -500,7 +500,8 @@ is passed the tigerlily event when invoked.
 
 =item TYPE
 
-Listref showing the valid contexts for this command. (public, private, or emote)
+String showing the valid contexts for this command, which are any of
+public, private, or emote. The default for all commands is private only.
 
 =item POS
 
@@ -600,7 +601,7 @@ $response{bible} = {
         }
         return $help;
     },
-    TYPE => [qw/private public emote/],
+    TYPE => 'all',
     POS  => '-1',
     STOP => 1,
     RE   => qr/\b(?:bible|passage)\s*(niv|nasb|tm|ab|nlt|kjv|esv|cev|nkjv|21kjv|asv|ylt|dt|nlv|hcsb|wnt|we|nivuk|tniv)?\s+(.*\d+:\d+)/i,
@@ -645,7 +646,7 @@ $response{weather} = {
         return;
     },
     HELP => 'Given a location, get the current weather.',
-    TYPE => [qw/private public emote/],
+    TYPE => 'all',
     POS  => '-1',
     STOP => 1,
     RE   => qr/\bweather\b/i
@@ -690,7 +691,7 @@ $response{forecast} = {
         return;
     },
     HELP => 'Given a location, get the weather forecast.',
-    TYPE => [qw/private public emote/],
+    TYPE => 'all',
     POS  => '-1',
     STOP => 1,
     RE   => qr/\bforecast\b/i
@@ -733,7 +734,7 @@ $response{engrish} = {
         return;
     },
     HELP => 'Given an english phrase, botch it.',
-    TYPE => [qw/private public emote/],
+    TYPE => 'all',
     POS  => '-1',
     STOP => 1,
     RE   => qr/\bengrish\b/i
@@ -830,7 +831,7 @@ $response{translate} = {
           . join( ', ', keys %languages )
           . ") (either the from or to is optional, and defaults to $default_language)";
     },
-    TYPE => [qw/private public emote/],
+    TYPE => 'all',
     POS  => '-1',
     STOP => 1,
     RE   => $translateRE,
@@ -894,7 +895,7 @@ $response{anagram} = {
         return;
     },
     HELP => 'given a phrase, return an anagram of it.',
-    TYPE => [qw/private public emote/],
+    TYPE => 'all',
     POS  => '-1',
     STOP => 1,
     RE   => $anagramRE,
@@ -929,7 +930,7 @@ $response{convert} = {
         return "$a $to";
     },
     HELP => 'convert units: convert (amount) from_units to_units',
-    TYPE => [qw/private public emote/],
+    TYPE => 'all',
     POS  => '1',
     STOP => 1,
     RE   => $convertRE,
@@ -955,7 +956,6 @@ $response{math} = {
 	return $result;
     },
     HELP => 'math stuff',
-    TYPE => [qw/private/],
     POS  => '1',
     STOP => 1,
     RE   => $mathRE,
@@ -980,7 +980,6 @@ $response{shorten} = {
     HELP => <<'END_HELP',
 Given a URL, return an xrl.us shortened version of the url.  Or, vice versa.
 END_HELP
-    TYPE => [qw/private/],
     POS  => '-1',
     STOP => 1,
     RE   => qr/\bshorten\b/i
@@ -1015,7 +1014,6 @@ $response{help} = {
         return "ERROR: '$args' , unknown help topic.";
     },
     HELP => "You're kidding, right?",
-    TYPE => [qw/private/],
     POS  => '-2',
     STOP => 1,
     RE   => qr/\bhelp\b/i,
@@ -1046,33 +1044,6 @@ $response{cal} = {
         return wrap( split( /\n/, $retval ) );
     },
     HELP => 'like the unix command',
-    TYPE => [qw/private/],
-    POS  => '0',
-    STOP => 1,
-    RE   => qr/\bcal\b/i,
-};
-
-$response{'unset'} = {
-    CODE => sub {
-        my ($event) = @_;
-        my $args = $event->{VALUE};
-        if ( !( $args =~ s/\bunset\s+(.*)$/$1/ ) ) {
-            return 'ERROR: Expected RE not matched!';
-        }
-
-        my $handle = $event->{SHANDLE};
-        my $key    = $handle . '-' . $args;
-
-        if ( exists $prefs{$key} ) {
-            delete $prefs{$key};
-            return "$args is now unset";
-        }
-        else {
-            return "ERROR: invalid variable: $args";
-        }
-    },
-    HELP => 'Purpose: provide a way to undo "set"',
-    TYPE => [qw/private/],
     POS  => '0',
     STOP => 1,
     RE   => qr(\bunset\b)i,
@@ -1154,7 +1125,6 @@ Given a poll name, return the current results.
 You can also specify a value to cast your ballot.
 Usage: poll [<poll> [<vote>]]
 END_HELP
-    TYPE => [qw/private/],
     POS  => '0',
     STOP => 1,
     RE   => qr(\bpoll\b)i,
@@ -1201,7 +1171,6 @@ Usage: set [ <var> [ <value> ] ].
 Only works in private. Also, we use your SHANDLE via SLCP, in violation of
 the Geneva convention.
 END_HELP
-    TYPE => [qw/private/],
     POS  => '0',
     STOP => 1,
     RE   => qr(\bset\b)i,
@@ -1244,7 +1213,6 @@ $response{'ping'} = {
         return 'pong. uptime: ' . humanTime( time() - $uptime ) . "; $a";
     },
     HELP => "Yes, I'm alive. And have some stats while you're at it.",
-    TYPE => [qw/private/],
     POS  => '0',
     STOP => 1,
     RE   => qr/ping/i,
@@ -1255,7 +1223,7 @@ $response{'stomach pump'} = {
         return 'Eeeek!';
     },
     HELP => sub { return 'stomach pumps scare me.'; },
-    TYPE => [qw/private public emote/],
+    TYPE => 'all',
     POS  => '0',
     STOP => 1,
     RE   => qr/stomach pump/i,
@@ -1291,7 +1259,6 @@ $response{cmd} = {
         return
           'If you are a cj admin, you can use this command to boss me around.';
     },
-    TYPE => [qw/private/],
     POS  => '0',
     STOP => 1,
     RE   => qr/\bcmd\b/i,
@@ -1308,7 +1275,6 @@ $response{buzz} = {
     },
     HELP =>
       sub { return 'random buzzword generator. Active with keyword "buzz"'; },
-    TYPE => [qw/private/],
     POS  => '1',
     STOP => 1,
     RE   => qr/\bbuzz\b/i,
@@ -1330,7 +1296,7 @@ $response{stock} = {
 Give a list of ticker symbols, I'll be your web proxy to
 http://finance.yahoo.com
 END_HELP
-    TYPE => [qw/private public emote/],
+    TYPE => 'all',
     POS  => '0',
     STOP => 1,
     RE   => qr/\bstock\b/i,
@@ -1349,7 +1315,7 @@ $response{drink} = {
         return q{};
     },
     HELP => "slide me a drink, I'm game.",
-    TYPE => [qw/emote/],
+    TYPE => 'emote',
     POS  => '0',
     STOP => 1,
     RE => qr/down the bar/i,
@@ -1369,7 +1335,7 @@ $response{kibo} = {
         return $message;
     },
     HELP => 'I respond to public questions addressed to me.',
-    TYPE => [qw/public emote/],
+    TYPE => "public emote",
     POS  => '1',
     STOP => 1,
     RE   => qr/\b$name\b.*\?/i,
@@ -1384,7 +1350,6 @@ $response{eliza} = {
 I've been doing some research into psychotherapy,
 I'd be glad to help you work through your agression.
 END_HELP
-    TYPE => ['private'],
     POS  => '2',
     STOP => 1,
     RE   => qr/.*/,
@@ -1645,7 +1610,6 @@ $response{bacon} = {
         return;
     },
     HELP => "Find someone's bacon number using http://oracleofbacon.org/",
-    TYPE => [qw/private/],
     POS  => '-1',
     STOP => 1,
     RE   => qr/bacon/i,
@@ -1710,7 +1674,7 @@ $response{horoscope} = {
 Ask me about your sign to get a daily horoscope. We speak chinese.
 (Usage: horoscope [for] sign)
 END_HELP
-    TYPE => [qw/private public emote/],
+    TYPE => 'all',
     POS  => '-1',
     STOP => 1,
     RE   => $horoscopeRE,
@@ -1755,7 +1719,6 @@ $response{define2} = {
         return;
     },
     HELP => 'Look up a word on wiktionary.org/ (english only)',
-    TYPE => [qw/private/],
     POS  => '-1',
     STOP => 1,
     RE   => qr/\bdefine2\b/i
@@ -1783,7 +1746,6 @@ $response{define} = {
         return;
     },
     HELP => 'Look up a word on m-w.com',
-    TYPE => [qw/private/],
     POS  => '-1',
     STOP => 1,
     RE   => qr/\bdefine\b/i
@@ -1832,7 +1794,7 @@ $response{foldoc} = {
         return;
     },
     HELP => 'Define things from the Free Online Dictionary of Computing',
-    TYPE => [qw/private public emote/],
+    TYPE => 'all',
     POS  => '0',
     STOP => 1,
     RE   => qr/foldoc/i,
@@ -1866,7 +1828,7 @@ $response{lynx} = {
         return;
     },
     HELP => 'trying to find a nice way to suck down web pages.',
-    TYPE => [qw/private public emote/],
+    TYPE => 'all',
     POS  => '0',
     STOP => 1,
     RE   => qr/lynx/i,
@@ -1920,7 +1882,6 @@ $response{rot13} = {
         return $args;
     },
     HELP => 'Usage: rot13 <val>',
-    TYPE => [qw/private/],
     POS  => '0',
     STOP => 1,
     RE   => qr/\brot13\b/i,
@@ -1937,7 +1898,6 @@ $response{urldecode} = {
         return unescape $args;
     },
     HELP => 'Usage: urldecode <val>',
-    TYPE => [qw/private/],
     POS  => '0',
     STOP => 1,
     RE   => qr/\burldecode\b/i,
@@ -1954,7 +1914,6 @@ $response{urlencode} = {
         return escape $args;
     },
     HELP => 'Usage: urlencode <val>',
-    TYPE => [qw/private/],
     POS  => '0',
     STOP => 1,
     RE   => qr/\burlencode\b/i,
@@ -2003,7 +1962,6 @@ Usage: ascii <val>, where val can be a char ('a'), hex (0x1), octal (01),
 decimal (1) an emacs (C-A) or perl (\cA) control sequence, or an ASCII
 control name (SOH)
 END_HELP
-    TYPE => [qw/private/],
     POS  => '0',
     STOP => 1,
     RE   => qr/\bascii\b/i,
@@ -2045,7 +2003,6 @@ $response{country} = {
 Usage: country <val>, where val is either a 2 character country code, or a
 string to match against possible countries.
 END_HELP
-    TYPE => [qw/private/],
     POS  => '0',
     STOP => 1,
     RE   => qr/\bcountry\b/i,
@@ -2086,7 +2043,6 @@ $response{utf8} = {
 Usage: utf8 <val>, where val is either U+<hex> or a string to match
 against possible characters.
 END_HELP
-    TYPE => [qw/private/],
     POS  => '0',
     STOP => 1,
     RE   => qr/\butf8\b/i,
@@ -2147,6 +2103,25 @@ sub away_event {
           ->cmd_process( $line, sub { $_[0]->{NOTIFY} = 0; } );
     }
 
+}
+
+=head2 get_types
+
+Given an event handler, return all the types that handler is valid for.
+
+=cut
+
+sub get_types {
+    my $handler = shift;
+    my $type_spec = $handler->{TYPE};
+
+    return qw{private} unless $type_spec;
+
+    if ($type_spec eq 'all') { 
+        return qw{public private emote};
+    } else {
+        return split(' ', $type_spec);
+    }
 }
 
 sub cj_event {
@@ -2224,9 +2199,10 @@ sub cj_event {
 
             # XXX respect PRIVILEGE
             next if $response{$handler}->{DISABLED};
+            my @types = get_types ($response{$handler});
             if ( $response{$handler}->{POS} eq $order ) {
                 next
-                  if !grep { /$event->{type}/ } @{ $response{$handler}{TYPE} };
+                  if !grep { /$event->{type}/ } @types;
                 my $re = $response{$handler}->{RE};
                 if ( $event->{type} eq 'public' ) {
                     $re = qr/^\s*(?i:$name\s*,?\s*)?$re/;
