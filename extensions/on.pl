@@ -68,7 +68,7 @@ Examples:
   %on public to news %attr dest_fmt significant
   %on attach from SignificantOther %attr slcp_fmt significant
   %on attach from JoshTest "%eval `banner wazzup?`"  
-  %on emote to bar like "yawn" "bar;yawns." once every 5m
+  %on emote to bar like "yawn" once every 5m "bar;yawns."
 ]);
 
 shelp_r('on_quiet' => 'Don\'t display %on notifications', 'variables');
@@ -399,7 +399,7 @@ sub on_evt_handler {
 
     if (defined $mask->{ONCE}) { 
         if (defined $mask->{last_invoked}) {
-        my $allowed_at = $mask->{ONCE} + $mask->{last_invoked};
+            my $allowed_at = $mask->{ONCE} + $mask->{last_invoked};
             if ($allowed_at >= $now) {
                 return; # too early to do this again.
             }
