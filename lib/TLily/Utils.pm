@@ -17,7 +17,7 @@ use TLily::Config;
 use vars qw(@ISA @EXPORT_OK);
 @ISA = qw(Exporter);
 
-@EXPORT_OK = qw(&max &min &edit_text &diff_text &columnize_list &save_deadfile &get_deadfile &initials_match);
+@EXPORT_OK = qw(&max &min &edit_text &diff_text &columnize_list &save_deadfile &get_deadfile &initials_match &parse_interval);
 
 # These are handy in a couple of places.
 sub max { return ($_[0] > $_[1]) ? $_[0] : $_[1] }
@@ -245,4 +245,31 @@ sub initials_match {
 
     return lc $guess eq lc $partial;
 }
+
+=head2 parse_interval
+
+Given a simple string like "5m", return # of seconds.
+
+=cut
+
+sub parse_interval {
+    my($s) = @_;
+
+    if($s =~ m/^(\d+)s?$/) {
+        return $1;
+    }
+    elsif($s =~ m/^(\d+)m$/) {
+        return $1 * 60;
+    }
+    elsif($s =~ m/^(\d+)h$/) {
+        return $1 * 3600;
+    }
+    elsif($s =~ m/^(\d+)d$/) {
+        return $1 * 86400 ;
+    }
+    else {
+        return;
+    }
+}
+
 1;

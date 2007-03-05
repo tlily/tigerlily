@@ -4,6 +4,8 @@
 use strict;
 use warnings;
 
+use TLily::Utils qw(parse_interval);
+
 =head1 NAME
 
 after.pl - Time delay functions
@@ -75,26 +77,6 @@ my %cron_id;
 my %cron_interval;
 my %cron_when;
 my $id=0;
-
-sub parse_interval {
-    my($s) = @_;
-
-    if($s =~ m/^(\d+)s?$/) {
-        return $1;
-    }
-    elsif($s =~ m/^(\d+)m$/) {
-        return $1 * 60;
-    }
-    elsif($s =~ m/^(\d+)h$/) {
-        return $1 * 3600;
-    }
-    elsif($s =~ m/^(\d+)d$/) {
-        return $1 * 86400 ;
-    }
-    else {
-        return;
-    }
-}
 
 sub cron_command {
     my($command, $ui, $args) = @_;
