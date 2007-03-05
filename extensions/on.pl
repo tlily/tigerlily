@@ -4,6 +4,7 @@
 use strict;
 use Text::ParseWords qw(quotewords);
 use TLily::Bot;
+use TLily::Utils qw(parse_interval);
 
 #
 # This is a rewrite of the old %on.pl for clarity and features.  Unfortunately,
@@ -37,6 +38,8 @@ There are a number of options to limit the events acted upon.
   notify <value> - The NOTIFY value of the event is on ('yes'), off ('no'),
                    or ignored ('always').  (Default is 'yes')
   random <N>     - Randomly take action approximately every 1-in-N matches.
+  once a <time>  - Only respond once every <time> interval.
+  once every <time>
 
 %on supports the following special characters in "what to do":
 
@@ -65,6 +68,7 @@ Examples:
   %on public to news %attr dest_fmt significant
   %on attach from SignificantOther %attr slcp_fmt significant
   %on attach from JoshTest "%eval `banner wazzup?`"  
+  %on emote to bar like "yawn" "bar;yawns." once every 5m
 ]);
 
 shelp_r('on_quiet' => 'Don\'t display %on notifications', 'variables');
@@ -165,9 +169,15 @@ sub on_cmd {
 	my %mask;
 	my $event_type = shift @args;
 
-	while (@args && $args[0] =~ /^(notify|from|to|value|like|server|random)$/i) {
+	while (@args && $args[0] =~
+            /^(notify|from|to|value|like|server|random|once)$/i)
+        {
 	    my $masktype = uc(shift @args);
 	    my $maskval  = shift @args;
+            if ($masktype eq 'ONCE') {
+	        $maskval = shift @args; # skip 'a', 'every', etc.
+                $maskval = parse_interval($maskval); # in seconds...
+            }
 	    $mask{$masktype} = $maskval;
 	}
 
@@ -241,6 +251,9 @@ sub on_cmd {
 	    $str .= " from group $mask{FROM}" if defined($mask{SGROUP});
 	    $str .= " to $mask{TO}"           if defined($mask{RHANDLE});
 	    $str .= " to group $mask{TO}"     if defined($mask{RGROUP});
+            # XXX need a time formatter here.
+	    $str .= " no more than once every $mask{ONCE}s"
+                                              if defined($mask{ONCE});
 
 	    if ($mask{NOTIFY} eq 'always') {
 	      $str .= " always";
@@ -381,6 +394,19 @@ sub on_evt_handler {
     }
 
     $ui->prints(on => "[%on] @cmd\n") unless $config{on_quiet};
+
+    my $now = time;
+
+    if (defined $mask->{ONCE}) { 
+        if (defined $mask->{last_invoked}) {
+        my $allowed_at = $mask->{ONCE} + $mask->{last_invoked};
+            if ($allowed_at >= $now) {
+                return; # too early to do this again.
+            }
+        }
+    }
+
+    $mask->{last_invoked} = $now;
 
     TLily::Event::send({type => 'user_input',
 			ui   => $ui,

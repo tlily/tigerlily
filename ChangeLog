@@ -14,6 +14,8 @@ Version 2.5.2-post
   * expansion fixes - flab;           -> ~FliesLikeABrick;
                       /who   sdn<tab> -> /who ~Sue D. Nymme
     [WJC]
+  * add "once every 5m" handling to %on handlers: fire the handler no more
+    than once every time interval [WJC]
 
 Version 2.5.2
   * [TLily/Server.pm] Fixes to SSL. [MJR]
