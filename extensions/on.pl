@@ -18,7 +18,7 @@ command_r(on => \&on_cmd);
 shelp_r(attr=> "see %on");
 help_r(attr=> "see %on");
 shelp_r(on => "execute a command when a specific event occurs");
-help_r('on', qq[
+help_r('on', q[
    %on list
    %on clear <id>
    %on [<event> [options...] <what to do>]
@@ -43,10 +43,11 @@ There are a number of options to limit the events acted upon.
 
 %on supports the following special characters in "what to do":
 
-\$1 .. \$9  variable matches in the regexp, if "like" is used.
-\$sender   for "public", "private", or "emote" events, the sender of the
+$1 .. $9  variable matches in the regexp, if "like" is used.
+$sender   for "public", "private", or "emote" events, the sender of the
           message.
-\$value    the value of the original event
+$target   where was the message sent?
+$value    the value of the original event
 
 Alternatively, you may use "%attr <attribute> <value>" in "what to do"
 to set attributes on the event being matched.  Of particular interest
@@ -366,10 +367,24 @@ sub on_evt_handler {
     $vars{sender} = $e->{server}->expand_name($e->{SOURCE});
     $vars{sender} =~ s/^-//;
     $vars{sender} =~ s/ /_/g;
+
+    $vars{target} = $e->{server}->expand_name($e->{RHANDLE});
+    $vars{target} = join ',', 
+     map {my %obj = $e->{server}->state(HANDLE => $_); $obj{NAME}} @{$e->{RHANDLE}};
+
+
+    $vars{target} =~ s/^-//;
+    $vars{target} =~ s/ /_/g;
+
     $vars{value} = $e->{VALUE};
 
     my @cmd = @{$mask->{ACTION}};
-    @cmd = map { ($_ =~ s/^\$//g) ? $vars{$_} : $_ } @cmd;
+    @cmd = map { 
+        foreach my $var (keys %vars) {
+            $_ =~ s/\$$var/$vars{$var}/g; 
+        }
+        $_;
+    } @cmd;
 
     return unless @cmd;
 
