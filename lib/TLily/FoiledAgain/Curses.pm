@@ -171,7 +171,7 @@ sub has_resized {
         if ($termsize_installed) {
             ($ENV{'COLUMNS'}, $ENV{'LINES'}) = Term::Size::chars();
         } elsif ($have_ioctl_ph) {
-            ioctl(0, &TIOCGWINSZ, my $winsize);
+            ioctl(STDIN, &TIOCGWINSZ, my $winsize);
             return 0 if (!defined($winsize));
             my ($row, $col, $xpixel, $ypixel) = unpack('S4', $winsize);
             return 0 if (!defined($row));
