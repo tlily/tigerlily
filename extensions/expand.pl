@@ -195,6 +195,7 @@ sub private_handler {
     # recalc from SHANDLE, since some extensions may muck with the SOURCE 
     my $sender = $event->{server}->{HANDLE}->{$event->{SHANDLE}}->{NAME} .
         "@" . $serv_name;
+    $sender =~ s/ /_/;
 
     if ($event->{SOURCE} ne $me) {
         $expansions{sender} = $sender;
@@ -207,7 +208,7 @@ sub private_handler {
     my @group = split /, /, $event->{RECIPS};
     if (@group > 1) {
         unshift @group, $event->{SOURCE};
-        @group = grep { $_ ne $me } @group;
+        @group = map { s/ /_/; $_; } grep { $_ ne $me } @group;
         $expansions{sendgroup} = join(",", map($_."@".$serv_name, @group));
     }
     
