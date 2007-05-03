@@ -116,6 +116,7 @@ sub aliaser {
         my @args = ($1, (split /\s+/,$2));
         if ($newstr) {
             for (0..9) {
+                $args[$_] = q{} unless defined($args[$_]);
                 $newstr =~ s/\$$_/$args[$_]/g;
             }
             $newstr =~ s/\$\*/$args/g;
