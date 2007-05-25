@@ -102,7 +102,7 @@ my $eliza = new Chatbot::Eliza { name => $name, prompts_on => 0 };
 
 =head2 debug( @complaints) 
 
-Helpful when generating debug output for new features. Typically disabled
+Helpful when generating debug output for new features.
 
 =cut
 
@@ -301,12 +301,17 @@ sub get_stock {
         callback => sub {
 
             my ($response) = @_;
+            my (@invalid_symbols);
 
             my @chunks = split( /\n/, $response->{_content} );
             foreach my $chunk (@chunks) {
                 my ( $stock, $value, $date, $time, $change, $volume ) =
                   map { s/^"(.*)"$/$1/; $_ } split( /,/, $chunk );
-                next if $volume =~ m{N/A}; # skip unknown stocks.
+                if ($volume =~ m{N/A}) {
+                    # skip unknown stocks.
+                    push @invalid_symbols, $stock;
+                    next;
+                }
                 $change =~ s/^(.*) - (.*)$/$1 ($2)/;
                 if (%stock) {
                     my $sub = $value * $stock{$stock};
@@ -326,7 +331,7 @@ subgain";
                 }
                 else {
                     push @retval,
-"$stock: Last $date $time, $value: Change $change: Vol $volume";
+"$stock: Last $date $time, $value: Change $change: Vol: $volume";
                 }
             }
 
@@ -346,8 +351,9 @@ subgain";
             }
 
             $retval =~ s/\s*$//;
-            if ($retval eq q{} and $event->{type} eq 'private') {
-                dispatch ($event, 'No matching stocks.');
+            if (@invalid_symbols && $event->{type} eq 'private') {
+                dispatch ($event, 'Invalid Ticker Symbols: ' . 
+                    join ', ', @invalid_symbols);
             }
             dispatch( $event, $retval );
         }
@@ -437,12 +443,7 @@ sub shorten {
             my ($response) = @_[0];
 
             my $ans;
-            if ( $response->{_state}{_status} != 200 ) {
-                $ans =
-                  'unreachable. (HTTP Status '
-                  . $response->{_state}{_status} . ')';
-            }
-            else {
+            if ( $response->{_state}{_status} == 200 ) {
                 # response should be on first line:
                 $response->{_content} =~ s/^([^\n]*)//;  
                 $ans = $1;
@@ -451,7 +452,10 @@ sub shorten {
                   $shorts{$short} = $ans;
                 }
             }
-            &$callback($ans) if $ans;
+            if ($ans !~ /500 Internal Server Error/)  {
+              # must be returning a 500 error code text, but a 200 status http code
+              &$callback($ans) if $ans;
+            }
         }
     );
     return;
@@ -562,6 +566,7 @@ my $bibles = {
   'we'    => {id => 73, name => 'Worldwide English (New Testament)'},
   'nivuk' => {id => 64, name => 'New International Version - UK'},
   'tniv'  => {id => 72, name => "Today's New International Version"},
+  'vulg'  => {id =>  4, name => "Biblia Sacra Vulgata"},
 };
 
 $response{bible} = {
@@ -602,9 +607,9 @@ $response{bible} = {
         return $help;
     },
     TYPE => 'all',
-    POS  => '-1',
+    POS  => -1,
     STOP => 1,
-    RE   => qr/\b(?:bible|passage)\s*(niv|nasb|tm|ab|nlt|kjv|esv|cev|nkjv|21kjv|asv|ylt|dt|nlv|hcsb|wnt|we|nivuk|tniv)?\s+(.*\d+:\d+)/i,
+    RE   => qr/\b(?:bible|passage)\s*(niv|nasb|tm|ab|nlt|kjv|esv|cev|nkjv|21kjv|asv|ylt|dt|nlv|hcsb|wnt|we|nivuk|tniv|vulg)?\s+(.*\d+:\d+)/i,
 };
 
 $response{weather} = {
@@ -647,7 +652,7 @@ $response{weather} = {
     },
     HELP => 'Given a location, get the current weather.',
     TYPE => 'all',
-    POS  => '-1',
+    POS  => -1,
     STOP => 1,
     RE   => qr/\bweather\b/i
 
@@ -692,7 +697,7 @@ $response{forecast} = {
     },
     HELP => 'Given a location, get the weather forecast.',
     TYPE => 'all',
-    POS  => '-1',
+    POS  => -1,
     STOP => 1,
     RE   => qr/\bforecast\b/i
 };
@@ -735,7 +740,7 @@ $response{engrish} = {
     },
     HELP => 'Given an english phrase, botch it.',
     TYPE => 'all',
-    POS  => '-1',
+    POS  => -1,
     STOP => 1,
     RE   => qr/\bengrish\b/i
 };
@@ -832,7 +837,7 @@ $response{translate} = {
           . ") (either the from or to is optional, and defaults to $default_language)";
     },
     TYPE => 'all',
-    POS  => '-1',
+    POS  => -1,
     STOP => 1,
     RE   => $translateRE,
 };
@@ -896,7 +901,7 @@ $response{anagram} = {
     },
     HELP => 'given a phrase, return an anagram of it.',
     TYPE => 'all',
-    POS  => '-1',
+    POS  => -1,
     STOP => 1,
     RE   => $anagramRE,
 };
@@ -931,7 +936,7 @@ $response{convert} = {
     },
     HELP => 'convert units: convert (amount) from_units to_units',
     TYPE => 'all',
-    POS  => '1',
+    POS  => 1,
     STOP => 1,
     RE   => $convertRE,
 };
@@ -956,7 +961,7 @@ $response{math} = {
 	return $result;
     },
     HELP => 'math stuff',
-    POS  => '1',
+    POS  => 1,
     STOP => 1,
     RE   => $mathRE,
 };
@@ -980,7 +985,7 @@ $response{shorten} = {
     HELP => <<'END_HELP',
 Given a URL, return an xrl.us shortened version of the url.  Or, vice versa.
 END_HELP
-    POS  => '-1',
+    POS  => 1,
     STOP => 1,
     RE   => qr/\bshorten\b/i
 };
@@ -1005,16 +1010,17 @@ $response{help} = {
         }
         if ( exists ${response}{$args} ) {
             my $helper = $response{$args}{HELP};
+            my $type = " [" . join(',', @{$response{$args}{TYPE}}) . "]";
             if (ref $helper) {
-                return &{ $helper }();
+                return &{ $helper }(). $type;
             } else {
-                return join(' ', ( split /\n/, $helper ) );
+                return join(' ', ( split /\n/, $helper ) ) . $type;
             }
         }
         return "ERROR: '$args' , unknown help topic.";
     },
     HELP => "You're kidding, right?",
-    POS  => '-2',
+    POS  => -2,
     STOP => 1,
     RE   => qr/\bhelp\b/i,
 };
@@ -1044,7 +1050,7 @@ $response{cal} = {
         return wrap( split( /\n/, $retval ) );
     },
     HELP => 'like the unix command',
-    POS  => '0',
+    POS  => 0,
     STOP => 1,
     RE   => qr(\bunset\b)i,
 };
@@ -1125,7 +1131,7 @@ Given a poll name, return the current results.
 You can also specify a value to cast your ballot.
 Usage: poll [<poll> [<vote>]]
 END_HELP
-    POS  => '0',
+    POS  => 0,
     STOP => 1,
     RE   => qr(\bpoll\b)i,
 };
@@ -1171,7 +1177,7 @@ Usage: set [ <var> [ <value> ] ].
 Only works in private. Also, we use your SHANDLE via SLCP, in violation of
 the Geneva convention.
 END_HELP
-    POS  => '0',
+    POS  => 0,
     STOP => 1,
     RE   => qr(\bset\b)i,
 };
@@ -1213,7 +1219,7 @@ $response{'ping'} = {
         return 'pong. uptime: ' . humanTime( time() - $uptime ) . "; $a";
     },
     HELP => "Yes, I'm alive. And have some stats while you're at it.",
-    POS  => '0',
+    POS  => 0,
     STOP => 1,
     RE   => qr/ping/i,
 };
@@ -1224,7 +1230,7 @@ $response{'stomach pump'} = {
     },
     HELP => 'stomach pumps scare me.',
     TYPE => 'all',
-    POS  => '0',
+    POS  => 0,
     STOP => 1,
     RE   => qr/stomach pump/i,
 };
@@ -1258,7 +1264,8 @@ $response{cmd} = {
     HELP => <<'END_HELP',
 If you're a cj admin, use this command to boss me around.
 Usage: cmd <lily command>
-    POS  => '0',
+END_HELP
+    POS  => 0,
     STOP => 1,
     RE   => qr/\bcmd\b/i,
 };
@@ -1273,7 +1280,7 @@ $response{buzz} = {
         return join( ' ', @tmp ) . '!';
     },
     HELP => 'random buzzword generator. Active with keyword "buzz"',
-    POS  => '1',
+    POS  => 1,
     STOP => 1,
     RE   => qr/\bbuzz\b/i,
 };
@@ -1291,11 +1298,11 @@ $response{stock} = {
         }
     },
     HELP => <<'END_HELP',
-Give a list of ticker symbols, I'll be your web proxy to
-http://finance.yahoo.com
+Usage: stock <LIST of comma or space separated symbols> for generic information
+or stock (<amount> <stock>) to show the value of a certain number of shares
 END_HELP
     TYPE => 'all',
-    POS  => '0',
+    POS  => 0,
     STOP => 1,
     RE   => qr/\bstock\b/i,
 };
@@ -1314,7 +1321,7 @@ $response{drink} = {
     },
     HELP => "slide me a drink, I'm game.",
     TYPE => 'emote',
-    POS  => '0',
+    POS  => 0,
     STOP => 1,
     RE => qr/down the bar/i,
 };
@@ -1333,8 +1340,8 @@ $response{kibo} = {
         return $message;
     },
     HELP => 'I respond to public questions addressed to me.',
-    TYPE => "public emote",
-    POS  => '1',
+    TYPE => qw/public emote/,
+    POS  => 1,
     STOP => 1,
     RE   => qr/\b$name\b.*\?/i,
 };
@@ -1348,7 +1355,7 @@ $response{eliza} = {
 I've been doing some research into psychotherapy,
 I'd be glad to help you work through your agression.
 END_HELP
-    POS  => '2',
+    POS  => 2,
     STOP => 1,
     RE   => qr/.*/,
 };
@@ -1440,22 +1447,32 @@ sub scrape_wiktionary {
     $content =~ s/\n/ /g;
 
     $content =~ s/.*<a name="English" id="English">//;
+    $content =~ s/<div class="printfooter">.*//;
+ 
 
     my $skip;
     foreach my $chunk (split /<span class="mw-headline">/sm, $content) {
-      my ($m,$n) = split (/<\/span>/, $chunk);
+      my ($m,$n) = split (/<\/span>/, $chunk, 2);
       $m = cleanHTML($m);
-      $n = cleanHTML($n);
       $m =~ s/^\s+//;
       $m =~ s/\s*\[\s*edit\s*\]//;
       next unless $m;
-      $n =~ s/\s*\[\s*edit\s*\]//;
-      next unless $n;
+      next if lc $m eq 'references';
       next if lc $m eq 'derived terms';
       next if lc $m eq 'english';
       next if lc $m eq 'pronunciation';
       next if lc $m eq 'translations';
       next if lc $m eq 'translations to be checked';
+
+      my $definition_number = 1;
+      $n =~ s/<li>/$definition_number++ . ': '/ge ;
+
+      $n = cleanHTML($n);
+      $n =~ s/^\s+//;
+      $n =~ s/\s*\[\s*edit\s*\]//;
+      $n =~ s/\s+([.,])\s+/\1 /g;
+      next unless $n;
+
       $chunk = $m . ' :: ' . $n;
       push @retval, $chunk;
     }
@@ -1473,87 +1490,11 @@ sub scrape_google_guess {
 
     $content =~ s/\n/ /g;
     if ($content =~ m{Did you mean.*<i>([^>]+)</i>}) { 
-      return "No match for '$term', did you mean: '$1'?";
+        return $1;
     }
     return;
 } 
-sub scrape_webster {
-    my ( $term, $content ) = @_;
 
-    if ( $content =~ /The word you've entered isn't in the dictionary/ ) {
-        return "Could find no definition for '$term'";
-    }
-
-    # Was there more than one match?
-    my ( @see_also, @other_forms );
-    if ( $content =~ /(\d+) words found/ ) {
-
-        # all the words will appear in a dropdown, get the options.
-
-        my @options = grep { /^<option.*>(.*)$/ } split( /\n/, $content );
-
-        foreach my $option (@options) {
-            $option =~ s/<option.*>//;
-            ( my $tmp = $option ) =~ s/\[.*\]//g;
-            if ( $tmp eq $term ) {
-
-                # we get the first term for free already...
-                my $blah = quotemeta '[1,';
-                if ( $option !~ /$blah/ ) {
-                    push @other_forms, $option;
-                }
-            }
-            else {
-                push @see_also, $option;
-            }
-        }
-    }
-
-    # process the main form.
-    ( my $retval = cleanHTML($content) ) =~
-      s/^.*Main Entry: (.*)Get the Top 10.*/$1/;
-    $retval =~ s/For More Information on ".*//;
-
-    # Is there another form of the same name?
-
-    if (0) {
-
-        # XXX This needs to be converted to add_throttled_http...
-
-        if ( scalar(@other_forms) >= 1 ) {
-
-#XXX Need to figure out the magic incation to get the secondary data...
-#http://www.m-w.com/cgi-bin/dictionary?hdwd=murder&jump=a&list=a=700349
-#<input type=hidden name=list value="murder[1,noun]=700416;murder[2,verb]=700439;bloody murder=109479;self-murder=972362">
-
-            $content =~ /<input type=hidden name=list value="(.*)">/;
-            my $list = $1;
-
-            foreach my $other_term (@other_forms) {
-                my $sub_url =
-                    'http://www.m-w.com/cgi-bin/dictionary?hdwd=' . $term
-                  . '&jump='
-                  . $other_term
-                  . '&list='
-                  . $list;
-
-#my $sub_response = $ua->request(HTTP::Request->new(GET => $sub_url));
-#if ($sub_response->is_success) {
-#($sub_content= cleanHTML($sub_response->content)) =~ s/^.*Main Entry: (.*)Get the Top 10.*/$1/;
-#$retval .= '; ' . $sub_content;
-#}
-            }
-        }
-
-    }
-
-    # tack on any other items that turned up on the main list, for kicks.
-    if ( scalar(@see_also) ) {
-        $retval .= '| SEE ALSO: ' . join( ', ', @see_also );
-    }
-    return 'According to Webster: ' . $retval;
-
-}
 
 sub scrape_bacon {
     my ($content) = shift;
@@ -1608,7 +1549,7 @@ $response{bacon} = {
         return;
     },
     HELP => "Find someone's bacon number using http://oracleofbacon.org/",
-    POS  => '-1',
+    POS  => -1,
     STOP => 1,
     RE   => qr/bacon/i,
 };
@@ -1673,16 +1614,16 @@ Ask me about your sign to get a daily horoscope. We speak chinese.
 (Usage: horoscope [for] sign)
 END_HELP
     TYPE => 'all',
-    POS  => '-1',
+    POS  => -1,
     STOP => 1,
     RE   => $horoscopeRE,
 };
 
-$response{define2} = {
+$response{define} = {
     CODE => sub {
         my ($event) = @_;
         my $args = $event->{VALUE};
-        if ( !( $args =~ m/define2*\s*(.*)\s*$/i ) ) {
+        if ( !( $args =~ m/define*\s*(.*)\s*$/i ) ) {
             return 'ERROR: Expected RE not matched!';
         }
         my $term = escape $1;
@@ -1703,9 +1644,9 @@ $response{define2} = {
                       ui_name  => 'main',
                       callback => sub {
                           my ($response2) = shift;
-                          $answer= scrape_google_guess( $term, $response2->{_content} );
+                          $answer= scrape_google_guess( $term, $response->{_content} );
 			if ($answer) {
-                          dispatch( $event, $answer);
+                          dispatch( $event, "No match for '$term', did you mean '$answer'?" );
                         } else {
                           dispatch( $event, "Sorry, '$term' not found");
                         }
@@ -1717,36 +1658,40 @@ $response{define2} = {
         return;
     },
     HELP => 'Look up a word on wiktionary.org/ (english only)',
-    POS  => '-1',
+    POS  => -1,
     STOP => 1,
-    RE   => qr/\bdefine2\b/i
+    RE   => qr/\bdefine\b/i
 };
 
-$response{define} = {
+$response{spell} = {
     CODE => sub {
         my ($event) = @_;
         my $args = $event->{VALUE};
-        if ( !( $args =~ m/define*\s*(.*)\s*$/i ) ) {
+        if ( !( $args =~ m/spell*\s*(.*)\s*$/i ) ) {
             return 'ERROR: Expected RE not matched!';
         }
-        my $term = $1;
-        my $url  = "http://www.m-w.com/cgi-bin/dictionary?$term";
-        add_throttled_HTTP(
-            url      => $url,
-            ui_name  => 'main',
-            callback => sub {
-
-                my ($response) = @_;
-                dispatch( $event,
-                    scrape_webster( $term, $response->{_content} ) );
-            }
-        );
-        return;
-    },
-    HELP => 'Look up a word on m-w.com',
-    POS  => '-1',
+        my $term = escape $1;
+              my $url = "http://www.google.com/search?num=0&hl=en&lr=&as_qdr=all&q=$term&btnG=Search";
+              add_throttled_HTTP(
+                  url      =>  $url,
+                  ui_name  => 'main',
+                  callback => sub {
+                      my ($response) = shift;
+                      my $answer= scrape_google_guess( $term, $response->{_content} );
+	            if ($answer) {
+                      dispatch( $event, "No match for '$term', did you mean '$answer'?" );
+                    } else {
+                      dispatch( $event, "Looks OK.");
+                    }
+                  }
+              );
+          return;
+        },
+    HELP => 'how do you spell this?',
+    TYPE => [qw/private/],
+    POS  => -1,
     STOP => 1,
-    RE   => qr/\bdefine\b/i
+    RE   => qr/\bspell\b/i
 };
 
 $response{foldoc} = {
@@ -1793,7 +1738,7 @@ $response{foldoc} = {
     },
     HELP => 'Define things from the Free Online Dictionary of Computing',
     TYPE => 'all',
-    POS  => '0',
+    POS  => 0,
     STOP => 1,
     RE   => qr/foldoc/i,
 };
@@ -1827,7 +1772,7 @@ $response{lynx} = {
     },
     HELP => 'trying to find a nice way to suck down web pages.',
     TYPE => 'all',
-    POS  => '0',
+    POS  => 0,
     STOP => 1,
     RE   => qr/lynx/i,
 };
@@ -1880,7 +1825,7 @@ $response{rot13} = {
         return $args;
     },
     HELP => 'Usage: rot13 <val>',
-    POS  => '0',
+    POS  => 0,
     STOP => 1,
     RE   => qr/\brot13\b/i,
 };
@@ -1896,7 +1841,7 @@ $response{urldecode} = {
         return unescape $args;
     },
     HELP => 'Usage: urldecode <val>',
-    POS  => '0',
+    POS  => 0,
     STOP => 1,
     RE   => qr/\burldecode\b/i,
 };
@@ -1912,7 +1857,7 @@ $response{urlencode} = {
         return escape $args;
     },
     HELP => 'Usage: urlencode <val>',
-    POS  => '0',
+    POS  => 0,
     STOP => 1,
     RE   => qr/\burlencode\b/i,
 };
@@ -1960,7 +1905,7 @@ Usage: ascii <val>, where val can be a char ('a'), hex (0x1), octal (01),
 decimal (1) an emacs (C-A) or perl (\cA) control sequence, or an ASCII
 control name (SOH)
 END_HELP
-    POS  => '0',
+    POS  => 0,
     STOP => 1,
     RE   => qr/\bascii\b/i,
 };
@@ -2001,7 +1946,7 @@ $response{country} = {
 Usage: country <val>, where val is either a 2 character country code, or a
 string to match against possible countries.
 END_HELP
-    POS  => '0',
+    POS  => 0,
     STOP => 1,
     RE   => qr/\bcountry\b/i,
 };
@@ -2041,7 +1986,7 @@ $response{utf8} = {
 Usage: utf8 <val>, where val is either U+<hex> or a string to match
 against possible characters.
 END_HELP
-    POS  => '0',
+    POS  => 0,
     STOP => 1,
     RE   => qr/\butf8\b/i,
 };
