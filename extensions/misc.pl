@@ -212,12 +212,19 @@ Resynchronize SLCP state.
 
 shelp_r('sync' => 'Resync with SLCP');
 help_r('sync' => 'Usage: %sync');
-command_r('sync' => sub { 
-	      my ($e) = @_;
-	      TLily::Event::send({type => 'user_input',
-				  ui   => $e->{ui},
-				  text => "#\$# slcp-sync\n"});
-	  });
+command_r('sync' => sub {
+    my ($e) = @_;
+	
+    # workaround for the moment- force the clearing of existing indexes.
+    my $server = active_server();
+    $server->{HANDLE}   = {};
+    $server->{NAME}     = {};
+    $server->{DATA}     = {};
+			    
+    TLily::Event::send({type => 'user_input',
+                        ui   => $e->{ui},
+                        text => "#\$# slcp-sync\n"});
+    });
 	      
 
 #
