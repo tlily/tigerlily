@@ -103,7 +103,7 @@ my $re = qr/&($re_alt);/;
 
 
 # Tranlate the event's text.
-sub hc_handler
+sub hc_post_handler
 {
     my($event, $handler) = @_;
     $event->{VALUE} =~ s/$re/$trans{$1} || $trans{uc $1}/ge;
