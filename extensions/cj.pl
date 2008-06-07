@@ -602,7 +602,11 @@ $response{bible} = {
     },
 
     HELP => sub { 
-        my $help = 'Quote chapter and verse. Syntax: bible or passage, followed by an optional bible version, and then the name of the book and chapter:verse. Possible translations include: ';
+        my $help = <<'END_HELP';
+Quote chapter and verse. Syntax: bible or passage, followed by an optional
+bible version, and then the name of the book and chapter:verse. Possible
+translations include:
+END_HELP
         foreach my $key (keys %$bibles) {
             $help .= $key . ' {' . $bibles->{$key}->{name} . '} ';
         }
@@ -1015,11 +1019,8 @@ $response{help} = {
         if ( exists ${response}{$args} ) {
             my $helper = $response{$args}{HELP};
             my $type = ' [' . join(',', get_types ($response{$args})) . ']';
-            if (ref $helper) {
-                return &{ $helper }(). $type;
-            } else {
-                return join(' ', ( split /\n/, $helper ) ) . $type;
-            }
+            my $help = (ref $helper eq 'CODE') ? &$helper() : $helper;
+            return join(' ', ( split /\n/, $help . $type ) );
         }
         return "ERROR: '$args' , unknown help topic.";
     },
