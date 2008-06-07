@@ -292,7 +292,7 @@ sub get_stock {
     my $gain  = 0;
 
     my $url =
-        'http://finance.yahoo.com/d/quotes.csv?s='
+        'http://download.finance.yahoo.com/d/quotes.csv?s='
       . join( ',', @stock )
       . '&f=sl1d1t1c2v';
     add_throttled_HTTP(
@@ -1411,9 +1411,17 @@ sub scrape_anagram{
     my ( $term, $content ) = @_;
 
     if ( $content =~
-        m{<PRE>([^<]*)</PRE>}i )
+        s{.*\d+ found\. Displaying}{}smi )
     {
-        my @results = grep {$_ ne '' && lc $_ ne $term} split /\n/, $1;
+        my @results;
+        my @lines = split /\n/, $content;
+        shift @lines;
+        foreach my $line (@lines) {
+          $line = cleanHTML($line);
+          last if $line eq '';
+          next if lc $line eq $term;
+          push @results, $line;
+        }
         return unless @results;
         return pickRandom( [@results]);
     }
@@ -1667,7 +1675,7 @@ $response{spell} = {
     CODE => sub {
         my ($event) = @_;
         my $args = $event->{VALUE};
-        if ( !( $args =~ m/spell*\s*(.*)\s*$/i ) ) {
+        if ( !( $args =~ m/spell\s+(.*)\s*$/i ) ) {
             return 'ERROR: Expected RE not matched!';
         }
         my $term = escape $1;
@@ -1681,14 +1689,14 @@ $response{spell} = {
 	            if ($answer) {
                       dispatch( $event, "No match for '$term', did you mean '$answer'?" );
                     } else {
-                      dispatch( $event, "Looks OK.");
+                      dispatch( $event, "Looks OK, but google could be wrong.");
                     }
                   }
               );
           return;
         },
-    HELP => 'how do you spell this?',
-    TYPE => [qw/private/],
+    HELP => 'have google check your spelling...',
+    TYPE => 'private',
     POS  => -1,
     STOP => 1,
     RE   => qr/\bspell\b/i
