@@ -107,7 +107,10 @@ Helpful when generating debug output for new features.
 =cut
 
 sub debug {
-    TLily::Server->active()->cmd_process("$debug_disc: @_");
+    # join and split to catch any embedded newlines
+    my $args = join("\n",@_);
+    my @lines = split(/\n/, $args);
+    TLily::Server->active()->cmd_process("$debug_disc: $_") for @lines;
 }
 
 # XXX use File::*
@@ -1593,14 +1596,14 @@ $response{horoscope} = {
                 $term = 'sagittarius';
             }
             $url  =
-              'http://astrology.yahoo.com/astrology/general/dailyoverview/';
+              'http://astrology.shine.yahoo.com/astrology/general/dailyoverview/';
             $type = 'western';
         }
         else 
         {
             $term = $2;
             $url  =
-              'http://astrology.yahoo.com/chinese/general/dailyoverview/';
+              'http://astrology.shine.yahoo.com/chinese/general/dailyoverview/';
             $type = 'chinese';
         }
 
