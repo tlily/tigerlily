@@ -996,9 +996,11 @@ $response{help} = {
     CODE => sub {
         my ($event) = @_;
         my $args = $event->{VALUE};
-        if ( !( $args =~ s/help\s*(.*)\s*$/$1/i ) ) {
+        if ( !( $args =~ s/help\b(.*)$/$1/i ) ) {
             return 'ERROR: Expected RE not matched!';
         }
+        $args =~ s/^\s+//;
+        $args =~ s/\s+$//;
         if ( $args eq q{} ) {
 
             # XXX respect PRIVILEGE
@@ -1012,11 +1014,15 @@ $response{help} = {
         }
         if ( exists ${response}{$args} ) {
             my $helper = $response{$args}{HELP};
-            my $type = " [" . join(',', @{$response{$args}{TYPE}}) . "]";
+            my $types = $response{$args}{TYPE};
+            if (ref $types) {
+                $types = join(',', @{$response{$args}{TYPE}});
+            } 
+            $types = " [$types]";
             if (ref $helper) {
-                return &{ $helper }(). $type;
+                return &{ $helper }(). $types;
             } else {
-                return join(' ', ( split /\n/, $helper ) ) . $type;
+                return join(' ', ( split /\n/, $helper ) ) . $types;
             }
         }
         return "ERROR: '$args' , unknown help topic.";
