@@ -525,10 +525,6 @@ Boolean that indicates whether this command should stop processing of any
 other commands. Set to false to run this command B<and> still allow for
 later rules to process.
 
-=item DISABLED
-
-Boolean that indicates whether this command should be processed or not.
-
 =item PRIVILEGE
 
 String indicating the level of privilege required to run this command. Three
@@ -1009,7 +1005,6 @@ $response{help} = {
 
             # XXX respect PRIVILEGE
             my @cmds =
-              sort grep { !$response{$_}->{DISABLED} }
               grep { $_ ne 'help' } keys %response;
             return
 "Hello. I'm a bot. Try 'help' followed by one of the following for more information: "
@@ -1295,25 +1290,6 @@ END_HELP
     POS  => 0,
     STOP => 1,
     RE   => qr/\bstock\b/i,
-};
-
-$response{drink} = {
-    DISABLED => 1,
-    CODE     => sub {
-        my ($event) = @_;
-        my $args = $event->{VALUE};
-        if ( $args =~ m/slides a\b(.*)\bdown the bar to CJ\b/ ) {
-            my $cmd = "/drink $1";
-            TLily::Server->active()
-              ->cmd_process( $cmd, sub { $_[0]->{NOTIFY} = 0; } );
-        }
-        return q{};
-    },
-    HELP => "slide me a drink, I'm game.",
-    TYPE => 'emote',
-    POS  => 0,
-    STOP => 1,
-    RE => qr/down the bar/i,
 };
 
 $response{kibo} = {
@@ -1692,7 +1668,6 @@ $response{spell} = {
 };
 
 $response{foldoc} = {
-    DISABLED => 1,
     CODE     => sub {
         my ($event) = @_;
         my $args = $event->{VALUE};
@@ -1700,35 +1675,19 @@ $response{foldoc} = {
             return 'ERROR: Expected RE not matched!';
         }
         add_throttled_HTTP(
-            url => 'http://www.nightflight.com/foldoc-bin/foldoc.cgi?query='
-              . $args,
-            host     => 'www.nightflight.com',
-            ui_name  => 'main',
-            protocol => 'http',
+            url => "http://foldoc.org/index.cgi?query=$args",
             callback => sub {
+                my $content = shift()->{_content};
 
-                my ($response) = @_;
-
-                my $tmp =
-                  cleanHTML( ( split( '</FORM>', $response->{_content} ) )[0] );
-
-                if ( $tmp =~ /No match for/ ) {
-                    dispatch( $event, 'No match, sorry' );
+                if ( $content =~ /No match for/ ) {
+                    dispatch( $event, 'No match, sorry.' );
                     return;
                 }
 
-                my @chunks = split( '<HR>', $response->{_content} );
+                $content =~ s/<h1>(.*)Try this search//;
+                $content = cleanHTML($content);
 
-                if ( scalar(@chunks) == 3 ) {
-                    my $tmp =
-                      cleanHTML( ( split( '</FORM>', $chunks[0] ) )[1] );
-                    $tmp =~ s/Try this search on OneLook \/ Google//;
-
-                    dispatch( $event, 'According to FOLDOC: ' . $tmp );
-                }
-                else {
-                    dispatch( $event, 'foldoc: Screen Scrape failed!' );
-                }
+                dispatch( $event, 'According to FOLDOC: ' . $content );
             }
         );
         return;
@@ -1738,40 +1697,6 @@ $response{foldoc} = {
     POS  => 0,
     STOP => 1,
     RE   => qr/foldoc/i,
-};
-
-$response{lynx} = {
-    DISABLED => 1,
-    CODE     => sub {
-        my ($event) = @_;
-        my $args = $event->{VALUE};
-        if ( !( $args =~ s/.*lynx\s+(.*)/$1/i ) ) {
-            return 'ERROR: Expected RE not matched!';
-        }
-        add_throttled_HTTP(
-            url      => $args,
-            host     => 'www.cnn.com',
-            ui_name  => 'main',
-            protocol => 'http',
-            callback => sub {
-
-                my ($response) = @_;
-                my $message;
-
-                $message = 'status: ' . $response->{_state}{_msg};
-                $message .= ' url: ' . $response->{url};
-                $message .= ' size: ' . length( $response->{_content} );
-
-                dispatch( $event, $message );
-            }
-        );
-        return;
-    },
-    HELP => 'trying to find a nice way to suck down web pages.',
-    TYPE => 'all',
-    POS  => 0,
-    STOP => 1,
-    RE   => qr/lynx/i,
 };
 
 my @ascii =
@@ -1988,7 +1913,7 @@ END_HELP
     RE   => qr/\butf8\b/i,
 };
 
-# This is already pretty unweidly.
+# This is pretty unweidly.
 #
 sub cleanHTML {
 
@@ -2138,7 +2063,6 @@ sub cj_event {
       HANDLE_INNER: foreach my $handler ( keys %response ) {
 
             # XXX respect PRIVILEGE
-            next if $response{$handler}->{DISABLED};
             my @types = get_types ($response{$handler});
             if ( $response{$handler}->{POS} eq $order ) {
                 next
