@@ -83,7 +83,6 @@ my ( $every_10m, $every_30s, $frequently );    #timers
 # some array refs of sayings...
 my $sayings;      # pithy 8ball-isms.
 my $overhear;     # listen for my name occasionally;
-my $buzzwords;    # random set of words.
 
 # Unify this into generic special handling. =-)
 my $unified;      # special handling for the unified discussion.
@@ -1273,21 +1272,6 @@ END_HELP
     RE   => qr/\bcmd\b/i,
 };
 
-$response{buzz} = {
-    CODE => sub {
-        my ($event) = @_;
-        my @tmp;
-        foreach ( 1 .. 3 ) {
-            push @tmp, pickRandom($buzzwords);
-        }
-        return join( ' ', @tmp ) . '!';
-    },
-    HELP => 'random buzzword generator. Active with keyword "buzz"',
-    POS  => 1,
-    STOP => 1,
-    RE   => qr/\bbuzz\b/i,
-};
-
 $response{stock} = {
     CODE => sub {
         my ($event) = @_;
@@ -2254,12 +2238,6 @@ sub load {
         type   => 'memo',
         target => $disc,
         name   => 'overhear'
-    );
-    $server->fetch(
-        call => sub { my %event = @_; $buzzwords = $event{text} },
-        type   => 'memo',
-        target => $disc,
-        name   => 'buzzwords'
     );
     $server->fetch(
         call => sub { my %event = @_; $unified = $event{text} },
