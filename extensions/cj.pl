@@ -1014,15 +1014,11 @@ $response{help} = {
         }
         if ( exists ${response}{$args} ) {
             my $helper = $response{$args}{HELP};
-            my $types = $response{$args}{TYPE};
-            if (ref $types) {
-                $types = join(',', @{$response{$args}{TYPE}});
-            } 
-            $types = " [$types]";
+            my $type = ' [' . join(',', get_types ($response{$args})) . ']';
             if (ref $helper) {
-                return &{ $helper }(). $types;
+                return &{ $helper }(). $type;
             } else {
-                return join(' ', ( split /\n/, $helper ) ) . $types;
+                return join(' ', ( split /\n/, $helper ) ) . $type;
             }
         }
         return "ERROR: '$args' , unknown help topic.";
@@ -1689,7 +1685,6 @@ $response{spell} = {
           return;
         },
     HELP => 'have google check your spelling...',
-    TYPE => 'private',
     POS  => -1,
     STOP => 1,
     RE   => qr/\bspell\b/i
