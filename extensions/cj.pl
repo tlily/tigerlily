@@ -619,7 +619,7 @@ $response{weather} = {
         my ($event) = @_;
         my $args = $event->{VALUE};
         if ( $args !~ m/weather\s*(.*)\s*$/i ) {
-            return 'ERROR: Expected RE not matched!';
+            return 'ERROR: Expected weather RE not matched!';
         }
         my $term = $1;
         $term =~ s/\?$//; #XXX add this to RE above...
@@ -664,7 +664,7 @@ $response{forecast} = {
         my ($event) = @_;
         my $args = $event->{VALUE};
         if ( $args !~ m/forecast\s*(.*)\s*$/i ) {
-            return 'ERROR: Expected RE not matched!';
+            return 'ERROR: Expected forecast RE not matched!';
         }
         my $term = $1;
         $term =~ s/\?$//; #XXX add this to RE above...
@@ -709,7 +709,7 @@ $response{engrish} = {
         my ($event) = @_;
         my $args = $event->{VALUE};
         if ( $args !~ m/engrish*\s*(.*)\s*$/i ) {
-            return 'ERROR: Expected RE not matched!';
+            return 'ERROR: Expected engrish RE not matched!';
         }
         my $term     = escape $1;
         my $language = 'nl';
@@ -972,8 +972,8 @@ $response{shorten} = {
     CODE => sub {
         my ($event) = @_;
         my $args = $event->{VALUE};
-        if ( !( $args =~ s/shorten*\s*(.*)\s*$/$1/i ) ) {
-            return 'ERROR: Expected RE not matched!';
+        if ( !( $args =~ s/shorten\s+(.*)\s*$/$1/i ) ) {
+            return 'ERROR: Expected shorten RE not matched!';
         }
         my $shorten = $1;
         if ( $shorten =~ m|^http://xrl.us/(.*)| ) {
@@ -997,7 +997,7 @@ $response{help} = {
         my ($event) = @_;
         my $args = $event->{VALUE};
         if ( !( $args =~ s/help\b(.*)$/$1/i ) ) {
-            return 'ERROR: Expected RE not matched!';
+            return 'ERROR: Expected help RE not matched!';
         }
         $args =~ s/^\s+//;
         $args =~ s/\s+$//;
@@ -1060,7 +1060,7 @@ $response{'poll'} = {
         my ($event) = @_;
         my $args = $event->{VALUE};
         if ( !( $args =~ s/\bpoll\s?(.*)\s*$/$1/ ) ) {
-            return 'ERROR: Expected RE not matched!';
+            return 'ERROR: Expected poll RE not matched!';
         }
         $args =~ s/^\s+//;
         $args =~ s/\s+$//;
@@ -1122,7 +1122,7 @@ $response{'poll'} = {
             }
         }
         else {
-            return 'ERROR: Expected RE not matched!';
+            return 'ERROR: Expected poll RE not matched!';
         }
     },
     HELP => <<'END_HELP',
@@ -1141,7 +1141,7 @@ $response{'set'} = {
         my ($event) = @_;
         my $args = $event->{VALUE};
         if ( !( $args =~ s/\bset(.*)$/$1/ ) ) {
-            return 'ERROR: Expected RE not matched!';
+            return 'ERROR: Expected set RE not matched!';
         }
         my @args = split( ' ', $args, 2 );
 
@@ -1275,7 +1275,7 @@ $response{stock} = {
         my ($event) = @_;
         my $args = $event->{VALUE};
         if ( !( $args =~ s/stock\s+(.*)/$1/i ) ) {
-            return 'ERROR: Expected RE not matched!';
+            return 'ERROR: Expected stock RE not matched!';
         }
         else {
             get_stock( $event, split( /[, ]+/, $args ) );
@@ -1497,7 +1497,7 @@ $response{bacon} = {
         my ($event) = @_;
         my $args = $event->{VALUE};
         if ( !( $args =~ m/\bbacon*\s*(.*)\s*$/i ) ) {
-            return 'ERROR: Expected RE not matched!';
+            return 'ERROR: Expected bacon RE not matched!';
         }
         my $term = $1;
         if (lc($term) eq 'kevin bacon') {
@@ -1598,7 +1598,7 @@ $response{define} = {
         my ($event) = @_;
         my $args = $event->{VALUE};
         if ( !( $args =~ m/define*\s*(.*)\s*$/i ) ) {
-            return 'ERROR: Expected RE not matched!';
+            return 'ERROR: Expected define RE not matched!';
         }
         my $term = escape $1;
         my $url  = "http://en.wiktionary.org/w/index.php?printable=yes&title=$term";
@@ -1642,7 +1642,7 @@ $response{spell} = {
         my ($event) = @_;
         my $args = $event->{VALUE};
         if ( !( $args =~ m/spell\s+(.*)\s*$/i ) ) {
-            return 'ERROR: Expected RE not matched!';
+            return 'ERROR: Expected spell RE not matched!';
         }
         my $term = escape $1;
               my $url = "http://www.google.com/search?num=0&hl=en&lr=&as_qdr=all&q=$term&btnG=Search";
@@ -1672,7 +1672,7 @@ $response{foldoc} = {
         my ($event) = @_;
         my $args = $event->{VALUE};
         if ( !( $args =~ s/.*foldoc\s+(.*)/$1/i ) ) {
-            return 'ERROR: Expected RE not matched!';
+            return 'ERROR: Expected foldoc RE not matched!';
         }
         add_throttled_HTTP(
             url => "http://foldoc.org/index.cgi?query=$args",
@@ -1739,7 +1739,7 @@ $response{rot13} = {
         my ($event) = @_;
         my $args = $event->{VALUE};
         if ( !( $args =~ s/.*rot13\s+(.*)/$1/i ) ) {
-            return 'ERROR: Expected RE not matched!';
+            return 'ERROR: Expected rot13 RE not matched!';
         }
 
         $args =~ tr/[A-Za-z]/[N-ZA-Mn-za-m]/;
@@ -1757,7 +1757,7 @@ $response{urldecode} = {
         my ($event) = @_;
         my $args = $event->{VALUE};
         if ( !( $args =~ s/.*urldecode\s+(.*)/$1/i ) ) {
-            return 'ERROR: Expected RE not matched!';
+            return 'ERROR: Expected urldecode RE not matched!';
         }
 
         return unescape $args;
@@ -1773,7 +1773,7 @@ $response{urlencode} = {
         my ($event) = @_;
         my $args = $event->{VALUE};
         if ( !( $args =~ s/.*urlencode\s+(.*)/$1/i ) ) {
-            return 'ERROR: Expected RE not matched!';
+            return 'ERROR: Expected urlencode RE not matched!';
         }
 
         return escape $args;
@@ -1789,7 +1789,7 @@ $response{ascii} = {
         my ($event) = @_;
         my $args = $event->{VALUE};
         if ( !( $args =~ s/.*ascii\s+(.*)/$1/i ) ) {
-            return 'ERROR: Expected RE not matched!';
+            return 'ERROR: Expected ascii RE not matched!';
         }
         if ( $args =~ m/^'(.)'$/ ) {
             return format_ascii( ord($1) );
@@ -1837,7 +1837,7 @@ $response{country} = {
         my ($event) = @_;
         my $args = $event->{VALUE};
         if ( !( $args =~ s/.*country\s+(.*)/$1/i ) ) {
-            return 'ERROR: Expected RE not matched!';
+            return 'ERROR: Expected country RE not matched!';
         }
         if ( $args =~ m/^(..)$/ ) {
 
@@ -1878,7 +1878,7 @@ $response{utf8} = {
         my ($event) = @_;
         my $args = $event->{VALUE};
         if ( !( $args =~ s/.*utf8\s+(.*)/$1/i ) ) {
-            return 'ERROR: Expected RE not matched!';
+            return 'ERROR: Expected utf8 RE not matched!';
         }
         if ( $args =~ m/^[Uu]\+([0-9A-Fa-f]*)$/ ) {
             my $a = `grep -i '^$1\|' /Users/cjsrv/CJ/unicode2.txt`;
@@ -2075,6 +2075,7 @@ sub cj_event {
                     # fixup so things like "drink" work, though.
                     $re = qr/^\s*(?i:$name\s*,?\s*)?$re/;
                 }
+                $re = qr/^\s*\b$re/; # anchor to the beginning of a send
 
                 if ( $event->{VALUE} =~ m/$re/ ) {
                     $served{ $event->{type} . ' messages' }++;
