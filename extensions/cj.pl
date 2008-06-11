@@ -1684,7 +1684,9 @@ $response{foldoc} = {
                     return;
                 }
 
-                $content =~ s/<h1>(.*)Try this search//;
+                $content =~ s/.*<h1>//ms;
+                $content =~ s/Try this search.*//ms;
+
                 $content = cleanHTML($content);
 
                 dispatch( $event, 'According to FOLDOC: ' . $content );
