@@ -704,6 +704,19 @@ $response{forecast} = {
     RE   => qr/\bforecast\b/i
 };
 
+my $babelfish_url = "http://babelfish.yahoo.com/translate_txt?trtext=%s&lp=%s_%s";
+
+my %languages = (
+    english    => 'en',
+    german     => 'de',
+    dutch      => 'nl',
+    french     => 'fr',
+    greek      => 'el',
+    italian    => 'it',
+    portuguese => 'pt',
+    spanish    => 'es',
+);
+
 $response{engrish} = {
     CODE => sub {
         my ($event) = @_;
@@ -712,9 +725,11 @@ $response{engrish} = {
             return 'ERROR: Expected engrish RE not matched!';
         }
         my $term     = escape $1;
-        my $language = 'nl';
-        my $url      =
-          "http://babelfish.altavista.com/tr?trtext=$term&lp=en_$language";
+
+        my @choices = grep {$_ ne 'english'} (keys %languages);
+        my $choice = pickRandom(\@choices);
+        my $language = $languages{$choice};
+        my $url = sprintf $babelfish_url, $term, 'en', $language;
         add_throttled_HTTP(
             url      => $url,
             ui_name  => 'main',
@@ -723,9 +738,7 @@ $response{engrish} = {
                 my $xlated =
                   escape scrape_translate( $term, $response->{_content} );
 
-                my $url =
-"http://babelfish.altavista.com/tr?trtext=$xlated&lp=$language"
-                  . '_en';
+                  my $url = sprintf $babelfish_url, $xlated, $language, 'en';
                 add_throttled_HTTP(
                     url      => $url,
                     ui_name  => 'main',
@@ -746,17 +759,6 @@ $response{engrish} = {
     STOP => 1,
     RE   => qr/\bengrish\b/i
 };
-
-my %languages = (
-    english    => 'en',
-    german     => 'de',
-    dutch      => 'nl',
-    french     => 'fr',
-    greek      => 'el',
-    italian    => 'it',
-    portuguese => 'pt',
-    spanish    => 'es',
-);
 
 sub get_lang {
     my $guess = lc shift;
@@ -814,8 +816,7 @@ $response{translate} = {
             dispatch( $event, "I don't speak $guess_to" );
             return;
         }
-        my $url =
-          "http://babelfish.altavista.com/tr?trtext=$term&lp=${from}_${to}";
+        my $url = sprintf $babelfish_url, $term, $from, $to;
         add_throttled_HTTP(
             url      => $url,
             ui_name  => 'main',
@@ -1400,7 +1401,7 @@ sub scrape_translate {
     my ( $term, $content ) = @_;
 
     if ( $content =~
-        m{<td bgcolor=white class=s><div style=padding:10px;>([^<]*)</div></td>}i )
+        m{<input type="hidden" name="p" value="([^"]*)">}i )
     {
         return cleanHTML($1);
     }
