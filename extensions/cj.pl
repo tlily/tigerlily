@@ -786,6 +786,9 @@ my $translateRE      = qr/
   \s* $
 /ix;
 
+# XXX Investigate adding support for http://www.tc.umn.edu/~joela/;
+# not a true translator, but still gnifty.
+
 $response{translate} = {
     CODE => sub {
         my ($event) = @_;
