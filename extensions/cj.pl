@@ -1919,7 +1919,7 @@ END_HELP
     RE   => qr/\butf8\b/i,
 };
 
-# This is pretty unweidly.
+# This is pretty unweildly.
 #
 sub cleanHTML {
 
