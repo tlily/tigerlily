@@ -653,7 +653,7 @@ $response{weather} = {
         return;
     },
     HELP => 'Given a location, get the current weather.',
-    TYPE => 'all',
+    TYPE => qw/public private/,
     POS  => -1,
     STOP => 1,
     RE   => qr/\bweather\b/i
