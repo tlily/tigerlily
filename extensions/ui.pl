@@ -498,11 +498,11 @@ zap_to_char {
 
         if ($found >= 0) {
             $input->kill_append($input->{point}, $found - $input->{point} + 1);
-            $ui->prompt($ui->{save_prefix});
         } else {
             $ui->bell();
         }
 
+        $ui->prompt($ui->{save_prefix});
     } else {
         if ($ui->intercept_r(name => "zap-to-char", order => 500)) {
             $ui->{save_prefix} = $input->{prefix};
