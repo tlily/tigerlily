@@ -10,7 +10,6 @@ use Data::Dumper;
 
 use TLily::Server::HTTP;
 use URI;
-use XML::RSS::Parser;
 use Config::IniFiles;
 use DB_File;    # get rid of this now that we have Config::IniFiles...
 
@@ -73,7 +72,6 @@ my %prefs;     #dbmopen'd hash of lily user prefs. (XXX KILL THIS)
 my $config;    # Config::IniFiles object storing preferences.
 my $disc       = 'cj-admin';    #where we keep our memos.
 my $debug_disc = 'cj-admin';
-my %disc_feed;    # A cached copy of which discussions each feed goes to
 my %disc_annotations
   ;               # A cached copy of which discussions each annotation goes to.
 my %annotations;        # A cached copy of what our annotations do.
@@ -146,123 +144,6 @@ Given a ref to a list, return a random element from it.
 sub pickRandom {
     my @list = @{ $_[0] };
     return $list[ int( rand( scalar(@list) ) ) ];
-}
-
-# URL => {headline,provider,summary,age,headlines,short_url}
-
-sub get_feeds {
-    my @feeds = $config->GroupMembers('feed');
-    foreach my $feed (@feeds) {
-        my $url = $config->val( $feed, 'url' );
-        get_feed( $feed, $url );
-    }
-}
-
-# Get a feed.
-my %rss_feeds;
-my $xmlparser = new XML::RSS::Parser;
-
-sub get_feed {
-    my ( $source, $url ) = @_;
-    add_throttled_HTTP(
-        url      => $url,
-        ui_name  => 'main',
-        callback => sub {
-
-            my ($response) = @_;
-
-            foreach my $url ( keys %{ $rss_feeds{$source} } ) {
-
-         # 12 is arbitrary here.  I believe updates are every half hours, so
-         # this would mean more than 6 hours without the URL being referenced in
-         # the feed data.
-
-                if ( $rss_feeds{$source}{$url}{'__untouchedcount'}++ > 12 ) {
-                    delete $rss_feeds{$source}{$url};
-                }
-            }
-
-            my $feed = $xmlparser->parse( $response->{_content} );
-
-            foreach my $item ( $feed->items() ) {
-                my $data = {};
-                map { $data->{ $_->name } = $_->value } $item->children;
-                $rss_feeds{$source}{$url}{'__untouchedcount'} = 0;
-                my $url = $data->{link};
-                foreach my $key ( keys %$data ) {
-
-                    # XXX this cleanHTML may be the cause of the yahoo failures.
-                    $rss_feeds{$source}{$url}{$key} =
-                      cleanHTML( $data->{$key} );
-                }
-            }
-        }
-    );
-}
-
-# emit an RSS headline.
-sub send_headline {
-    my ( $feed, $target, $url, $title, $description ) = @_;
-
-    next if $url   eq q{};
-    next if $title eq q{};
-
-    if ( length($description) > 512 ) {
-        $description = substr( $description, 0, 512 ) . ' ...';
-    }
-    my $uri = URI->new($url);
-    shorten(
-        $url,
-        sub {
-            my ($shorty) = @_;
-
-            my $line = $target . ':';
-            if ( $shorty eq q{} ) {
-
-                # shortening failed for some reason.
-                $line .= $url;
-            }
-            else {
-                $line .= "$shorty (" . $uri->host . ')';
-            }
-            $line .= ' :: ';
-
-            $line .= "$title :: $description";
-            TLily::Server->active()->cmd_process($line);
-
-            #and, now that we've displayed it, save this fact in the config.
-            my @shown = split /\n/, $config->val( $feed, 'shown' );
-            push @shown, $url;
-            save_value( $feed, 'shown', join( "\n", @shown ) );
-        }
-    );
-}
-
-# come up with a more efficient way to do this.
-sub broadcast_feeds {
-    foreach my $feed ( keys %rss_feeds ) {
-        foreach my $item ( keys %{ $rss_feeds{$feed} } ) {
-            my $story = $rss_feeds{$feed}{$item};
-            my @shown = split /\n/, $config->val( $feed, 'shown' );
-            if ( !grep { $_ eq $item } @shown ) {
-
-                # What discussions does this go to?
-                foreach my $disc ( @{ $disc_feed{$feed} } ) {
-                    send_headline( $feed, $disc, $story->{link},
-                        $story->{title}, $story->{description} );
-                }
-                return;
-            }
-        }
-    }
-}
-
-sub save_value {
-    my ( $section, $var, @values ) = @_;
-    if ( !$config->setval( $section, $var, @values ) ) {
-        $config->AddSection($section);
-        $config->newval( $section, $var, @values );
-    }
 }
 
 ### Process stock requests
@@ -2146,10 +2027,6 @@ sub load {
         my $discname = $disc;
         $discname =~ s/^discussion //;
 
-        my @feeds = split /\n/, $config->val( $disc, 'feeds' );
-        foreach my $feed (@feeds) {
-            push @{ $disc_feed{"feed $feed"} }, $discname;
-        }
         my @annotations = split /\n/, $config->val( $disc, 'annotations' );
         foreach my $annotation (@annotations) {
             $disc_annotations{$discname}{$annotation} = 1;
@@ -2188,19 +2065,6 @@ sub load {
         name   => '-beener'
     );
 
-    $every_10m = TLily::Event::time_r(
-        call => sub {
-            get_feeds();
-        },
-        interval => 60 * 10
-    );
-    $every_30s = TLily::Event::time_r(
-        call => sub {
-            broadcast_feeds();
-            checkpoint();
-        },
-        interval => 60 * .5
-    );
     $frequently = TLily::Event::time_r(
         call => sub {
             do_throttled_HTTP();
