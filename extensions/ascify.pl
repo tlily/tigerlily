@@ -235,9 +235,9 @@ sub ascify_cmd {
 	}
 	
 	if (exists($entity_ascii_map{$entity})) {
-	    $ui->print("(Entity '$entity' is bound to '$ascii')");
+	    $ui->print("(Entity '$entity' is bound to '$ascii')\n");
 	} else {
-	    $ui->print("(Entity '$entity' is not bound)");
+	    $ui->print("(Entity '$entity' is not bound)\n");
 	}
 
 	return;
