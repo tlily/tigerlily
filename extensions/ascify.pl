@@ -39,6 +39,28 @@ letter followed by diacritical, %set ascify_nostrip_accents 1
 my @config = (
     # Misc
     '&euro;'    => 'EUR',       'euro ()',
+    '&ensp'     => ' ',         'en space',
+    '&emsp'     => ' ',         'em space',
+    '&thinsp'   => ' ',         'thin space',
+    '&zwnj'     => '',          'zero width non-joiner',
+    '&zwj'      => '',          'zero width joiner',
+    '&lrm'      => '',          'left-to-right mark',
+    '&rlm'      => '',          'right-to-left mark',
+    '&ndash'    => '-',         'en dash',
+    '&mdash'    => '--',        'em dash',
+    '&lsquo'    => "'",         'left single quotation mark',
+    '&rsquo'    => "'",         'right single quotation mark',
+    '&sbquo'    => "'",         'single low-9 quotation mark',
+    '&ldquo'    => '"',         'left double quotation mark',
+    '&rdquo'    => '"',         'right double quotation mark',
+    '&bdquo'    => '"',         'double low-9 quotation mark',
+#   '&dagger'   => undef,       'dagger',
+#   '&Dagger'   => undef,       'double dagger',
+#   '&permil'   => undef,       'per mille sign',
+    '&lsaquo'   => '<',         'single left-pointing angle quotation mark',
+    '&rsaquo'   => '>',         'single right-pointing angle quotation mark',
+    '&hellip'   => '...',       'horizontal elipsis',
+    '&bull'     => '-',         'bullet',
     
     # ISO 8859-1 Symbols
     '&nbsp;',   => ' ',         'non-breaking space',

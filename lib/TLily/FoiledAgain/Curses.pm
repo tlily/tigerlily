@@ -90,7 +90,47 @@ my %cpairmap   = ("-1 -1" => 0);
 # other program.
 my %entitymap = (
     # Misc
-    128 => '&euro;',   # euro ()
+    128 => '&euro;',   # euro ()   
+    130 => '&sbquo',  # single low-9 quotation mark
+    132 => '&bdquo',  # double low-9 quotation mark
+    133 => '&hellip', # horizontal elipsis
+    134 => '&dagger', # dagger
+    135 => '&Dagger', # double dagger
+    137 => '&permil', # per mille sign
+    139 => '&lsaquo', # single left-pointing angle quotation mark
+    145 => '&lsquo',  # left single quotation mark
+    146 => '&rsquo',  # right single quotation mark
+    147 => '&ldquo',  # left double quotation mark
+    148 => '&rdquo',  # right double quotation mark
+    149 => '&bull',   # bullet
+    150 => '&ndash',   # en dash
+    151 => '&mdash',   # em dash
+    155 => '&rsaquo',  # single right-pointing angle quotation mark
+    8192 => '&ensp',   # en quad
+    8194 => '&ensp',   # en space
+    8195 => '&emsp',   # em space
+    8201 => '&thinsp', # thin space
+    8204 => '&zwnj',   # zero width non-joiner
+    8205 => '&zwj',    # zero width joiner
+    8206 => '&lrm',    # left-to-right mark
+    8207 => '&rlm',    # right-to-left mark
+    8211 => '&ndash',  # en dash
+    8212 => '&mdash',  # em dash
+    8216 => '&lsquo',  # left single quotation mark
+    8217 => '&rsquo',  # right single quotation mark
+    8218 => '&sbquo',  # single low-9 quotation mark
+    8220 => '&ldquo',  # left double quotation mark
+    8221 => '&rdquo',  # right double quotation mark
+    8222 => '&bdquo',  # double low-9 quotation mark
+    8224 => '&dagger', # dagger
+    8225 => '&Dagger', # double dagger
+    8226 => '&bull',   # bullet
+    8230 => '&hellip', # horizontal elipsis
+    8240 => '&permil', # per mille sign
+    8249 => '&lsaquo', # single left-pointing angle quotation mark
+    8250 => '&rsaquo', # single right-pointing angle quotation mark
+    8364 => '&euro',   # euro sign
+    65279 => '&zwj',   # zero width no-break space
     
     # ISO 8859-1 Symbols
     160 => '&nbsp;',   # non-breaking space
@@ -343,14 +383,31 @@ sub read_char {
 	return $self->read_char();
     }
 
-    # non-ascii characters pasted into an xterm result in a two-byte utf8
-    # sequence.  That's enough to cover the latin alphabets at least.
-    if (ord($c) >= 194 && ord($c) < 223) {
+    # Handle 2-byte UTF8
+    if (ord($c) >= 194 && ord($c) <= 223) {
 	my $c2 = $self->{W}->getch();
 	return if ($c2 eq "-1" || !defined $c2);
 
-	# convert utf representation ($c1, $c2) to unicode number.
+	# convert utf8 representation ($c, $c2) to unicode number.
 	my $num =  (((ord($c) & 31) << 6) | (ord($c2) & 63)); 
+
+	if (exists($entitymap{$num})) {
+	    $c = $entitymap{$num};
+	} else {
+	    $c = "&#$num;";
+	}
+    }
+
+    # Handle 3-byte UTF8
+    if (ord($c) >= 224 && ord($c) <= 239) {
+	my $c2 = $self->{W}->getch();
+	return if ($c2 eq "-1" || !defined $c2);
+
+	my $c3 = $self->{W}->getch();
+	return if ($c3 eq "-1" || !defined $c3);
+
+	# convert utf8 representation ($c, $c2, $c3) to unicode number.
+	my $num = (((ord($c) & 15) << 12) | ((ord($c2) & 63) << 6) | (ord($c3) & 63));
 
 	if (exists($entitymap{$num})) {
 	    $c = $entitymap{$num};
