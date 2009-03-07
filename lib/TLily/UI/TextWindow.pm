@@ -532,6 +532,21 @@ sub run {
         $self->command("scroll-to-bottom")
             if $config{scroll_to_bottom_on_input} &&
                $self->{status}->{var}->{t_more};
+    } elsif ($key =~ /^&.*;$/) {
+	# an unhandled entity - normally, we suppress them (the assumption is
+	# that any entity we want displayed will be turned into text by an
+	# intercept or handled by a ui binding), but for debugging, it can be
+	# handy to show these ones that slip through as-is.
+
+	if ($config{show_unhandled_entities}) {
+	    foreach my $char (split '', $key) {
+		$self->{input}->addchar($char);
+		$self->{input}->{quoted_insert} = 0;
+		$self->command("scroll-to-bottom")
+		    if $config{scroll_to_bottom_on_input} &&
+		    $self->{status}->{var}->{t_more};
+	    }
+	}
     }
 
     $self->{input}->position_cursor;

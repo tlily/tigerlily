@@ -17,7 +17,7 @@
 @load = qw(server slcp_parse slcp_output slcp_state toc_parse ui expand status
 	   after alias autologin autoreply countdown gag info misc paste pipes
 	   set startup source spellcheck submit url view vinfo log http_parse
-	   on blurbless dumpscrollback);
+	   on blurbless dumpscrollback ascify);
 
 if ($^O =~ /(MSWin32)/) {
     $textwindow_ui = 'TLily::FoiledAgain::Win32';

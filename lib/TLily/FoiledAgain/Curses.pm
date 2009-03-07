@@ -85,7 +85,115 @@ my %snamemap   =
 # IDs.  (fg and bg are Curses color IDs.)
 my %cpairmap   = ("-1 -1" => 0);
 
-sub start {
+# The entity map matches unicode characters to HTML-style
+# entities for non-ASCII characters that might be pasted in from some 
+# other program.
+my %entitymap = (
+    # Misc
+    128 => '&euro;',   # euro ()
+    
+    # ISO 8859-1 Symbols
+    160 => '&nbsp;',   # non-breaking space
+    161 => '&iexcl;',  # inverted exclamation mark (¡)
+    162 => '&cent;',   # cent (¢)
+    163 => '&pound;',  # pound (£)
+    164 => '&curren;', # currency (¤)
+    165 => '&yen;',    # yen (¥)
+    166 => '&brvbar;', # broken vertical bar (¦)
+    167 => '&sect;',   # section (§)
+    168 => '&uml;',    # spacing diaeresis (¨)
+    169 => '&copy;',   # copyright (©)
+    170 => '&ordf;',   # feminine ordinal indicator (ª)
+    171 => '&laquo;',  # angle quotation mark (left) («)
+    172 => '&not;',    # negation (¬)
+    173 => '&shy;',    # soft hyphen (­)
+    174 => '&reg;',    # registered trademark (®)
+    175 => '&macr;',   # spacing macron (¯)
+    176 => '&deg;',    # degree (°)
+    177 => '&plusmn;', # plus-or-minus (±)
+    178 => '&sup2;',   # superscript 2 (²)
+    179 => '&sup3;',   # superscript 3 (³)
+    180 => '&acute;',  # spacing acute (´)
+    181 => '&micro;',  # micro (µ)
+    182 => '&para;',   # paragraph (¶)
+    183 => '&middot;', # middle dot (·)
+    184 => '&cedil;',  # spacing cedilla (¸)
+    185 => '&sup1;',   # superscript 1 (¹)
+    186 => '&ordm;',   # masculine ordinal indicator (º)
+    187 => '&raquo;',  # angle quotation mark (right) (»)
+    188 => '&frac14;', # fraction 1/4 (¼)
+    189 => '&frac12;', # fraction 1/2 (½)
+    190 => '&frac34;', # fraction 3/4 (¾)
+    191 => '&iquest;', # inverted question mark (¿)
+    215 => '&times;',  # multiplication (×)
+    247 => '&divide;', # division (÷)
+    
+    # ISO 8859-1 Characters
+    192 => '&Agrave;', # capital a, grave accent (À)
+    193 => '&Aacute;', # capital a, acute accent (Á)
+    194 => '&Acirc;',  # capital a, circumflex accent (Â)
+    195 => '&Atilde;', # capital a, tilde (Ã)
+    196 => '&Auml;',   # capital a, umlaut mark (Ä)
+    197 => '&Aring;',  # capital a, ring (Å)
+    198 => '&AElig;',  # capital ae (Æ)
+    199 => '&Ccedil;', # capital c, cedilla (Ç)
+    200 => '&Egrave;', # capital e, grave accent (È)
+    201 => '&Eacute;', # capital e, acute accent (É)
+    202 => '&Ecirc;',  # capital e, circumflex accent (Ê)
+    203 => '&Euml;',   # capital e, umlaut mark (Ë)
+    204 => '&Igrave;', # capital i, grave accent (Ì)
+    205 => '&Iacute;', # capital i, acute accent (Í)
+    206 => '&Icirc;',  # capital i, circumflex accent (Î)
+    207 => '&Iuml;',   # capital i, umlaut mark (Ï)
+    208 => '&ETH;',    # capital eth, Icelandic (Ð)
+    209 => '&Ntilde;', # capital n, tilde (Ñ)
+    210 => '&Ograve;', # capital o, grave accent (Ò)
+    211 => '&Oacute;', # capital o, acute accent (Ó)
+    212 => '&Ocirc;',  # capital o, circumflex accent (Ô)
+    213 => '&Otilde;', # capital o, tilde (Õ)
+    214 => '&Ouml;',   # capital o, umlaut mark (Ö)
+    216 => '&Oslash;', # capital o, slash (Ø)
+    217 => '&Ugrave;', # capital u, grave accent (Ù)
+    218 => '&Uacute;', # capital u, acute accent (Ú)
+    219 => '&Ucirc;',  # capital u, circumflex accent (Û)
+    220 => '&Uuml;',   # capital u, umlaut mark (Ü)
+    221 => '&Yacute;', # capital y, acute accent (Ý)
+    222 => '&THORN;',  # capital THORN, Icelandic (Þ)
+    223 => '&szlig;',  # small sharp s, German (ß)
+    224 => '&agrave;', # small a, grave accent (à)
+    225 => '&aacute;', # small a, acute accent (á)
+    226 => '&acirc;',  # small a, circumflex accent (â)
+    227 => '&atilde;', # small a, tilde (ã)
+    228 => '&auml;',   # small a, umlaut mark (ä)
+    229 => '&aring;',  # small a, ring (å)
+    230 => '&aelig;',  # small ae (æ)
+    231 => '&ccedil;', # small c, cedilla (ç)
+    232 => '&egrave;', # small e, grave accent (è)
+    233 => '&eacute;', # small e, acute accent (é)
+    234 => '&ecirc;',  # small e, circumflex accent (ê)
+    235 => '&euml;',   # small e, umlaut mark (ë)
+    236 => '&igrave;', # small i, grave accent (ì)
+    237 => '&iacute;', # small i, acute accent (í)
+    238 => '&icirc;',  # small i, circumflex accent (î)
+    239 => '&iuml;',   # small i, umlaut mark (ï)
+    240 => '&eth;',    # small eth, Icelandic (ð)
+    241 => '&ntilde;', # small n, tilde (ñ)
+    242 => '&ograve;', # small o, grave accent (ò)
+    243 => '&oacute;', # small o, acute accent (ó)
+    244 => '&ocirc;',  # small o, circumflex accent (ô)
+    245 => '&otilde;', # small o, tilde (õ)
+    246 => '&ouml;',   # small o, umlaut mark (ö)
+    248 => '&oslash;', # small o, slash (ø)
+    249 => '&ugrave;', # small u, grave accent (ù)
+    250 => '&uacute;', # small u, acute accent (ú)
+    251 => '&ucirc;',  # small u, circumflex accent (û)
+    252 => '&uuml;',   # small u, umlaut mark (ü)
+    253 => '&yacute;', # small y, acute accent (ý)
+    254 => '&thorn;',  # small thorn, Icelandic (þ)
+    255 => '&yuml;'    # small y, umlaut mark (ÿ)
+);
+    
+    sub start {
     # Work around a bug in certain curses implementations where raw() does
     # not appear to clear the "lnext" setting.
     ($STTY_LNEXT) = (`stty -a 2> /dev/null` =~ /lnext = (\S+);/);
@@ -218,7 +326,6 @@ sub position_cursor {
     $self->{W}->noutrefresh();
 }
 
-
 my $meta = 0;
 sub read_char {
     my($self) = @_;
@@ -234,6 +341,22 @@ sub read_char {
     if (ord($c) == 27) {
 	$meta = 1;
 	return $self->read_char();
+    }
+
+    # non-ascii characters pasted into an xterm result in a two-byte utf8
+    # sequence.  That's enough to cover the latin alphabets at least.
+    if (ord($c) >= 194 && ord($c) < 223) {
+	my $c2 = $self->{W}->getch();
+	return if ($c2 eq "-1" || !defined $c2);
+
+	# convert utf representation ($c1, $c2) to unicode number.
+	my $num =  (((ord($c) & 31) << 6) | (ord($c2) & 63)); 
+
+	if (exists($entitymap{$num})) {
+	    $c = $entitymap{$num};
+	} else {
+	    $c = "&#$num;";
+	}
     }
 
     if ((ord($c) >= 128) && (ord($c) < 256)) {
