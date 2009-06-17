@@ -1358,23 +1358,28 @@ sub scrape_google_guess {
 sub scrape_bacon {
     my ($content) = shift;
 
-    if ( $content =~ /cannot find/ ) {
+
+    if ( $content =~ /The Oracle cannot find/ ) {
         $content =~ s/.*?(The Oracle cannot find)/\1/sm;
         $content =~ s/Arnie.*//sm;
-        return cleanHTML($content);
+        return "No match.";
     }
 
-    $content =~ s/.*?The Oracle of Bacon at Virginia//s;
-    $content =~ s/.*?The Oracle of Bacon at Virginia//s;
+    $content =~ s/.*<div id="main">//sm;
+    $content =~ s/<form.*//sm;
 
-    if ( $content =~ /infinity/ ) {
-        $content =~ s/(infinity).*/$1/s;
-    }
-    else {
-        $content =~ s/<br>/;/g;
-        $content =~ s/(Kevin Bacon).*/$1/s;
-    }
-    return cleanHTML($content);
+    $content = cleanHTML($content);
+    $content =~ s/(was in\s+)(.*?)(\s+\(\d)/$1 _$2_ $3/g;
+    $content =~ s/with\s+(.*?)\s+was in/with $1, who was in/g;
+    $content =~ s/\s+/ /g;
+
+    return $content;
+}
+
+my $bacon_url = 'http://oracleofbacon.org/cgi-bin/movielinks?a=Kevin+Bacon' .
+ '&end_year=2050&start_year=1850&game=0&u0=on';
+foreach my $g (0..27) {
+  $bacon_url .= "&g$g=on";
 }
 
 $response{bacon} = {
@@ -1389,14 +1394,12 @@ $response{bacon} = {
             dispatch($event,'Are you congenitally insane or irretrievably stupid?');
             return;
         }
-        if ($term =~ m/ \s* (\w+) \s+ (\w+) \s+ \(([ivxlcm]*)\) /smix) {
-            $term = "$2, $1 ($3)";
+        if ($term =~ m/ \s* (\w+) \s* , \s* (\w+) \s+ \(([ivxlcm]*)\) /smix) {
+            $term = "$2 $1 ($3)";
         }
 
         $term = escape($term);
-        my $url  =
-'http://oracleofbacon.org/cgi-bin/oracle/movielinks?firstname=Bacon%2C+Kevin&game=1&secondname='
-          . $term;
+        my $url  = $bacon_url . "&b=$term";
         add_throttled_HTTP(
             url      => $url,
             ui_name  => 'main',
