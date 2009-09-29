@@ -431,7 +431,7 @@ my $bibles = {
   'tm'    => {id => 65, name => 'The Message'},
   'ab'    => {id => 45, name => 'Amplified Bible'},
   'nlt'   => {id => 51, name => 'New Living Translation'},
-  'kjv'   => {id =>  9, name => 'King James Version'},
+  'kjv'   => {id => 'kjv', name => 'King James Version'},
   'esv'   => {id => 47, name => 'English Standard Version'},
   'cev'   => {id => 46, name => 'Contemporary English Version'},
   'nkjv'  => {id => 50, name => 'New King James Version'},
@@ -1232,7 +1232,7 @@ sub scrape_forecast {
 sub scrape_bible {
     my ( $term, $content ) = @_;
 
-    $content =~ m{result-text-style-normal"(.*)<div id="result-options-info2}sm;
+    $content =~ m{result-text-style-normal">(.*)<div id="result-options-info2}sm;
     return cleanHTML($1);
 }
 
