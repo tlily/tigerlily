@@ -1305,7 +1305,7 @@ sub scrape_wiktionary {
 
     $content =~ s/\n/ /g;
 
-    $content =~ s/.*<a name="English" id="English">//;
+    $content =~ s{.*<span class="mw-headline" id="English">English</span>}{};
     $content =~ s/<div class="printfooter">.*//;
  
 
