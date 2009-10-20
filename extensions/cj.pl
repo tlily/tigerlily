@@ -893,7 +893,7 @@ $response{help} = {
               grep { $_ ne 'help' } keys %response;
             return
 "Hello. I'm a bot. Try 'help' followed by one of the following for more information: "
-              . join( ', ', @cmds )
+              . join( ', ', sort @cmds )
               . '. In general, commands can appear anywhere in private sends, but must begin public sends.';
         }
         if ( exists ${response}{$args} ) {
