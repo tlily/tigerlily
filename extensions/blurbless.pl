@@ -1,4 +1,5 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/blurbless.pl,v 1.3 2001/11/02 23:13:03 tale Exp $
+# -*- Perl -*-
+# $Id$
 
 use strict;
 

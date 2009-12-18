@@ -1,3 +1,5 @@
+# -*- Perl -*-
+# $Id$
 use TLily::Bot standard;
 
 bot_r(match => "grope",

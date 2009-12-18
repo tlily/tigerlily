@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/on.pl,v 1.18 2003/10/05 07:59:51 steve Exp $
+# $Id$
 
 use strict;
 use Text::ParseWords qw(quotewords);

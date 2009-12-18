@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/status.pl,v 1.25 2002/06/11 01:55:48 bwelling Exp $
+# $Id$
 
 use strict;
 

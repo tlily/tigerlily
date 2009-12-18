@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/leet.pl,v 1.3 2001/11/15 04:23:34 tale Exp $
+# $Id$
 
 use strict;
 

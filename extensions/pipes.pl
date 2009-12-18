@@ -1,4 +1,5 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/pipes.pl,v 1.8 2000/12/28 05:21:49 neild Exp $
+# -*- Perl -*-
+# $Id$
 #
 # Piped command processing.
 #

@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_parse.pl,v 1.31 2003/10/30 18:29:14 coke Exp $
+# $Id$
 
 use strict;
 use vars qw(%config);

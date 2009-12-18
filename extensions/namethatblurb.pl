@@ -1,5 +1,5 @@
-#
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/namethatblurb.pl,v 1.7 2002/03/14 18:51:56 neild Exp $
+# -*- Perl -*-
+# $Id$
 #
 
 use strict;

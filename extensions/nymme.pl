@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/nymme.pl,v 1.1 2002/04/30 20:13:09 coke Exp $
+# $Id$
 
 # strip out the copious whitespace that shows up whenever someone tries to
 # send multiline sends. (Worst Offender: SDN)

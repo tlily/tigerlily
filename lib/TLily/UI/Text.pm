@@ -1,3 +1,4 @@
+# -*- Perl -*-
 #    TigerLily:  A client for the lily CMC, written in Perl.
 #    Copyright (C) 1999-2001  The TigerLily Team, <tigerlily@tlily.org>
 #                                http://www.tlily.org/tigerlily/
@@ -14,7 +15,7 @@
 # 
 # But it will suffice for botworkin' for now.
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Attic/Text.pm,v 1.2 2001/01/26 03:01:52 neild Exp $
+# $Id$
 
 package TLily::UI::Text;
 

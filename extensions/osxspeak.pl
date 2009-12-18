@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/osxspeak.pl,v 1.2 2003/08/12 05:09:00 coke Exp $
+# $Id$
 
 use strict;
 

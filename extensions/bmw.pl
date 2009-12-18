@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/bmw.pl,v 1.3 2002/05/30 15:59:20 coke Exp $
+# $Id$
 
 # strip out leading spaces on sends.
 

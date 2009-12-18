@@ -8,7 +8,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Daemon.pm,v 1.8 2001/01/26 03:01:48 neild Exp $
+# $Id$
 
 package TLily::Daemon;
 

@@ -1,4 +1,5 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/multicore.pl,v 1.5 2001/08/01 13:16:17 coke Exp $
+# -*- Perl -*-
+# $Id$
 
 use strict;
 

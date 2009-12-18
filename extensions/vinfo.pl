@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/vinfo.pl,v 1.5 1999/10/03 18:26:02 josh Exp $
+# $Id$
 
 event_r(type => 'private',
 	order => 'before',

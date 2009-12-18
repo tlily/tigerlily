@@ -21,7 +21,7 @@
 # cmd's whose only output is a %NOTIFY don't respond. (i.e. /here, /away, /bl)
 
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Bot.pm,v 1.8 2002/04/18 01:13:38 josh Exp $
+# $Id$
 
 package TLily::Bot;
 

@@ -1,3 +1,5 @@
+# -*- Perl -*-
+# $Id$
 use TLily::Bot custom;
 use FileHandle;
 use IPC::Open2;

@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/countdown.pl,v 1.5 2003/11/13 01:40:59 mjr Exp $
+# $Id$
 
 use strict;
 

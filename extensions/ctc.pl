@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/ctc.pl,v 1.12 2000/05/07 00:38:18 josh Exp $
+# $Id$
 
 eval 'use Net::Domain qw(hostfqdn);';
 if ($@) {

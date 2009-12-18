@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/stripper.pl,v 1.2 2000/12/14 21:49:25 tale Exp $
+# $Id$
 
 # strip out leading spaces on sends.
 

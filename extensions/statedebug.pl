@@ -1,4 +1,5 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/statedebug.pl,v 1.4 1999/10/03 18:25:57 josh Exp $
+# -*- Perl -*-
+# $Id$
 
 command_r(statedebug => \&state_cmd);
 shelp_r(statedebug => "Debug the SLCP state database");

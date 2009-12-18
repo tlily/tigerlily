@@ -1,4 +1,5 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/ui.pl,v 1.34 2002/06/07 07:03:48 bwelling Exp $
+# -*- Perl -*-
+# $Id$
 use strict;
 
 =head1 NAME

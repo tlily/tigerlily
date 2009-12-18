@@ -7,7 +7,7 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Daemon/Attic/Connection.pm,v 1.6 2001/01/26 03:01:49 neild Exp $
+# $Id$
 
 package TLily::Daemon::Connection;
 

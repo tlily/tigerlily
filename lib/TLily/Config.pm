@@ -8,7 +8,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Attic/Config.pm,v 1.12 2001/11/02 23:08:06 tale Exp $
+# $Id$
 
 package TLily::Config;
 

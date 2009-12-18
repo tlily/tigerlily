@@ -1,3 +1,4 @@
+# -*- Perl -*-
 #    TigerLily:  A client for the lily CMC, written in Perl.
 #    Copyright (C) 1999-2001  The TigerLily Team, <tigerlily@tlily.org>
 #                                http://www.tlily.org/tigerlily/
@@ -6,7 +7,7 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/Server/Attic/SLCP.pm,v 1.51 2003/11/05 21:44:57 coke Exp $
+# $Id$
 
 package TLily::Server::SLCP;
 

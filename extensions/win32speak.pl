@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/win32speak.pl,v 1.1 2003/02/28 05:15:30 josh Exp $
+# $Id$
 
 use strict;
 

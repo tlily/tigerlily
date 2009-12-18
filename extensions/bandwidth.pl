@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/bandwidth.pl,v 1.5 1999/10/03 18:25:44 josh Exp $
+# $Id$
 
 sub load {
     my $ui = ui_name("main");

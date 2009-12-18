@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/misc.pl,v 1.23 2000/09/12 03:58:26 coke Exp $ 
+# $Id$
 
 use strict;
 use TLily::Version;

@@ -1,5 +1,5 @@
-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/autoreview.pl,v 1.10 2001/11/02 23:11:15 tale Exp $
+# -*- Perl -*-
+# $Id$
 
 use strict;
 

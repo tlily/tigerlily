@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/xmms.pl,v 1.3 2000/09/10 06:23:19 mjr Exp $
+# $Id$
 
 use strict;
 eval 'use Xmms::Remote;';

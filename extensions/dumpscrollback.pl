@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/dumpscrollback.pl,v 1.4 2002/01/03 14:24:44 coke Exp $
+# $Id$
 
 use strict;
 

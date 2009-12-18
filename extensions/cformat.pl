@@ -1,3 +1,5 @@
+# -*- Perl -*-
+# $Id$
 use strict;
 
 my $help = <<END

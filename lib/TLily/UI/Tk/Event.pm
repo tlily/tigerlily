@@ -1,3 +1,4 @@
+# -*- Perl -*-
 #    TigerLily:  A client for the lily CMC, written in Perl.
 #    Copyright (C) 1999-2001  The TigerLily Team, <tigerlily@tlily.org>
 #                                http://www.tlily.org/tigerlily/
@@ -7,7 +8,7 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/TLily/UI/Tk/Attic/Event.pm,v 1.4 2001/03/05 08:32:32 josh Exp $
+# $Id$
 
 package TLily::UI::Tk::Event;
 

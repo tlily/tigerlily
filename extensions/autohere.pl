@@ -1,4 +1,5 @@
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/autohere.pl,v 1.1 2002/05/08 20:07:15 kazrak Exp $
+# -*- Perl -*-
+# $Id$
 
 use strict;
 

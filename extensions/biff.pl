@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/biff.pl,v 1.8 2002/08/27 03:23:42 coke Exp $
+# $Id$
 
 #
 # A Biff module

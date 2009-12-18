@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/autologin.pl,v 1.10 2000/09/09 06:07:26 mjr Exp $
+# $Id$
 
 #
 # Handle autologins.

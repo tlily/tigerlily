@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/url.pl,v 1.29 2003/05/10 19:56:11 coke Exp $
+# $Id$
 
 #
 # URL handling

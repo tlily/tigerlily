@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_output.pl,v 1.28 2003/09/28 01:15:43 josh Exp $
+# $Id$
 
 use strict;
 

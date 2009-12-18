@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/expand.pl,v 1.29 2003/07/11 00:23:39 coke Exp $ 
+# $Id$
 
 use strict;
 use TLily::UI;

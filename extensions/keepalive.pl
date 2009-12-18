@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/keepalive.pl,v 1.13 2003/04/27 23:13:53 steve Exp $
+# $Id$
 #
 # keepalive -- periodically ping the server, just to verify our connection
 #              is still there.

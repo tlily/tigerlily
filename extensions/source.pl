@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/source.pl,v 1.5 2000/12/12 02:17:19 coke Exp $
+# $Id$
 
 use strict;
 

@@ -7,7 +7,7 @@
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
 #
-# $Header: /data/cvs/lily/tigerlily2/Makefile.PL,v 1.25 2003/11/28 18:57:07 josh Exp $
+# $Id$
 
 use strict;
 use Config;

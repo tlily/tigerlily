@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/submit.pl,v 1.11 2003/02/28 02:24:23 josh Exp $
+# $Id$
 
 use TLily::Version;
 use strict;

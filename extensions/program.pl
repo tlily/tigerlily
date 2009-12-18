@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/program.pl,v 1.19 2001/11/13 02:01:58 josh Exp $
+# $Id$
 
 use TLily::Utils 'get_deadfile';
 

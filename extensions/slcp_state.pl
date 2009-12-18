@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/slcp_state.pl,v 1.6 2003/06/27 01:06:17 neild Exp $
+# $Id$
 
 # This hash keeps track of what fields from %USER and %DISC are stored in 
 # the state database.  We need to ensure that every one of these state 

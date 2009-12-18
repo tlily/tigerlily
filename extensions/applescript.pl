@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /home/mjr/tmp/tlilycvs/lily/tigerlily2/extensions/applescript.pl,v 1.1 2003/08/12 02:47:32 coke Exp $
+# $Id$
 
 use TLily::Version;
 use strict;

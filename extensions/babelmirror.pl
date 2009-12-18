@@ -1,3 +1,6 @@
+# -*- Perl -*-
+# $Id$
+#
 # known bugs:
 # language should be per-instance, not global.
 # maybe should break up the queue into 5-send chunks or so to avoid sending too

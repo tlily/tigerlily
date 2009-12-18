@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $header$
+# $Id$
 
 use strict;
 
