@@ -21,6 +21,7 @@ aqua/Tigerlily.pbproj/project.pbxproj
 aqua/main.m
 aqua/main.pl
 contrib/Curses.pm.patch
+extensions/ascify.pl
 extensions/after.pl
 extensions/alias.pl
 extensions/applescript.pl
@@ -42,14 +43,17 @@ extensions/deblurb.pl
 extensions/defiance.pl
 extensions/dontcare.pl
 extensions/dumpscrollback.pl
+extensions/dv.pl
 extensions/expand.pl
 extensions/filter.pl
 extensions/floyd.pl
 extensions/floyd/ZIO_Slave.pm
 extensions/floyd/rezrov_slave.pl
+extensions/fumble.pl
 extensions/gag.pl
 extensions/group.pl
 extensions/http_parse.pl
+extensions/html_chars.pl
 extensions/ignore.pl
 extensions/info.pl
 extensions/infobot.pl
