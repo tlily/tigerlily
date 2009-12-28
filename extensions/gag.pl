@@ -118,7 +118,11 @@ sub gag_command_handler {
     }
 
     foreach my $nm (@names) {
+        # The call above to expand_name has preprended a ~
+        $nm =~ s/^~//;
+
         my %state = $server->state(NAME => $nm);
+
         if (!$state{HANDLE}) {
             if ($nm !~ /^#/) {
                 # squawk only if $nm isn't an object id.
