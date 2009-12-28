@@ -11,6 +11,5 @@ t/basic.t - simple sanity checks
 
 =cut
 
-eval 'require 5.6.0;';
+eval 'require 5.006_000;';
 ok(!$@, "Tigerlily requires perl 5.6.x");
-
