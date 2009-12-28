@@ -50,6 +50,7 @@ extensions/floyd/rezrov_slave.pl
 extensions/gag.pl
 extensions/group.pl
 extensions/http_parse.pl
+extensions/ignore.pl
 extensions/info.pl
 extensions/infobot.pl
 extensions/keepalive.pl
