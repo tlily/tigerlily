@@ -1,41 +1,19 @@
 # -*- Perl -*-
 # $Id$
 
-# strip out the copious whitespace that shows up whenever someone tries to
-# send multiline sends. (Worst Offender: SDN)
-
 use strict;
 use warnings;
 
-=head1 NAME
-
-nymme.pl - Strip out leading spaces in received messages
-
-=head1 DESCRIPTION
-
-When loaded, this extension will strip out any extraneous spaces in any
-messages you receive.
-
-=cut
+my $usage = 'Collapse whitespace on incoming messages.';
+shelp_r(nymme => $usage);
+help_r(nymme => $usage);
 
 sub handler {
-    my($event, $handler) = @_;
-
-    $event->{VALUE} =~ s/\s{1,}/ /g;
+    my $event = shift;
+    $event->{VALUE} =~ s/\s+/ /g;
     return 0;
 }
 
-event_r(type  => 'public',
-    call  => \&handler,
-    order => 'before');
-
-event_r(type  => 'private',
-    call  => \&handler,
-    order => 'before');
-
-event_r(type  => 'emote',
-    call  => \&handler,
-    order => 'before');
-
-
-
+foreach my $type (qw/public private emote/) {
+    event_r(type => $type, order => 'before', call => \&handler);
+}
