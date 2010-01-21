@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 #    TigerLily:  A client for the lily CMC, written in Perl.
-#    Copyright (C) 1999-2003  The TigerLily Team, <tigerlily@tlily.org>
-#                                http://www.tlily.org/tigerlily/
+#    Copyright (C) 1999-2010  The TigerLily Team, <tigerlily@tlily.org>
+#                                http://www.tlily.org/
 #
 #  This program is free software; you can redistribute it and/or modify it
 #  under the terms of the GNU General Public License version 2, as published
@@ -9,9 +9,10 @@
 #
 # $Id$
 
-require 5.6.1;
-use strict;
+use Modern::Perl;
+
 use vars qw($EAGAIN $TL_ETCDIR $TL_LIBDIR $TL_TMPDIR $TL_LIBMODDIR);
+use subs qw(show_banner);
 
 sub directory_init {
     $::TL_ETCDIR = "."          unless defined($::TL_ETCDIR);
