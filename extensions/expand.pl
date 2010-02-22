@@ -221,7 +221,8 @@ sub user_send_handler {
     my($event, $handler) = @_;
     my $serv_name = $event->{server}->name();
     my $dlist =
-        join(",", map(/@/ ? $_ : ($_."@".$serv_name), @{$event->{RECIPS}}));
+        join(",", map(/@/ ? $_ : ($_."@".$serv_name),
+            grep {defined $_} @{$event->{RECIPS}}));
     
     $expansions{recips} = $dlist;
     $last_send = $event->{text};
