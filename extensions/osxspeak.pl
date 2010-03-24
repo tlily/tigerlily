@@ -5,9 +5,10 @@ use strict;
 use warnings;
 
 help_r('osxspeak',<<EOH);
-%extension load osxspeak  # enable the extension
-%set osxvoice fred        # optional, defaults to sysvoice.
-%on <foo> %attr speak 1   # only these events are spoken.
+%extension load osxspeak   # enable the extension
+%set osxvoice agnes        # override system default.
+%on <foo> %attr speak fred # only these events are spoken, as fred
+%on <foo> %attr speak 1    # these events are spoken with the default.
 EOH
 
 sub sayit {
@@ -20,7 +21,7 @@ sub sayit {
     
     # don't say anything unless the "speak" attribute has been set (with %on)
     return unless $event->{speak};
-        
+
     my $message = "From $event->{SOURCE} to $event->{RECIPS}: $event->{VALUE}";
     
     if ($event->{type} eq "emote") {
@@ -29,7 +30,15 @@ sub sayit {
 
     my $voice = ''; #default to sysvoice.
     if ($config{osxvoice}) {
-        $voice = ' --voice="' . $config{osxvoice} . '" ';
+        $voice = $config{osxvoice};
+    }
+
+    if ($event->{speak} ne '1') {
+        $voice = $event->{speak};
+    }
+
+    if ($voice) {
+        $voice = ' --voice="' . $voice . '" ';
     }
 
     $message =~ s/\n/ /g;
