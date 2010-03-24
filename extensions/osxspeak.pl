@@ -4,16 +4,11 @@
 use strict;
 use warnings;
 
-# Based on Josh's experiment in win32 silliness.
-#
-# Arguably, win32speak.pl and osxspeak.pl can be merged into a single
-# speak module.
-#
-# To use:
-#
-# %extension load osxspeak
-# %on <foo> %attr speak 1
-# 
+help_r('osxspeak',<<EOH);
+%extension load osxspeak  # enable the extension
+%set osxvoice fred        # optional, defaults to sysvoice.
+%on <foo> %attr speak 1   # only these events are spoken.
+EOH
 
 sub sayit {
     my($event, $handler) = @_;
@@ -32,23 +27,25 @@ sub sayit {
         $message = "(to $event->{RECIPS}), $event->{SOURCE} $event->{VALUE}";
     }
 
-    $message =~ s/[^a-z0-9]//ig;
-    system("osascript -e 'say \"$message\"'&");
+    my $voice = ''; #default to sysvoice.
+    if ($config{osxvoice}) {
+        $voice = ' --voice="' . $config{osxvoice} . '" ';
+    }
+
+    $message =~ s/\n/ /g;
+    system(qq{say $voice "$message"});
 
     return;
 }
 
 sub load {
-    event_r(type  => 'private',
-        order => 'after',
-        call  => \&sayit);
-    event_r(type  => 'public',
-        order => 'after',
-        call  => \&sayit);
-    event_r(type  => 'emote',
-        order => 'after',
-        call  => \&sayit);
-
+    foreach my $type (qw/private public emote/) {
+        event_r(
+            type  => $type,
+            order => 'after',
+            call  => \&sayit
+        );
+    }
     return;
 }
 
