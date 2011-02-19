@@ -4,6 +4,8 @@
 use strict;
 use vars qw($forreal);
 
+die "This script hasn't been updated to work with git yet.\n";
+
 #
 # Configuration.
 #
