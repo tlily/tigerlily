@@ -271,7 +271,6 @@ release:
 
 sub MY::libscan {
     my($self, $path) = @_;
-    return '' if $path =~ m:\.svn/:;
     return '' if $path =~ m:\binfobot-:;
     $path;
 }
