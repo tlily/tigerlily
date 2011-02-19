@@ -1,5 +1,6 @@
 CVS/
 \.svn/
+\.git/
 svn-commit.*.tmp
 \.\#
 \.bak$
