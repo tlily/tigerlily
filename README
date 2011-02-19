@@ -1,5 +1,5 @@
 #    TigerLily:  A client for the lily CMC, written in Perl.
-#    Copyright (C) 1999-2003  The TigerLily Team, <tigerlily@tlily.org>
+#    Copyright (C) 1999-2011  The TigerLily Team, <tigerlily@tlily.org>
 #                                http://www.tlily.org/tigerlily/
 #
 #  This program is free software; you can redistribute it and/or modify it
@@ -205,78 +205,8 @@ $emote_oops
 Extensions can each have options to configure them; see the documentation
 for the specific module to see what options can be set.
 
-
-Subversion access
+git access
 -----------------
-The TigerLily sources are stored in a Subversion repository.  Anyone working
-on TigerLily development can get access by contacting Damien (neild@misago.org)
-or Albert (albert@acm.rpi.edu).  We also allow anonymous read-only access.
+The TigerLily sources are stored on github, at https://github.com/coke/tigerlily
 
-You can find Subversion at subversion.tigris.org.  In addition to the
-source code, you will also find links to precompiled Windows clients,
-such as TortoiseSVN.
-
-The repository is currently located on svn.tlily.org.
-
-To access the repository anonymous read-only, do:
-  svn co svn://svn.tlily.org/svn/tlily/trunk tlily
-Which will get you the most recent development version.
-
-To access the repository read-write, once you have an account, do:
-  svn co svn+ssh://svn.tlily.org/svn/tlily/trunk tlily
-
-If your local login name is not the same as on svn.tlily.org, you can
-specify your username in the URL like so:
-  svn co svn+ssh://mjr@svn.tlily.org/svn/tlily/trunk tlily
-
-Older versions of svn did not support specifying the username in the URL;
-for those versions you will need to add a --username to that commandline,
-like so:
-  svn co --username mjr svn+ssh://svn.tlily.org/svn/tlily/trunk tlily
-
-Subversion has built-in help, accessible from "svn help".  The commands
-are very similar to basic CVS commands, and in some cases, more intuitive.
-
-The important svn commands are:
-  - svn co <URL> [<PATH>]
-    This will grab the latest copy of the sources from the subversion
-    repository located at <URL> (see above for the tlily repository URL).
-
-    If <PATH> is given, the checkout will be placed in that directory,
-    creating the directory if necessary.  If <PATH> is omitted, the last
-    directory name in the repository URL will be used as the name of a
-    directory in your current working directory into which svn will do
-    the checkout.
-
-    No locking is implied by this operation; you may delete the checked
-    out tree without ill effect.
-
-  - svn update
-    Compares a checked out tree to the current sources, merging down any
-    changed files from the repository into your checked out copy.  Does
-    not change the repository.
-
-  - svn add <PATH>
-  - svn remove <PATH>
-  - svn move <PATH> <NEWPATH>
-  - svn copy <PATH> <NEWPATH>
-    These commands cover the addition of a new file/directory into the
-    repository, removing a file/directory from the repository, and renaming
-    or copying a file/directory from one place to another.  Any changes you
-    make will be visible to others only after you run svn commit.
-
-  - svn commit [<PATH>]
-    Checks in all changes in the specified path (or current directory, if
-    no path is specified).
-
-  - svn diff [<PATH>]
-    Compares a checked out file/path (or current directory) against the
-    repository, outputting a diff-like listing of changes.
-
-  - svn status [<PATH>]
-    Compares a checked out file/path (or current directory) against the
-    repository, outputting a summary of what files have changed.
-
-
-Read the Subversion help and documentation for more detailed information.
-A free book about Subversion can be found at http://svnbook.red-bean.com/
+For more information on git and github, see: http://help.github.com/.
