@@ -11,7 +11,6 @@ use Data::Dumper;
 use TLily::Server::HTTP;
 use URI;
 use Config::IniFiles;
-use DB_File;    # get rid of this now that we have Config::IniFiles...
 
 use Chatbot::Eliza;
 
@@ -68,7 +67,6 @@ my %throttle;    #Container for all throttling information.
 my %irc;         #Container for all irc channel information
 my $throttle_interval = 1;    #seconds
 my $throttle_safety   = 5;    #seconds
-my %prefs;     #dbmopen'd hash of lily user prefs. (XXX KILL THIS)
 my $config;    # Config::IniFiles object storing preferences.
 my $disc       = 'cj-admin';    #where we keep our memos.
 my $debug_disc = 'cj-admin';
@@ -937,87 +935,6 @@ $response{cal} = {
     POS  => 0,
     STOP => 1,
     RE   => qr(\bunset\b)i,
-};
-
-$response{'poll'} = {
-    CODE => sub {
-        my ($event) = @_;
-        my $args = $event->{VALUE};
-        if ( !( $args =~ s/\bpoll\s?(.*)\s*$/$1/ ) ) {
-            return 'ERROR: Expected poll RE not matched!';
-        }
-        $args =~ s/^\s+//;
-        $args =~ s/\s+$//;
-        my @args = split( /\s+/, $args, 2 );
-
-        my $handle = $event->{SHANDLE};
-
-        # This should be configable.
-        my %polls = (
-            'pres'  => '2000 Presidential Campaign',
-            'ny'    => '2000 NYS Senate Campaign',
-            'spice' => 'Your Favourite Spice Girl'
-        );
-
-        if ( scalar @args == 0 ) {
-            my @tmp;
-            foreach my $key ( keys %polls ) {
-                push @tmp, $key . ", \'" . $polls{$key} . "\'";
-            }
-            return 'The currently available polls are: ' . join( '; ', @tmp );
-        }
-        elsif ( scalar @args == 1 ) {
-            if ( exists $polls{ $args[0] } ) {
-
-                # Get the current tally:
-                my %results;
-                my @list = grep /-\-*poll-/,  ( keys %prefs );
-                foreach my $key ( @list ) {
-                    $results{ lc $prefs{$key} }++ if $key =~ /$args[0]$/;
-                }
-                my $key = $handle . '-*poll-' . $args[0];
-
-                my $personal = 'You have not voted in this poll.';
-                if ( exists $prefs{$key} ) {
-                    $personal = "You voted for '" . $prefs{$key} . "'";
-                }
-                return 'Results: ' . join(
-                    ', ',
-                    map {
-                        $_ . ': '
-                          . $results{$_} . ' vote'
-                          . ( ( $results{$_} == 1 ) ? q{} : 's' )
-                      } ( keys %results )
-                  )
-                  . '. '
-                  . $personal;
-            }
-            else {
-                return $args[0] . ' is not an active poll';
-            }
-        }
-        elsif ( scalar @args == 2 ) {
-            if ( exists $polls{ $args[0] } ) {
-                $prefs{ $handle . '-*poll-' . $args[0] } = $args[1];
-                return 'Your ballot has been cast.';
-            }
-            else {
-                return $args[0] . ' is not an active poll';
-            }
-        }
-        else {
-            return 'ERROR: Expected poll RE not matched!';
-        }
-    },
-    HELP => <<'END_HELP',
-Similar to /vote. By itself, list current polls.
-Given a poll name, return the current results.
-You can also specify a value to cast your ballot.
-Usage: poll [<poll> [<vote>]]
-END_HELP
-    POS  => 0,
-    STOP => 1,
-    RE   => qr(\bpoll\b)i,
 };
 
 $response{'set'} = {
@@ -2019,8 +1936,6 @@ event_r( type => 'away', order => 'after', call => \&away_event );
 
 sub load {
     my $server = TLily::Server->active();
-    dbmopen( %prefs, '/Users/cjsrv/CJ_prefs.db', 0666 )
-      or die "couldn't open DBM file!";
     $config = new Config::IniFiles( -file => $config_file )
       or die @Config::IniFiles::errors;
 
@@ -2094,7 +2009,6 @@ release any external resources we have open.
 =cut
 
 sub unload {
-    dbmclose(%prefs);
     checkpoint();
 
     TLily::Event->time_u($every_10m);
