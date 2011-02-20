@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Id$
+
 use TLily::Bot custom;
 
 # untar a copy of http://www.infobot.org/src/infobot-0.45.3.tar.gz

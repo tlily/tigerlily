@@ -6,7 +6,6 @@
 #  This program is free software; you can redistribute it and/or modify it
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
-#
 
 # This is a super-cheezy UI module written by someone (me) who was too
 # lazy to bother to actually understand how tlily UI's work :)
@@ -14,8 +13,6 @@
 # Thus it sucks.
 #
 # But it will suffice for botworkin' for now.
-
-# $Id$
 
 package TLily::UI::Text;
 

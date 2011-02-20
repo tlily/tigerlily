@@ -1,5 +1,4 @@
 # -*- Perl -*-
-# $Id$
 
 event_r(type => 'private',
         order => 'before',

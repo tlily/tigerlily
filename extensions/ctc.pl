@@ -1,5 +1,4 @@
 # -*- Perl -*-
-# $Id$
 
 eval 'use Net::Domain qw(hostfqdn);';
 if ($@) {

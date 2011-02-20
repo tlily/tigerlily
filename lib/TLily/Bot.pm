@@ -21,8 +21,6 @@
 # cmd's whose only output is a %NOTIFY don't respond. (i.e. /here, /away, /bl)
 
 
-# $Id$
-
 package TLily::Bot;
 
 use TLily::Config qw(%config);

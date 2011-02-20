@@ -1,5 +1,4 @@
 # -*- Perl -*-
-# $Id$
 
 use strict;
 use TLily::Version;

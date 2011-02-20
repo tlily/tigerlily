@@ -1,6 +1,5 @@
 #!/usr/local/bin/perl -w
-#
-# $Id$
+
 #
 # This file is derived from the rezrov test.pl script.  The original
 # copyright message follows:

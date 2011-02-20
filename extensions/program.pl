@@ -1,5 +1,4 @@
 # -*- Perl -*-
-# $Id$
 
 use TLily::Utils 'get_deadfile';
 

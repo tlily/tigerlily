@@ -1,5 +1,4 @@
 # -*- Perl -*-
-# $Id: bmw.pl 839 2003-12-16 05:09:33Z mjr $
 
 use strict;
 use warnings;

@@ -1,5 +1,4 @@
 # -*- Perl -*-
-# $Id$
 
 # Semi-ignore: Ignores a user's sends, but notifies you when they
 # happen, so multi-person discussions are less confusing.

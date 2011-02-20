@@ -1,5 +1,4 @@
 # -*- Perl -*-
-# $Id$
 
 command_r(statedebug => \&state_cmd);
 shelp_r(statedebug => "Debug the SLCP state database");

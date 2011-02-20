@@ -1,5 +1,4 @@
 # -*- Perl -*-
-# $Id$
 #
 # known bugs:
 # language should be per-instance, not global.

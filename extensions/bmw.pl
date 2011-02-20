@@ -1,5 +1,4 @@
 # -*- Perl -*-
-# $Id$
 
 # strip out leading spaces on sends.
 

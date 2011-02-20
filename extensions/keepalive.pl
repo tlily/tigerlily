@@ -1,6 +1,5 @@
 # -*- Perl -*-
-# $Id$
-#
+
 # keepalive -- periodically ping the server, just to verify our connection
 #              is still there.
 #

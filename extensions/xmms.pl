@@ -1,5 +1,4 @@
 # -*- Perl -*-
-# $Id$
 
 use strict;
 eval 'use Xmms::Remote;';

@@ -1,5 +1,4 @@
 # -*- Perl -*-
-# $Id$
 
 use strict;
 use Text::ParseWords qw(quotewords);

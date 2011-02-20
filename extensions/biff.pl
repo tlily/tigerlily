@@ -1,5 +1,4 @@
 # -*- Perl -*-
-# $Id$
 
 #
 # A Biff module

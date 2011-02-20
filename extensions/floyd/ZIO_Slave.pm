@@ -1,6 +1,5 @@
 # -*- Perl -*-
-# $Id$
-#
+
 # NOTES
 #
 # This is not a REMOTELY correct IO module.  I'm trying to implement JUST

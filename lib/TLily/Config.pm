@@ -8,8 +8,6 @@
 #  by the Free Software Foundation; see the included file COPYING.
 #
 
-# $Id$
-
 package TLily::Config;
 
 use TLily::ExoSafe;

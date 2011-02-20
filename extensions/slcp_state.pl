@@ -1,5 +1,4 @@
 # -*- Perl -*-
-# $Id$
 
 # This hash keeps track of what fields from %USER and %DISC are stored in
 # the state database.  We need to ensure that every one of these state
