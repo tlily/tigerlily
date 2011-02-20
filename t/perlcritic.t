@@ -30,7 +30,7 @@ if (!@ARGV) {
 
     my $manifest = maniread('MANIFEST');
 
-    foreach my $file (keys(%$manifest)) {
+    foreach my $file (sort keys(%$manifest)) {
         next unless $file =~ /\.(?:pm|pl|t)$/;
         push @files, $file;
     }
