@@ -36,20 +36,6 @@ sub directory_init {
 }
 
 sub platform_init {   
-    if ($TLily::Version::VERSION =~ /-aqua$/) {
-        eval {
-            require Foundation;
-            require Foundation::Functions;
-            require AppKit;
-            require AppKit::Functions;
-            require MyApp;
-        };
-        # This seems... a tad evil.
-        $::TL_LIBDIR = $INC[0];
-        $::TL_EXTDIR = $INC[0]. "/extensions";
-        push @INC,$::TL_LIBDIR;
-    }
-
     if ($^O eq 'MSWin32') {
         $TLily::Version::VERSION .= "-ap";
     }
@@ -115,21 +101,7 @@ if(defined $config{bot}) {
 }
 
 my $nsApp;
-if ($TLily::Version::VERSION =~ /-aqua$/) {
-
-    # Get a reference to the shared NSApplication object
-    $nsApp = NSApplication->sharedApplication;
-    
-    # Load the main menu Nib, making the NSApplication object its owner
-    NSBundle->loadNibNamed_owner("MainMenu", $nsApp);
-}
-
 my $ui = load_ui();
-
-if ($TLily::Version::VERSION =~ /-aqua$/) {
-    # Make the controller the delegate of the application
-    $nsApp->setDelegate($ui);
-}
 
 show_banner();
 
@@ -237,40 +209,30 @@ TLily::Event::send(type => 'user_input',
 		   text => "%connect") unless ($config{noauto});
 
 
-if ($TLily::Version::VERSION =~ /-aqua$/) {
-    # Start the NSApplication object's run loop
-    $nsApp->run;
-} else {
-   # use the normal event loop.
-    while (1) {
-        eval { TLily::Event::loop; };
+while (1) {
+    eval { TLily::Event::loop; };
 
-        # Normal exit.
-        if ($@ eq '') {
-          $ui->print("*** Exiting.");
-          exit;
-        }
-    
-        # Non-fatal errors.
-        if ($@ =~ /^Undefined subroutine/) {
-          $ui->print("ERROR: ", $@);
-          next;
-        }
-    
-        # Oh, well.  Guess we have a problem.
-        die;
+    # Normal exit.
+    if ($@ eq '') {
+      $ui->print("*** Exiting.");
+      exit;
     }
+
+    # Non-fatal errors.
+    if ($@ =~ /^Undefined subroutine/) {
+      $ui->print("ERROR: ", $@);
+      next;
+    }
+
+    # Oh, well.  Guess we have a problem.
+    die;
 }
-                   
+
 sub load_ui {
     my %available;
 
     my $default_UI = "TextWindow";
 
-    if ($TLily::Version::VERSION =~ /-aqua$/) {
-        $default_UI = "Cocoa";
-    }
- 
     $config{UI} ||= $default_UI;
 
     if ($::TL_LIBDIR =~ m|^//INTERNAL|) {

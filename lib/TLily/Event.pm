@@ -59,13 +59,6 @@ sub run {
     print STDERR ": TLily::Event::Core::run\n" if $config{ui_debug};
     my($self, $timeout) = @_;
 
-    if ($TLily::Version::VERSION =~ /-aqua$/) {
-      # This is a bit of a hack, though it seems to work.
-      # Eventually, I think that Event.pm in aqua will JUST be
-      # the cocoa events, and not have to resort to this trickery --WJC
-      $timeout = 0.1;
-    }
-
     my($rout, $wout, $eout) =
       ($self->{rbits}, $self->{wbits}, $self->{ebits});
 
