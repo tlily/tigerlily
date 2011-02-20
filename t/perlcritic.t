@@ -46,6 +46,7 @@ my $jay_sherman = Perl::Critic->new(-exclude => [qr/.*/]);
 # Add in the few cases we should care about.
 # For a list of available policies, perldoc Perl::Critic
 my @policies = qw{
+    CodeLayout::ProhibitTrailingWhitespace
     TestingAndDebugging::RequireUseStrict
     TestingAndDebugging::RequireUseWarnings
     Variables::ProhibitConditionalDeclarations
