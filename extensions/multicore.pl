@@ -61,16 +61,6 @@ sub expand_slash {
     my($pos, $line) = $ui->get_input;
     my $partial = substr($line, 0, $pos);
 
-    if (0) {
-    # We tried expanding servers, people didn't like it.
-    if ($partial eq "*") {
-        my $servers =
-          join(",",map(scalar $_->name, TLily::Server::find));
-        $ui->set_input(length($servers) + 1, $servers . "/");
-        return;
-    }
-    }
-
     if (length($partial) && $partial !~ m|[/@;:= ]|) {
         my @servers =
           grep(/^\Q$partial\E/i, map(scalar $_->name, TLily::Server::find));
