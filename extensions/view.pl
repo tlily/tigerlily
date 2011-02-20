@@ -9,20 +9,20 @@ sub view_cmd($;$$) {
     my @lines = ();
     my $server = active_server();
     $server->cmd_process($cmd, sub {
-	my($event) = @_;
-	$event->{NOTIFY} = 0;
-	if ($event->{type} eq 'endcmd') {
+        my($event) = @_;
+        $event->{NOTIFY} = 0;
+        if ($event->{type} eq 'endcmd') {
             if ($doneproc) {
                 &{$doneproc}(\@lines);
             } else {
-	        edit_text($ui,\@lines,1);
+                edit_text($ui,\@lines,1);
             }
-	} elsif ( $event->{type} ne 'begincmd' &&
+        } elsif ( $event->{type} ne 'begincmd' &&
                   ( ! $filter || &{$filter}($event->{text}) ) ) {
-	    $event->{text}=~s/^\n//g;
-	    push @lines, $event->{text};
-	}
-	return 0;
+            $event->{text}=~s/^\n//g;
+            push @lines, $event->{text};
+        }
+        return 0;
     });
 }
 

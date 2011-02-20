@@ -41,7 +41,7 @@ sub shell_handler {
     $last_command = $command;
 
     if (! $config{shell_quiet} && ! $config{shell_silent}) {
-    	$ui->print("[beginning of command output]\n");
+            $ui->print("[beginning of command output]\n");
     }
 
     local *FD;
@@ -56,7 +56,7 @@ sub shell_handler {
     close(FD);
 
     if (! $config{shell_quiet} && ! $config{shell_silent}) {
-    	$ui->print("[end of command output]\n");
+            $ui->print("[end of command output]\n");
     }
     return;
 }
@@ -64,8 +64,8 @@ sub shell_handler {
 sub bang_handler {
     my($event, $handler) = @_;
     if ($event->{text} =~ /^\!(.*?)\s*$/) {
-	shell_handler($event->{ui}, $1);
-	return 1;
+        shell_handler($event->{ui}, $1);
+        return 1;
     }
     return;
 }
@@ -86,7 +86,7 @@ Usage: %shell <command>
 
 ');
 event_r(type => 'user_input',
-		      call => \&bang_handler);
+                      call => \&bang_handler);
 command_r('shell' => \&shell_handler);
 
 
@@ -103,22 +103,22 @@ Evaluate arbitrary Perl code within tlily.  See "%help eval" for details.
 sub eval_handler {
     my($ui, $args) = @_;
     if ($args =~ /^(?:list|l|array|a)\s+(.*)/) {
-	$args = $1;
-	my @rc = eval($args);
-	if ($@) {
-	    $ui->print("* Error: $@") if ($@);
-	}
-	if (@rc) {
-	    $ui->print("-> (", join(", ", @rc), ")\n");
-	}
+        $args = $1;
+        my @rc = eval($args);
+        if ($@) {
+            $ui->print("* Error: $@") if ($@);
+        }
+        if (@rc) {
+            $ui->print("-> (", join(", ", @rc), ")\n");
+        }
     } else {
-	my $rc = eval($args);
-	if ($@) {
-	    $ui->print("* Error: $@") if ($@);
-	}
-	if ($rc) {
-	    $ui->print("-> ", $rc, "\n");
-	}
+        my $rc = eval($args);
+        if ($@) {
+            $ui->print("* Error: $@") if ($@);
+        }
+        if ($rc) {
+            $ui->print("-> ", $rc, "\n");
+        }
     }
     return;
 }
@@ -288,10 +288,10 @@ help_r("history" => $history);
 # %set hidesend 0
 #
 #event_r(type => 'user_input',
-#	call => sub {
-#	    my($e, $h) = @_;
-#	    $e->{NOTIFY} = 0 if ($config{hidesend} &&
-#				 $e->{text} =~ /^\S*[;:]/);
+#        call => sub {
+#            my($e, $h) = @_;
+#            $e->{NOTIFY} = 0 if ($config{hidesend} &&
+#                                 $e->{text} =~ /^\S*[;:]/);
 #
-#	    return 0;
-#	});
+#            return 0;
+#        });

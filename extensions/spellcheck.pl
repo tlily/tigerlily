@@ -43,15 +43,15 @@ sub spellcheck_input {
 
     my @f;
     if ($sep ne "") {
-	push @f, length("$dest$sep"), "input_window";
+        push @f, length("$dest$sep"), "input_window";
     } else {
-	push @f, length($text), "input_window";
-	return @f;
+        push @f, length($text), "input_window";
+        return @f;
     }
 
     # strip off any partial words at the end, unless there's a space there.
     if ($message =~ /[^\s\.\?\!]$/) {
-	$message =~ s/\S+\s*$//g;
+        $message =~ s/\S+\s*$//g;
     }
 
     my $m = $message;
@@ -62,21 +62,21 @@ sub spellcheck_input {
 
     my $word;
     foreach $word (split /\W/, $m) {
-	if (!spelled_correctly($word)) {
-	    $message =~ s/\0$word\0/$word/g;
-	    $message =~ s/\b$word\b/\0${word}\0/g;
-	}
+        if (!spelled_correctly($word)) {
+            $message =~ s/\0$word\0/$word/g;
+            $message =~ s/\b$word\b/\0${word}\0/g;
+        }
     }
 
     # take the \0 markers around the misspelled words and generate the style
     # list
     while ($message =~ /\0[^\0]*\0/) {
-	my ($norm,$err)= ($message =~ /^([^\0]*)\0([^\0]*)\0/);
-	$message =~ s/^([^\0]*)\0([^\0]*)\0//;
-	if (length($norm)) {
-	    push @f, length($norm), "input_window";
+        my ($norm,$err)= ($message =~ /^([^\0]*)\0([^\0]*)\0/);
+        $message =~ s/^([^\0]*)\0([^\0]*)\0//;
+        if (length($norm)) {
+            push @f, length($norm), "input_window";
         }
-	push @f, length($err), "input_error";
+        push @f, length($err), "input_error";
     }
     push @f, length($message), "input_window" if length($message);
 
@@ -142,7 +142,7 @@ sub spellcheck_cmd {
     my($ui, $command) = @_;
 
     if ($command =~ /on/i && $state ne "enabled") {
-	if (! init_ispell()) {
+        if (! init_ispell()) {
             $ui->print("('ispell' not available, spellcheck disabled)\n");
             $state="disabled";
             return;
@@ -154,12 +154,12 @@ sub spellcheck_cmd {
         $state="enabled";
 
     } elsif ($command =~ /off/i) {
-	TLily::UI::istyle_fn_u(\&spellcheck_input);
-	$ui->print("(spellcheck disabled)\n");
-	$state="disabled";
+        TLily::UI::istyle_fn_u(\&spellcheck_input);
+        $ui->print("(spellcheck disabled)\n");
+        $state="disabled";
     } else {
-	$state ||= "disabled";
-    	$ui->print("(spellcheck is $state)\n");
+        $state ||= "disabled";
+            $ui->print("(spellcheck is $state)\n");
     }
 }
 
@@ -180,8 +180,8 @@ sub load {
     TLily::UI::bind('C-g' => "look");
 
     foreach (qw(i a about an and are as at by for from in is of on or
-		the to with ok foo bar baz perl tlily)) {
-	$stop_list{$_}=1;
+                the to with ok foo bar baz perl tlily)) {
+        $stop_list{$_}=1;
     }
     shelp_r("spellcheck" => "Enable or disable the spell checker");
     help_r("spellcheck" => "
@@ -225,11 +225,11 @@ sub look_cmd {
     chomp(@res);
 
     if (@res == 0) {
-	$ui->print("(\"$word\" not found in dictionary)\n");
+        $ui->print("(\"$word\" not found in dictionary)\n");
     } elsif (@res == 1 || grep m/^$word$/i, @res) {
-	$ui->print("(\"$word\" is spelled correctly)\n");
+        $ui->print("(\"$word\" is spelled correctly)\n");
     } else {
-	$ui->print("(The following possible words were found:)\n");
+        $ui->print("(The following possible words were found:)\n");
 
         foreach (@{columnize_list($ui, \@res, 5)}) { $ui->print($_, "\n"); }
     }

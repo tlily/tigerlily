@@ -9,20 +9,20 @@ sub dumpit {
 
     my($k,$v);
     foreach $k (sort keys %H) {
-	$v = $H{$k};
-	if(ref($v) eq '' || ref($v) eq 'SCALAR') {
-	    $ui->print("\t"x$l."$k = $v\n");
-	}
-	if(ref($v) eq 'SCALAR') {
-	    $ui->print("\t"x$l."$k = $$v\n");
-	}
-	elsif(ref($v) eq 'ARRAY') {
-	    $ui->print("\t"x$l."$k = ". (join(", ", @$v)) . "\n");
-	}
-	elsif(ref($v) eq 'HASH') {
-	    $ui->print("\t"x$l."$k = HASH\n");
-	    dumpit($ui,$l+1,%$v);
-	}
+        $v = $H{$k};
+        if(ref($v) eq '' || ref($v) eq 'SCALAR') {
+            $ui->print("\t"x$l."$k = $v\n");
+        }
+        if(ref($v) eq 'SCALAR') {
+            $ui->print("\t"x$l."$k = $$v\n");
+        }
+        elsif(ref($v) eq 'ARRAY') {
+            $ui->print("\t"x$l."$k = ". (join(", ", @$v)) . "\n");
+        }
+        elsif(ref($v) eq 'HASH') {
+            $ui->print("\t"x$l."$k = HASH\n");
+            dumpit($ui,$l+1,%$v);
+        }
     }
 }
 
@@ -55,7 +55,7 @@ sub setter {
     # %unset can't be called without a variable name, so also give an
     # error if one isn't provided.
     if ((($mode ne 'set') && defined($val)) ||
-	(($mode eq 'unset') && !defined($var))) {
+        (($mode eq 'unset') && !defined($var))) {
       $ui->print("(Syntax error: see \%help $mode for usage)\n");
       return 0;
     }
@@ -65,123 +65,123 @@ sub setter {
       # Determine if a hash element was selected and if so, validate the key
       my $ishash=defined($key);
       if ($ishash && $key!~/^[\w_]*$/) {
-	$ui->print("(Syntax error: invalid characters in hash key)\n");
-	return 0;
+        $ui->print("(Syntax error: invalid characters in hash key)\n");
+        return 0;
       }
 
       # If the user didn't specify a value, print the current value
       if (defined($val)) { # We're setting a variable
 
-	# XXX The value string should really allow more versitle
-	#     syntax to permit, for example, leading and trailing
-	#     spaces in values, literal commas in list elements, and
-	#     special character interpolation.
+        # XXX The value string should really allow more versitle
+        #     syntax to permit, for example, leading and trailing
+        #     spaces in values, literal commas in list elements, and
+        #     special character interpolation.
 
-	# Interpret the value string
-	my $islist=0;
-	if ($val=~s/^\((.*)\)$/$1/s) { # User is specifying a list
-	  # Split the list around the commas and strip leading and trailing
-	  # spaces
-	  $val=[map {s/^\s*//; s/\s*$//; $_} split(/,/,$val)];
-	  $islist=1;
-	} # else, User is specifying a scalar value or is unsetting
+        # Interpret the value string
+        my $islist=0;
+        if ($val=~s/^\((.*)\)$/$1/s) { # User is specifying a list
+          # Split the list around the commas and strip leading and trailing
+          # spaces
+          $val=[map {s/^\s*//; s/\s*$//; $_} split(/,/,$val)];
+          $islist=1;
+        } # else, User is specifying a scalar value or is unsetting
 
-	# Check that the data type of the new value is consistent with the
-	# established data type of the config variable
-	if (defined($config{$var})) {
-	  # Check that if the user says the variable is a hash, it is, or
-	  # if the user says it's not, it's not.  Or something.
-	  # Then, see if the existing value is or is not a list.
-	  # (Here's where it all gets a bit tangled...)
-	  if ($ishash) {
-	    if (ref($config{$var}) ne 'HASH') {
-	      $ui->print("(Type mismatch: Config variable is not a hash.  ",
-			 "See \%help $mode)\n");
-	      return 0;
-	    }
-	    if (defined($config{$var}) && defined($config{$var}->{$key})) {
-	      if ((ref($config{$var}->{$key}) eq 'ARRAY')!=$islist) {
-		$ui->print("(Type mismatch: Config variable's value is ",
-			   ($islist?"":"not "),
-			   "a list.  See \%help $mode)\n");
-		return 0;
-		# (You following all this?)
-	      }
-	    }
-	  } else {
-	    if (ref($config{$var}) eq 'HASH') {
-	      $ui->print("(Type mismatch: Config variable is a hash.  ",
-			 "See \%help $mode)\n");
-	      return 0;
-	    }
-	    if ((ref($config{$var}) eq 'ARRAY')!=$islist) {
-	      $ui->print("(Type mismatch: Config variable's value is ",
-			 ($islist?"":"not "),
-			 "a list.  See \%help $mode)\n");
-	      return 0;
-	    }
-	  }
-	}
+        # Check that the data type of the new value is consistent with the
+        # established data type of the config variable
+        if (defined($config{$var})) {
+          # Check that if the user says the variable is a hash, it is, or
+          # if the user says it's not, it's not.  Or something.
+          # Then, see if the existing value is or is not a list.
+          # (Here's where it all gets a bit tangled...)
+          if ($ishash) {
+            if (ref($config{$var}) ne 'HASH') {
+              $ui->print("(Type mismatch: Config variable is not a hash.  ",
+                         "See \%help $mode)\n");
+              return 0;
+            }
+            if (defined($config{$var}) && defined($config{$var}->{$key})) {
+              if ((ref($config{$var}->{$key}) eq 'ARRAY')!=$islist) {
+                $ui->print("(Type mismatch: Config variable's value is ",
+                           ($islist?"":"not "),
+                           "a list.  See \%help $mode)\n");
+                return 0;
+                # (You following all this?)
+              }
+            }
+          } else {
+            if (ref($config{$var}) eq 'HASH') {
+              $ui->print("(Type mismatch: Config variable is a hash.  ",
+                         "See \%help $mode)\n");
+              return 0;
+            }
+            if ((ref($config{$var}) eq 'ARRAY')!=$islist) {
+              $ui->print("(Type mismatch: Config variable's value is ",
+                         ($islist?"":"not "),
+                         "a list.  See \%help $mode)\n");
+              return 0;
+            }
+          }
+        }
 
-	# Okay, it's finally time to actually set the variable
-	if ($ishash) {
-	  $config{$var}->{$key}=$val;
-	} else {
-	  $config{$var}=$val;
-	}
+        # Okay, it's finally time to actually set the variable
+        if ($ishash) {
+          $config{$var}->{$key}=$val;
+        } else {
+          $config{$var}=$val;
+        }
 
-	# The important work is now done.  If we exit here, we're good
-	# to go.  If we don't leave here, the next chunk of code will
-	# print the current (new) value.  We decide whether to return
-	# or not based on whether we're running interactively or from
-	# a script and, if the former, based on a user preference.
-	return(0) if ($startup || !$config{set_echo});
+        # The important work is now done.  If we exit here, we're good
+        # to go.  If we don't leave here, the next chunk of code will
+        # print the current (new) value.  We decide whether to return
+        # or not based on whether we're running interactively or from
+        # a script and, if the former, based on a user preference.
+        return(0) if ($startup || !$config{set_echo});
 
       } elsif ($mode eq 'unset') { # We're unsetting a variable
 
-	my $reason;
-	if (defined($config{$var})) {
-	  if ($ishash) { # Deleting a hash member
-	    if (ref($config{$var}) eq 'HASH') {
-	      delete($config{$var}->{$key});
-	      $reason="$var\{$key} deleted";
-	    } else {
-	      $ui->print("(Type mismatch: Config variable is not a hash.  ",
-			 "See \%help $mode)");
-	      return 0;
-	    }
-	  } else { # Deleting a variable
-	    delete($config{$var});
-	    $reason="$var deleted";
-	  }
-	} else {
-	  $reason="Variable $var does not exist";
-	}
+        my $reason;
+        if (defined($config{$var})) {
+          if ($ishash) { # Deleting a hash member
+            if (ref($config{$var}) eq 'HASH') {
+              delete($config{$var}->{$key});
+              $reason="$var\{$key} deleted";
+            } else {
+              $ui->print("(Type mismatch: Config variable is not a hash.  ",
+                         "See \%help $mode)");
+              return 0;
+            }
+          } else { # Deleting a variable
+            delete($config{$var});
+            $reason="$var deleted";
+          }
+        } else {
+          $reason="Variable $var does not exist";
+        }
 
-	# We only print the result when running interactively and only
-	# when the user has set $config{set_echo} to true
-	$ui->print($reason,"\n") if (!$startup && $config{set_echo});
-	return 0;
+        # We only print the result when running interactively and only
+        # when the user has set $config{set_echo} to true
+        $ui->print($reason,"\n") if (!$startup && $config{set_echo});
+        return 0;
 
       }
 
       # Print the current value of a variable
       if (defined($config{$var})) {
-	if (ref($config{$var}) eq 'HASH') {  # Variable contains a hash
-	  if (defined($key)) {  # Printing a single hash value
-	    if (defined($config{$var}->{$key})) {
-	      dumpit($ui, 0, $var => {$key => $config{$var}->{$key}});
-	    } else {
-	      $ui->print("$var\{$key} not defined.\n");
-	    }
-	  } else {  # Printing all the hash's values
-	    dumpit($ui, 0, $var => $config{$var});
-	  }
-	} else {  # Variable contains a scalar or list
-	  dumpit($ui, 0, $var => $config{$var});
-	}
+        if (ref($config{$var}) eq 'HASH') {  # Variable contains a hash
+          if (defined($key)) {  # Printing a single hash value
+            if (defined($config{$var}->{$key})) {
+              dumpit($ui, 0, $var => {$key => $config{$var}->{$key}});
+            } else {
+              $ui->print("$var\{$key} not defined.\n");
+            }
+          } else {  # Printing all the hash's values
+            dumpit($ui, 0, $var => $config{$var});
+          }
+        } else {  # Variable contains a scalar or list
+          dumpit($ui, 0, $var => $config{$var});
+        }
       } else {
-	$ui->print("$var not defined.\n");
+        $ui->print("$var not defined.\n");
       }
       return 0;
 

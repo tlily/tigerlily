@@ -96,43 +96,43 @@ sub accept_line {
     }
 
     if (@{$ui->{prompt}} > 0) {
-	my $args = shift @{$ui->{prompt}};
-	if (defined $args->{prompt}) {
-	    $ui->prompt("");
-	    $ui->print($args->{prompt});
-	}
+        my $args = shift @{$ui->{prompt}};
+        if (defined $args->{prompt}) {
+            $ui->prompt("");
+            $ui->print($args->{prompt});
+        }
 
-	if ($args->{password}) {
-	    $ui->{input}->password(0);
-	} else {
-	    $ui->style("user_input");
-	    $ui->print($text);
-	    $ui->style("normal");
-	}
+        if ($args->{password}) {
+            $ui->{input}->password(0);
+        } else {
+            $ui->style("user_input");
+            $ui->print($text);
+            $ui->style("normal");
+        }
 
-	$ui->print("\n");
-	$args->{call}->($ui, $text);
+        $ui->print("\n");
+        $args->{call}->($ui, $text);
 
-	if (@{$ui->{prompt}} > 0) {
-	    $args = $ui->{prompt}->[0];
-	    $ui->prompt($args->{prompt})
-	      if (defined $args->{prompt});
-	    $ui->{input}->password(1) if ($args->{password});
-	}
+        if (@{$ui->{prompt}} > 0) {
+            $args = $ui->{prompt}->[0];
+            $ui->prompt($args->{prompt})
+              if (defined $args->{prompt});
+            $ui->{input}->password(1) if ($args->{password});
+        }
     }
 
     elsif ($text eq "" && $ui->{text}->lines_remaining()) {
-	$ui->command("page-down");
+        $ui->command("page-down");
     }
 
     else {
-	$ui->style("user_input");
-	$ui->print($text, "\n");
-	$ui->style("normal");
+        $ui->style("user_input");
+        $ui->print($text, "\n");
+        $ui->style("normal");
 
-	TLily::Event::send(type => 'user_input',
-			   text => $text,
-			   ui   => $ui);
+        TLily::Event::send(type => 'user_input',
+                           text => $text,
+                           ui   => $ui);
     }
 }
 
@@ -158,8 +158,8 @@ sub switch_window {
     @keys = sort(keys %{$ui->{win}});
     for (my $i = 0; $i < @keys; $i++) {
         my $tpair = $ui->{win}->{$keys[$i]};
-	next if ($tpair->{text} != $ui->{text});
-	if ($dir == 1) {
+        next if ($tpair->{text} != $ui->{text});
+        if ($dir == 1) {
             $pos = ($i + 1) % @keys;
         } else {
             $pos = ($i + @keys - 1) % @keys;
@@ -200,7 +200,7 @@ sub close_window {
         next if ($ui->{win}->{$key}->{text} != $ui->{text});
         $ui->switch_window(1);
         delete $ui->{win}->{$key};
-	last;
+        last;
     }
     my @keys = sort(keys %{$ui->{win}});
     $ui->{text}->{status}->make_active(0) if (@keys == 1);
@@ -391,7 +391,7 @@ sub new {
     } else {
         TLily::Event::io_r(handle => \*STDIN,
                            mode   => 'r',
-		           call   => sub { $self->run; });
+                           call   => sub { $self->run; });
     }
 
     $self->inherit_global_bindings();
@@ -418,16 +418,16 @@ sub splitwin {
     my($self, $name) = @_;
 
     unless ($self->{text}->{$name}) {
-	$self->{win}->{$name}->{status} = TLily::UI::TextWindow::StatusLine->new
-	  ( layout => $self, color => $self->{color} );
+        $self->{win}->{$name}->{status} = TLily::UI::TextWindow::StatusLine->new
+          ( layout => $self, color => $self->{color} );
 
-	$self->{win}->{$name}->{text} = TLily::UI::TextWindow::Text->new
-	  ( layout => $self, color => $self->{color},
-	    status => $self->{win}->{$name}->{status},
-	    clone => $self->{text});
+        $self->{win}->{$name}->{text} = TLily::UI::TextWindow::Text->new
+          ( layout => $self, color => $self->{color},
+            status => $self->{win}->{$name}->{status},
+            clone => $self->{text});
 
         $self->{status} = $self->{win}->{$name}->{status};
-	$self->layout();
+        $self->layout();
     }
 
     return TLily::UI::TextWindow::Proxy->new($self, $name);
@@ -478,14 +478,14 @@ sub layout {
 
     foreach my $key (sort(keys %{$self->{win}})) {
         my $tpair = $self->{win}->{$key};
-	my $l = $tlines;
-	if ($trem) { $l++; $trem--; }
+        my $l = $tlines;
+        if ($trem) { $l++; $trem--; }
 
-	$tpair->{text}->size($y, 0, $l-1, $COLS);
-	$y += $l-1;
+        $tpair->{text}->size($y, 0, $l-1, $COLS);
+        $y += $l-1;
 
-	$tpair->{status}->size($y, 0, 1, $COLS);
-	$y++;
+        $tpair->{status}->size($y, 0, 1, $COLS);
+        $y++;
     }
 
     $self->{input}->size($LINES - $ilines, 0, $ilines, $COLS);
@@ -525,28 +525,28 @@ sub run {
 
     my $cmd = $self->{bindings}->{$key};
     if ($cmd && $self->{command}->{$cmd}) {
-	$self->command($cmd, $key);
+        $self->command($cmd, $key);
     } elsif (length($key) == 1) {
-	$self->{input}->addchar($key);
+        $self->{input}->addchar($key);
         $self->{input}->{quoted_insert} = 0;
         $self->command("scroll-to-bottom")
             if $config{scroll_to_bottom_on_input} &&
                $self->{status}->{var}->{t_more};
     } elsif ($key =~ /^&.*;$/) {
-	# an unhandled entity - normally, we suppress them (the assumption is
-	# that any entity we want displayed will be turned into text by an
-	# intercept or handled by a ui binding), but for debugging, it can be
-	# handy to show these ones that slip through as-is.
+        # an unhandled entity - normally, we suppress them (the assumption is
+        # that any entity we want displayed will be turned into text by an
+        # intercept or handled by a ui binding), but for debugging, it can be
+        # handy to show these ones that slip through as-is.
 
-	if ($config{show_unhandled_entities}) {
-	    foreach my $char (split '', $key) {
-		$self->{input}->addchar($char);
-		$self->{input}->{quoted_insert} = 0;
-		$self->command("scroll-to-bottom")
-		    if $config{scroll_to_bottom_on_input} &&
-		    $self->{status}->{var}->{t_more};
-	    }
-	}
+        if ($config{show_unhandled_entities}) {
+            foreach my $char (split '', $key) {
+                $self->{input}->addchar($char);
+                $self->{input}->{quoted_insert} = 0;
+                $self->command("scroll-to-bottom")
+                    if $config{scroll_to_bottom_on_input} &&
+                    $self->{status}->{var}->{t_more};
+            }
+        }
     }
 
     $self->{input}->position_cursor;
@@ -558,31 +558,31 @@ sub configure {
     my $self = shift;
 
     if (@_ == 0) {
-	return (color          => $self->{color},
-		input_maxlines => $self->{input_maxlines});
+        return (color          => $self->{color},
+                input_maxlines => $self->{input_maxlines});
     }
 
     while (@_) {
-	my $opt = shift;
-	my $val = shift;
+        my $opt = shift;
+        my $val = shift;
 
-	if ($opt eq 'color') {
-	    $self->{color} = $val ? 1 : 0;
-	    $self->{input}->configure(color => $val);
-	    foreach my $tpair (values %{$self->{win}}) {
-		$tpair->{text}->configure(color => $val);
-		$tpair->{status}->configure(color => $val);
-	    }
-	    $self->redraw();
-	}
+        if ($opt eq 'color') {
+            $self->{color} = $val ? 1 : 0;
+            $self->{input}->configure(color => $val);
+            foreach my $tpair (values %{$self->{win}}) {
+                $tpair->{text}->configure(color => $val);
+                $tpair->{status}->configure(color => $val);
+            }
+            $self->redraw();
+        }
 
-	elsif ($opt eq 'input_maxlines') {
-	    # Handle this.
-	}
+        elsif ($opt eq 'input_maxlines') {
+            # Handle this.
+        }
 
-	else {
-	    croak "Unknown UI option: $opt";
-	}
+        else {
+            croak "Unknown UI option: $opt";
+        }
     }
 }
 
@@ -646,7 +646,7 @@ sub print {
     return if $config{quiet};
     $self->SUPER::print(@_);
     foreach my $tpair (values %{$self->{win}}) {
-	$tpair->{text}->print(join('', @_));
+        $tpair->{text}->print(join('', @_));
     }
     $self->{input}->position_cursor();
     TLily::FoiledAgain::update_screen();
@@ -662,8 +662,8 @@ sub redraw {
     my($self) = @_;
 
     foreach my $tpair (values %{$self->{win}}) {
-	$tpair->{text}->redraw();
-	$tpair->{status}->redraw();
+        $tpair->{text}->redraw();
+        $tpair->{status}->redraw();
     }
     $self->{input}->redraw();
     $self->{input}->position_cursor();
@@ -826,8 +826,8 @@ sub istyle_fn_r {
 sub istyle_fn_u {
     my($self, $style_fn) = @_;
     if ($style_fn) {
-	my $cur = $self->{input}->style_fn();
-	return unless ($cur && $cur == $style_fn);
+        my $cur = $self->{input}->style_fn();
+        return unless ($cur && $cur == $style_fn);
     }
     $self->{input}->style_fn(undef);
     return 1;

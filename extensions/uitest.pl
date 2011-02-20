@@ -30,11 +30,11 @@ sub style_fn {
 
     pos($text) = 0;
     if ($text =~ /\G([^\s;:]*[;:])/gc) {
-	push @f, length($1), "input_dest";
+        push @f, length($1), "input_dest";
     }
 
     while ($text =~ /\G(.*?)(foo)/g) {
-	push @f, length($1), "input_window", length($2), "input_foo";
+        push @f, length($1), "input_window", length($2), "input_foo";
     }
 
     #print STDERR "style_fn: @f\n";

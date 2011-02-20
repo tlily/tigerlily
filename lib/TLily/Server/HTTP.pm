@@ -31,19 +31,19 @@ sub new {
 
     # WJC: "fixed" re so that urls with path info are preserved.
     if ($args{url} =~ m|^http://([^/:]+)(?::(\d+))?(/[/\S]+)$|) {  # A full url
-	$args{port} = $2 if defined $2;
-	$args{url} = $3;
-	$args{host} = $1;
+        $args{port} = $2 if defined $2;
+        $args{url} = $3;
+        $args{host} = $1;
     }
     unless (defined $args{filename}) {
-	my @t = split m|/|, $args{url};
-	$args{filename} = pop @t;
+        my @t = split m|/|, $args{url};
+        $args{filename} = pop @t;
     }
 
     my $self = $class->SUPER::new(%args);
 
     $self->{handler} = TLily::Event::event_r (type => 'server_connected',
-			  call => \&send_url);
+                                              call => \&send_url);
 
     $self->{filename} = $args{filename};
     $self->{url} = $args{url};

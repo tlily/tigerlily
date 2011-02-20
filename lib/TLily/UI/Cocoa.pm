@@ -65,8 +65,8 @@ sub input {
     }
 
     TLily::Event::send(type => 'user_input',
-		   ui   => $self,
-		   text => $text);
+                   ui   => $self,
+                   text => $text);
   delete $self->{prompt};
   $sender->setStringValue("");
 
@@ -86,8 +86,8 @@ sub doTlilyEvent {
     my ($self) = shift;
     eval { TLily::Event::loop_once; };
    if ($@ =~ /^Undefined subroutine/) {
-	$self->print("ERROR: ", $@);
-	next;
+        $self->print("ERROR: ", $@);
+        next;
     } elsif ($@) {
         die "$@";
     }

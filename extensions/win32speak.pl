@@ -18,21 +18,21 @@ use strict;
 use Win32::OLE qw( EVENTS );
 my $DirectSS = new Win32::OLE( "{EEE78591-FE22-11D0-8BEF-0060081841DE}" );
 Win32::OLE->WithEvents( $DirectSS, \&ole_event_handler,
-		       "{EEE78597-FE22-11D0-8BEF-0060081841DE}" );
+                       "{EEE78597-FE22-11D0-8BEF-0060081841DE}" );
 my $tlily_ole_handler = undef;
 
 sub ole_event_handler {
     my ($Obj, $Event, @Args) = @_;
     if ($Event == 4) {
-       	if (defined($tlily_ole_handler)) {
+               if (defined($tlily_ole_handler)) {
 
-	    # we're done talking, so remove the ole hook.
-	    # if I felt like being clever, I could re-inject the OLE events
-	    # into tlily's event model, and keep the ole hook in place all
-	    # the time.  Might be amusing.  Maybe some other time.
-	    TLily::Event::idle_u($tlily_ole_handler);
+            # we're done talking, so remove the ole hook.
+            # if I felt like being clever, I could re-inject the OLE events
+            # into tlily's event model, and keep the ole hook in place all
+            # the time.  Might be amusing.  Maybe some other time.
+            TLily::Event::idle_u($tlily_ole_handler);
             undef $tlily_ole_handler;
-	}
+        }
     }
 }
 
@@ -84,14 +84,14 @@ sub sayit {
 
 sub load {
     event_r(type  => 'private',
-	    order => 'after',
-	    call  => \&sayit);
+            order => 'after',
+            call  => \&sayit);
     event_r(type  => 'public',
-	    order => 'after',
-	    call  => \&sayit);
+            order => 'after',
+            call  => \&sayit);
     event_r(type  => 'emote',
-	    order => 'after',
-	    call  => \&sayit);
+            order => 'after',
+            call  => \&sayit);
 
 }
 

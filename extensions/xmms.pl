@@ -28,18 +28,18 @@ playlist returns the entire playlist. be careful.
 my $r;
 
 my %simple = (
-	stop => "stop",
-	pause => "pause",
-	next => "playlist_next",
-	prev => "playlist_prev",
-	play => "play",
+        stop => "stop",
+        pause => "pause",
+        next => "playlist_next",
+        prev => "playlist_prev",
+        play => "play",
 );
 
 sub xmms_cmd {
     my ($ui,$cmd) = @_;
 
     unless ($r->is_running()) {
-	$ui->print("(Xmms is not running)\n");
+        $ui->print("(Xmms is not running)\n");
         return;
     }
 
@@ -54,29 +54,29 @@ sub xmms_cmd {
         $r->play();
     } elsif ($cmd eq "vol") {
         my $vol = $r->get_main_volume();
-	$ui->print("(vol is approximately $vol)\n");
+        $ui->print("(vol is approximately $vol)\n");
     } elsif ($cmd =~ /vol (\d+)/) {
         $r->set_main_volume($1);
-	$ui->print("(vol is approximately $1)\n");
+        $ui->print("(vol is approximately $1)\n");
     } elsif ($cmd =~ /vol ([+-])(\d+)/) {
         my $vol = $r->get_main_volume();
- 	if ($1 eq "+") {
-		$vol += $2;
-	} else {
-		$vol -= $2;
-	}
+         if ($1 eq "+") {
+                $vol += $2;
+        } else {
+                $vol -= $2;
+        }
         $r->set_main_volume($vol);
-	$ui->print("(vol is approximately $vol)\n");
+        $ui->print("(vol is approximately $vol)\n");
     } elsif ($cmd eq "song") {
         my $title = $r->get_playlist_title();
-	$ui->print("($title)\n");
+        $ui->print("($title)\n");
     } elsif ($cmd eq "playlist") {
         my $pl = $r->get_playlist_titles();
-	foreach my $song (@{$pl}) {
-		$ui->print("(" . $song . ")\n" );
-	}
+        foreach my $song (@{$pl}) {
+                $ui->print("(" . $song . ")\n" );
+        }
     } else {
-	$ui->print("(Invalid subcommand. see %help xmms)\n");
+        $ui->print("(Invalid subcommand. see %help xmms)\n");
     }
 }
 

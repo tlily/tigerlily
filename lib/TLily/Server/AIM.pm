@@ -76,9 +76,9 @@ sub new {
     # Generate a unique name for this server object.
     my $name = "AIM";
     if ($server{$name}) {
-	my $i = 2;
-	while ($server{$name."#$i"}) { $i++; }
-	$name .= "#$i";
+        my $i = 2;
+        while ($server{$name."#$i"}) { $i++; }
+        $name .= "#$i";
     }
 
     $self->{name}      = $name if (defined($args{name}));
@@ -149,8 +149,8 @@ sub new {
         $self->{sock} = ${$self->{aim}->srv_socket};
     };
     if ($@) {
-	$ui->print("failed: $@");
-	return;
+        $ui->print("failed: $@");
+        return;
     }
 
     $ui->print("connected.\n\n");
@@ -158,9 +158,9 @@ sub new {
     TLily::Server::tl_nonblocking($self->{sock});
 
     $self->{io_id} = TLily::Event::io_r(handle => $self->{sock},
-					mode   => 'r',
-					obj    => $self,
-					call   => \&TLily::Server::reader);
+                                        mode   => 'r',
+                                        obj    => $self,
+                                        call   => \&TLily::Server::reader);
 
     $self->add_server();
 
@@ -172,7 +172,7 @@ sub new {
     $self->send_sflap(toc_set_idle => 0);
 
     TLily::Event::send(type   => 'connected',
-		       server => $self);
+                       server => $self);
 
     return $self;
 }

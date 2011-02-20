@@ -143,9 +143,9 @@ sub char_style {
     my $c = 0;
     my $i = 0;
     while ($c < $pos) {
-	$c += $self->{style}->[$i];
-	$i += 2;
-	die "input style meltdown!\n" if ($i > @{$self->{style}});
+        $c += $self->{style}->[$i];
+        $i += 2;
+        die "input style meltdown!\n" if ($i > @{$self->{style}});
     }
 
     $self->draw_style($self->{style}->[$i+1] || $self->{bg});
@@ -169,26 +169,26 @@ sub drawlines {
     my $col = 0;
     $self->{F}->clear_line($i);
     while (($ti < length($text)) &&
-	   ($start - $i < $count)) {
-	while ($f[0] <= 0) {
-	    $f[2] += $f[0];
-	    shift @f; shift @f;
-	}
+           ($start - $i < $count)) {
+        while ($f[0] <= 0) {
+            $f[2] += $f[0];
+            shift @f; shift @f;
+        }
 
-	my $c = min($self->{cols} - $col, $f[0]);
+        my $c = min($self->{cols} - $col, $f[0]);
 
-	$self->draw_style($f[1]);
-	$self->{F}->addstr_at_point(substr($text, $ti, $c));
+        $self->draw_style($f[1]);
+        $self->{F}->addstr_at_point(substr($text, $ti, $c));
 
-	$col += $c;
-	$ti += $c;
-	$f[0] -= $c;
+        $col += $c;
+        $ti += $c;
+        $f[0] -= $c;
 
-	if ($col >= $self->{cols}) {
-	    $i++;
-	    $col -= $self->{cols};
+        if ($col >= $self->{cols}) {
+            $i++;
+            $col -= $self->{cols};
             $self->{F}->clear_line($i) if ($i < $self->{lines});
-	}
+        }
     }
 }
 
@@ -212,27 +212,27 @@ sub rationalize {
 
     my $text_lines = int($text_len / $self->{cols}) + 1;
     if ($text_lines != $self->{text_lines}) {
-	$self->{text_lines} = $text_lines;
-	$self->req_size($text_lines, $self->{cols});
+        $self->{text_lines} = $text_lines;
+        $self->req_size($text_lines, $self->{cols});
     }
 
     my($y, $x) = $self->find_coords();
 
     if ($y >= $self->{lines}) {
-	my $sc = $y - $self->{lines} + 1;
-	$self->{topln} += $sc;
+        my $sc = $y - $self->{lines} + 1;
+        $self->{topln} += $sc;
 
-	$self->{F}->scroll($sc);
+        $self->{F}->scroll($sc);
 
-	$self->drawlines($self->{lines} - $sc, $sc);
-	$y = $self->{lines} - 1;
+        $self->drawlines($self->{lines} - $sc, $sc);
+        $y = $self->{lines} - 1;
     } elsif ($y < 0) {
-	$self->{topln} += $y;
+        $self->{topln} += $y;
 
-	$self->{F}->scroll($y);
+        $self->{F}->scroll($y);
 
-	$self->drawlines(0, -$y);
-	$y = 0;
+        $self->drawlines(0, -$y);
+        $y = 0;
     }
 
     $self->{Y} = $y;
@@ -255,9 +255,9 @@ sub end_of_word {
     my($word, $notword) = word_characters();
 
     if (substr($self->{text}, $self->{point}) =~ /^(.*?$word+)/) {
-	return $self->{point} + length($1);
+        return $self->{point} + length($1);
     } else {
-	return length($self->{text});
+        return length($self->{text});
     }
 }
 
@@ -269,9 +269,9 @@ sub start_of_word {
 
 
     if (substr($self->{text}, 0, $self->{point}) =~ /^(.*$notword)$word/) {
-	return length($1);
+        return length($1);
     } else {
-	return 0;
+        return 0;
     }
 }
 
@@ -281,9 +281,9 @@ sub end_of_sentence {
 
     if (substr($self->{text}, $self->{point}) =~
         /^(.*?[.!?][]\"')]*)($| $|\t|$spaces)/) {  # from Emacs
-	return $self->{point} + length($1);
+        return $self->{point} + length($1);
     } else {
-	return length($self->{text});
+        return length($self->{text});
     }
 }
 
@@ -293,9 +293,9 @@ sub start_of_sentence {
 
     if (substr($self->{text}, 0, $self->{point}) =~
         /^((.*[.!?][]\"')]*)($| $|\t|$spaces)[ \t]*)[^ \t]/) {
-	return length($1);
+        return length($1);
     } else {
-	return 0;
+        return 0;
     }
 }
 
@@ -327,8 +327,8 @@ sub accept_line {
 
     if ($text ne "" && ! $self->{'password'} &&
         ($#{$self->{history}} == 0 || $text ne $self->{history}->[-2])) {
-	$self->{history}->[-1] = $text;
-	push @{$self->{history}}, "";
+        $self->{history}->[-1] = $text;
+        push @{$self->{history}}, "";
     }
 
     $self->{history_pos} = $#{$self->{history}};
@@ -341,11 +341,11 @@ sub intelligent_previous {
     my($self) = @_;
 
     if ($self->{point} >= $self->{cols}) {
-	$self->{point} -= $self->{cols};
-	$self->rationalize();
-	$self->{kill_reset} = 1;
+        $self->{point} -= $self->{cols};
+        $self->rationalize();
+        $self->{kill_reset} = 1;
     } else {
-	$self->previous_history();
+        $self->previous_history();
     }
 }
 
@@ -354,11 +354,11 @@ sub intelligent_next {
     my($self) = @_;
 
     if (length($self->{text}) - $self->{point} >= $self->{cols}) {
-	$self->{point} += $self->{cols};
-	$self->rationalize();
-	$self->{kill_reset} = 1;
+        $self->{point} += $self->{cols};
+        $self->rationalize();
+        $self->{kill_reset} = 1;
     } else {
-	$self->next_history();
+        $self->next_history();
     }
 }
 
@@ -586,12 +586,12 @@ sub set {
     my($self, $point, $text) = @_;
     $self->{point} = $point;
     if (defined $text) {
-	$self->{text} = $text;
-	$self->update_style();
-	$self->rationalize();
-	$self->redraw();
+        $self->{text} = $text;
+        $self->update_style();
+        $self->rationalize();
+        $self->redraw();
     } else {
-	$self->rationalize();
+        $self->rationalize();
     }
 }
 
@@ -608,19 +608,19 @@ sub addchar {
     return if ($self->{'password'});
 
     if ($self->{'style_fn'}) {
-	$self->rationalize();
-	$self->redraw();
-	return;
+        $self->rationalize();
+        $self->redraw();
+        return;
     }
 
     $self->char_style($self->{point}-1);
     $self->{F}->insch($self->{Y}, $self->{X}, $c);
 
     for (my $i = $self->{Y}+1; $i < $self->{lines}; $i++) {
-	my $start = ($self->{topln} + $i) * $self->{cols};
-	last if ($start > length($self->{text}));
-	$self->char_style($start);
-	$self->{F}->insch($i, 0, substr($self->{text}, $start, 1));
+        my $start = ($self->{topln} + $i) * $self->{cols};
+        last if ($start > length($self->{text}));
+        $self->char_style($start);
+        $self->{F}->insch($i, 0, substr($self->{text}, $start, 1));
     }
 
     $self->rationalize();
@@ -639,20 +639,20 @@ sub del {
     return if ($self->{'password'});
 
     if ($self->{'style_fn'}) {
-	$self->rationalize();
-	$self->redraw();
-	return;
+        $self->rationalize();
+        $self->redraw();
+        return;
     }
 
     $self->{F}->move_point($self->{Y}, $self->{X});
     for (my $i = $self->{Y}; $i < $self->{lines}; $i++) {
-	$self->{F}->delch_at_point();
-	my $start = ($self->{topln} + $i + 1) * $self->{cols} - 1;
-	last if ($start >= length($self->{text}));
-	$self->char_style($start);
-	$self->{F}->addstr($i, $self->{cols}-1,
+        $self->{F}->delch_at_point();
+        my $start = ($self->{topln} + $i + 1) * $self->{cols} - 1;
+        last if ($start >= length($self->{text}));
+        $self->char_style($start);
+        $self->{F}->addstr($i, $self->{cols}-1,
                            substr($self->{text}, $start, 1));
-	$self->{F}->move_point($i + 1, 0);
+        $self->{F}->move_point($i + 1, 0);
     }
 
     $self->rationalize();
@@ -745,9 +745,9 @@ sub transpose_chars {
 
     my($c1, $c2);
     if ($self->{point} >= length($self->{text})) {
-	($c1, $c2) = ($self->{point}-2, $self->{point}-1);
+        ($c1, $c2) = ($self->{point}-2, $self->{point}-1);
     } else {
-	($c1, $c2) = ($self->{point}-1, $self->{point});
+        ($c1, $c2) = ($self->{point}-1, $self->{point});
     }
 
     (substr($self->{text}, $c1, 1), substr($self->{text}, $c2, 1)) =
@@ -761,10 +761,10 @@ sub transpose_chars {
     $self->{point}++ unless $self->{point} >= length($self->{text});
 
     for my $c ($c1, $c2) {
-	my($y, $x) = $self->find_coords($c);
-	next if ($y < 0);
-	$self->char_style($c);
-	$self->{F}->addstr($y, $x, substr($self->{text}, $c, 1));
+        my($y, $x) = $self->find_coords($c);
+        next if ($y < 0);
+        $self->char_style($c);
+        $self->{F}->addstr($y, $x, substr($self->{text}, $c, 1));
     }
 
     $self->rationalize();
@@ -899,11 +899,11 @@ sub kill_append {
     $self->{kill_reset}   = 0;
 
     if ($len) {
-	$self->{kill_buffer} .= substr($self->{text}, $start, $len);
-	substr($self->{text}, $start, $len) = "";
+        $self->{kill_buffer} .= substr($self->{text}, $start, $len);
+        substr($self->{text}, $start, $len) = "";
     } else {
-	$self->{kill_buffer} .= substr($self->{text}, $start);
-	substr($self->{text}, $start) = "";
+        $self->{kill_buffer} .= substr($self->{text}, $start);
+        substr($self->{text}, $start) = "";
     }
 }
 
@@ -916,13 +916,13 @@ sub kill_prepend {
     $self->{kill_reset}   = 0;
 
     if ($len) {
-	$self->{kill_buffer}  = (substr($self->{text}, $start, $len) .
-				 $self->{kill_buffer});
-	substr($self->{text}, $start, $len) = "";
+        $self->{kill_buffer}  = (substr($self->{text}, $start, $len) .
+                                 $self->{kill_buffer});
+        substr($self->{text}, $start, $len) = "";
     } else {
-	$self->{kill_buffer}  = (substr($self->{text}, $start) .
-				 $self->{kill_buffer});
-	substr($self->{text}, $start) = "";
+        $self->{kill_buffer}  = (substr($self->{text}, $start) .
+                                 $self->{kill_buffer});
+        substr($self->{text}, $start) = "";
     }
 }
 

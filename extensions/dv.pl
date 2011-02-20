@@ -40,36 +40,36 @@ sub dv_command_handler {
     my @args = split /\s+/, $args;
 
     if (@args == 0) {
-	if (scalar(keys(%dved)) == 0) {
-	    $ui->print("(no users are being disemvoweled)\n");
-	} else {
-	    $ui->print("(disemvoweled users: ",
-		       join(', ', sort values(%dved)),
-		       ")\n" );
-	}
-	if (scalar(keys(%dvtopics)) == 0) {
-	    $ui->print("(no topics are being disemvoweled)\n");
-	} else {
+        if (scalar(keys(%dved)) == 0) {
+            $ui->print("(no users are being disemvoweled)\n");
+        } else {
+            $ui->print("(disemvoweled users: ",
+                       join(', ', sort values(%dved)),
+                       ")\n" );
+        }
+        if (scalar(keys(%dvtopics)) == 0) {
+            $ui->print("(no topics are being disemvoweled)\n");
+        } else {
             $ui->print("(disemvoweled topics: ",
                        join(', ', sort values(%dvtopics)), ")\n" );
         }
-	return;
+        return;
     }
 
     if (@args > 2 and @args[0] ne 'topic') {
-	$ui->print("(%dv <name> or %dv topic <topic>; type %help for help)\n");
-	return;
+        $ui->print("(%dv <name> or %dv topic <topic>; type %help for help)\n");
+        return;
     }
 
     # Disemvowel topics.
     if (@args == 2) {
         my $topic = $args[1];
         if (defined($dvtopics{$topic})) {
-	    delete $dvtopics{$topic};
-	    $ui->print("(Topic $topic is no longer disemvoweled.)\n");
+            delete $dvtopics{$topic};
+            $ui->print("(Topic $topic is no longer disemvoweled.)\n");
         } else {
-	    $dvtopics{$topic} = $topic;
-	    $ui->print("(Topic $topic is now disemvoweled.)\n");
+            $dvtopics{$topic} = $topic;
+            $ui->print("(Topic $topic is now disemvoweled.)\n");
         }
         return;
     }
@@ -79,8 +79,8 @@ sub dv_command_handler {
     $config{expand_group} = 1;
     my $name = TLily::Server::SLCP::expand_name($args[0]);
     if ((!defined $name) || ($name =~ /^-/)) {
-	$ui->print("(could find no match to \"$args[0]\")\n");
-	return;
+        $ui->print("(could find no match to \"$args[0]\")\n");
+        return;
     }
     $config{expand_group} = $tmp;
     my @names;
@@ -93,17 +93,17 @@ sub dv_command_handler {
         if (!$state{HANDLE}) {
             if ($nm !~ /^#/) {
                 # squawk only if $nm isn't an object id.
-	        $ui->print("(could find no match to \"$nm\")\n");
+                $ui->print("(could find no match to \"$nm\")\n");
             }
-	    next;
+            next;
         }
 
         if (defined $dved{$state{HANDLE}}) {
-	    delete $dved{$state{HANDLE}};
-	    $ui->print("($nm is no longer disemvoweled.)\n");
+            delete $dved{$state{HANDLE}};
+            $ui->print("($nm is no longer disemvoweled.)\n");
         } else {
-	    $dved{$state{HANDLE}} = $nm;
-	    $ui->print("($nm is now disemvoweled.)\n");
+            $dved{$state{HANDLE}} = $nm;
+            $ui->print("($nm is now disemvoweled.)\n");
         }
     }
     return;
@@ -123,14 +123,14 @@ sub dver {
 
 sub load {
     event_r(type  => 'private',
-	    order => 'before',
-	    call  => \&dver);
+            order => 'before',
+            call  => \&dver);
     event_r(type  => 'public',
-	    order => 'before',
-	    call  => \&dver);
+            order => 'before',
+            call  => \&dver);
     event_r(type  => 'emote',
-	    order => 'before',
-	    call  => \&dver);
+            order => 'before',
+            call  => \&dver);
 
     command_r('dv' => \&dv_command_handler);
     shelp_r('dv' => 'Disemvowel a user');

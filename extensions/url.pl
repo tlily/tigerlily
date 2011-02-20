@@ -126,93 +126,93 @@ sub url_cmd {
     }
 
     elsif ($arg eq "show" || $arg=~ /^-?\d+$/) {
-	if ($arg eq "show" && ! $num) {
-	    $num=$#urls+1;
-	}
-	if ($arg=~/^-?\d+$/) { $num=$arg; }
-	if (! defined $num) {
-	    $ui->print("(usage: %url show <number|url> or %url show ",
+        if ($arg eq "show" && ! $num) {
+            $num=$#urls+1;
+        }
+        if ($arg=~/^-?\d+$/) { $num=$arg; }
+        if (! defined $num) {
+            $ui->print("(usage: %url show <number|url> or %url show ",
                        "or %url <number>\n");
             return;
-	}
-	if ($num=~/^-?\d+$/) {
-	    if ($num > @urls || $num < -@urls) {
-		$ui->print("(invalid URL number $num)\n");
-		return;
-	    }
+        }
+        if ($num=~/^-?\d+$/) {
+            if ($num > @urls || $num < -@urls) {
+                $ui->print("(invalid URL number $num)\n");
+                return;
+            }
             if ($num > 0) { $url=$urls[$num-1]; }
             elsif ($num == 0) { $url=$urls[$#urls]; }
             elsif ($num < 0) { $url=$urls[$#urls+$num+1]; }
         } elsif ($num=~m'^[a-z]*://') {
-	    $url = $num;
-	} else {
-	    foreach my $testurl (reverse @urls) {
-		if ($testurl=~/$num/) {
-		    $url = $testurl;
-		    last;
-		}
-	    }
-	    $ui->print("(no url found matching '$num')\n");
-	    return;
-	}
+            $url = $num;
+        } else {
+            foreach my $testurl (reverse @urls) {
+                if ($testurl=~/$num/) {
+                    $url = $testurl;
+                    last;
+                }
+            }
+            $ui->print("(no url found matching '$num')\n");
+            return;
+        }
 
         $url =~ s/([,\"\'\\])/sprintf "%%%02x", ord($1)/eg;
 
-	$ui->print("(viewing $url)\n");
-	my $cmd=$config{browser};
-	if ($cmd =~ /%URL%/) {
+        $ui->print("(viewing $url)\n");
+        my $cmd=$config{browser};
+        if ($cmd =~ /%URL%/) {
             # This should not have 'quotes' around the substitution value--
             # consider what happens when browser is set to something like
             #   mozilla -remote 'openURL("%URL",new-window)'
             # If the user wants quotes, they should just add them to the
             # browser variable.
-	    $cmd=~s/%URL%/$url/g;
-	} else {
+            $cmd=~s/%URL%/$url/g;
+        } else {
             # This should have quotes around it, however.
-	    $cmd .= " '$url'";
- 	}
-	if ($^O =~ /MSWin32/) {
-	    # Escape % so that the shell doesn't try to interpolate %foo% as
+            $cmd .= " '$url'";
+         }
+        if ($^O =~ /MSWin32/) {
+            # Escape % so that the shell doesn't try to interpolate %foo% as
             # an environment variable substitution
-    	    $url=~s/\%/"\%"/g;  # Isn't Windows COOL!?! (Isn't CPerl-mode?)
+                $url=~s/\%/"\%"/g;  # Isn't Windows COOL!?! (Isn't CPerl-mode?)
 
-	    # If the first parameter to the 'start' command begins with a
+            # If the first parameter to the 'start' command begins with a
             # quote, it's assumed to be a window title, so we need to fake
             # a blank window title and then give the URL as the second
             # parameter.
             system('start', '""', '"'.$url.'"');
 
-	} elsif ($config{browser_textmode}) {
-	    TLily::Event::keepalive();
- 	    $ui->suspend();
-	    if ($^O =~ /cygwin/) {
-	        $ret=`$cmd`;
-	    } else {
-	        $ret=`$cmd 2>&1`;
-	    }
- 	    $ui->resume();
- 	    $ui->print("$ret\n") if $ret;
- 	} else {
-	    TLily::Event::keepalive(15);
-	    if ($^O =~ /cygwin/) {
-		$ret=`$cmd`;
-	    } else {
-		$ret=`$cmd 2>&1`;
-	    }
- 	    $ui->print("$ret\n") if $ret;
- 	}
- 	return
+        } elsif ($config{browser_textmode}) {
+            TLily::Event::keepalive();
+             $ui->suspend();
+            if ($^O =~ /cygwin/) {
+                $ret=`$cmd`;
+            } else {
+                $ret=`$cmd 2>&1`;
+            }
+             $ui->resume();
+             $ui->print("$ret\n") if $ret;
+         } else {
+            TLily::Event::keepalive(15);
+            if ($^O =~ /cygwin/) {
+                $ret=`$cmd`;
+            } else {
+                $ret=`$cmd 2>&1`;
+            }
+             $ui->print("$ret\n") if $ret;
+         }
+         return
     }
 
     elsif ($arg =~ m/s?list/ || $arg eq "") {
         my $count = $num || $config{url_list_count};
         $count = @urls if $count =~ /^\s*all\s*/i;
-	$count = 3 if $count <= 0;
-	$count = @urls if $count > @urls;
+        $count = 3 if $count <= 0;
+        $count = @urls if $count > @urls;
 
         if (@urls == 0) {
-	    $ui->print("(no URLs captured this session)\n");
- 	    return;
+            $ui->print("(no URLs captured this session)\n");
+             return;
         }
 
         $ui->print("| URLs captured this session:\n");
@@ -222,16 +222,16 @@ sub url_cmd {
 
         foreach (($#urls-$count+1)..$#urls) {
             if ($arg eq 'slist' && exists $shorten{$urls[$_]}) {
- 	        $ui->print(sprintf("$format\n", $_+1, "$shorten{$urls[$_]}{short_url} [$shorten{$urls[$_]}{host}]"));
+                 $ui->print(sprintf("$format\n", $_+1, "$shorten{$urls[$_]}{short_url} [$shorten{$urls[$_]}{host}]"));
             } else {
- 	        $ui->print(sprintf("$format\n", $_+1, $urls[$_]));
+                 $ui->print(sprintf("$format\n", $_+1, $urls[$_]));
             }
         }
-	return;
+        return;
     }
 
     else {
-	$ui->print(
+        $ui->print(
           "(%url [view | list | slist | clear]; type %help for help)\n"
         );
     }
@@ -253,20 +253,20 @@ sub shorten_cmd {
 }
 
 event_r(type  => 'public',
-	call  => \&handler,
-	order => 'before');
+        call  => \&handler,
+        order => 'before');
 
 event_r(type  => 'private',
-	call  => \&handler,
-	order => 'before');
+        call  => \&handler,
+        order => 'before');
 
 event_r(type  => 'emote',
-	call  => \&handler,
-	order => 'before');
+        call  => \&handler,
+        order => 'before');
 
 event_r(type  => 'text',
-	call  => \&text_handler,
-	order => 'before');
+        call  => \&text_handler,
+        order => 'before');
 
 command_r('url' => \&url_cmd);
 command_r('shorten' => \&shorten_cmd);

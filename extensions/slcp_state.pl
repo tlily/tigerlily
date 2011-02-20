@@ -60,16 +60,16 @@ my $sub = sub {
     my $serv = $e->{server};
 
     $serv->state(HANDLE => $e->{SHANDLE},
-		 STATE  => "here");
+                 STATE  => "here");
 
     # if it's me, fire off a userstate event.
     if ($e->{isuser}) {
-	my %event = (type   => 'userstate',
-		     isuser => 1,
-		     from   => 'away',
-		     to     => 'here',
-		     server => $e->{Server});
-	TLily::Event::send(\%event);
+        my %event = (type   => 'userstate',
+                     isuser => 1,
+                     from   => 'away',
+                     to     => 'here',
+                     server => $e->{Server});
+        TLily::Event::send(\%event);
     }
 
     return;
@@ -83,16 +83,16 @@ $sub = sub {
     my $serv = $e->{server};
 
     $serv->state(HANDLE => $e->{SHANDLE},
-		 STATE  => "away");
+                 STATE  => "away");
 
     # if it's me, fire off a userstate event.
     if ($e->{isuser}) {
-	my %event = (type   => 'userstate',
-		     isuser => 1,
-		     from   => 'here',
-		     to     => 'away',
-		     server => $serv);
-	TLily::Event::send(\%event);
+        my %event = (type   => 'userstate',
+                     isuser => 1,
+                     from   => 'here',
+                     to     => 'away',
+                     server => $serv);
+        TLily::Event::send(\%event);
     }
 
     return;

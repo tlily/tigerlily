@@ -69,36 +69,36 @@ sub gag_command_handler {
     my @args = split /\s+/, $args;
 
     if (@args == 0) {
-	if (scalar(keys(%gagged)) == 0) {
-	    $ui->print("(no users are being gagged)\n");
-	} else {
-	    $ui->print("(gagged users: ",
-		       join(', ', sort values(%gagged)),
-		       ")\n" );
-	}
-	if (scalar(keys(%gagtopics)) == 0) {
-	    $ui->print("(no topics are being gagged)\n");
-	} else {
+        if (scalar(keys(%gagged)) == 0) {
+            $ui->print("(no users are being gagged)\n");
+        } else {
+            $ui->print("(gagged users: ",
+                       join(', ', sort values(%gagged)),
+                       ")\n" );
+        }
+        if (scalar(keys(%gagtopics)) == 0) {
+            $ui->print("(no topics are being gagged)\n");
+        } else {
             $ui->print("(gagged topics: ",
                        join(', ', sort values(%gagtopics)), ")\n" );
         }
-	return;
+        return;
     }
 
     if (@args > 2 and @args[0] ne 'topic') {
-	$ui->print("(%gag <name> or %gag topic <topic>; type %help for help)\n");
-	return;
+        $ui->print("(%gag <name> or %gag topic <topic>; type %help for help)\n");
+        return;
     }
 
     # Gag topics.
     if (@args == 2) {
         my $topic = $args[1];
         if (defined($gagtopics{$topic})) {
-	    delete $gagtopics{$topic};
-	    $ui->print("(Topic $topic is no longer gagged.)\n");
+            delete $gagtopics{$topic};
+            $ui->print("(Topic $topic is no longer gagged.)\n");
         } else {
-	    $gagtopics{$topic} = $topic;
-	    $ui->print("(Topic $topic is now gagged.)\n");
+            $gagtopics{$topic} = $topic;
+            $ui->print("(Topic $topic is now gagged.)\n");
         }
         return;
     }
@@ -108,8 +108,8 @@ sub gag_command_handler {
     $config{expand_group} =1;
     my $name = TLily::Server::SLCP::expand_name($args[0]);
     if ((!defined $name) || ($name =~ /^-/)) {
-	$ui->print("(could find no match to \"$args[0]\")\n");
-	return;
+        $ui->print("(could find no match to \"$args[0]\")\n");
+        return;
     }
     $config{expand_group} =$tmp;
     my @names;
@@ -126,17 +126,17 @@ sub gag_command_handler {
         if (!$state{HANDLE}) {
             if ($nm !~ /^#/) {
                 # squawk only if $nm isn't an object id.
-	        $ui->print("(could find no match to \"$nm\")\n");
+                $ui->print("(could find no match to \"$nm\")\n");
             }
-	    next;
+            next;
         }
 
         if (defined $gagged{$state{HANDLE}}) {
-	    delete $gagged{$state{HANDLE}};
-	    $ui->print("($nm is no longer gagged.)\n");
+            delete $gagged{$state{HANDLE}};
+            $ui->print("($nm is no longer gagged.)\n");
         } else {
-	    $gagged{$state{HANDLE}} = $nm;
-	    $ui->print("($nm is now gagged.)\n");
+            $gagged{$state{HANDLE}} = $nm;
+            $ui->print("($nm is now gagged.)\n");
         }
     }
     return;
@@ -160,14 +160,14 @@ sub gagger {
 
 sub load {
     event_r(type  => 'private',
-	    order => 'before',
-	    call  => \&gagger);
+            order => 'before',
+            call  => \&gagger);
     event_r(type  => 'public',
-	    order => 'before',
-	    call  => \&gagger);
+            order => 'before',
+            call  => \&gagger);
     event_r(type  => 'emote',
-	    order => 'before',
-	    call  => \&gagger);
+            order => 'before',
+            call  => \&gagger);
 
     command_r('gag' => \&gag_command_handler);
     shelp_r('gag' => 'Affix a gag to a user');

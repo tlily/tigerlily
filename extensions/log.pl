@@ -33,26 +33,26 @@ sub log_command {
     my($ui, $args) = @_;
 
     if ($args eq "") {
-	my $f = $ui->log();
-	if (defined $f) {
-	    $ui->print("(currently logging to \"$f\")\n");
-	} else {
-	    $ui->print("(logging is not enabled)\n");
-	}
+        my $f = $ui->log();
+        if (defined $f) {
+            $ui->print("(currently logging to \"$f\")\n");
+        } else {
+            $ui->print("(logging is not enabled)\n");
+        }
     }
     elsif ($args eq "off") {
-	$ui->log(undef);
-	$ui->print("(logging has been turned off)\n");
+        $ui->log(undef);
+        $ui->print("(logging has been turned off)\n");
     }
     else {
-	eval {
-	    $ui->log($args);
-	};
-	if ($@) {
-	    $ui->print($@);
-	} else {
-	    $ui->print("(now logging to \"$args\")\n");
-	}
+        eval {
+            $ui->log($args);
+        };
+        if ($@) {
+            $ui->print($@);
+        } else {
+            $ui->print("(now logging to \"$args\")\n");
+        }
     }
 
     return;

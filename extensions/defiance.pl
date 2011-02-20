@@ -119,9 +119,9 @@ sub sendhandler {
     my $ui=ui_name();
 
     if ($event->{isuser}) {
-	# it's a message to me- ignore it.
+        # it's a message to me- ignore it.
 
-	return 1;
+        return 1;
     }
 
     # Now see if we have anything to do.

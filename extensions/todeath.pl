@@ -30,6 +30,6 @@ sub handler {
 $config{todeath_message} ||= "idled to death";
 
 event_r(type  => 'disconnect',
-	call  => \&handler,
-	order => 'before');
+        call  => \&handler,
+        order => 'before');
 

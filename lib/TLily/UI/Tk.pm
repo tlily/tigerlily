@@ -72,83 +72,83 @@ my %commandmap =
 # The default set of keybindings.
 my %bindmap =
   (
-   'Right'	       => 'forward-char',
-   'Left'	       => 'backward-char',
-   'Up'		       => 'previous-history',
-   'Down'	       => 'next-history',
-   'Delete'	       => 'delete-char',
-   'Return'	       => 'accept-line',
-   'BackSpace'	       => 'backward-delete-char',
-   'Prior'	       => 'page-up',
-   'Next'	       => 'page-down',
-   'Control-a'	       => 'beginning-of-line',
-   'Control-b'	       => 'backward-char',
-   'Control-d'	       => 'delete-char',
-   'Control-e'	       => 'end-of-line',
-   'Control-f'	       => 'forward-char',
-   'Control-h'	       => 'backward-delete-char',
-   'Control-k'	       => 'kill-line',
-   'Control-l'	       => 'refresh',
-   'Control-m'	       => 'accept-line',
-   'Control-n'	       => 'next-history',
-   'Control-p'	       => 'previous-history',
-   'Control-t'	       => 'transpose-chars',
-   'Control-u'	       => 'backward-kill-line',
-   'Control-v'	       => 'page-down',
-   'Control-w'	       => 'backward-kill-word',
-   'Control-y'	       => 'yank',
-   'Control-z'	       => 'suspend',
-   'Meta-b'	       => 'backward-word',
-   'Meta-d'	       => 'kill-word',
-   'Meta-f'	       => 'forward-word',
-   'Meta-v'	       => 'page-up',
+   'Right'             => 'forward-char',
+   'Left'              => 'backward-char',
+   'Up'                => 'previous-history',
+   'Down'              => 'next-history',
+   'Delete'            => 'delete-char',
+   'Return'            => 'accept-line',
+   'BackSpace'         => 'backward-delete-char',
+   'Prior'             => 'page-up',
+   'Next'              => 'page-down',
+   'Control-a'         => 'beginning-of-line',
+   'Control-b'         => 'backward-char',
+   'Control-d'         => 'delete-char',
+   'Control-e'         => 'end-of-line',
+   'Control-f'         => 'forward-char',
+   'Control-h'         => 'backward-delete-char',
+   'Control-k'         => 'kill-line',
+   'Control-l'         => 'refresh',
+   'Control-m'         => 'accept-line',
+   'Control-n'         => 'next-history',
+   'Control-p'         => 'previous-history',
+   'Control-t'         => 'transpose-chars',
+   'Control-u'         => 'backward-kill-line',
+   'Control-v'         => 'page-down',
+   'Control-w'         => 'backward-kill-word',
+   'Control-y'         => 'yank',
+   'Control-z'         => 'suspend',
+   'Meta-b'            => 'backward-word',
+   'Meta-d'            => 'kill-word',
+   'Meta-f'            => 'forward-word',
+   'Meta-v'            => 'page-up',
    'Meta-bracketleft'  => 'line-up',
    'Meta-bracketright' => 'line-down',
-   'Meta-less'	       => 'scroll-to-top',
+   'Meta-less'         => 'scroll-to-top',
    'Meta-greater'      => 'scroll-to-bottom',
   );
 
 my %remap =
   (
-   nl	     => "Return",
+   nl        => "Return",
    pageup    => "Prior",
    pagedown  => "Next",
-   bs	     => "BackSpace",
-   del	     => "Delete",
-   up	     => "Up",
-   down	     => "Down",
-   left	     => "Left",
+   bs        => "BackSpace",
+   del       => "Delete",
+   up        => "Up",
+   down      => "Down",
+   left      => "Left",
    right     => "Right",
    "C-i"     => "Tab",
-   "<"	     => "less",
-   ">"	     => "greater",
-   "{"	     => "braceleft",
-   "}"	     => "braceright",
-   "["	     => "bracketleft",
-   "]"	     => "bracketright",
-   "("	     => "parenleft",
-   ")"	     => "parenright",
-   "/"	     => "slash",
-   "!"	     => "exclam",
-   "@"	     => "at",
-   "#"	     => "numbersign",
-   "\$"	     => "dollar",
-   "%"	     => "percent",
-   "^"	     => "asciicircum",
-   "&"	     => "ampersand",
-   "*"	     => "asterisk",
-   "|"	     => "bar",
-   "\\"	     => "backslash",
-   "'"	     => "apostrophe",
-   '"'	     => "quotedbl",
-   ";"	     => "semicolon",
-   ":"	     => "colon",
-   ","	     => "comma",
-   "."	     => "period",
-   "?"	     => "question",
-   "-"	     => "minus",
-   "_"	     => "underscore",
-   "+"	     => "plus",
+   "<"       => "less",
+   ">"       => "greater",
+   "{"       => "braceleft",
+   "}"       => "braceright",
+   "["       => "bracketleft",
+   "]"       => "bracketright",
+   "("       => "parenleft",
+   ")"       => "parenright",
+   "/"       => "slash",
+   "!"       => "exclam",
+   "@"       => "at",
+   "#"       => "numbersign",
+   "\$"      => "dollar",
+   "%"       => "percent",
+   "^"       => "asciicircum",
+   "&"       => "ampersand",
+   "*"       => "asterisk",
+   "|"       => "bar",
+   "\\"      => "backslash",
+   "'"       => "apostrophe",
+   '"'       => "quotedbl",
+   ";"       => "semicolon",
+   ":"       => "colon",
+   ","       => "comma",
+   "."       => "period",
+   "?"       => "question",
+   "-"       => "minus",
+   "_"       => "underscore",
+   "+"       => "plus",
    "="       => "equal",
   );
 
@@ -180,25 +180,25 @@ sub new {
     bless($self, $class);
 
     if(defined $mainwin) {
-	# "Lister, have you ever been hit over the head with a polo mallet?"
-	$self->{toplevel} = $mainwin->Toplevel;
+        # "Lister, have you ever been hit over the head with a polo mallet?"
+        $self->{toplevel} = $mainwin->Toplevel;
     } else {
-	# "OK, you guys got yourself a ship."
-	$mainwin = new MainWindow;
-	#$logo = $mainwin->Photo(-format => "gif",
-	#			 -data   => $image_data);
-	$font{normal} = $mainwin->Font(-family => "Courier", -size => 12),
-	$font{bold}   = $mainwin->Font(-family => "Courier",
-				       -size => 12,
-				       -weight => "bold"),
-	$font{italic} = $mainwin->Font(-family => "Courier",
-				       -size => 12,
-				       -slant  => "italic"),
-	$font{bold_italic} = $mainwin->Font(-family => "Courier",
-					    -size => 12,
-					    -weight => "bold",
-					    -slant => "italic"),
-	$self->{toplevel} = $mainwin;
+        # "OK, you guys got yourself a ship."
+        $mainwin = new MainWindow;
+        #$logo = $mainwin->Photo(-format => "gif",
+        #                         -data   => $image_data);
+        $font{normal} = $mainwin->Font(-family => "Courier", -size => 12),
+        $font{bold}   = $mainwin->Font(-family => "Courier",
+                                       -size => 12,
+                                       -weight => "bold"),
+        $font{italic} = $mainwin->Font(-family => "Courier",
+                                       -size => 12,
+                                       -slant  => "italic"),
+        $font{bold_italic} = $mainwin->Font(-family => "Courier",
+                                            -size => 12,
+                                            -weight => "bold",
+                                            -slant => "italic"),
+        $self->{toplevel} = $mainwin;
     }
 
     $self->{event_core} = new TLily::UI::Tk::Event($mainwin);
@@ -207,12 +207,12 @@ sub new {
     # "I don't know what all this trouble is about,
     #  but I'm sure it must be your fault..."
     $self->{toplevel}->setPalette(background          => $color{black},
-				  foreground          => $color{white},
-				  highlightColor      => $color{black},
-				  highlightBackground => $color{black},
-				  insertBackground    => $color{white},
-				  selectColor         => $color{grey},
-				  selectBackground    => $color{grey},);
+                                  foreground          => $color{white},
+                                  highlightColor      => $color{black},
+                                  highlightBackground => $color{black},
+                                  insertBackground    => $color{white},
+                                  selectColor         => $color{grey},
+                                  selectBackground    => $color{grey},);
 
     $self->{cur_style} = "normal";
     $self->{indent} = "";
@@ -232,14 +232,14 @@ sub new {
     $self->{cols}     = 80;
 
     $self->{menubar} = $self->{toplevel}->Frame()->pack(-fill => 'x',
-							-expand => 0);
+                                                        -expand => 0);
     $self->{menu_file} = $self->{menubar}->Menubutton
       (-text      => "File",
        -underline => 0,
        -tearoff   => 0,
        -menuitems =>
        [[Button   => '~Quit',
-	 -command => sub { exit }],
+         -command => sub { exit }],
        ])->pack(-side => "left");
 
     $self->{menu_help} = $self->{menubar}->Menubutton
@@ -248,8 +248,8 @@ sub new {
        -tearoff   => 0,
        -menuitems =>
        [
-	[Button   => '~About',
-	 -command => \&about],
+        [Button   => '~About',
+         -command => \&about],
        ])->pack(-side => "right");
 
     $self->{stext} = $self->{toplevel}->Scrolled
@@ -273,10 +273,10 @@ sub new {
        -foreground   => $color{yellow},
        -font         => $font{normal},
        -justify      => "left")->pack(-side   => "left",
-				      -expand => 1,
-				      -fill => "x",
-				      -ipady  => 0,
-				      -anchor => 'nw');
+                                      -expand => 1,
+                                      -fill => "x",
+                                      -ipady  => 0,
+                                      -anchor => 'nw');
 
     $self->{status_right} = $self->{status}->Label
       (-textvariable => \$self->{right_str},
@@ -284,41 +284,41 @@ sub new {
        -foreground   => $color{yellow},
        -font         => $font{normal},
        -justify      => "right",)->pack(-side => "left",
-					-expand => 1,
-				      -fill => "x",
-					-ipady => 0,
-					-anchor => 'ne');
+                                        -expand => 1,
+                                      -fill => "x",
+                                        -ipady => 0,
+                                        -anchor => 'ne');
 
     $self->{entry} = $self->{toplevel}->Frame();
 
     $self->{input} = $self->{entry}->Text
-      (-font	      => $font{normal},
-       -height	      => 1,
-       -width	      => 80,
+      (-font              => $font{normal},
+       -height              => 1,
+       -width              => 80,
        -takefocus     => 1,
-       -wrap	      => "word",
+       -wrap              => "word",
        -insertofftime => 0,)->pack(-side => "right",
-				   -fill => 'x',
-				   -expand => 0,
-				   -anchor => "s");
+                                   -fill => 'x',
+                                   -expand => 0,
+                                   -anchor => "s");
 
     $self->{entry}->pack(-pady   => 0,
-			 -ipady  => 0,
-			 -padx   => 0,
-			 -ipadx  => 0,
-			 -fill   => 'x',
-			 -expand => 0,
-			 -side   => "bottom",
-			 -anchor => "s");
+                         -ipady  => 0,
+                         -padx   => 0,
+                         -ipadx  => 0,
+                         -fill   => 'x',
+                         -expand => 0,
+                         -side   => "bottom",
+                         -anchor => "s");
 
     $self->{status}->pack(-pady   => 0,
-			  -ipady  => 0,
-			  -padx   => 0,
-			  -ipadx  => 0,
-			  -fill   => 'x',
-			  -expand => 0,
-			  -side   => "bottom",
-			  -anchor => "s");
+                          -ipady  => 0,
+                          -padx   => 0,
+                          -ipadx  => 0,
+                          -fill   => 'x',
+                          -expand => 0,
+                          -side   => "bottom",
+                          -anchor => "s");
 
     $self->{text}->configure(-state => "normal");
     #$self->{text}->image("create", "1.0", -image => $logo) if !$config{quiet};
@@ -360,32 +360,32 @@ sub ui_bindings {
     $mainwin->bind(ref $self->{input},'<B1-Enter>','CancelRepeat');
     $mainwin->bind(ref $self->{input},'<ButtonRelease-1>','CancelRepeat');
     $mainwin->bind(ref $self->{input},'<Control-1>',
-		   ['markSet','insert',Ev('@')]);
+                   ['markSet','insert',Ev('@')]);
     $mainwin->bind(ref $self->{input},'<Double-1>','selectWord' ) ;
     $mainwin->bind(ref $self->{input},'<Triple-1>','selectLine' ) ;
     $mainwin->bind(ref $self->{input},'<Shift-1>','adjustSelect' ) ;
     $mainwin->bind(ref $self->{input},'<Double-Shift-1>',
-		   ['SelectTo', Ev('@'),'word']);
+                   ['SelectTo', Ev('@'),'word']);
     $mainwin->bind(ref $self->{input},'<Triple-Shift-1>',
-		   ['SelectTo', Ev('@'),'line']);
+                   ['SelectTo', Ev('@'),'line']);
 
 #    $mainwin->bind(ref $self->{input},'<Left>',
-#		   ['SetCursor', Ev('index','insert-1c')]);
+#                   ['SetCursor', Ev('index','insert-1c')]);
     $mainwin->bind(ref $self->{input},'<Shift-Left>',
-		   ['KeySelect', Ev('index','insert-1c')]);
+                   ['KeySelect', Ev('index','insert-1c')]);
     $mainwin->bind(ref $self->{input},'<Control-Left>',
-		   ['SetCursor', Ev('index','insert-1c wordstart')]);
+                   ['SetCursor', Ev('index','insert-1c wordstart')]);
     $mainwin->bind(ref $self->{input},'<Shift-Control-Left>',
-		   ['KeySelect', Ev('index','insert-1c wordstart')]);
+                   ['KeySelect', Ev('index','insert-1c wordstart')]);
 
 #    $mainwin->bind(ref $self->{input},'<Right>',
-#		   ['SetCursor', Ev('index','insert+1c')]);
+#                   ['SetCursor', Ev('index','insert+1c')]);
     $mainwin->bind(ref $self->{input},'<Shift-Right>',
-		   ['KeySelect', Ev('index','insert+1c')]);
+                   ['KeySelect', Ev('index','insert+1c')]);
     $mainwin->bind(ref $self->{input},'<Control-Right>',
-		   ['SetCursor', Ev('index','insert+1c wordend')]);
+                   ['SetCursor', Ev('index','insert+1c wordend')]);
     $mainwin->bind(ref $self->{input},'<Shift-Control-Right>',
-		   ['KeySelect', Ev('index','insert wordend')]);
+                   ['KeySelect', Ev('index','insert wordend')]);
 
 #    $mainwin->bind(ref $self->{input},'<Up>',\&previous_history);
     $mainwin->bind(ref $self->{input},'<Shift-Up>', 'NoOp');
@@ -398,83 +398,83 @@ sub ui_bindings {
     $mainwin->bind(ref $self->{input},'<Shift-Control-Down>', 'NoOp');
 
     $mainwin->bind(ref $self->{input},'<Home>',
-		   ['SetCursor','insert linestart']);
+                   ['SetCursor','insert linestart']);
     $mainwin->bind(ref $self->{input},'<Shift-Home>',
-		   ['KeySelect','insert linestart']);
+                   ['KeySelect','insert linestart']);
     $mainwin->bind(ref $self->{input},'<Control-Home>',['SetCursor','1.0']);
     $mainwin->bind(ref $self->{input},'<Control-Shift-Home>',
-		   ['KeySelect','1.0']);
+                   ['KeySelect','1.0']);
 
     $mainwin->bind(ref $self->{input},'<End>',
-		   ['SetCursor','insert lineend']);
+                   ['SetCursor','insert lineend']);
     $mainwin->bind(ref $self->{input},'<Shift-End>',
-		   ['KeySelect','insert lineend']);
+                   ['KeySelect','insert lineend']);
     $mainwin->bind(ref $self->{input},'<Control-End>',
-		   ['SetCursor','end-1char']);
+                   ['SetCursor','end-1char']);
     $mainwin->bind(ref $self->{input},'<Control-Shift-End>',
-		   ['KeySelect','end-1char']);
+                   ['KeySelect','end-1char']);
 
 #    $mainwin->bind(ref $self->{input}, "<Prior>",
-#		   [$stext => "yview", scroll => -1, "pages"]);
+#                   [$stext => "yview", scroll => -1, "pages"]);
     $mainwin->bind(ref $self->{input},'<Shift-Prior>',
-		   ['KeySelect',Ev('ScrollPages',-1)]);
+                   ['KeySelect',Ev('ScrollPages',-1)]);
     $mainwin->bind(ref $self->{input},'<Control-Prior>',
-		   ['xview','scroll',-1,'page']);
+                   ['xview','scroll',-1,'page']);
 
 #    $mainwin->bind(ref $self->{input}, "<Next>",
-#		   [$stext => "yview", scroll =>  1, "pages"]);
+#                   [$stext => "yview", scroll =>  1, "pages"]);
     $mainwin->bind(ref $self->{input},'<Shift-Next>',
-		   ['KeySelect',Ev('ScrollPages',1)]);
+                   ['KeySelect',Ev('ScrollPages',1)]);
     $mainwin->bind(ref $self->{input},'<Control-Next>',
-		   ['xview','scroll',1,'page']);
+                   ['xview','scroll',1,'page']);
 
     $mainwin->bind(ref $self->{input},'<Shift-Tab>', 'NoOp');
     $mainwin->bind(ref $self->{input},'<Control-Tab>','NoOp');
     $mainwin->bind(ref $self->{input},'<Control-Shift-Tab>','NoOp');
 
     $mainwin->bind(ref $self->{input},'<Control-space>',
-		   ['markSet','anchor','insert']);
+                   ['markSet','anchor','insert']);
     $mainwin->bind(ref $self->{input},'<Select>',
-		   ['markSet','anchor','insert']);
+                   ['markSet','anchor','insert']);
     $mainwin->bind(ref $self->{input},'<Control-Shift-space>',
-		   ['SelectTo','insert','char']);
+                   ['SelectTo','insert','char']);
     $mainwin->bind(ref $self->{input},'<Shift-Select>',
-		   ['SelectTo','insert','char']);
+                   ['SelectTo','insert','char']);
     $mainwin->bind(ref $self->{input},'<Control-slash>','selectAll');
     $mainwin->bind(ref $self->{input},'<Control-backslash>','unselectAll');
 
 #    $mainwin->bind(ref $self->{input},'<Control-a>',
-#		   ['SetCursor','insert linestart']);
+#                   ['SetCursor','insert linestart']);
 #    $mainwin->bind(ref $self->{input},'<Control-b>',
-#		   ['SetCursor','insert-1c']);
+#                   ['SetCursor','insert-1c']);
 #    $mainwin->bind(ref $self->{input},'<Control-e>',
-#		   ['SetCursor','insert lineend']);
+#                   ['SetCursor','insert lineend']);
 #    $mainwin->bind(ref $self->{input},'<Control-f>',
-#		   ['SetCursor','insert+1c']);
+#                   ['SetCursor','insert+1c']);
 #    $mainwin->bind(ref $self->{input},'<Meta-b>',
-#		   ['SetCursor','insert-1c wordstart']);
+#                   ['SetCursor','insert-1c wordstart']);
 #    $mainwin->bind(ref $self->{input},'<Meta-f>',
-#		   ['SetCursor','insert wordend']);
+#                   ['SetCursor','insert wordend']);
 #    $mainwin->bind(ref $self->{input},'<Meta-less>',
-#		   [$text => "see", "1.0"]);
+#                   [$text => "see", "1.0"]);
 #    $mainwin->bind(ref $self->{input},'<Meta-greater>',
-#		   [$text => "see", "end"]);
+#                   [$text => "see", "end"]);
 
 #    $mainwin->bind(ref $self->{input},'<Control-n>',
-#		   ['SetCursor',Ev('UpDownLine',1)]);
+#                   ['SetCursor',Ev('UpDownLine',1)]);
 #    $mainwin->bind(ref $self->{input},'<Control-p>',
-#		   ['SetCursor',Ev('UpDownLine',-1)]);
+#                   ['SetCursor',Ev('UpDownLine',-1)]);
 
     $mainwin->bind(ref $self->{input},'<2>',
-		   ['Button2',Ev('x'),Ev('y')]);
+                   ['Button2',Ev('x'),Ev('y')]);
     $mainwin->bind(ref $self->{input},'<B2-Motion>',
-		   ['Motion2',Ev('x'),Ev('y')]);
+                   ['Motion2',Ev('x'),Ev('y')]);
     $mainwin->bind(ref $self->{input},'<ButtonRelease-2>','ButtonRelease2');
 
     $mainwin->bind(ref $self->{input},'<Destroy>','Destroy');
 
     $mainwin->bind(ref $self->{input}, '<3>',
-		   ['PostPopupMenu', Ev('X'), Ev('Y')]  );
+                   ['PostPopupMenu', Ev('X'), Ev('Y')]  );
 
     $mainwin->bind(ref $self->{input},'<Tab>', 'insertTab');
     $mainwin->bind(ref $self->{input},'<Control-i>', 'NoOp');
@@ -492,14 +492,14 @@ sub ui_bindings {
     $mainwin->bind(ref $self->{input},'<Control-o>','NoOp');
 #    $mainwin->bind(ref $self->{input},'<Control-t>','Transpose');
     $mainwin->bind(ref $self->{input},'<Meta-d>',
-		   ['delete','insert','insert wordend']); #kill
+                   ['delete','insert','insert wordend']); #kill
     $mainwin->bind(ref $self->{input},'<Meta-BackSpace>',
-		   ['delete','insert-1c wordstart','insert']);
+                   ['delete','insert-1c wordstart','insert']);
 #    $mainwin->bind(ref $self->{input},'<Control-h>','deleteBefore');
     $self->{input}->bind("<KeyPress>", sub { $self->update_input() });
 
     foreach my $key (keys %bindmap) {
-	$self->bind($key, $bindmap{$key});
+        $self->bind($key, $bindmap{$key});
     }
 }
 
@@ -510,9 +510,9 @@ sub update_input {
     my $height = $self->{input}->cget("-height");
     print STDERR "len(txt)=$len width=$width height=$height\n" if $config{ui_debug};
     if($len > ($height*$width)) {
-	$self->{input}->configure(-height => ($height+1));
+        $self->{input}->configure(-height => ($height+1));
     } elsif($len < (($height-1)*$width)) {
-	$self->{input}->configure(-height => ($height-1));
+        $self->{input}->configure(-height => ($height-1));
     }
 }
 
@@ -523,26 +523,26 @@ sub accept_line {
     chomp $txt;
     print STDERR "<1>->$txt<-\n" if $config{ui_debug};
     if($txt eq "") {
-	$self->{stext}->yview(scroll =>  1, "pages");
+        $self->{stext}->yview(scroll =>  1, "pages");
     } else {
-#	if(defined $self->{indent}) {
-#	    $txt = $self->{indent} . $txt;
-#	}
-#	print STDERR "<2>->$txt<-\n" if $config{ui_debug};
-	$self->{input}->delete("1.0", "end");
-	$self->style("user_input");
-	$self->print($txt, "\n");
-	$self->style("normal");
-	$self->{text}->see("end - 2c") unless $self->{page};
-	if($txt ne $self->{history}->[$#{$self->{history}}]) {
-	    $self->{history}->[$#{$self->{history}}] = $txt;
-	    push @{$self->{history}}, "";
-	    $self->{history_pos} = $#{$self->{history}};
-	}
+#        if(defined $self->{indent}) {
+#            $txt = $self->{indent} . $txt;
+#        }
+#        print STDERR "<2>->$txt<-\n" if $config{ui_debug};
+        $self->{input}->delete("1.0", "end");
+        $self->style("user_input");
+        $self->print($txt, "\n");
+        $self->style("normal");
+        $self->{text}->see("end - 2c") unless $self->{page};
+        if($txt ne $self->{history}->[$#{$self->{history}}]) {
+            $self->{history}->[$#{$self->{history}}] = $txt;
+            push @{$self->{history}}, "";
+            $self->{history_pos} = $#{$self->{history}};
+        }
         TLily::Event::send(type => 'user_input',
                            text => $txt,
                            ui   => $self);
-	$self->{event_core}->activate();
+        $self->{event_core}->activate();
 
     }
 }
@@ -557,7 +557,7 @@ sub prompt_for {
     if(exists $args{prompt}) { $self->prompt($args{prompt}) }
 
     my @args = (-insertofftime => 500, -insertontime => 500,
-		-font => $font{normal});
+                -font => $font{normal});
     if($args{password}) { push(@args, -show => "*") }
 
     $self->{input}->packForget();
@@ -566,30 +566,30 @@ sub prompt_for {
     $self->{prompt_for_w}->focus();
     $self->{prompt_for_w}->grab();
     $self->{prompt_for_w}->bind('<Meta-less>',
-			    [$self->{text} => "see", "1.0"]);
+                            [$self->{text} => "see", "1.0"]);
     $self->{prompt_for_w}->bind('<Meta-greater>',
-			    [$self->{text} => "see", "end"]);
+                            [$self->{text} => "see", "end"]);
     $self->{prompt_for_w}->bind("<Prior>",
-			    [$self->{stext}, "yview", scroll => -1, "pages"]);
+                            [$self->{stext}, "yview", scroll => -1, "pages"]);
     $self->{prompt_for_w}->bind("<Next>",
-			    [$self->{stext}, "yview", scroll =>  1, "pages"]);
+                            [$self->{stext}, "yview", scroll =>  1, "pages"]);
     $self->{prompt_for_w}->bind("<Return>",
-			    [sub {
-				 my $txt = $self->{prompt_for_w}->get();
-				 print STDERR "prompt_==>$txt<==\n" if $config{ui_debug};
-				 $args{call}->($self, $txt);
-				 $self->{event_core}->activate();
-				 $self->{prompt_for_w}->grabRelease();
-				 $self->{prompt_for_w}->destroy();
-				 if(exists $args{prompt}) {
-				     $self->prompt(undef);
-				 }
-				 $self->{input}->pack(-side   => "right",
-						      -fill   => 'x',
-						      -expand => 1,
-						      -anchor => "s");
-				 $self->{input}->focus();
-			     }]);
+                            [sub {
+                                 my $txt = $self->{prompt_for_w}->get();
+                                 print STDERR "prompt_==>$txt<==\n" if $config{ui_debug};
+                                 $args{call}->($self, $txt);
+                                 $self->{event_core}->activate();
+                                 $self->{prompt_for_w}->grabRelease();
+                                 $self->{prompt_for_w}->destroy();
+                                 if(exists $args{prompt}) {
+                                     $self->prompt(undef);
+                                 }
+                                 $self->{input}->pack(-side   => "right",
+                                                      -fill   => 'x',
+                                                      -expand => 1,
+                                                      -anchor => "s");
+                                 $self->{input}->focus();
+                             }]);
 }
 
 
@@ -603,11 +603,11 @@ sub splitwin {
 
 sub not_supported {
     $_[0]->{toplevel}->Dialog
-      (-title	       => "Not Supported",
-       -text	       => "This feature is\nnot supported.",
-       -bitmap	       => "info",
+      (-title               => "Not Supported",
+       -text               => "This feature is\nnot supported.",
+       -bitmap               => "info",
        -default_button => "Ok",
-       -buttons	       => ["Ok"])->Show();
+       -buttons               => ["Ok"])->Show();
 }
 
 
@@ -651,46 +651,46 @@ sub defcstyle {
     my %fn = ("normal" => 1);
     my $rv = 0;
     foreach my $attr (@attrs) {
-	if($attr eq "normal") {
-	    %fn = (normal => 1);
-	    $rv = 0;
-	} elsif($attr eq "standout") {
-	    # not supported
-	} elsif($attr eq "underline") {
-	    push(@attr, -underline => 1);
-	} elsif($attr eq "reverse") {
-	    $rv=1;
-	} elsif($attr eq "blink") {
-	    # not supported
-	} elsif($attr eq "dim") {
-	    # not supported
-	} elsif($attr eq "bold") {
-	    $fn{bold} = 1;
-	} elsif($attr eq "italic") {
-	    $fn{italic} = 1;
-	} elsif($attr eq "altcharset") {
-	    # not supported
-#	} elsif($attr eq "indent3") {
-#	    push(@attr, -lindent1 => "36p",
-#		        -lindent2 => "36p");
-#	} elsif($attr eq "indent4") {
-#	    push(@attr, -lindent1 => "48p",
-#		        -lindent2 => "48p");
-	}
+        if($attr eq "normal") {
+            %fn = (normal => 1);
+            $rv = 0;
+        } elsif($attr eq "standout") {
+            # not supported
+        } elsif($attr eq "underline") {
+            push(@attr, -underline => 1);
+        } elsif($attr eq "reverse") {
+            $rv=1;
+        } elsif($attr eq "blink") {
+            # not supported
+        } elsif($attr eq "dim") {
+            # not supported
+        } elsif($attr eq "bold") {
+            $fn{bold} = 1;
+        } elsif($attr eq "italic") {
+            $fn{italic} = 1;
+        } elsif($attr eq "altcharset") {
+            # not supported
+#        } elsif($attr eq "indent3") {
+#            push(@attr, -lindent1 => "36p",
+#                        -lindent2 => "36p");
+#        } elsif($attr eq "indent4") {
+#            push(@attr, -lindent1 => "48p",
+#                        -lindent2 => "48p");
+        }
     }
     if($rv) {
-	push(@attr, -foreground => $bg, -background => $fg);
+        push(@attr, -foreground => $bg, -background => $fg);
     } else {
-	push(@attr, -foreground => $fg, -background => $bg);
+        push(@attr, -foreground => $fg, -background => $bg);
     }
     if(not $fn{bold}      and not $fn{italic}) {
-	push(@attr, -font => $font{normal});
+        push(@attr, -font => $font{normal});
     } elsif(    $fn{bold} and not $fn{italic}) {
-	push(@attr, -font => $font{bold});
+        push(@attr, -font => $font{bold});
     } elsif(not $fn{bold} and     $fn{italic}) {
-	push(@attr, -font => $font{italic});
+        push(@attr, -font => $font{italic});
     } elsif(    $fn{bold} and     $fn{italic}) {
-	push(@attr, -font => $font{bold_italic});
+        push(@attr, -font => $font{bold_italic});
     }
     print STDERR "defcstyle: style=$style, attr=@attr\n" if $config{ui_debug};
     $self->{styles}->{$style} = [@attr];
@@ -725,8 +725,8 @@ sub print {
     $self->SUPER::print(@_);
 #    my $txt = join("", @_);
 #    if($self->{indent}) {
-#	$txt =~ s/\n/\n$self->{indent}/g;
-#	$txt = $self->{indent} . $txt;
+#        $txt =~ s/\n/\n$self->{indent}/g;
+#        $txt = $self->{indent} . $txt;
 #    }
     $self->{text}->configure(-state => "normal");
 #    $self->{text}->insert("end", $txt, $self->{cur_style});
@@ -761,8 +761,8 @@ sub command_u {
 sub bind {
     my($self, $key, $command) = @_;
     unless(exists $commandmap{$command}) {
-	print STDERR "Unknown command: $command\n";
-	return 1;
+        print STDERR "Unknown command: $command\n";
+        return 1;
     }
 
     my $realkey = $key;
@@ -772,12 +772,12 @@ sub bind {
     print STDERR "bind:key:'$key'\trealkey:'$realkey'\n" if $config{ui_debug};
 
     if(ref $commandmap{$command} eq "CODE") {
-	$mainwin->bind(ref $self->{input}, "<$realkey>", sub {
-			   $commandmap{$command}->($self, $command, $key);
-		       });
+        $mainwin->bind(ref $self->{input}, "<$realkey>", sub {
+                           $commandmap{$command}->($self, $command, $key);
+                       });
     } elsif(ref $commandmap{$command} eq "ARRAY") {
-	$mainwin->bind(ref $self->{input}, "<$realkey>",
-		       $commandmap{$command});
+        $mainwin->bind(ref $self->{input}, "<$realkey>",
+                       $commandmap{$command});
     }
     $self->{input}->bind(      "<$realkey>", undef);
     $mainwin->bind(            "<$realkey>", undef);
@@ -822,14 +822,14 @@ sub insert_self {
 sub prompt {
     my($self, $prompt) = @_;
     if(defined $prompt) {
-	$prompt =~ s/\s+$//;
-	$self->{prompt} = $prompt;
-	$self->{prompt_w} = $self->{entry}->Label(-font => $font{normal},
-						  -text => $prompt);
-	$self->{prompt_w}->pack(-side => "left");
+        $prompt =~ s/\s+$//;
+        $self->{prompt} = $prompt;
+        $self->{prompt_w} = $self->{entry}->Label(-font => $font{normal},
+                                                  -text => $prompt);
+        $self->{prompt_w}->pack(-side => "left");
     } else {
-	$self->{prompt_w}->destroy();
-	$self->{prompt} = $self->{prompt_w} = undef;
+        $self->{prompt_w}->destroy();
+        $self->{prompt} = $self->{prompt_w} = undef;
     }
 }
 
@@ -928,8 +928,8 @@ sub istyle_fn_u {
     print STDERR ": TLily::UI::Tk::istyle_fn_u\n" if $config{ui_debug};
     #    my($self, $style_fn) = @_;
     #    if ($style_fn) {
-    #	my $cur = $self->{input}->style_fn();
-    #	return unless ($cur && $cur == $style_fn);
+    #        my $cur = $self->{input}->style_fn();
+    #        return unless ($cur && $cur == $style_fn);
     #    }
     #    $self->{input}->style_fn(undef);
     return 1;
@@ -1002,7 +1002,7 @@ sub dump_to_file {
     open(FILE, '>', $filename);
     if($!) {
         $self->print("(Unable to open $filename for writing: $!)\n");
-	return 0;
+        return 0;
     }
 
     print FILE $self->{text}->get("1.0", "end");

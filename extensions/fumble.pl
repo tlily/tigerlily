@@ -28,13 +28,13 @@ sub fumble_mode {
     my($ui, $command, $key) = @_;
 
     if ($key eq "'" || $key eq '"') {
-	$ui->{_eat_nl_flag} = 1;
+        $ui->{_eat_nl_flag} = 1;
         return;
     } elsif ($key eq "nl" && $ui->{_eat_nl_flag}) {
-	$ui->{_eat_nl_flag} = 0;
+        $ui->{_eat_nl_flag} = 0;
         return 1;
     } else {
-	$ui->{_eat_nl_flag} = 0;
+        $ui->{_eat_nl_flag} = 0;
         return;
     }
 }

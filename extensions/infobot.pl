@@ -30,88 +30,88 @@ my $is_emote = 0;
 infobot_init();
 
 event_r(type => 'private',
-	call => sub {
-	    my($event, $handler) = @_;
-	    my $message = $event->{VALUE};
-	    my $sender  = $event->{SOURCE};
-	    $sender  =~ s/\s/_/g;
+        call => sub {
+            my($event, $handler) = @_;
+            my $message = $event->{VALUE};
+            my $sender  = $event->{SOURCE};
+            $sender  =~ s/\s/_/g;
 
-	    $param{'nick'} = $event->{server}->user_name();
-	    $last_server = $event->{server};
+            $param{'nick'} = $event->{server}->user_name();
+            $last_server = $event->{server};
 
-	    TLily::Event::keepalive(0);
+            TLily::Event::keepalive(0);
 
-	    channel("");
-	    my $result = process($sender, "private", $message);
-	    &status("[$sender] $message");
-	    status("   => [$result]") if ($result);
+            channel("");
+            my $result = process($sender, "private", $message);
+            &status("[$sender] $message");
+            status("   => [$result]") if ($result);
 
-	    TLily::Event::keepalive(5);
+            TLily::Event::keepalive(5);
 
-	    return 0;
-	});
+            return 0;
+        });
 
 event_r(type => 'emote',
-	call => sub {
-	    my($event, $handler) = @_;
-	    my $message = $event->{VALUE};
-	    my $sender  = $event->{SOURCE};
-	    $sender  =~ s/\s/_/g;
+        call => sub {
+            my($event, $handler) = @_;
+            my $message = $event->{VALUE};
+            my $sender  = $event->{SOURCE};
+            $sender  =~ s/\s/_/g;
 
-	    $is_emote = 1;
+            $is_emote = 1;
 
-	    if ($message =~ /^ . o O \((.*)\)$/) {
-		$message = $1;
-	    } elsif ($message =~ /^ (asks|says), \"(.*)\"$/) {
-		$message = $2;
-	    } else {
-	        $message = "$sender$message";
+            if ($message =~ /^ . o O \((.*)\)$/) {
+                $message = $1;
+            } elsif ($message =~ /^ (asks|says), \"(.*)\"$/) {
+                $message = $2;
+            } else {
+                $message = "$sender$message";
             }
 
-	    $param{'nick'} = $event->{server}->user_name();
-	    $last_server = $event->{server};
+            $param{'nick'} = $event->{server}->user_name();
+            $last_server = $event->{server};
 
-	    my $recips = $event->{RECIPS};
-	    $recips =~ s/\s/_/g;
+            my $recips = $event->{RECIPS};
+            $recips =~ s/\s/_/g;
 
-	    TLily::Event::keepalive(0);
+            TLily::Event::keepalive(0);
 
-	    channel($recips);
-	    my $result = process($sender, "public", $message);
-	    status("<$sender/$recips> $message");
-	    status("   => [$result]") if ($result);
+            channel($recips);
+            my $result = process($sender, "public", $message);
+            status("<$sender/$recips> $message");
+            status("   => [$result]") if ($result);
 
-	    TLily::Event::keepalive(5);
+            TLily::Event::keepalive(5);
 
-	    return 0;
-	});
+            return 0;
+        });
 
 event_r(type => 'public',
-	call => sub {
-	    my($event, $handler) = @_;
-	    my $message = $event->{VALUE};
-	    my $sender  = $event->{SOURCE};
-	    $sender  =~ s/\s/_/g;
+        call => sub {
+            my($event, $handler) = @_;
+            my $message = $event->{VALUE};
+            my $sender  = $event->{SOURCE};
+            $sender  =~ s/\s/_/g;
 
-	    $is_emote = 0;
+            $is_emote = 0;
 
-	    $param{'nick'} = $event->{server}->user_name();
-	    $last_server = $event->{server};
+            $param{'nick'} = $event->{server}->user_name();
+            $last_server = $event->{server};
 
-	    my $recips = $event->{RECIPS};
-	    $recips =~ s/\s/_/g;
+            my $recips = $event->{RECIPS};
+            $recips =~ s/\s/_/g;
 
-	    TLily::Event::keepalive(0);
+            TLily::Event::keepalive(0);
 
-	    channel($recips);
-	    my $result = process($sender, "public", $message);
-	    status("<$sender/$recips> $message");
-	    status("   => [$result]") if ($result);
+            channel($recips);
+            my $result = process($sender, "public", $message);
+            status("<$sender/$recips> $message");
+            status("   => [$result]") if ($result);
 
-	    TLily::Event::keepalive(5);
+            TLily::Event::keepalive(5);
 
-	    return 0;
-	});
+            return 0;
+        });
 
 
 sub infobot_init {
@@ -126,14 +126,14 @@ sub infobot_init {
     push @INC, $param{'srcdir'};
 
     opendir DIR, $param{'srcdir'}
-	or die "can't open source directory $param{srcdir}: $!";
+        or die "can't open source directory $param{srcdir}: $!";
 
     my $file;
     while ($file = readdir DIR) {
-	next unless $file =~ /^[A-Z].*\.pl$/;
-	next if ($file =~ /irc|ctcp/i);
+        next unless $file =~ /^[A-Z].*\.pl$/;
+        next if ($file =~ /irc|ctcp/i);
 
-	require "$param{srcdir}/$file";
+        require "$param{srcdir}/$file";
     }
     closedir DIR;
 
@@ -143,16 +143,16 @@ sub infobot_init {
     # main:: as well, but those won't work.  These should replace those.
     my $this_package = (caller(0))[0];
     Util::import_export('Infobot::DBM', $this_package,
-			qw(clear   clearAll closeDBM    closeDBMAll
-			   forget  get      getDBMKeys	insertFile
-			   openDBM openDBMx postDec	postInc
-			   set     showdb   syncDBM     whatdbs));
+                        qw(clear   clearAll closeDBM    closeDBMAll
+                           forget  get      getDBMKeys        insertFile
+                           openDBM openDBMx postDec        postInc
+                           set     showdb   syncDBM     whatdbs));
 
     Util::import_export($this_package, 'Infobot::DBM',
-			qw($filesep %param status));
+                        qw($filesep %param status));
 
     # patch up some settings which get lost in the import-export mess
-    $param{DBMModule}	= 'AnyDBM_File';
+    $param{DBMModule}        = 'AnyDBM_File';
 
     # and put some things into main:: which the "extras" expect.
     # (oy)
@@ -160,11 +160,11 @@ sub infobot_init {
 
 
     opendir DIR, $param{'extradir'}
-	or die "can't open extras directory $param{extradir}: $!";
+        or die "can't open extras directory $param{extradir}: $!";
 
     while ($file = readdir DIR) {
-	next unless $file =~ /\.pl$/;
-	require "$param{extradir}/$file";
+        next unless $file =~ /\.pl$/;
+        require "$param{extradir}/$file";
     }
     closedir DIR;
 
@@ -177,8 +177,8 @@ sub infobot_init {
 my $talkchannel = undef;
 sub channel {
     if (scalar(@_) > 0) {
-	$talkchannel = $_[0];
-	$talkchannel =~ s/ /_/g;
+        $talkchannel = $_[0];
+        $talkchannel =~ s/ /_/g;
     }
     $talkchannel;
 }
@@ -189,20 +189,20 @@ sub say {
 
     if ($message =~ /^\cAACTION (.*)/) {
         if ($is_emote) {
- 	    status("sending $to;$1");
- 	    $last_server->sendln("$to;$1");
+             status("sending $to;$1");
+             $last_server->sendln("$to;$1");
         } else {
-	    status("sending $to;$param{nick} $1");
-	    $last_server->sendln("$to;$param{nick} $1");
+            status("sending $to;$param{nick} $1");
+            $last_server->sendln("$to;$param{nick} $1");
         }
-	return;
+        return;
     }
 
     if ($is_emote) {
-	status("sending $to;\"$message");
+        status("sending $to;\"$message");
         $last_server->sendln("$to;\"$message");
     } else {
- 	status("sending $to;$message");
+         status("sending $to;$message");
         $last_server->sendln("$to;$message");
     }
 }

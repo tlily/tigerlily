@@ -844,7 +844,7 @@ $response{math} = {
                 return;
             }
         }
-	return $result;
+        return $result;
     },
     HELP => 'math stuff',
     POS  => 1,
@@ -1505,11 +1505,11 @@ $response{define} = {
                       callback => sub {
                           my ($response2) = shift;
                           $answer= scrape_google_guess( $term, $response->{_content} );
-			if ($answer) {
-                          dispatch( $event, "No match for '$term', did you mean '$answer'?" );
-                        } else {
-                          dispatch( $event, "Sorry, '$term' not found");
-                        }
+                          if ($answer) {
+                              dispatch( $event, "No match for '$term', did you mean '$answer'?" );
+                           } else {
+                               dispatch( $event, "Sorry, '$term' not found");
+                           }
                       }
                   );
                 }
@@ -1538,11 +1538,11 @@ $response{spell} = {
                   callback => sub {
                       my ($response) = shift;
                       my $answer= scrape_google_guess( $term, $response->{_content} );
-	            if ($answer) {
-                      dispatch( $event, "No match for '$term', did you mean '$answer'?" );
-                    } else {
-                      dispatch( $event, "Looks OK, but google could be wrong.");
-                    }
+                      if ($answer) {
+                          dispatch( $event, "No match for '$term', did you mean '$answer'?" );
+                      } else {
+                          dispatch( $event, "Looks OK, but google could be wrong.");
+                      }
                   }
               );
           return;

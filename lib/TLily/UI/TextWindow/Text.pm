@@ -104,12 +104,12 @@ sub size {
     # If we are being resized, and our width changed, we need to
     # re-word-wrap the buffer.
     if ($newc && $self->{cols} && ($newc != $self->{cols})) {
-	$self->{indexes}  = [ 0 ];
-	pos($self->{text}) = 0;
-	while (next_line($self->{text}, $self->{cols})) {
-	    push @{$self->{indexes}}, pos($self->{text});
-	}
-	pop @{$self->{indexes}} if (@{$self->{indexes}} > 1);
+        $self->{indexes}  = [ 0 ];
+        pos($self->{text}) = 0;
+        while (next_line($self->{text}, $self->{cols})) {
+            push @{$self->{indexes}}, pos($self->{text});
+        }
+        pop @{$self->{indexes}} if (@{$self->{indexes}} > 1);
     }
 
     return $self->SUPER::size(@_);
@@ -129,21 +129,21 @@ sub set_pager {
     my($self, $handler) = @_;
 
     if ($handler) {
-	TLily::Event::idle_u($handler);
-	$self->{pager_on_idle} = undef;
+        TLily::Event::idle_u($handler);
+        $self->{pager_on_idle} = undef;
     }
 
     return unless ($self->{status});
     my $r = $#{$self->{indexes}} - $self->{idx_anchor};
     if ($r <= 0) {
-	$self->{status}->set(t_more => undef);
+        $self->{status}->set(t_more => undef);
     } else {
-	$self->{status}->set(t_more => "-- MORE ($r) --");
+        $self->{status}->set(t_more => "-- MORE ($r) --");
     }
 
     if ($handler) {
-	TLily::UI::TextWindow::Generic::position_cursor();
-	TLily::FoiledAgain::update_screen();
+        TLily::UI::TextWindow::Generic::position_cursor();
+        TLily::FoiledAgain::update_screen();
     }
 }
 
@@ -154,7 +154,7 @@ sub set_pager_on_idle {
     return if ($self->{pager_on_idle});
     TLily::Registrar::tracking(0);
     $self->{pager_on_idle} = TLily::Event::idle_r(obj => $self,
-						  call => \&set_pager);
+                                                  call => \&set_pager);
     TLily::Registrar::tracking(1);
     return;
 }
@@ -185,13 +185,13 @@ sub format_line {
 
     my $pos  = $start;
     while ($pos < $end) {
-	while ($self->{styles}->[$sidx] <= $pos) {
-	    $sidx += 2;
-	}
+        while ($self->{styles}->[$sidx] <= $pos) {
+            $sidx += 2;
+        }
 
-	push @$line, $self->{styles}->[$sidx-1];
-	push @$line, (min($self->{styles}->[$sidx],$end) - $pos);
-	$pos = $self->{styles}->[$sidx];
+        push @$line, $self->{styles}->[$sidx-1];
+        push @$line, (min($self->{styles}->[$sidx],$end) - $pos);
+        $pos = $self->{styles}->[$sidx];
     }
 
     return $line;
@@ -209,10 +209,10 @@ sub draw_line {
     $self->{F}->addstr_at_point($line->[2]);
     my $start = $line->[0];
     for (my $i = 3; $i < @$line; $i+=2) {
-	$self->draw_style($line->[$i]);
-	$self->{F}->addstr_at_point(substr($self->{text},
+        $self->draw_style($line->[$i]);
+        $self->{F}->addstr_at_point(substr($self->{text},
                                            $start, $line->[$i+1]));
-	$start += $line->[$i+1];
+        $start += $line->[$i+1];
     }
 }
 
@@ -232,7 +232,7 @@ sub dump_to_file {
             $start += $line->[$i+1];
         }
         print FILE "\n";
-	$count++;
+        $count++;
     }
 
     close(FILE);
@@ -251,17 +251,17 @@ sub binary_index_search {
     my $min = 0;
     my $max = $#$aref/$sz;
     while (1) {
-	my $pos = $min+int(($max-$min)/2);
-	my $idx = $pos * $sz;
-	#print STDERR " min=$min max=$max pos=$pos idx=$idx\n";
-	if ($aref->[$idx] > $offset) {
-	    $max = $pos;
-	} elsif ($aref->[$idx+$sz] <= $offset) {
-	    $min = $pos;
-	} else {
-	    #print STDERR " => $idx\n";
-	    return $idx;
-	}
+        my $pos = $min+int(($max-$min)/2);
+        my $idx = $pos * $sz;
+        #print STDERR " min=$min max=$max pos=$pos idx=$idx\n";
+        if ($aref->[$idx] > $offset) {
+            $max = $pos;
+        } elsif ($aref->[$idx+$sz] <= $offset) {
+            $min = $pos;
+        } else {
+            #print STDERR " => $idx\n";
+            return $idx;
+        }
     }
 }
 
@@ -279,20 +279,20 @@ sub fetch_lines {
     pos($self->{text}) = $offset;
     my @lines = ();
     while (!$count || @lines < $count) {
-	my($b, $e) = next_line($self->{text}, $len);
-	last if (!defined $e);
-	push @lines, $self->format_line($b, $e, $st_idx, $in_idx);
-	last if (pos($self->{text}) == length($self->{text}));
+        my($b, $e) = next_line($self->{text}, $len);
+        last if (!defined $e);
+        push @lines, $self->format_line($b, $e, $st_idx, $in_idx);
+        last if (pos($self->{text}) == length($self->{text}));
 
-	while ($self->{styles}->[$st_idx+2] <= pos($self->{text})) {
-	    $st_idx += 2;
-	}
+        while ($self->{styles}->[$st_idx+2] <= pos($self->{text})) {
+            $st_idx += 2;
+        }
 
-	while ($self->{indents}->[$in_idx+3] <= pos($self->{text})) {
-	    $in_idx += 3;
-	    $len = $self->{cols} -
-	      length($self->{indents}->[$in_idx+2]);
-	}
+        while ($self->{indents}->[$in_idx+3] <= pos($self->{text})) {
+            $in_idx += 3;
+            $len = $self->{cols} -
+              length($self->{indents}->[$in_idx+2]);
+        }
 
     }
 
@@ -310,22 +310,22 @@ sub draw_lines {
     while ($idx < 0 && $count > 0) {
         $self->{F}->clear_line($y++);
 
-	$count--;
-	$idx++;
+        $count--;
+        $idx++;
     }
     return unless ($count > 0);
 
     # Fetch and draw lines.
     my @lines = $self->fetch_lines($self->{indexes}->[$idx], $count);
     while (@lines && $count > 0) {
-	$self->draw_line($y++, shift @lines);
-	$count--;
+        $self->draw_line($y++, shift @lines);
+        $count--;
     }
 
     # Clear any lines which remain.
     while ($count > 0) {
         $self->{F}->clear_line($y++);
-	$count--;
+        $count--;
     }
 }
 
@@ -336,7 +336,7 @@ sub redraw {
 
     $self->{F}->clear();
     $self->draw_lines(0, $self->{idx_anchor} - $self->{lines} + 1,
-		      $self->{lines});
+                      $self->{lines});
     $self->{F}->commit();
 }
 
@@ -353,7 +353,7 @@ sub print {
     # length; if so, expire back to 90% of max_scrollback.
     my $linelen = 0;
     if ($#{$self->{indexes}} > $config{max_scrollback}) {
-	my $trimto = int($config{max_scrollback} * 0.9);
+        my $trimto = int($config{max_scrollback} * 0.9);
         if (($config{max_scrollback} - $trimto) > 1000) {
             $trimto = 1000;
         }
@@ -372,8 +372,8 @@ sub print {
         $self->{text} = substr($self->{text}, $linelen);
         my $style = undef;
 
-	# Note: yes, this loop does not autoincrement.  We increment later,
-	# if we are keeping these elements.
+        # Note: yes, this loop does not autoincrement.  We increment later,
+        # if we are keeping these elements.
         for (my $i = 0; $i < $#{$self->{styles}}; ) {
             $self->{styles}->[$i] -= $linelen;
             if ($self->{styles}->[$i] < 0) {
@@ -424,40 +424,40 @@ sub print {
 
     my @lines = $self->fetch_lines($self->{indexes}->[-1]);
     for (my $i = 1; $i < @lines; $i++) {
-	push @{$self->{indexes}}, $lines[$i]->[0];
+        push @{$self->{indexes}}, $lines[$i]->[0];
     }
 
     if ($self->{idx_anchor} < $#{$self->{indexes}} - @lines + 1) {
-	$self->set_pager_on_idle();
-	return;
+        $self->set_pager_on_idle();
+        return;
     }
 
     my $max_scroll = $self->{lines} - ($self->{idx_anchor} -
-				       $self->{idx_unseen});
+                                       $self->{idx_unseen});
     $max_scroll = $self->{lines} unless ($self->{'page'});
     return if ($max_scroll <= 0);
 
     $self->{idx_anchor} = $#{$self->{indexes}};
     while (@lines > $max_scroll) {
-	pop @lines;
-	$self->{idx_anchor}--;
+        pop @lines;
+        $self->{idx_anchor}--;
     }
 
     if (@lines >= $self->{lines}) {
-	$self->{F}->clear();
-	while (@lines > $self->{lines}) {
-	    shift @lines;
-	}
+        $self->{F}->clear();
+        while (@lines > $self->{lines}) {
+            shift @lines;
+        }
     }
 
     # Scroll the screen, if necessary.
     elsif (@lines > 1) {
-	$self->{F}->scroll(@lines - 1);
+        $self->{F}->scroll(@lines - 1);
     }
 
     my $base = $self->{lines} - @lines;
     for (my $i = 0; $i < @lines; $i++) {
-	$self->draw_line($base + $i, $lines[$i]);
+        $self->draw_line($base + $i, $lines[$i]);
     }
 
     $self->set_pager_on_idle();
@@ -472,15 +472,15 @@ sub scroll {
     my($idx, $mark);
 
     if ($scroll > 0) {
-	$scroll = min($scroll, $#{$self->{indexes}} - $self->{idx_anchor});
-	$idx = $self->{idx_anchor} + 1;
-	$mark = $self->{lines} - $scroll;
+        $scroll = min($scroll, $#{$self->{indexes}} - $self->{idx_anchor});
+        $idx = $self->{idx_anchor} + 1;
+        $mark = $self->{lines} - $scroll;
     }
 
     elsif ($scroll < 0) {
-	$scroll = max($scroll, -$self->{idx_anchor});
-	$idx = $self->{idx_anchor} - $self->{lines} + 1 + $scroll;
-	$mark = 0;
+        $scroll = max($scroll, -$self->{idx_anchor});
+        $idx = $self->{idx_anchor} - $self->{lines} + 1 + $scroll;
+        $mark = 0;
     }
 
     return if ($scroll == 0);
@@ -490,8 +490,8 @@ sub scroll {
     $self->set_pager();
 
     if ($scroll >= $self->{lines} || $scroll <= -$self->{lines}) {
-	$self->redraw();
-	return;
+        $self->redraw();
+        return;
     }
 
     $self->{F}->scroll($scroll);
@@ -534,8 +534,8 @@ sub style {
     my($self, $style) = @_;
 
     if ($self->{styles}->[-3] == length($self->{text})) {
-	pop @{$self->{styles}};
-	pop @{$self->{styles}};
+        pop @{$self->{styles}};
+        pop @{$self->{styles}};
     }
     $self->{styles}->[-1] = length($self->{text});
 
@@ -553,9 +553,9 @@ sub indent {
     $str   = ""        if (!defined $str);
 
     if ($self->{indents}->[-4] == length($self->{text})) {
-	pop @{$self->{indents}};
-	pop @{$self->{indents}};
-	pop @{$self->{indents}};
+        pop @{$self->{indents}};
+        pop @{$self->{indents}};
+        pop @{$self->{indents}};
     }
     $self->{indents}->[-1] = length($self->{text});
 

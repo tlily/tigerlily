@@ -36,21 +36,21 @@ To force a change before the timer would go off, simply reload the extension.
 #
 sub cleanHTML {
 
-	$a = join(" ",@_);
+        $a = join(" ",@_);
 
-	$a =~ s/\n/ /;
-	$a =~ s/<[^>]*>/ /g;
-	$a =~ s/&lt;/</gi;
-	$a =~ s/&gt;/>/gi;
-	$a =~ s/&amp;/&/gi;
-	$a =~ s/&#46;/./g;
-	$a =~ s/&quot;/"/ig;
-	$a =~ s/&nbsp;/ /ig;
-	$a =~ s/&uuml;/u"/ig;
-	$a =~ s/\s+/ /g;
-	$a =~ s/^\s+//;
+        $a =~ s/\n/ /;
+        $a =~ s/<[^>]*>/ /g;
+        $a =~ s/&lt;/</gi;
+        $a =~ s/&gt;/>/gi;
+        $a =~ s/&amp;/&/gi;
+        $a =~ s/&#46;/./g;
+        $a =~ s/&quot;/"/ig;
+        $a =~ s/&nbsp;/ /ig;
+        $a =~ s/&uuml;/u"/ig;
+        $a =~ s/\s+/ /g;
+        $a =~ s/^\s+//;
 
-	return $a;
+        return $a;
 }
 
 #
@@ -58,25 +58,25 @@ sub cleanHTML {
 #
 
 sub disp_stock {
-	my ($ui,@stock) = @_;
+        my ($ui,@stock) = @_;
 
-	my $url = "http://finance.yahoo.com/d/quotes.csv?s=" . join("+",@stock) . "&f=sl1d1t1c2v";
+        my $url = "http://finance.yahoo.com/d/quotes.csv?s=" . join("+",@stock) . "&f=sl1d1t1c2v";
 
     TLily::Server::HTTP->new(
       url => $url,
       callback => sub {
 
-	my ($response) = @_;
+        my ($response) = @_;
 
-	my @chunks = split ( /\n/, $response->{_content} );
+        my @chunks = split ( /\n/, $response->{_content} );
 
-	foreach (@chunks) {
+        foreach (@chunks) {
                 my ( $stock, $value, $date, $time, $change, $volume ) =
                   map { s/^"(.*)"$/$1/; $_ } split( /,/, $_ );
                 $change =~ s/^(.*) - (.*)$/$1 ($2)/;
 
-			$ui->print("$stock: Last $date $time, $value: Change $change\n");
-		}
+                        $ui->print("$stock: Last $date $time, $value: Change $change\n");
+                }
   });
 }
 
@@ -86,28 +86,28 @@ sub disp_stock {
 #
 
 sub track_stock {
-	my (@stock) = @_;
+        my (@stock) = @_;
 
-	my $ui = TLily::UI->name("main");
-	my $url = "http://finance.yahoo.com/d/quotes.csv?s=" . join("+",@stock) . "&f=sl1d1t1c2v";
+        my $ui = TLily::UI->name("main");
+        my $url = "http://finance.yahoo.com/d/quotes.csv?s=" . join("+",@stock) . "&f=sl1d1t1c2v";
 
     TLily::Server::HTTP->new(
       url => $url,
       callback => sub {
 
-	my ($response) = @_;
+        my ($response) = @_;
 
-	my @chunks = split ( /\n/, $response->{_content} );
+        my @chunks = split ( /\n/, $response->{_content} );
 
     my @retval;
-	foreach (@chunks) {
+        foreach (@chunks) {
                 my ( $stock, $value, $date, $time, $change, $volume ) =
                   map { s/^"(.*)"$/$1/; $_ } split( /,/, $_ );
 
                 $change =~ s/^(.*) - (.*)$/$1/;
 
         push @retval, "$stock:$value($change)";
-		}
+                }
 
 
   TLily::UI->name("main")->set(stock => join (" ",@retval));
@@ -121,31 +121,31 @@ sub track_stock {
 #
 
 sub unload {
-	TLily::UI->name("main")->set(stock => "");
-	TLily::Event::time_u($timer_id);
+        TLily::UI->name("main")->set(stock => "");
+        TLily::Event::time_u($timer_id);
 }
 
 
 sub start_tracker {
-	my $ui = $_[0];
-	$ui->define(stock => 'right');
-	$info = "Waiting for $config{stock_symbol}";
-	$ui->set(stock => $info);
-	$timer{interval} = $config{stock_freq};
+    my $ui = $_[0];
+    $ui->define(stock => 'right');
+    $info = "Waiting for $config{stock_symbol}";
+    $ui->set(stock => $info);
+    $timer{interval} = $config{stock_freq};
     my $stocks = $config{stock_symbol};
     $stocks =~ s/^\s+//;
     $stocks =~ s/\s+$//;
     my @stocks = split(/[\s,]+/,$stocks);
-	$timer{call} = sub { track_stock(@stocks) };
-	$timer_id = TLily::Event::time_r(\%timer);
+        $timer{call} = sub { track_stock(@stocks) };
+        $timer_id = TLily::Event::time_r(\%timer);
 }
 
 #
 # Handle any new requests for information
 #
 sub stock_cmd {
-	my ($ui,$cmd) = @_;
-	disp_stock($ui,split(/[\s,]+/,$cmd));
+        my ($ui,$cmd) = @_;
+        disp_stock($ui,split(/[\s,]+/,$cmd));
 }
 
 start_tracker(TLily::UI->name("main"));

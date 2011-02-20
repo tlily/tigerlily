@@ -49,13 +49,13 @@ sub connect_command {
     TLily::Event::keepalive();
 
     while ((@argv) && ($argv[0] =~ /^-/)) {
-	my $opt = shift @argv;
-	if ($opt eq "-nologin") {
-	    $auto_login = 0;
-	} else {
-	    $ui->print("(unknown switch \"$opt\")\n");
-	    return;
-	}
+        my $opt = shift @argv;
+        if ($opt eq "-nologin") {
+            $auto_login = 0;
+        } else {
+            $ui->print("(unknown switch \"$opt\")\n");
+            return;
+        }
     }
 
     my $host = shift @argv;
@@ -63,38 +63,38 @@ sub connect_command {
     my $ssl;
 
     if (!defined $host) {
-	if (!defined($config{server})) {
-	    $ui->print("(no default server specified)\n");
-	    return;
-	}
+        if (!defined($config{server})) {
+            $ui->print("(no default server specified)\n");
+            return;
+        }
 
-	$host = $config{server};
-	$port = $config{port};
+        $host = $config{server};
+        $port = $config{port};
     }
 
     # Expand host aliases.
     if (!defined($port) && $config{server_info}) {
-	foreach my $i (@{$config{server_info}}) {
-	    if ($host eq $i->{alias}) {
-		($host, $port) = ($i->{host}, $i->{port});
-		last;
-	    }
-	}
+        foreach my $i (@{$config{server_info}}) {
+            if ($host eq $i->{alias}) {
+                ($host, $port) = ($i->{host}, $i->{port});
+                last;
+            }
+        }
     }
 
     # Pick out autologin information.
     if ($auto_login) {
-	if ($config{server_info}) {
-	    foreach my $i (@{$config{server_info}}) {
-		if ($host eq $i->{host}) {
-		    $port = $i->{port} if (!defined $port);
-		    if ($port == $i->{port}) {
-			($user, $pass) = ($i->{user}, $i->{pass});
-			last;
-		    }
-		}
-	    }
-	}
+        if ($config{server_info}) {
+            foreach my $i (@{$config{server_info}}) {
+                if ($host eq $i->{host}) {
+                    $port = $i->{port} if (!defined $port);
+                    if ($port == $i->{port}) {
+                        ($user, $pass) = ($i->{user}, $i->{pass});
+                        last;
+                    }
+                }
+            }
+        }
     }
 
     my $class = 'TLily::Server::SLCP';
@@ -146,8 +146,8 @@ sub close_command {
 
     my $server = active_server();
     if (!$server) {
-	$ui->print("(you are not currently connected to a server)\n");
-	return;
+        $ui->print("(you are not currently connected to a server)\n");
+        return;
     }
 
     $ui->print("(closing connection to \"", scalar($server->name()), "\")\n");
@@ -171,8 +171,8 @@ sub next_server {
 
     my $idx = 0;
     foreach (@server) {
-	last if ($_ == $server);
-	$idx++;
+        last if ($_ == $server);
+        $idx++;
     }
 
     if (@server == 0) {
@@ -189,11 +189,11 @@ sub next_server {
     }
 
     TLily::Event::send({type       => 'server_change',
-			old_server => $server,
-			server     => $new_server});
+                        old_server => $server,
+                        server     => $new_server});
 
     $ui->print("(switching to server \"",
-	       scalar($new_server->name()), "\")\n")
+               scalar($new_server->name()), "\")\n")
       unless $config{switch_quiet};
     return;
 }
@@ -217,54 +217,54 @@ sub send_handler {
     }
 
     for my $recip (@{$e->{RECIPS}}) {
-	my($name, $serv) = split /@/, $recip, 2;
-	if (defined($serv)) {
-	    my $servName = $serv;
-	    $serv = TLily::Server::find($serv);
-	    if (!defined($serv)) {
-		$ui->print("(cannot find server \"$servName\")\n");
-		return 1;
-	    }
-	} else {
-	    $serv = $active;
-	}
+        my($name, $serv) = split /@/, $recip, 2;
+        if (defined($serv)) {
+            my $servName = $serv;
+            $serv = TLily::Server::find($serv);
+            if (!defined($serv)) {
+                $ui->print("(cannot find server \"$servName\")\n");
+                return 1;
+            }
+        } else {
+            $serv = $active;
+        }
 
-	if (!defined $server) {
-	    $server = $serv;
-	}
+        if (!defined $server) {
+            $server = $serv;
+        }
 
-	if ($server != $serv) {
-	    $ui->print("(can only send to one server at a time)\n");
-	    return 1;
-	}
+        if ($server != $serv) {
+            $ui->print("(can only send to one server at a time)\n");
+            return 1;
+        }
 
-	$recip = $name;
+        $recip = $name;
     }
 
     $e->{server} = $server;
     $server->send_message(join(",",@{$e->{RECIPS}}),$e->{dtype},$e->{text});
 }
 event_r(type => 'user_send',
-	call => \&send_handler);
+        call => \&send_handler);
 
 sub to_server {
     my($e, $h) = @_;
     my $server = $e->{server} || active_server();
 
     if (! $server) {
-	# we aren't connected to a server
+        # we aren't connected to a server
         if ($e->{text} == "" && $config{smartexit}) {
             TLily::Event::keepalive();
             exit;
         }
-	return 1;
+        return 1;
     }
 
     $server->command($e->{ui}, $e->{text});
 }
 event_r(type  => "user_input",
-	order => "after",
-	call  => \&to_server);
+        order => "after",
+        call  => \&to_server);
 
 sub smartexit_message {
   my ($e,$h)=@_;
@@ -275,8 +275,8 @@ sub smartexit_message {
   return 1;
 }
 event_r(type  => 'server_disconnected',
-	order => 'after',
-	call  => \&smartexit_message);
+        order => 'after',
+        call  => \&smartexit_message);
 
 shelp_r('smartexit' => 'Automatically quit after disconnecting.', 'variables');
 

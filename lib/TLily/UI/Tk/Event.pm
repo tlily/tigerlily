@@ -117,23 +117,23 @@ sub run {
 
     $self->{alarm} = 0;
     $self->{after} = $self->{mainwin}->after($timeout*1000,
-					     sub {$self->{alarm} = 1});
+                                             sub {$self->{alarm} = 1});
     unless ($inMainLoop) {
-	local $inMainLoop = 1;
-	while (Tk::MainWindow->Count && !$self->{alarm} && !$nfound) {
-#	    print STDERR "timeout:", $timeout, "\n" if $config{ui_debug};
-#	    print STDERR "Count:", Tk::MainWindow->Count, "\n" if $config{ui_debug};
-#	    print STDERR "alarm:", $self->{alarm}, "\n" if $config{ui_debug};
-#	    print STDERR "nfound:", $nfound, "\n" if $config{ui_debug};
-	    eval {Tk::DoOneEvent(0)};
-	    if($@) {
-		print STDERR "Eval error: $@\n";
-	    }
-	}
-#	print STDERR "<2>Count:", Tk::MainWindow->Count, "\n" if $config{ui_debug};
-#	print STDERR "<2>alarm:", $self->{alarm}, "\n" if $config{ui_debug};
-#	print STDERR "<2>nfound:", $nfound, "\n" if $config{ui_debug};
-	$inMainLoop=0;
+        local $inMainLoop = 1;
+        while (Tk::MainWindow->Count && !$self->{alarm} && !$nfound) {
+#            print STDERR "timeout:", $timeout, "\n" if $config{ui_debug};
+#            print STDERR "Count:", Tk::MainWindow->Count, "\n" if $config{ui_debug};
+#            print STDERR "alarm:", $self->{alarm}, "\n" if $config{ui_debug};
+#            print STDERR "nfound:", $nfound, "\n" if $config{ui_debug};
+            eval {Tk::DoOneEvent(0)};
+            if($@) {
+                print STDERR "Eval error: $@\n";
+            }
+        }
+#        print STDERR "<2>Count:", Tk::MainWindow->Count, "\n" if $config{ui_debug};
+#        print STDERR "<2>alarm:", $self->{alarm}, "\n" if $config{ui_debug};
+#        print STDERR "<2>nfound:", $nfound, "\n" if $config{ui_debug};
+        $inMainLoop=0;
     }
 #    print STDERR "<3>Count:", Tk::MainWindow->Count, "\n" if $config{ui_debug};
 #    print STDERR "<3>alarm:", $self->{alarm}, "\n" if $config{ui_debug};

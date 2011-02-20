@@ -319,7 +319,7 @@ my $sub = sub {
         next unless ($type eq $e->{type});
 
         while ($flags =~ /\G([AEVUDSMTtCcL])(?:([<>]?=)"([^"]+)";)?/g) {
-	    # " <- This doublequote is necessary to resync Emacs font-lock-mode
+            # " <- This doublequote is necessary to resync Emacs font-lock-mode
             if (defined($2) && defined($3)) {
                 $flags{$1} = [$2,$3];
             } else {
@@ -406,7 +406,7 @@ my $sub = sub {
         if ($found =~ m/\%p/) {
             my $pronoun = $serv->get_pronoun(HANDLE => $e->{SHANDLE});
             $found =~ s/\%p/$pronoun/g;
-   	}
+           }
         if ($found =~ m/\%B/) {
             if (defined ($blurb) && ($blurb ne "")) {
                 $found =~ s/\%B/ with the blurb [$blurb]/g;
@@ -423,15 +423,15 @@ my $sub = sub {
 };
 
 event_r(type  => 'all',
-	order => 'before',
-	call  => $sub);
+        order => 'before',
+        call  => $sub);
 
 sub etimestamp {
     my ($time) = @_;
 
     my @a = localtime($time);
     my $str = TLily::Utils::format_time(\@a, delta => "zonedelta",
-					type => "zonetype",
+                                        type => "zonetype",
                                         seconds => "stampseconds");
     return sprintf("%s, ", $str);
 }
@@ -441,7 +441,7 @@ sub timestamp {
 
     my @a = localtime($time);
     my $str = TLily::Utils::format_time(\@a, delta => "zonedelta",
-					type => "zonetype",
+                                        type => "zonetype",
                                         seconds => "stampseconds");
     return sprintf("(%s) ", $str);
 }

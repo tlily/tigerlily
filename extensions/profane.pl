@@ -71,9 +71,9 @@ my @rotcurselist = (
 my @curselist;
 for my $rotcurse (@rotcurselist) {
     if (defined($rotcurse)) {
-	push @curselist, [ map { (tr/A-Za-z/N-ZA-Mn-za-m/, $_)[1] } @$rotcurse ];
+        push @curselist, [ map { (tr/A-Za-z/N-ZA-Mn-za-m/, $_)[1] } @$rotcurse ];
     } else {
-	push @curselist, undef;
+        push @curselist, undef;
     }
 }
 
@@ -105,19 +105,19 @@ sub profane_command_handler {
     my @args = split /\s+/, $args;
 
     if (@args == 0) {
-	if (scalar(keys(%profaned)) == 0) {
-	    $ui->print("(no users are being profaned)\n");
-	} else {
-	    $ui->print("(profaned users: ",
-		       join(', ', sort values(%profaned)),
-		       ")\n" );
-	}
-	return;
+        if (scalar(keys(%profaned)) == 0) {
+            $ui->print("(no users are being profaned)\n");
+        } else {
+            $ui->print("(profaned users: ",
+                       join(', ', sort values(%profaned)),
+                       ")\n" );
+        }
+        return;
     }
 
     if (@args > 2) {
-	$ui->print("(%profane <name>>; type %help for help)\n");
-	return;
+        $ui->print("(%profane <name>>; type %help for help)\n");
+        return;
     }
 
     my $tmp = $config{expand_group};
@@ -125,8 +125,8 @@ sub profane_command_handler {
     $config{expand_group} =1;
     my $name = TLily::Server::SLCP::expand_name($args[0]);
     if ((!defined $name) || ($name =~ /^-/)) {
-	$ui->print("(could find no match to \"$args[0]\")\n");
-	return;
+        $ui->print("(could find no match to \"$args[0]\")\n");
+        return;
     }
     $config{expand_group} =$tmp;
     my @names;
@@ -139,17 +139,17 @@ sub profane_command_handler {
         if (!$state{HANDLE}) {
             if ($nm !~ /^#/) {
                 # squawk only if $nm isn't an object id.
-	        $ui->print("(could find no match to \"$nm\")\n");
+                $ui->print("(could find no match to \"$nm\")\n");
             }
-	    next;
+            next;
         }
 
         if (defined $profaned{$state{HANDLE}}) {
-	    delete $profaned{$state{HANDLE}};
-	    $ui->print("($nm is no longer profaned.)\n");
+            delete $profaned{$state{HANDLE}};
+            $ui->print("($nm is no longer profaned.)\n");
         } else {
-	    $profaned{$state{HANDLE}} = $nm;
-	    $ui->print("($nm is now profaned.)\n");
+            $profaned{$state{HANDLE}} = $nm;
+            $ui->print("($nm is now profaned.)\n");
         }
     }
     return;
@@ -164,14 +164,14 @@ sub profanizer {
 
 sub load {
     event_r(type  => 'private',
-	    order => 'before',
-	    call  => \&profanizer);
+            order => 'before',
+            call  => \&profanizer);
     event_r(type  => 'public',
-	    order => 'before',
-	    call  => \&profanizer);
+            order => 'before',
+            call  => \&profanizer);
     event_r(type  => 'emote',
-	    order => 'before',
-	    call  => \&profanizer);
+            order => 'before',
+            call  => \&profanizer);
 
     command_r('profane' => \&profane_command_handler);
     shelp_r('profane' => 'Replace sends with profanity');

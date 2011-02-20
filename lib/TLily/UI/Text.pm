@@ -41,12 +41,12 @@ my $lines;
 BEGIN {
     eval { require Term::Size; import Term::Size; };
     if ($@) {
-	warn("*** WARNING: Unable to load Term::Size ***\n");
-	$termsize_installed = 0;
-	($cols, $lines) = (80, 24);
+        warn("*** WARNING: Unable to load Term::Size ***\n");
+        $termsize_installed = 0;
+        ($cols, $lines) = (80, 24);
     } else {
-	($cols, $lines) = Term::Size::chars();
-	$termsize_installed = 1;
+        ($cols, $lines) = Term::Size::chars();
+        $termsize_installed = 1;
     }
 
     system("stty cbreak");
@@ -60,23 +60,23 @@ sub accept_line {
     my($self, $text) = @_;
 
     if (@{$self->{prompt}} > 0) {
-	my $args = shift @{$self->{prompt}};
-	$self->prompt("") if defined ($args->{prompt});
+        my $args = shift @{$self->{prompt}};
+        $self->prompt("") if defined ($args->{prompt});
 
-	$args->{call}->($self, $text);
+        $args->{call}->($self, $text);
 
-	if (@{$self->{prompt}} > 0) {
-	    $args = $self->{prompt}->[0];
-	    $self->prompt($args->{prompt}) if defined ($args->{prompt});
-	    $self->password(1) if ($args->{password});
-	}
+        if (@{$self->{prompt}} > 0) {
+            $args = $self->{prompt}->[0];
+            $self->prompt($args->{prompt}) if defined ($args->{prompt});
+            $self->password(1) if ($args->{password});
+        }
 
-	return;
+        return;
     }
 
     TLily::Event::send(type => 'user_input',
-		       text => $text,
-		       ui   => $self);
+                       text => $text,
+                       ui   => $self);
 
     return;
 }
@@ -89,7 +89,7 @@ sub run {
     while ($sigwinch) {
         $sigwinch = 0;
         if ($termsize_installed) {
-	    ($cols, $lines) = Term::Size::chars();
+            ($cols, $lines) = Term::Size::chars();
         }
     }
 
@@ -102,34 +102,34 @@ sub run {
     my $ctrl;
     my $key;
     if ($c == 27) {
-	$meta = 1;
-	return;
+        $meta = 1;
+        return;
     }
 
     if ($c >= 128) {
-	$c -= 128;
-	$meta = 1;
+        $c -= 128;
+        $meta = 1;
     }
 
     if ($c <= 31) {
-	$c += 96;
-	$ctrl = 1;
+        $c += 96;
+        $ctrl = 1;
     }
 
     $key = ($ctrl ? "C-" : "") . ($meta ? "M-" : "") . chr($c);
 
     if ($key eq "C-j") {
-	$self->accept_line($self->{text});
-	$self->{text} = "";
-	$self->{point} = -1;
+        $self->accept_line($self->{text});
+        $self->{text} = "";
+        $self->{point} = -1;
     } else {
-	$self->{text} .= $key;
+        $self->{text} .= $key;
     }
 
     my $cmd = $self->{bindings}->{$key};
     if ($cmd && $self->{command}->{$cmd}) {
-	$self->command($cmd, $key);
-	return;
+        $self->command($cmd, $key);
+        return;
     }
 
     return;
@@ -152,9 +152,9 @@ sub new {
     $self->{queued}   = "";
 
     TLily::Event::io_r(handle => \*STDIN,
-		       mode   => 'r',
-		       obj    => $self,
-		       call   => \&run);
+                       mode   => 'r',
+                       obj    => $self,
+                       call   => \&run);
 
     $self->inherit_global_bindings();
 
@@ -226,7 +226,7 @@ sub print {
     return unless ($self->{queued} =~ s/^(.*\n)//s);
     my $s = $1;
     foreach my $l (wrap($s, cols => 80, 'indent' => $self->{indent})) {
-	print $l, "\n";
+        print $l, "\n";
     }
 };
 
@@ -254,9 +254,9 @@ sub command_u {
 sub bind {
     my($self, $key, $command) = @_;
     if ($command eq "insert-self") {
-	delete $self->{bindings}->{$key};
+        delete $self->{bindings}->{$key};
     } else {
-	$self->{bindings}->{$key} = $command;
+        $self->{bindings}->{$key} = $command;
     }
     return 1;
 }
@@ -316,9 +316,9 @@ sub get_input {
     my($self) = @_;
 
     if (wantarray) {
-	return(($self->{point}, $self->{text}));
+        return(($self->{point}, $self->{text}));
     } else {
-	return($self->{text});
+        return($self->{text});
     }
 }
 

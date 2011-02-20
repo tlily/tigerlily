@@ -30,39 +30,39 @@ sub submit_cmd($) {
 
     if (!defined(determine_mail_method($ui))) {
         $ui->print("(Sorry, %submit is not available on the $^O platform at this time.)\n");
-	return;
+        return;
     }
 
     my($submit_to,$recover)=split /\s+/, "@_";
 
     if (defined($recover) && $recover ne "-r" && $recover ne "") {
-	$ui->print("Usage: %submit {server|client} [-r]\n");
-	return;
+        $ui->print("Usage: %submit {server|client} [-r]\n");
+        return;
     }
     $recover = ($recover eq "-r")?1:0;
 
     if ($submit_to =~ /^server$/) {
-	$ui->print("(Sorry, %submit server not yet implemented - Feel Free(TM))\n");
-	return;
+        $ui->print("(Sorry, %submit server not yet implemented - Feel Free(TM))\n");
+        return;
     } elsif ($submit_to =~ "client") {
-	  # Get the version of the lily core we're on.
-	  my $server = active_server();
-	  $server->cmd_process("/display version", sub {
-			  my($event) = @_;
-			  $event->{NOTIFY} = 0;
-			  if ($event->{text} =~ /^\((.*)\)/) {
-			      $version = $1;
-			  } elsif ($event->{type} eq 'endcmd') {
-			      edit_report(ui => $ui,
-					  type => $submit_to,
-					  version => $version,
-					  recover => $recover);
-			  }
-			  return 0;
-		      });
+          # Get the version of the lily core we're on.
+          my $server = active_server();
+          $server->cmd_process("/display version", sub {
+                          my($event) = @_;
+                          $event->{NOTIFY} = 0;
+                          if ($event->{text} =~ /^\((.*)\)/) {
+                              $version = $1;
+                          } elsif ($event->{type} eq 'endcmd') {
+                              edit_report(ui => $ui,
+                                          type => $submit_to,
+                                          version => $version,
+                                          recover => $recover);
+                          }
+                          return 0;
+                      });
     } else {
-	$ui->print("Usage: %submit {server|client} [-r]\n");
-	return;
+        $ui->print("Usage: %submit {server|client} [-r]\n");
+        return;
     }
 }
 
@@ -75,14 +75,14 @@ sub edit_report(%) {
     my $tmpfile = "$::TL_TMPDIR/tlily.submit.$$";
 
     if ($args{'recover'}) {
-	$ui->print("(Recalling saved report)\n");
-	my $rc = open(FH, '<', $tmpfile);
-	unless ($rc) {
-	    $ui->print("(edit buffer file not found)\n");
-	    return;
-	}
-	$form = join("",<FH>);
-	close FH;
+        $ui->print("(Recalling saved report)\n");
+        my $rc = open(FH, '<', $tmpfile);
+        unless ($rc) {
+            $ui->print("(edit buffer file not found)\n");
+            return;
+        }
+        $form = join("",<FH>);
+        close FH;
     }
 
     $form =~ s/^Lily_Core:$/Lily_Core: $args{'version'}/m;
@@ -111,30 +111,30 @@ sub edit_report(%) {
 
     my $rc = open(FH, '<', $tmpfile);
     unless ($rc) {
-	$ui->print("(edit buffer file not found)\n");
-	return;
+        $ui->print("(edit buffer file not found)\n");
+        return;
     }
 
     if ((stat FH)[10] == $mtime) {
-	$ui->print("(report not submitted)\n");
-	close FH;
-	unlink($tmpfile);
-	return;
+        $ui->print("(report not submitted)\n");
+        close FH;
+        unlink($tmpfile);
+        return;
     }
 
     my @data = <FH>;
     close FH;
     $form = join("",@data);
     if ($form =~ /Description:$/) {
-	$ui->print("(No description - report not submitted; please re-edit with %submit $args{'type'} -r)\n");
-	return;
+        $ui->print("(No description - report not submitted; please re-edit with %submit $args{'type'} -r)\n");
+        return;
     }
     if ($form =~ /^Subject:$/m) {
-	$ui->print("(No subject - report not submitted; please re-edit with %submit -r)\n");
-	return;
+        $ui->print("(No subject - report not submitted; please re-edit with %submit -r)\n");
+        return;
     }
     if ($form !~ /^From:.* <?([^\@\n]+\@[^\@\s\n]+)>?.*$/m) {
-	$ui->print("(No From address - report not submitted; please re-edit with %submit -r)\n");
+        $ui->print("(No From address - report not submitted; please re-edit with %submit -r)\n");
         return;
     }
     my $from_addr = $1;

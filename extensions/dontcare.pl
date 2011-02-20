@@ -35,11 +35,11 @@ sub cmd_handler {
 
     if (@args == 0) {
       if (scalar(keys(%silenced)) == 0) {
-	$ui->print("(no users are being silenced)\n");
+        $ui->print("(no users are being silenced)\n");
       } else {
-	$ui->print("(silenced users: ",
-		     join(', ', sort values(%silenced)),
-		   ")\n");
+        $ui->print("(silenced users: ",
+                     join(', ', sort values(%silenced)),
+                   ")\n");
       }
       return;
     }
@@ -55,33 +55,33 @@ sub cmd_handler {
     $lines = $args[1];
     my $name = TLily::Server::SLCP::expand_name($args[0]);
     if((!defined $name) || ($name =~ /^-/)) {
-	$ui->print("(could find not match to \"$args[0]\")\n");
-	return;
+        $ui->print("(could find not match to \"$args[0]\")\n");
+        return;
     }
 
     $config{expand_group} = $tmp;
     my @names;
     if(!(@names = split(/,/,$name))) {
-	$names[0] = $name;
+        $names[0] = $name;
     }
 
     foreach my $name (@names) {
-	my %state = $server->state(NAME => $name);
+        my %state = $server->state(NAME => $name);
 
         if(!$state{HANDLE}) {
-	  $ui->print("(could find no match to \"$args[0]\")\n");
-	  return;
+          $ui->print("(could find no match to \"$args[0]\")\n");
+          return;
         }
 
-	if(defined $silenced{$state{HANDLE}}) {
-	  delete $silenced{$state{HANDLE}};
-	  $ui->print("($name is no longer silenced.)\n");
-	} elsif (defined $lines) {
-	  $silenced{$state{HANDLE}} = $name;
-	  $ui->print("($name is now silenced.)\n");
-	} else {
-	  $ui->print("($name was not silenced to begin with.)\n");
-	  return;
+        if(defined $silenced{$state{HANDLE}}) {
+          delete $silenced{$state{HANDLE}};
+          $ui->print("($name is no longer silenced.)\n");
+        } elsif (defined $lines) {
+          $silenced{$state{HANDLE}} = $name;
+          $ui->print("($name is now silenced.)\n");
+        } else {
+          $ui->print("($name was not silenced to begin with.)\n");
+          return;
         }
 
     }
@@ -105,14 +105,14 @@ sub silencer {
 
 sub load {
    event_r(type  => 'private',
-	   order => 'before',
-	   call  => \&silencer);
+           order => 'before',
+           call  => \&silencer);
    event_r(type  => 'public',
-	   order => 'before',
-	   call  => \&silencer);
+           order => 'before',
+           call  => \&silencer);
    event_r(type  => 'emote',
-   	   order => 'before',
-	   call  => \&silencer);
+           order => 'before',
+           call  => \&silencer);
 
    command_r('silence' => \&cmd_handler);
    shelp_r('silence' => 'Shut someone up');

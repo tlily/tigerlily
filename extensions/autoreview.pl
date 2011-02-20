@@ -40,8 +40,8 @@ autoloaded.
 =cut
 
 event_r(type  => 'connected',
-	order => 'after',
-	call  => \&connected_handler);
+        order => 'after',
+        call  => \&connected_handler);
 
 command_r('autoreview', \&review_cmd);
 
@@ -79,8 +79,8 @@ sub connected_handler {
 sub review_cmd {
     my ($ui, $args) = @_;
     if (@to_review) {
-	$ui->print("(You are currently autoreviewing)\n");
-	return 0;
+        $ui->print("(You are currently autoreviewing)\n");
+        return 0;
     }
     my $server = active_server();
     $rev_args = $args || "detach";
@@ -110,26 +110,26 @@ sub review_handler {
     my($event) = @_;
     if ($event->{type} eq 'begincmd') {
     } elsif ($event->{type} eq 'endcmd') {
-	review($event->{server});
+        review($event->{server});
     } elsif ($event->{text} =~ /^\(Beginning review.*\)/) {
-	$rev_start = $event->{text};
-	$event->{NOTIFY} = 0;
+        $rev_start = $event->{text};
+        $event->{NOTIFY} = 0;
     } elsif ($event->{text} =~ /^\(End of review.*\)/) {
-	$event->{NOTIFY} = 0 unless ($rev_interesting);
+        $event->{NOTIFY} = 0 unless ($rev_interesting);
     } elsif ($event->{text} eq "") {
-	$event->{NOTIFY} = 0 unless ($rev_interesting);
+        $event->{NOTIFY} = 0 unless ($rev_interesting);
     } elsif ($event->{text} =~ /^\(No events to review for .*\)/) {
-	$event->{NOTIFY} = 0;
+        $event->{NOTIFY} = 0;
     } elsif ($event->{text} =~ /^\(There are no events that match.*\)/) {
-	$event->{NOTIFY} = 0;
+        $event->{NOTIFY} = 0;
     } elsif ($event->{text} =~ /^\# \*\*\*/) {
-	$event->{NOTIFY} = 0;
+        $event->{NOTIFY} = 0;
     } elsif ($event->{text} =~ /^\# \#\#\#/ && !$rev_interesting) {
-	$event->{NOTIFY} = 0;
-	$rev_start .= "\n" . $event->{text};
+        $event->{NOTIFY} = 0;
+        $rev_start .= "\n" . $event->{text};
     } elsif (!$rev_interesting) {
-	$rev_interesting = 1;
-	ui_name()->print("$rev_start\n") if (defined $rev_start);
+        $rev_interesting = 1;
+        ui_name()->print("$rev_start\n") if (defined $rev_start);
     }
     return 0;
 }

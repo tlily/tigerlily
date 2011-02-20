@@ -50,46 +50,46 @@ sub autoreply_event {
     $from=~s/\s/_/g;
     if ($reply) {
         if (!$last_reply{$from} || (time()-$last_reply{$from} > 30)) {
-	    $last_reply{$from}=time();
-	    my $r;
-	    if ($reply =~ /[\|\!](.*)/) {
-		$r=`$1`;
-		$r=~s/[\n\r\s]/ /g;
-	    } else {
-		$r=$reply;
+            $last_reply{$from}=time();
+            my $r;
+            if ($reply =~ /[\|\!](.*)/) {
+                $r=`$1`;
+                $r=~s/[\n\r\s]/ /g;
+            } else {
+                $r=$reply;
             }
-	    $ui->print("(sending automated reply to $from: \"$r\")\n");
-	    $send_count++;
-	    $ui->set(autoreply => "(autoreply $send_count)");
-	    $event->{server}->sendln("$from:[automated reply] $r");
+            $ui->print("(sending automated reply to $from: \"$r\")\n");
+            $send_count++;
+            $ui->set(autoreply => "(autoreply $send_count)");
+            $event->{server}->sendln("$from:[automated reply] $r");
         } else {
-	    $last_reply{$from}=time();
-	}
+            $last_reply{$from}=time();
+        }
     }
 
     return 0;
 }
 event_r(type => 'private',
-	call => \&autoreply_event);
+        call => \&autoreply_event);
 
 sub autoreply_cmd {
     my($ui, $args) = @_;
     if ($args eq "") {
-	if ($reply) {
-	    $ui->print("(current automated reply is \"$reply\")\n");
-	} else {
-	    $ui->print("(automated reply currently disabled)\n");
-	}
+        if ($reply) {
+            $ui->print("(current automated reply is \"$reply\")\n");
+        } else {
+            $ui->print("(automated reply currently disabled)\n");
+        }
     } elsif ($args eq "off") {
-	$reply="";
-	$ui->print("(disabling automated reply to private messages)\n");
-	$send_count=0;
-	$ui->set(autoreply => undef);
+        $reply="";
+        $ui->print("(disabling automated reply to private messages)\n");
+        $send_count=0;
+        $ui->set(autoreply => undef);
     } else {
-	$send_count=0;
-	$reply=$args;
-	$ui->print("(will send automated reply to private messages)\n");
-	$ui->set(autoreply => "(autoreply $send_count)");
+        $send_count=0;
+        $reply=$args;
+        $ui->print("(will send automated reply to private messages)\n");
+        $ui->set(autoreply => "(autoreply $send_count)");
     }
 }
 command_r(autoreply => \&autoreply_cmd);

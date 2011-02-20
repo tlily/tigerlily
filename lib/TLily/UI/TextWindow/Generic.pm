@@ -38,9 +38,9 @@ sub new {
     $self->{keymap}   = {};
 
     if ($self->{lines} && $self->{cols}) {
-	size($self,
-	     $self->{begin_y}, $self->{begin_x},
-	     $self->{lines}, $self->{cols});
+        size($self,
+             $self->{begin_y}, $self->{begin_x},
+             $self->{lines}, $self->{cols});
     }
 
     push @widgets, $self;
@@ -52,17 +52,17 @@ sub configure {
     my $self = shift;
 
     while (@_) {
-	my $opt = shift;
-	my $val = shift;
+        my $opt = shift;
+        my $val = shift;
 
-	if ($opt eq 'color') {
+        if ($opt eq 'color') {
 
             # XXX  this doesn't work.  Currently we can't turn color 
             #      off or on once it's initially been set up.
 
             TLily::FoiledAgain::want_color($val);
             $self->{F}->clear_background($self->{bg});
-	}
+        }
     }
 }
 
@@ -71,23 +71,23 @@ sub size {
     my $self = shift;
 
     if (@_) {
-	($self->{begin_y}, $self->{begin_x},
-	 $self->{lines},   $self->{cols})     = @_;
+        ($self->{begin_y}, $self->{begin_x},
+         $self->{lines},   $self->{cols})     = @_;
 
         $self->{F}->destroy() if ($self->{F});
 
-	if ($self->{lines} && $self->{cols}) {
-	    $self->{F} = new TLily::FoiledAgain(
+        if ($self->{lines} && $self->{cols}) {
+            $self->{F} = new TLily::FoiledAgain(
                 $self->{lines},   $self->{cols},
                 $self->{begin_y}, $self->{begin_x});
 
             $self->{F}->clear_background($self->{bg});
-	} else {
-	    undef $self->{F};
-	}
+        } else {
+            undef $self->{F};
+        }
     } else {
-	return($self->{begin_y}, $self->{begin_x},
-	       $self->{lines},   $self->{cols});
+        return($self->{begin_y}, $self->{begin_x},
+               $self->{lines},   $self->{cols});
     }
 }
 
@@ -95,8 +95,8 @@ sub size {
 sub req_size {
     my $self = shift;
     if (@_) {
-	($self->{rlines}, $self->{rcols}) = @_;
-	$self->{layout}->size_request($self, @_);
+        ($self->{rlines}, $self->{rcols}) = @_;
+        $self->{layout}->size_request($self, @_);
     }
     return ($self->{rlines}, $self->{rcols});
 }
@@ -124,9 +124,9 @@ sub defstyle {
     TLily::FoiledAgain::defstyle(@_);
 
     foreach my $w (@widgets) {
-	if ($w->{bg} eq $style) {
+        if ($w->{bg} eq $style) {
             $w->{F}->clear_background($style);
-	}
+        }
     }
 }
 
@@ -138,9 +138,9 @@ sub defcstyle {
     TLily::FoiledAgain::defcstyle(@_);
 
     foreach my $w (@widgets) {
-	if ($w->{bg} eq $style) {
+        if ($w->{bg} eq $style) {
             $w->{F}->clear_background($style);
-	}
+        }
     }
 }
 

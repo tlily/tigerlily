@@ -36,11 +36,11 @@ sub newline_handler {
 
 sub load {
     event_r(type  => 'private',
-	    order => 'before',
-	    call  => \&newline_handler);
+            order => 'before',
+            call  => \&newline_handler);
     event_r(type  => 'public',
-	    order => 'before',
-	    call  => \&newline_handler);
+            order => 'before',
+            call  => \&newline_handler);
 
     help_r('newline' => "
 Automatically add newlines to incoming sends where appropriate.

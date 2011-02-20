@@ -4,8 +4,8 @@
 use strict;
 
 TLily::Event::event_r(type  => "user_input",
-	  		  order => "before",
-			  call  => \&input_handler);
+                            order => "before",
+                          call  => \&input_handler);
 
 shelp_r("multicore","Target commands to specific cores");
 
@@ -37,12 +37,12 @@ sub input_handler {
     if ($servers ne "*")  {
       my $die=0;
       foreach my $server (split/,/,$servers) {
-  	  my $s = TLily::Server::find($server);
- 	  if (!$s) {
-	    $e->{ui}->print("(could find no server to match to \"$server\")\n");
+            my $s = TLily::Server::find($server);
+           if (!$s) {
+            $e->{ui}->print("(could find no server to match to \"$server\")\n");
             $die = 1;
-	  } else {
-	    push @servers,$s;
+          } else {
+            push @servers,$s;
           }
       }
       return 1 if $die;
@@ -65,22 +65,22 @@ sub expand_slash {
     if (0) {
     # We tried expanding servers, people didn't like it.
     if ($partial eq "*") {
-	my $servers =
-	  join(",",map(scalar $_->name, TLily::Server::find));
-	$ui->set_input(length($servers) + 1, $servers . "/");
-	return;
+        my $servers =
+          join(",",map(scalar $_->name, TLily::Server::find));
+        $ui->set_input(length($servers) + 1, $servers . "/");
+        return;
     }
     }
 
     if (length($partial) && $partial !~ m|[/@;:= ]|) {
-	my @servers =
-	  grep(/^\Q$partial\E/i, map(scalar $_->name, TLily::Server::find));
-	if (@servers == 1) {
-	    $pos++ if (substr($line, $pos, 1) eq "/");
-	    $ui->set_input(length($servers[0]) + 1,
-			   $servers[0]."/".substr($line, $pos));
-	    return;
-	}
+        my @servers =
+          grep(/^\Q$partial\E/i, map(scalar $_->name, TLily::Server::find));
+        if (@servers == 1) {
+            $pos++ if (substr($line, $pos, 1) eq "/");
+            $ui->set_input(length($servers[0]) + 1,
+                           $servers[0]."/".substr($line, $pos));
+            return;
+        }
     }
 
     $ui->command("insert-self", $key);

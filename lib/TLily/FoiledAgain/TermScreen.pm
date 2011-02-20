@@ -398,7 +398,7 @@ sub commit {
     foreach my $window (@windows) {
         # replay the queued events...
         while (@{$window->{events}}) {
-	    my $event = shift @{$window->{events}};
+            my $event = shift @{$window->{events}};
             my ($x, $y, $command, @args) = @{$event};
 
             if (defined($x)) {
@@ -410,19 +410,19 @@ sub commit {
 
             next unless defined($command);
 
-	    uidebug("commit - $command(@args)\n");
+            uidebug("commit - $command(@args)\n");
             $SCREEN->$command(@args);
 
-	    # stash the events in case we need to scroll the window.
-	    my $line = defined($y) ? $y : -1;
+            # stash the events in case we need to scroll the window.
+            my $line = defined($y) ? $y : -1;
 
-	    if ($line == -1 && (@{$window->{lineevents}} == 0)) {
-	       $line = 0;
-	    }
+            if ($line == -1 && (@{$window->{lineevents}} == 0)) {
+               $line = 0;
+            }
 
-	    $window->{lineevents}[$line] ||= [];
-	    push @{$window->{lineevents}[$line]}, $event;
-#	    uidebug("lineevents[$line] = [ $x, $y, $command, @args ]\n");
+            $window->{lineevents}[$line] ||= [];
+            push @{$window->{lineevents}[$line]}, $event;
+#            uidebug("lineevents[$line] = [ $x, $y, $command, @args ]\n");
         }
     }
 

@@ -12,39 +12,39 @@ sub pinhead_command_handler {
     my @args = split /\s+/, $args;
 
     if (@args == 0) {
-	if (scalar(keys(%pinheads)) == 0) {
-	    $ui->print("(there are currently no pinheads)\n");
-	} else {
-	    $ui->print("(current pinheads: ",
-		       join(', ', sort values(%pinheads)),
-		       ")\n" );
-	}
-	return;
+        if (scalar(keys(%pinheads)) == 0) {
+            $ui->print("(there are currently no pinheads)\n");
+        } else {
+            $ui->print("(current pinheads: ",
+                       join(', ', sort values(%pinheads)),
+                       ")\n" );
+        }
+        return;
     }
 
     if (@args != 1) {
-	$ui->print("(%pinhead name; type %help for help)\n");
-	return;
+        $ui->print("(%pinhead name; type %help for help)\n");
+        return;
     }
 
     my $name = TLily::Server::SLCP::expand_name($args[0]);
     if ((!defined $name) || ($name =~ /^-/)) {
-	$ui->print("(could find no match to \"$args[0]\")\n");
-	return;
+        $ui->print("(could find no match to \"$args[0]\")\n");
+        return;
     }
 
     my %state = $server->state(NAME => $name);
     if (!$state{HANDLE}) {
-	$ui->print("(could find no match to \"$args[0]\")\n");
-	return;
+        $ui->print("(could find no match to \"$args[0]\")\n");
+        return;
     }
 
     if (defined $pinheads{$state{HANDLE}}) {
-	delete $pinheads{$state{HANDLE}};
-	$ui->print("($name is no longer a pinhead.)\n");
+        delete $pinheads{$state{HANDLE}};
+        $ui->print("($name is no longer a pinhead.)\n");
     } else {
-	$pinheads{$state{HANDLE}} = $name;
-	$ui->print("($name is now a pinhead.)\n");
+        $pinheads{$state{HANDLE}} = $name;
+        $ui->print("($name is now a pinhead.)\n");
     }
 
     return;
@@ -60,8 +60,8 @@ sub zip_find_candidates {
   my $pos=0;
   for my $word (split(/(\s+)/,$message)) {
       if(length($word)>=2 &&
-	 ( $word=~/[a-z]{3,}/ || $word=~/^[A-Z]?[a-z]+/ )) {
-	push @words,[$pos,length($word)];
+         ( $word=~/[a-z]{3,}/ || $word=~/^[A-Z]?[a-z]+/ )) {
+        push @words,[$pos,length($word)];
       }
     $pos+=length($word);
   }
@@ -97,7 +97,7 @@ sub zippify {
     for (my $i=0; $i<$vict_count; $i++) {
       my $victim=splice(@candidates,int(rand(@candidates)),1);
       substr($event->{VALUE},$victim->[0],$victim->[1]) =
-	uc(substr($event->{VALUE},$victim->[0],$victim->[1]));
+        uc(substr($event->{VALUE},$victim->[0],$victim->[1]));
     }
     $event->{VALUE}.=" [YOW!]";
     return;
@@ -105,14 +105,14 @@ sub zippify {
 
 sub load {
     event_r(type  => 'private',
-	    order => 'before',
-	    call  => \&zippify);
+            order => 'before',
+            call  => \&zippify);
     event_r(type  => 'public',
-	    order => 'before',
-	    call  => \&zippify);
+            order => 'before',
+            call  => \&zippify);
     event_r(type  => 'emote',
-	    order => 'before',
-	    call  => \&zippify);
+            order => 'before',
+            call  => \&zippify);
 
     command_r('pinhead' => \&pinhead_command_handler);
     shelp_r('pinhead' => 'Identify a user as a pinhead');

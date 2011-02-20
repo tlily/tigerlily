@@ -69,19 +69,19 @@ sub write_string {
     $self->absolute_move($x, $y) if defined($x) and defined($y);
 
     if ($string =~ /$prompt/) {
-	# we treat prompts specially, eating them up and sending out any
-	# unflushed output
+        # we treat prompts specially, eating them up and sending out any
+        # unflushed output
 
-	print "WRITE_STRING($abs_x,$abs_y) [PROMPT]: $string\n" if $debug;
+        print "WRITE_STRING($abs_x,$abs_y) [PROMPT]: $string\n" if $debug;
 
-	$self->flush_output();
+        $self->flush_output();
     } else {
-	print "WRITE_STRING($abs_x,$abs_y): $string\n" if $debug;
+        print "WRITE_STRING($abs_x,$abs_y): $string\n" if $debug;
 
-	# otherwise, add it to the screen
-	substr($screen[$abs_y],$abs_x) = $string;
-	$flushed[$abs_y] = 0;
-	$abs_x += length($string);
+        # otherwise, add it to the screen
+        substr($screen[$abs_y],$abs_x) = $string;
+        $flushed[$abs_y] = 0;
+        $abs_x += length($string);
     }
 }
 
@@ -89,22 +89,22 @@ sub flush_output {
     my @out;
     my $a;
     for (0..$rows-1) {
-	my $l = $rows-1-$_;
-	last if ($_ > 0 && $flushed[$l]);
-	push @out, $screen[$l] if (! $flushed[$l]);
-	$flushed[$l] = 1;
+        my $l = $rows-1-$_;
+        last if ($_ > 0 && $flushed[$l]);
+        push @out, $screen[$l] if (! $flushed[$l]);
+        $flushed[$l] = 1;
     }
 
     my $send = "";
     foreach (reverse @out) {
-	$send .= "$_\n";
+        $send .= "$_\n";
     }
     $send =~ s/[\n\s]*$//g;
     $send =~ s/^[\n\s]*//g;
     $send = wrap_lines($send);
     print "#\$# SEND $send\n" if $send;
     if ($send eq "*** End of session ***") {
-	$end = 1;
+        $end = 1;
     }
 }
 
@@ -117,8 +117,8 @@ sub clear_to_eol {
 
     my $diff = $columns - $abs_x;
     if ($diff > 0) {
-	substr($screen[$abs_y],$abs_x, $diff) = " " x $diff;
-	$flushed[$abs_y] = 0;
+        substr($screen[$abs_y],$abs_x, $diff) = " " x $diff;
+        $flushed[$abs_y] = 0;
     }
 }
 
@@ -174,16 +174,16 @@ sub newline {
     print "NEWLINE\n" if $debug;
 
     if ($abs_y >= $rows - 1) {
-	# cursor is at bottom of screen; scroll needed
-	my $str = shift @screen;
-	my $flushed = shift @flushed;
+        # cursor is at bottom of screen; scroll needed
+        my $str = shift @screen;
+        my $flushed = shift @flushed;
 
-	# add a new line at the bottom.
-	push @screen, "";
-	push @flushed, 0;
+        # add a new line at the bottom.
+        push @screen, "";
+        push @flushed, 0;
     } else {
 
-	$abs_y++;
+        $abs_y++;
     }
 
     $abs_x = 0;
@@ -201,13 +201,13 @@ sub get_input {
     $self->flush_output();
 
     if ($single_char) {
-  	print "#\$# INPUT CHAR\n";
-	if ($end) {
-	    $end = 0;
-	    return " ";
-	}
+          print "#\$# INPUT CHAR\n";
+        if ($end) {
+            $end = 0;
+            return " ";
+        }
     } else {
-  	print "#\$# INPUT LINE\n";
+          print "#\$# INPUT LINE\n";
     }
     my $input = <STDIN>;
 
@@ -219,9 +219,9 @@ sub get_position {
     print "GET_POSITION => $abs_x,$abs_y\n" if $debug;
     my ($self, $sub) = @_;
     if ($sub) {
-	return sub { };
+        return sub { };
     } else {
-	return ($abs_x, $abs_y);
+        return ($abs_x, $abs_y);
     }
 }
 
@@ -235,8 +235,8 @@ sub clear_screen {
     print "CLEAR_SCREEN\n" if $debug;
 
     for (0..25) {
-	$screen[$_] = " " x $columns;
-	$flushed[$_] = 0;
+        $screen[$_] = " " x $columns;
+        $flushed[$_] = 0;
     }
 }
 
@@ -247,9 +247,9 @@ sub status_hook {
     # 1 = after
 
     if ($when == 0) {
-	$in_other_window = 1;
+        $in_other_window = 1;
     } else {
-	$in_other_window = 0;
+        $in_other_window = 0;
     }
 }
 
@@ -260,23 +260,23 @@ sub set_window {
     $self->SUPER::set_window($window);
     if ($window != Games::Rezrov::ZConst::LOWER_WIN) {
         $in_other_window=1;
-	# ignore output except on lower window
-	unless ($self->warned()) {
-	    $self->warned(1);
-	    my $pb = Games::Rezrov::StoryFile::prompt_buffer();
-	    $self->newline();
-	    Games::Rezrov::StoryFile::set_window(Games::Rezrov::ZConst::LOWER_WIN);
-	    my $message = "WARNING: this game is attempting to use multiple windows, which this interface can't fully handle.";
-	    $self->newline();
-	    $self->SUPER::buffer_zchunk(\$message);
-	    Games::Rezrov::StoryFile::flush();
-	    $self->newline();
-	    Games::Rezrov::StoryFile::prompt_buffer($pb) if $pb;
-	    $self->clear_screen();
-	    Games::Rezrov::StoryFile::set_window($window);
-	}
+        # ignore output except on lower window
+        unless ($self->warned()) {
+            $self->warned(1);
+            my $pb = Games::Rezrov::StoryFile::prompt_buffer();
+            $self->newline();
+            Games::Rezrov::StoryFile::set_window(Games::Rezrov::ZConst::LOWER_WIN);
+            my $message = "WARNING: this game is attempting to use multiple windows, which this interface can't fully handle.";
+            $self->newline();
+            $self->SUPER::buffer_zchunk(\$message);
+            Games::Rezrov::StoryFile::flush();
+            $self->newline();
+            Games::Rezrov::StoryFile::prompt_buffer($pb) if $pb;
+            $self->clear_screen();
+            Games::Rezrov::StoryFile::set_window($window);
+        }
     } else {
-	$in_other_window=0;
+        $in_other_window=0;
     }
 }
 
@@ -297,8 +297,8 @@ sub wrap_lines {
     return $str unless ($str =~ /\n/);
 
     foreach (split /\n/, $str) {
-	$ret .= $_;
-	$ret .= " " x (76 - length($_));
+        $ret .= $_;
+        $ret .= " " x (76 - length($_));
     }
 
     $ret =~ s/\s*$//g;

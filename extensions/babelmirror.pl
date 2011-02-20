@@ -37,32 +37,32 @@ sub babelmirror_cmd {
     $language ||= "en_es";
 
     if ("@_" =~ /^\S*$/) {
-	my $f;
-	foreach (sort keys %babelmirrored) {
-	    $f=1;
-	    $ui->print("($_ is babelmirrored to " . (split /,/,$babelmirrored{$_})[2] . ")\n");
-	}
-	if (! $f) {
-	    $ui->print("(no discussions are currently being babelmirrored)\n");
-	}
-	return 0;
+        my $f;
+        foreach (sort keys %babelmirrored) {
+            $f=1;
+            $ui->print("($_ is babelmirrored to " . (split /,/,$babelmirrored{$_})[2] . ")\n");
+        }
+        if (! $f) {
+            $ui->print("(no discussions are currently being babelmirrored)\n");
+        }
+        return 0;
     }
 
     if (! (($fromdisc =~ /\S/) && ($todisc =~ /\S/))) {
-	$ui->print("usage: %babelmirror [fromdisc] [todisc]\n");
-	return 0;
+        $ui->print("usage: %babelmirror [fromdisc] [todisc]\n");
+        return 0;
     }
 
     if ($babelmirrored{$fromdisc}) {
-	$ui->print("(error: $fromdisc is already babelmirrored)\n");
-	return 0;
+        $ui->print("(error: $fromdisc is already babelmirrored)\n");
+        return 0;
     }
 
     my $e1 = event_r(type => 'public',
-		     call => sub { send_handler($fromdisc,$todisc,@_); });
+                     call => sub { send_handler($fromdisc,$todisc,@_); });
 
     my $e2 = event_r(type => 'emote',
-		     call => sub { send_handler($fromdisc,$todisc,@_); });
+                     call => sub { send_handler($fromdisc,$todisc,@_); });
 
     $timed_id ||= TLily::Event::time_r(interval => $trans_interval,
                                        call     => \&timed_handler);
@@ -77,13 +77,13 @@ sub unbabelmirror_cmd {
     my ($ui,$disc) = @_;
 
     if ($babelmirrored{$disc}) {
-	my ($e1,$e2,$e3) = split ',',$babelmirrored{$disc};
-	event_u($e1);
-	event_u($e2);
-	delete $babelmirrored{$disc};
-	$ui->print("(\"$disc\" will no longer be babelmirrored.)\n");
+        my ($e1,$e2,$e3) = split ',',$babelmirrored{$disc};
+        event_u($e1);
+        event_u($e2);
+        delete $babelmirrored{$disc};
+        $ui->print("(\"$disc\" will no longer be babelmirrored.)\n");
     } else {
-	$ui->print("(\"$disc\" is not being babelmirrored!)\n");
+        $ui->print("(\"$disc\" is not being babelmirrored!)\n");
     }
 
 }
@@ -93,15 +93,15 @@ sub send_handler {
 
     my $match = 0;
     foreach (split ',',$e->{RECIPS}) {
-	if (lc($_) eq $from) { $match=1; last; }
+        if (lc($_) eq $from) { $match=1; last; }
     }
 
     if ($match) {
-	if ($e->{type} eq "emote") {
+        if ($e->{type} eq "emote") {
             push @babelqueue, [ $to, "| (to $e->{RECIPS}) $e->{SOURCE}$e->{VALUE}", $e->{server} ];
-	} else {
+        } else {
             push @babelqueue, [ $to, "($e->{SOURCE} => $e->{RECIPS}) $e->{VALUE}", $e->{server} ];
-	}
+        }
     }
 
     0;
@@ -144,7 +144,7 @@ sub timed_handler {
 sub unload {
     my $ui = ui_name();
     foreach (sort keys %babelmirrored) {
-	unbabelmirror_cmd($ui,$_);
+        unbabelmirror_cmd($ui,$_);
     }
 
     event_u($timed_id);

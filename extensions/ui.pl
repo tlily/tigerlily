@@ -59,22 +59,22 @@ sub bind_command {
     my $local;
 
     if ($args[0] && index("locally", $args[0]) == 0 && length($args[0]) > 1) {
-	shift @args;
-	$local = 1;
+        shift @args;
+        $local = 1;
     }
 
     if (@args < 2) {
         $local = 1;
     } elsif (@args > 2) {
-	$ui->print("(%bind [locally] key command; type %help for help)\n");
-	return;
+        $ui->print("(%bind [locally] key command; type %help for help)\n");
+        return;
     }
 
     $ui->print("(binding \"$args[0]\" to \"$args[1]\")\n") if @args > 1;
     if ($local) {
-	$ui->bind(@args);
+        $ui->bind(@args);
     } else {
-	TLily::UI::bind(@args);
+        TLily::UI::bind(@args);
     }
 
     return;
@@ -103,15 +103,15 @@ sub keyname_command {
     my($ui, $args) = @_;
 
     if ($args) {
-	$ui->print("(%keyname; type %help for help)\n");
-	return;
+        $ui->print("(%keyname; type %help for help)\n");
+        return;
     }
 
     if (!$ui->intercept_r(name => "name-self", order => 100)) {
         $ui->style("input_error");
-	$ui->print("(sorry; a keyboard intercept is already in place)\n");
+        $ui->print("(sorry; a keyboard intercept is already in place)\n");
         $ui->style("normal");
-	return;
+        return;
     }
 
     $ui->print("Press any key.\n");
@@ -178,21 +178,21 @@ sub page_command {
     my($ui, $args) = @_;
 
     if ($args eq "") {
-	if ($ui->page()) {
-		$ui->print("(paging is currently enabled)\n");
-	} else {
-		$ui->print("(paging is currently disabled)\n");
-	}
+        if ($ui->page()) {
+                $ui->print("(paging is currently enabled)\n");
+        } else {
+                $ui->print("(paging is currently disabled)\n");
+        }
     } elsif ($args eq "on") {
-	$config{page} = 1;
-	$ui->page(1);
-	$ui->print("(paging is now enabled)\n");
+        $config{page} = 1;
+        $ui->page(1);
+        $ui->print("(paging is now enabled)\n");
     } elsif ($args eq "off") {
-	$config{page} = 0;
-	$ui->page(0);
-	$ui->print("(paging is now disabled)\n");
+        $config{page} = 0;
+        $ui->page(0);
+        $ui->print("(paging is now disabled)\n");
     } else {
-	$ui->print("(%page on|off; type %help for help)\n");
+        $ui->print("(%page on|off; type %help for help)\n");
     }
 
     return;
@@ -238,13 +238,13 @@ sub next_input_context {
     my $cidx = $ui->{input}->{_context_idx} || 0;
 
     if (length $line) {
-	$context->[$cidx] = [$pos, $line];
-	$cidx++;
-	$context->[$cidx] ||= [0, ""];
+        $context->[$cidx] = [$pos, $line];
+        $cidx++;
+        $context->[$cidx] ||= [0, ""];
     }
     else {
-	splice(@$context, $cidx, 1);
-	$cidx = 0 if ($cidx >= @$context);
+        splice(@$context, $cidx, 1);
+        $cidx = 0 if ($cidx >= @$context);
     }
 
     $ui->set_input(@{$context->[$cidx]});
@@ -479,7 +479,7 @@ shelp_r("isearch-backward" => "Search input buffer (see %help isearch)",
 my $zap_help = qq(
 zap-to-char will delete the input buffer up through the next character typed.
 It is normally bound to M-z.  For example, if you had this pending buffer:
-	Tale:You're ugly, and your mother dresses you funny.
+        Tale:You're ugly, and your mother dresses you funny.
 Then typed C-a M-z and a comma, the resulting buffer would be:
         and your mother dresses you funny.
 );
@@ -581,8 +581,8 @@ sub style_command {
     my @args = split /\s+/, $args;
 
     if (@args < 2) {
-	$ui->print("(%style style attr ...; type %help for help)\n");
-	return;
+        $ui->print("(%style style attr ...; type %help for help)\n");
+        return;
     }
 
     my $style = shift @args;
@@ -609,8 +609,8 @@ sub cstyle_command {
     my @args = split /\s+/, $args;
 
     if (@args < 4) {
-	$ui->print("(%cstyle style fg bg attr ...; type %help for help)\n");
-	return;
+        $ui->print("(%cstyle style fg bg attr ...; type %help for help)\n");
+        return;
     }
 
     my $style = shift @args;
@@ -624,17 +624,17 @@ shelp_r(cstyle => "Set the color and attributes of a text style.");
 help_r(cstyle => $style_help);
 
 TLily::Config::callback_r(Variable => '-ALL-',
-			  List => 'color_attrs',
-			  State => 'STORE',
-			  Call => sub {
-			      my($tr, %ev) = @_;
-			      my $ui = ui_name();
+                          List => 'color_attrs',
+                          State => 'STORE',
+                          Call => sub {
+                              my($tr, %ev) = @_;
+                              my $ui = ui_name();
 
-			      if(! $config{mono}) {
-				  $ui->defcstyle(${$ev{Key}}, @{${$ev{Value}}});
- 			          $ui->redraw();
-			      }
-		          });
+                              if(! $config{mono}) {
+                                  $ui->defcstyle(${$ev{Key}}, @{${$ev{Value}}});
+                                   $ui->redraw();
+                              }
+                          });
 
 my $styles_help = "
 The currently available styles are:
@@ -674,28 +674,28 @@ help_r("styles" => $styles_help);
 
 
 TLily::Config::callback_r(Variable => '-ALL-',
-			  List => 'mono_attrs',
-			  State => 'STORE',
-			  Call => sub {
-			      my($tr, %ev) = @_;
-			      my $ui = ui_name();
+                          List => 'mono_attrs',
+                          State => 'STORE',
+                          Call => sub {
+                              my($tr, %ev) = @_;
+                              my $ui = ui_name();
 
-			      if($config{mono}) {
-				  $ui->defstyle(${$ev{Key}}, @{${$ev{Value}}});
-  			          $ui->redraw();
-			      }
-		          });
+                              if($config{mono}) {
+                                  $ui->defstyle(${$ev{Key}}, @{${$ev{Value}}});
+                                    $ui->redraw();
+                              }
+                          });
 
 
 TLily::Config::callback_r(Variable => 'mono',
-			  List => 'config',
-			  State => 'STORE',
-			  Call => sub {
-			      my($tr, %ev) = @_;
-			      my $ui = ui_name();
-			      $ui->configure(color => !$ {$ev{Value}});
-			      return;
-		          });
+                          List => 'config',
+                          State => 'STORE',
+                          Call => sub {
+                              my($tr, %ev) = @_;
+                              my $ui = ui_name();
+                              $ui->configure(color => !$ {$ev{Value}});
+                              return;
+                          });
 
 
 sub load {
@@ -703,11 +703,11 @@ sub load {
     my($k,$v);
     my $ui = ui_name();
     while (($k,$v) = each %{$config{'mono_attrs'}}) {
-	$ui->defstyle($k, @{$v});
+        $ui->defstyle($k, @{$v});
     }
 
     while (($k,$v) = each %{$config{'color_attrs'}}) {
-	$ui->defcstyle($k, @{$v});
+        $ui->defcstyle($k, @{$v});
     }
     $ui->redraw;
 }

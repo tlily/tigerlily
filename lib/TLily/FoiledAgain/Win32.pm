@@ -227,7 +227,7 @@ sub read_char {
         return undef unless (@{$self->{input_queue}} > 1);
 
         shift @{$self->{input_queue}};
-	my $key = shift @{$self->{input_queue}};
+        my $key = shift @{$self->{input_queue}};
         return "M-$key";
     } else {
         return shift @{$self->{input_queue}};
@@ -403,15 +403,15 @@ sub scroll {
 
         # scroll up.
         my $rect = $self->{buffer}->ReadRect(0, $numlines,
-	                                     $self->{cols}, $self->{lines});
-	$self->{buffer}->WriteRect($rect,
-	                          0, 0,
-				  $self->{cols}, $self->{lines} - $numlines);
+                                             $self->{cols}, $self->{lines});
+        $self->{buffer}->WriteRect($rect,
+                                  0, 0,
+                                  $self->{cols}, $self->{lines} - $numlines);
 
         # blank out the area at the bottom.
         $self->{buffer}->WriteRect((" " x $numlines * $self->{cols}),
-	                           0, $self->{lines} - $numlines,
-				   $self->{cols}, $self->{lines});
+                                   0, $self->{lines} - $numlines,
+                                   $self->{cols}, $self->{lines});
 
     } else {
 
@@ -423,15 +423,15 @@ sub scroll {
 
         # scroll down.
         my $rect = $self->{buffer}->ReadRect(0, 0,
-	                                     $self->{cols}, $self->{lines} - $numlines);
-	$self->{buffer}->WriteRect($rect,
-	                          0, $numlines,
-				  $self->{cols}, $self->{lines});
+                                             $self->{cols}, $self->{lines} - $numlines);
+        $self->{buffer}->WriteRect($rect,
+                                  0, $numlines,
+                                  $self->{cols}, $self->{lines});
 
         # blank out the area at the top.
         $self->{buffer}->WriteRect((" " x $numlines * $self->{cols}),
-	                           0, 0,
-				   $self->{cols}, $numlines);
+                                   0, 0,
+                                   $self->{cols}, $numlines);
     }
 
     # and slap the cursor at the bottom.

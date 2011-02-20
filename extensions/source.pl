@@ -9,7 +9,7 @@ sub do_source {
     my @args = split(' ',$args[0]);
     if (scalar(@args) == 1) {
 
-	my $fname=$args[0];
+        my $fname=$args[0];
         my $i;
         local(*FH);
 
@@ -17,29 +17,29 @@ sub do_source {
 
         my $rc = open (FH, '<',  $fname);
         unless ($rc) {
-	    $ui->print("($fname not found)\n");
-	    return;
+            $ui->print("($fname not found)\n");
+            return;
         }
 
         $ui->print("(sourcing $fname)\n");
 
         my @data = <FH>;
-    	close FH;
-    	process_source(@data);
-	return;
+            close FH;
+            process_source(@data);
+        return;
     } elsif ($args[0] eq "memo") {
         my $server = TLily::Server->active();
-	my %args;
-       	$args{type} = "memo";
+        my %args;
+               $args{type} = "memo";
         $args{ui} = $ui;
-	$args{name} = $args[-1];
+        $args{name} = $args[-1];
         $args{call} = sub { my %event=@_; process_source(@{$event{text}});};
-	if (scalar(@args) == 3 ) {
-	    $args{target} = $args[1];
+        if (scalar(@args) == 3 ) {
+            $args{target} = $args[1];
         } elsif (scalar(@args) != 2) {
             goto FAIL;
         }
-	$server->fetch(%args);
+        $server->fetch(%args);
         return;
     }
     FAIL:
@@ -56,10 +56,10 @@ sub process_source {
     my $l;
     foreach $l (@data) {
         next if $l =~ /^#/;
-	chomp $l;
-	TLily::Event::send({type => 'user_input',
-			    ui   => $ui,
-			    text => $l});
+        chomp $l;
+        TLily::Event::send({type => 'user_input',
+                            ui   => $ui,
+                            text => $l});
     }
     return;
 }

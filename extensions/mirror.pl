@@ -22,32 +22,32 @@ sub mirror_cmd {
     $todisc = lc($todisc);
 
     if ("@_" =~ /^\S*$/) {
-	my $f;
-	foreach (sort keys %mirrored) {
-	    $f=1;
-	    $ui->print("($_ is mirrored to " . (split /,/,$mirrored{$_})[2] . ")\n");
-	}
-	if (! $f) {
-	    $ui->print("(no discussions are currently being mirrored)\n");
-	}
-	return 0;
+        my $f;
+        foreach (sort keys %mirrored) {
+            $f=1;
+            $ui->print("($_ is mirrored to " . (split /,/,$mirrored{$_})[2] . ")\n");
+        }
+        if (! $f) {
+            $ui->print("(no discussions are currently being mirrored)\n");
+        }
+        return 0;
     }
 
     if (! (($fromdisc =~ /\S/) && ($todisc =~ /\S/))) {
-	$ui->print("usage: %mirror [fromdisc] [todisc]\n");
-	return 0;
+        $ui->print("usage: %mirror [fromdisc] [todisc]\n");
+        return 0;
     }
 
     if ($mirrored{$fromdisc}) {
-	$ui->print("(error: $fromdisc is already mirrored)\n");
-	return 0;
+        $ui->print("(error: $fromdisc is already mirrored)\n");
+        return 0;
     }
 
     my $e1 = event_r(type => 'public',
-		     call => sub { send_handler($fromdisc,$todisc,@_); });
+                     call => sub { send_handler($fromdisc,$todisc,@_); });
 
     my $e2 = event_r(type => 'emote',
-		     call => sub { send_handler($fromdisc,$todisc,@_); });
+                     call => sub { send_handler($fromdisc,$todisc,@_); });
 
     $mirrored{$fromdisc}="$e1,$e2,$todisc";
 
@@ -59,13 +59,13 @@ sub unmirror_cmd {
     my ($ui,$disc) = @_;
 
     if ($mirrored{$disc}) {
-	my ($e1,$e2) = split ',',$mirrored{$disc};
-	event_u($e1);
-	event_u($e2);
-	delete $mirrored{$disc};
-	$ui->print("(\"$disc\" will no longer be mirrored.)\n");
+        my ($e1,$e2) = split ',',$mirrored{$disc};
+        event_u($e1);
+        event_u($e2);
+        delete $mirrored{$disc};
+        $ui->print("(\"$disc\" will no longer be mirrored.)\n");
     } else {
-	$ui->print("(\"$disc\" is not being mirrored!)\n");
+        $ui->print("(\"$disc\" is not being mirrored!)\n");
     }
 
 }
@@ -75,15 +75,15 @@ sub send_handler {
 
     my $match = 0;
     foreach (split ',',$e->{RECIPS}) {
-	if (lc($_) eq $from) { $match=1; last; }
+        if (lc($_) eq $from) { $match=1; last; }
     }
 
     if ($match) {
-	if ($e->{type} eq "emote") {
-	    $e->{server}->sendln("$to;mirrors: (to $e->{RECIPS}) $e->{SOURCE}$e->{VALUE}");
-	} else {
-	    $e->{server}->sendln("$to;($e->{SOURCE} => $e->{RECIPS}) $e->{VALUE}");
-	}
+        if ($e->{type} eq "emote") {
+            $e->{server}->sendln("$to;mirrors: (to $e->{RECIPS}) $e->{SOURCE}$e->{VALUE}");
+        } else {
+            $e->{server}->sendln("$to;($e->{SOURCE} => $e->{RECIPS}) $e->{VALUE}");
+        }
     }
 
     0;
@@ -92,7 +92,7 @@ sub send_handler {
 sub unload {
     my $ui = ui_name();
     foreach (sort keys %mirrored) {
-	unmirror_cmd($ui,$_);
+        unmirror_cmd($ui,$_);
     }
 }
 

@@ -353,19 +353,19 @@ sub generic_fmt {
     my $fmt;
 
     if (defined $e->{format}) {
-	$fmt = $e->{format};
+        $fmt = $e->{format};
     }
     elsif ($e->{type} eq 'public') {
-	$fmt = defined $config{ignore_public_fmt}
+        $fmt = defined $config{ignore_public_fmt}
              ? $config{ignore_public_fmt}
-	     : q{\n%[ -> ]%(Server )%Time%From blathers something to %To, }.
-	       q{but you don't care%|\n};
+             : q{\n%[ -> ]%(Server )%Time%From blathers something to %To, }.
+               q{but you don't care%|\n};
     }
     elsif ($e->{type} eq 'emote') {
-	$fmt = defined $config{ignore_emote_fmt}
+        $fmt = defined $config{ignore_emote_fmt}
              ? $config{ignore_emote_fmt}
-	     : q{%[> ]%(Server )(to %To) %From blathers something, }.
-	       q{but you don't care%|\n};
+             : q{%[> ]%(Server )(to %To) %From blathers something, }.
+               q{but you don't care%|\n};
     }
 
     $fmts{server} = $e->{server_fmt} || "$e->{type}_server";
@@ -381,16 +381,16 @@ sub generic_fmt {
     $vars{from} = $e->{SOURCE};
     $vars{blurb} = $e->{server}->get_blurb(HANDLE => $e->{SHANDLE});
     if (defined $vars{blurb} && $vars{blurb} ne "") {
-	$vars{blurb} = "[" . $vars{blurb} . "]";
+        $vars{blurb} = "[" . $vars{blurb} . "]";
     }
     else {
-	undef $vars{blurb};
+        undef $vars{blurb};
     }
     $vars{to} = $e->{RECIPS};
     $vars{body} = $e->{VALUE};
 
     if (!$fmt_cache{$fmt}) {
-	$fmt_cache{$fmt} = eval compile_fmt($fmt);
+        $fmt_cache{$fmt} = eval compile_fmt($fmt);
     }
     $fmt_cache{$fmt}->($ui, \%vars, \%fmts);
 
@@ -507,9 +507,9 @@ sub store_status
     my @commands = serialize_ignore_status();
 
     $server->store(type   => "memo",
-		   target => "me",
-		   name   => $status_memo,
-		   text   => \@commands);
+                   target => "me",
+                   name   => $status_memo,
+                   text   => \@commands);
 }
 
 ###
@@ -551,9 +551,9 @@ sub restore_status
 
     $server->fetch(ui     => $ui,
                    type   => "memo",
-		   target => "me",
-		   name   => $status_memo,
-		   call   => $restore);
+                   target => "me",
+                   name   => $status_memo,
+                   call   => $restore);
 }
 
 ###
@@ -1100,7 +1100,7 @@ sub etimestamp
 
     my @a = localtime($time);
     my $str = TLily::Utils::format_time(\@a, delta => "zonedelta",
-					type => "zonetype",
+                                        type => "zonetype",
                                         seconds => "stampseconds");
     return sprintf("%s, ", $str);
 }
@@ -1111,7 +1111,7 @@ sub timestamp
 
     my @a = localtime($time);
     my $str = TLily::Utils::format_time(\@a, delta => "zonedelta",
-					type => "zonetype",
+                                        type => "zonetype",
                                         seconds => "stampseconds");
     return sprintf("(%s) ", $str);
 }

@@ -50,15 +50,15 @@ sub define {
     @{$self->{override}} = grep { $_ ne $name } @{$self->{override}};
 
     if ($type eq 'left') {
-	push @{$self->{left}}, $name;
+        push @{$self->{left}}, $name;
     } elsif ($type eq 'right') {
-	unshift @{$self->{right}}, $name;
+        unshift @{$self->{right}}, $name;
     } elsif ($type eq 'override') {
-	push @{$self->{override}}, $name;
+        push @{$self->{override}}, $name;
     } elsif ($type eq 'nowhere') {
-	;
+        ;
     } else {
-	croak "Unknown position: \"$type\".";
+        croak "Unknown position: \"$type\".";
     }
 }
 
@@ -69,29 +69,29 @@ sub build_string {
     my ($cols, $begin, $end);
     if ($self->{active}) {
         $cols = $self->{cols} - 6;
-	$begin = "^^ ";
-	$end = " ^^";
+        $begin = "^^ ";
+        $end = " ^^";
     } else {
         $cols = $self->{cols};
-	$begin = "";
-	$end = "";
+        $begin = "";
+        $end = "";
     }
 
     foreach my $v (@{$self->{override}}) {
-	next unless (defined $self->{var}->{$v});
-	my $s = $self->{var}->{$v};
-	my $x = int(($cols - length($s)) / 2);
-	my $y = int(($cols - length($s) + 1) / 2);
-	$x = 0 if $x < 0;
-	$y = 0 if $y < 0;
-	$self->{str} = $begin . (' ' x $x) . $s . (' ' x $y) . $end;
-	return;
+        next unless (defined $self->{var}->{$v});
+        my $s = $self->{var}->{$v};
+        my $x = int(($cols - length($s)) / 2);
+        my $y = int(($cols - length($s) + 1) / 2);
+        $x = 0 if $x < 0;
+        $y = 0 if $y < 0;
+        $self->{str} = $begin . (' ' x $x) . $s . (' ' x $y) . $end;
+        return;
     }
 
     my @l = map({ defined($self->{var}->{$_}) ? $self->{var}->{$_} : () }
-		@{$self->{left}});
+                @{$self->{left}});
     my @r = map({ defined($self->{var}->{$_}) ? $self->{var}->{$_} : () }
-		@{$self->{right}});
+                @{$self->{right}});
 
     my $l = join(" | ", @l);
     my $r = join(" | ", @r);
@@ -104,7 +104,7 @@ sub build_string {
 sub set {
     my($self, $name, $val) = @_;
     if (defined($self->{var}->{$name}) == defined($val)) {
-	return if (!defined($val) || ($self->{var}->{$name} eq $val));
+        return if (!defined($val) || ($self->{var}->{$name} eq $val));
     }
     $self->{var}->{$name} = $val;
     $self->redraw();

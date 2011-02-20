@@ -28,23 +28,23 @@ sub send {
     croak "send called without required argument \"file\"!" unless $args{file};
 
     unless (($filename = $self->{daemon}->file_c($args{file}))) {
-	$self->send_error( errno => 404,
-			   title => "File not found",
-			   long  => "The url $args{file} is unavailable " .
-			   "on this server.",
-			   head  => $args{head} );
-	return 0;
+        $self->send_error( errno => 404,
+                           title => "File not found",
+                           long  => "The url $args{file} is unavailable " .
+                           "on this server.",
+                           head  => $args{head} );
+        return 0;
     }
 
     $self->{filealias} = $args{file};
 
     local *IN;
     if ((! -r $filename) || !(open IN, '<', $filename)) {
-	$self->send_error( errno => 403,
-			   title => "Forbidden",
-			   long  => "Unable to open $args{file}.",
-			   head  => $args{head} );
-	return 0;
+        $self->send_error( errno => 403,
+                           title => "Forbidden",
+                           long  => "Unable to open $args{file}.",
+                           head  => $args{head} );
+        return 0;
     }
 
     $self->{filedes} = *IN;
@@ -59,10 +59,10 @@ sub send {
 
     # the real data is done elsewhere.
     unless ($args{head}) {
-	$self->{output_id} = TLily::Event::io_r (handle => $self->{sock},
-						 mode   => 'w',
-						 obj    => $self,
-						 call   => \&send_raw);
+        $self->{output_id} = TLily::Event::io_r (handle => $self->{sock},
+                                                 mode   => 'w',
+                                                 obj    => $self,
+                                                 call   => \&send_raw);
     }
 
     return 1;
@@ -74,19 +74,19 @@ sub send_error {
     print {$self->{sock}} "HTTP/1.0 ${args{errno}} ${args{title}}\r\n";
     print {$self->{sock}} "Date: " . TLily::Daemon::HTTP::date() . "\r\n";
     if (exists $args{headers}) {
-	foreach my $h (keys (%{$args{Headers}})) {
-	    print {$self->{sock}} "$h: ${args{headers}->{$h}}\r\n";
-	}
+        foreach my $h (keys (%{$args{Headers}})) {
+            print {$self->{sock}} "$h: ${args{headers}->{$h}}\r\n";
+        }
     }
     print {$self->{sock}} "\r\n";
 
     unless ($args{head}) {
-	print {$self->{sock}} "<html><head>\n";
-	print {$self->{sock}} "<title>${args{errno}} ${args{title}}</title>\n";
-	print {$self->{sock}} "</head><body>\n<h1>${args{errno}} ";
-	print {$self->{sock}} "${args{title}}";
-	print {$self->{sock}} "</h1>\n${args{long}}<p>\n";
-	print {$self->{sock}} "</body></html>\n";
+        print {$self->{sock}} "<html><head>\n";
+        print {$self->{sock}} "<title>${args{errno}} ${args{title}}</title>\n";
+        print {$self->{sock}} "</head><body>\n<h1>${args{errno}} ";
+        print {$self->{sock}} "${args{title}}";
+        print {$self->{sock}} "</h1>\n${args{long}}<p>\n";
+        print {$self->{sock}} "</body></html>\n";
     }
     return;
 }
@@ -96,12 +96,12 @@ sub send_raw {
     my $buf;
 
     if (read $self->{filedes}, $buf, 4096) {
-	print {$self->{sock}} $buf;
+        print {$self->{sock}} $buf;
     } else {
-	# File's done.  Tell the client.
-	TLily::Event::send(type   => "$self->{proto}_filedone",
-			   daemon => $self);
-	$self->close();
+        # File's done.  Tell the client.
+        TLily::Event::send(type   => "$self->{proto}_filedone",
+                           daemon => $self);
+        $self->close();
     }
 }
 
@@ -197,7 +197,7 @@ if there is not one running.
 =cut
 
 sub daemon {
-	return $inst;
+        return $inst;
 }
 
 =item terminate()
@@ -223,7 +223,7 @@ If no alias is given, then the file will be refered to by the last component
 of the path.
 
   TLily::Daemon::HTTP::file_r(file  => '/tmp/bar.tar.gz',
-			      alias => 'foo.tar.gz');
+                              alias => 'foo.tar.gz');
 
 =cut
 
@@ -291,11 +291,11 @@ sub date {
     $year += 1900;
 
     return sprintf ("${dayofweek}, %02d $month $year %02d:%02d:%02d GMT",
-		    $mday, $hour, $min, $sec);
+                    $mday, $hour, $min, $sec);
 }
 
 sub DESTROY {
-	TLily::Event::send (type => 'http_terminate');
+    TLily::Event::send (type => 'http_terminate');
     $inst->SUPER::DESTROY();
     $inst = undef;
 }

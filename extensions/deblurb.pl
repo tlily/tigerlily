@@ -39,19 +39,19 @@ sub deblurb_command_handler {
     my @args = split /\s+/, $args;
 
     if (@args == 0) {
-	if (scalar(keys(%deblurbed)) == 0) {
-	    $ui->print("(no users are being deblurbed)\n");
-	} else {
-	    $ui->print("(deblurbed users: ",
-		       join(', ', sort values(%deblurbed)),
-		       ")\n" );
-	}
-	return;
+        if (scalar(keys(%deblurbed)) == 0) {
+            $ui->print("(no users are being deblurbed)\n");
+        } else {
+            $ui->print("(deblurbed users: ",
+                join(', ', sort values(%deblurbed)),
+                ")\n" );
+        }
+        return;
     }
 
     if (@args > 2) {
-	$ui->print("(%deblurb <name> ; type %help for help)\n");
-	return;
+        $ui->print("(%deblurb <name> ; type %help for help)\n");
+        return;
     }
 
     my $tmp = $config{expand_group};
@@ -59,8 +59,8 @@ sub deblurb_command_handler {
     $config{expand_group} =1;
     my $name = TLily::Server::SLCP::expand_name($args[0]);
     if ((!defined $name) || ($name =~ /^-/)) {
-	$ui->print("(could find no match to \"$args[0]\")\n");
-	return;
+        $ui->print("(could find no match to \"$args[0]\")\n");
+        return;
     }
     $config{expand_group} =$tmp;
     my @names;
@@ -73,25 +73,25 @@ sub deblurb_command_handler {
         if (!$state{HANDLE}) {
             if ($nm !~ /^#/) {
                 # squawk only if $nm isn't an object id.
-	        $ui->print("(could find no match to \"$nm\")\n");
+                $ui->print("(could find no match to \"$nm\")\n");
             }
-	    next;
+            next;
         }
 
         if (defined $deblurbed{$state{HANDLE}}) {
-	    delete $deblurbed{$state{HANDLE}};
-	    $server->state(HANDLE => $state{HANDLE},
-			   OLDBLURB => undef,
-			   BLURB => $state{OLDBLURB},
-			   UPDATED => 1);
-	    $ui->print("($nm is no longer deblurbed.)\n");
+            delete $deblurbed{$state{HANDLE}};
+            $server->state(HANDLE => $state{HANDLE},
+                           OLDBLURB => undef,
+                           BLURB => $state{OLDBLURB},
+                           UPDATED => 1);
+            $ui->print("($nm is no longer deblurbed.)\n");
         } else {
-	    $deblurbed{$state{HANDLE}} = $nm ;
-	    $server->state(HANDLE => $state{HANDLE},
-			   OLDBLURB => $state{BLURB},
-			   BLURB => '',
-			   UPDATED => 1);
-	    $ui->print("($nm is now deblurbed.)\n");
+            $deblurbed{$state{HANDLE}} = $nm ;
+            $server->state(HANDLE => $state{HANDLE},
+                           OLDBLURB => $state{BLURB},
+                           BLURB => '',
+                           UPDATED => 1);
+            $ui->print("($nm is now deblurbed.)\n");
         }
     }
     return;
@@ -105,17 +105,17 @@ sub deblurbifier {
     return unless ($event->{EVENT} =~ /blurb/i);
     delete $event->{NOTIFY} if ($event->{NOTIFY});
     $event->{server}->state(HANDLE => $event->{SHANDLE},
-			    OLDBLURB => $event->{VALUE},
+                            OLDBLURB => $event->{VALUE},
                             BLURB => '',
-			    UPDATED => 1);
+                            UPDATED => 1);
     $event->{VALUE} = undef;
     return;
 }
 
 sub load {
     event_r(type  => 'blurb',
-	    order => 'before',
-	    call  => \&deblurbifier);
+            order => 'before',
+            call  => \&deblurbifier);
 
     command_r('deblurb' => \&deblurb_command_handler);
     shelp_r('deblurb' => 'Remove a user\'s blurb from your sight');

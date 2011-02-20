@@ -21,7 +21,7 @@ automatically log in when connecting to the specified server.  See
 
 # List of places to look for an autologin file.
 my @files = ("$ENV{HOME}/.lily/tlily/autologin",
-	     "$ENV{HOME}/.lily/lclient/autologin");
+             "$ENV{HOME}/.lily/lclient/autologin");
 unshift @files, $config{'autologin_file'} if ($config{'autologin_file'});
 
 shelp_r('autologin_file' => "Prepended to list of files to check for autologin information.", "variables");
@@ -41,22 +41,22 @@ sub load {
 
     local *FD;
     foreach my $file (@files) {
-	open(FD, '<', $file) or next;
-	while (<FD>) {
-	    next if (/^\s*(\#.*)?$/);
-	    my ($alias, $host, $port, $user, $pass) = split;
-	    next unless defined($port);
+        open(FD, '<', $file) or next;
+        while (<FD>) {
+            next if (/^\s*(\#.*)?$/);
+            my ($alias, $host, $port, $user, $pass) = split;
+            next unless defined($port);
 
-	    push @{$config{server_info}}, {
-		alias => $alias,
-		host  => $host,
-		port  => $port,
-		user  => $user,
-		pass  => $pass
-	    };
-	}
-	close(FD);
+            push @{$config{server_info}}, {
+                alias => $alias,
+                host  => $host,
+                port  => $port,
+                user  => $user,
+                pass  => $pass
+            };
+        }
+        close(FD);
 
-	last;
+        last;
     }
 }

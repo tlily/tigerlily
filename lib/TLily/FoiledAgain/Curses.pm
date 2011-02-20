@@ -244,11 +244,11 @@ my %entitymap = (
 
     $USING_COLOR = 0;
     if ($WANT_COLOR && has_colors()) {
-	my $rc = start_color();
-	$USING_COLOR = ($rc == OK);
-	if ($USING_COLOR) {
-	    eval { use_default_colors(); };
-	}
+        my $rc = start_color();
+        $USING_COLOR = ($rc == OK);
+        if ($USING_COLOR) {
+            eval { use_default_colors(); };
+        }
     }
 
     noecho();
@@ -264,8 +264,8 @@ my %entitymap = (
     $SIG{WINCH} = sub { $sigwinch = 1; };
 
     while (my($pair, $id) = each %cpairmap) {
-	my($fg, $bg) = split / /, $pair, 2;
-	init_pair($id, $fg, $bg);
+        my($fg, $bg) = split / /, $pair, 2;
+        init_pair($id, $fg, $bg);
     }
 }
 
@@ -379,56 +379,56 @@ sub read_char {
     return $c if $self->{quoted_insert};
 
     if (ord($c) == 27) {
-	$meta = 1;
-	return $self->read_char();
+        $meta = 1;
+        return $self->read_char();
     }
 
     # Handle 2-byte UTF8
     if (ord($c) >= 194 && ord($c) <= 223) {
-	my $c2 = $self->{W}->getch();
-	return if ($c2 eq "-1" || !defined $c2);
+        my $c2 = $self->{W}->getch();
+        return if ($c2 eq "-1" || !defined $c2);
 
-	# convert utf8 representation ($c, $c2) to unicode number.
-	my $num =  (((ord($c) & 31) << 6) | (ord($c2) & 63));
+        # convert utf8 representation ($c, $c2) to unicode number.
+        my $num =  (((ord($c) & 31) << 6) | (ord($c2) & 63));
 
-	if (exists($entitymap{$num})) {
-	    $c = $entitymap{$num};
-	} else {
-	    $c = "&#$num;";
-	}
+        if (exists($entitymap{$num})) {
+            $c = $entitymap{$num};
+        } else {
+            $c = "&#$num;";
+        }
     }
 
     # Handle 3-byte UTF8
     if (ord($c) >= 224 && ord($c) <= 239) {
-	my $c2 = $self->{W}->getch();
-	return if ($c2 eq "-1" || !defined $c2);
+        my $c2 = $self->{W}->getch();
+        return if ($c2 eq "-1" || !defined $c2);
 
-	my $c3 = $self->{W}->getch();
-	return if ($c3 eq "-1" || !defined $c3);
+        my $c3 = $self->{W}->getch();
+        return if ($c3 eq "-1" || !defined $c3);
 
-	# convert utf8 representation ($c, $c2, $c3) to unicode number.
-	my $num = (((ord($c) & 15) << 12) | ((ord($c2) & 63) << 6) | (ord($c3) & 63));
+        # convert utf8 representation ($c, $c2, $c3) to unicode number.
+        my $num = (((ord($c) & 15) << 12) | ((ord($c2) & 63) << 6) | (ord($c3) & 63));
 
-	if (exists($entitymap{$num})) {
-	    $c = $entitymap{$num};
-	} else {
-	    $c = "&#$num;";
-	}
+        if (exists($entitymap{$num})) {
+            $c = $entitymap{$num};
+        } else {
+            $c = "&#$num;";
+        }
     }
 
     if ((ord($c) >= 128) && (ord($c) < 256)) {
-	$c = chr(ord($c)-128);
-	$meta = 1;
+        $c = chr(ord($c)-128);
+        $meta = 1;
     } elsif (ord($c) == 127) {
-	$c = '?';
-	$ctrl = 1;
+        $c = '?';
+        $ctrl = 1;
     }
 
     if (defined $keycodemap{$c}) {
-	$c = $keycodemap{$c};
+        $c = $keycodemap{$c};
     } elsif (ord($c) <= 31) {
-	$c = lc(chr(ord($c) + 64));
-	$ctrl = 1;
+        $c = lc(chr(ord($c) + 64));
+        $ctrl = 1;
     }
 
     my $r = ($ctrl ? "C-" : "") . ($meta ? "M-" : "") . $c;
@@ -561,21 +561,21 @@ sub parsestyle {
 
 
 sub colorid {
-	my($col) = @_;
+        my($col) = @_;
 
-	if (defined($cnamemap{$col})) {
-		return $cnamemap{$col}
-	} elsif ($col =~ /^gr[ae]y(\d+)$/) {
-		$col = $1 + 232;
-		return undef if ($col > 255);
-		return $col;
-	} elsif ($col =~ /^(\d+),(\d+),(\d+)$/) {
-		$col = (16 + $1 * 36 + $2 * 6 + $3);
-		return undef if ($col < 16 || $col > 231);
-		return $col;
-	} else {
-		return undef;
-	}
+        if (defined($cnamemap{$col})) {
+                return $cnamemap{$col}
+        } elsif ($col =~ /^gr[ae]y(\d+)$/) {
+                $col = $1 + 232;
+                return undef if ($col > 255);
+                return $col;
+        } elsif ($col =~ /^(\d+),(\d+),(\d+)$/) {
+                $col = (16 + $1 * 36 + $2 * 6 + $3);
+                return undef if ($col < 16 || $col > 231);
+                return $col;
+        } else {
+                return undef;
+        }
 }
 
 
@@ -591,12 +591,12 @@ sub color_pair {
     $bg = COLOR_BLACK unless defined($bg);
 
     if (defined $cpairmap{"$fg $bg"}) {
-	$pair = $cpairmap{"$fg $bg"};
+        $pair = $cpairmap{"$fg $bg"};
     } else {
-	$pair = scalar(keys %cpairmap);
-	my $rc = init_pair($pair, $fg, $bg);
-	return COLOR_PAIR(0) if ($rc == ERR);
-	$cpairmap{"$fg $bg"} = $pair;
+        $pair = scalar(keys %cpairmap);
+        my $rc = init_pair($pair, $fg, $bg);
+        return COLOR_PAIR(0) if ($rc == ERR);
+        $cpairmap{"$fg $bg"} = $pair;
     }
 
     return COLOR_PAIR($pair);

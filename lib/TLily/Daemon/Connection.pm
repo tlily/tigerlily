@@ -23,15 +23,15 @@ sub new {
     croak "Required parameter 'sock' missing!" unless defined($args{sock});
     croak "Required parameter 'proto' missing!" unless defined($args{proto});
 
-    #	my $ui = TLily::UI::name();
-    #	$ui->print($args{sock});
+    #        my $ui = TLily::UI::name();
+    #        $ui->print($args{sock});
 
     $self->{sock} = $args{sock};
     $self->{proto} = $args{proto};
     $self->{io_id} = TLily::Event::io_r (handle => $self->{sock},
-					 mode   => 'r',
-					 obj    => $self,
-					 call   => \&receive);
+                                         mode   => 'r',
+                                         obj    => $self,
+                                         call   => \&receive);
 
     bless $self, $class;
 }
@@ -42,17 +42,17 @@ sub receive {
 
     my $rc = sysread($self->{sock}, $buf, 4096);
     if ($rc < 0) {
-	return if $errno == $::EAGAIN;
+        return if $errno == $::EAGAIN;
     }
 
     if ($rc <= 0) {
-	$self->close();
-	return;
+        $self->close();
+        return;
     }
 
     TLily::Event::send(type   => "$self->{proto}_data",
-		       daemon => $self,
-		       data   => $buf);
+                       daemon => $self,
+                       data   => $buf);
 }
 
 sub print {
@@ -72,7 +72,7 @@ sub close {
     close $self->{sock};
 
     TLily::Event::send(type   => "$self->{proto}_close",
-		       daemon => $self);
+                       daemon => $self);
 
     $self->{daemon}->cxn_u($self);
 }

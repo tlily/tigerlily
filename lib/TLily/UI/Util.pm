@@ -54,14 +54,14 @@ sub next_line {
     my $mstart = pos($_[0]);
     $_[0] =~ m(\G
         # These need not be wrapped.
-	    (?: .{0,$imatch})
-	    (?:
+            (?: .{0,$imatch})
+            (?:
             # Either break on a space/newline...
             (?: .{0,$nmatch} (?: \s | $ )) |
             # Or none is available, so take what we can fit.
-	        (?: ..{0,$nmatch} \n ? )
-	    )
-	)xg or return;
+                (?: ..{0,$nmatch} \n ? )
+            )
+        )xg or return;
     my $mend = pos($_[0]);
 
     # I don't think this is strictly necessary, but why take chances?
@@ -83,7 +83,7 @@ sub wrap {
     my $len    = ($h{cols} || 78) - length($indent);
 
     while (my($b, $e) = next_line($s, $len)) {
-	push @r, $indent . substr($s, $b, $e-$b);
+        push @r, $indent . substr($s, $b, $e-$b);
     }
 
     return @r;

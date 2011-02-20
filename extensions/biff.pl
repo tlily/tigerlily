@@ -96,7 +96,7 @@ See "%help variables biff_drops" for how to configure your mail drop list.
 
 # Set the check interval (in seconds);
 my $check_interval = $config{biff_interval} || 60;
-my $check_eventid;	# id of the timed event handler for check_drops()
+my $check_eventid;  # id of the timed event handler for check_drops()
 my $biff = '';      # Statusline variable
 my $active;         # Is mail notification on?
 
@@ -141,12 +141,12 @@ sub check_mbox(\%) {
 
     $mboxRef->{status} = 0; # Default is no unread mail.
     if (-f _ && -s _ && ($mtime < -A _) ) {
-	if (($mboxRef->{mtime} == 0) || ($mtime < $mboxRef->{mtime})) {
-	    $mboxRef->{mtime} = $mtime; # Update mtime
-	    $mboxRef->{status} = 3; # Ring bell
-	} else {
-	    $mboxRef->{status} = 1; # Unread mail
-	}
+        if (($mboxRef->{mtime} == 0) || ($mtime < $mboxRef->{mtime})) {
+            $mboxRef->{mtime} = $mtime; # Update mtime
+            $mboxRef->{status} = 3; # Ring bell
+        } else {
+            $mboxRef->{status} = 1; # Unread mail
+        }
     }
 }
 
@@ -155,18 +155,18 @@ sub check_maildir(\%) {
     my $mtime = undef;
     opendir(DH, "$mdirRef->{path}/new/");
     foreach (readdir(DH)) {
-	next if /^\./;
-	$mtime = ($mtime < -M "$mdirRef->{path}/new/$_")?$mtime:-M _;
+        next if /^\./;
+        $mtime = ($mtime < -M "$mdirRef->{path}/new/$_")?$mtime:-M _;
     }
     closedir(DH);
     $mdirRef->{status} = 0; # Default is no unread mail.
     if (defined($mtime)) {
-	if ($mdirRef->{mtime} == 0 || $mtime < $mdirRef->{mtime}) {
-	    $mdirRef->{mtime} = $mtime; # Update mtime
-	    $mdirRef->{status} = 3; # Ring bell
-	} else {
-	    $mdirRef->{status} = 1; # Unread mail
-	}
+        if ($mdirRef->{mtime} == 0 || $mtime < $mdirRef->{mtime}) {
+            $mdirRef->{mtime} = $mtime; # Update mtime
+            $mdirRef->{status} = 3; # Ring bell
+        } else {
+            $mdirRef->{status} = 1; # Unread mail
+        }
     }
 }
 
@@ -182,22 +182,22 @@ sub handle_rpimchk {
 
     my $drop;
     foreach $drop (@drops) {
-	if (($drop->{type} eq 'rpimchk') && ($drop->{sock} == $evt->{handle})) {
-	    my $reply;
-	    $evt->{handle}->recv($reply, 256);
-	    last if (length($reply) != 6);
-	    my ($h1,$h2,$bytes)=unpack("CCN",$reply);
-	    last if ($h1 != 0x1 || $h2 != 0x2);
-	    if ($bytes == 0) {
-		$drop->{status} = 0;
-	    } elsif ($bytes == $drop->{bytes}) {
-		$drop->{status} = 1;
-	    } else {
-		$drop->{status} = 3;
-	    }
-	    $drop->{bytes} = $bytes;
-	    last;
-	}
+        if (($drop->{type} eq 'rpimchk') && ($drop->{sock} == $evt->{handle})) {
+            my $reply;
+            $evt->{handle}->recv($reply, 256);
+            last if (length($reply) != 6);
+            my ($h1,$h2,$bytes)=unpack("CCN",$reply);
+            last if ($h1 != 0x1 || $h2 != 0x2);
+            if ($bytes == 0) {
+                $drop->{status} = 0;
+            } elsif ($bytes == $drop->{bytes}) {
+                $drop->{status} = 1;
+            } else {
+                $drop->{status} = 3;
+            }
+            $drop->{bytes} = $bytes;
+            last;
+        }
     }
     # Since this happens after check_drops finishes, we have to update the
     # biff outselves.
@@ -211,11 +211,11 @@ sub print_drop {
     my %drop = %{shift()};
 
     if ($drop{type} eq 'mbox' || $drop{type} eq 'maildir') {
-	$ui->print("($drop{type} $drop{path})\n");
+        $ui->print("($drop{type} $drop{path})\n");
     } elsif ($drop{type} eq 'rpimchk') {
-	$ui->print("($drop{type} $drop{user}\@$drop{host}:$drop{port})\n");
+        $ui->print("($drop{type} $drop{user}\@$drop{host}:$drop{port})\n");
     } else {
-	$ui->print("(Unknown maildrop type $drop{type})\n");
+        $ui->print("(Unknown maildrop type $drop{type})\n");
     }
 }
 
@@ -224,7 +224,7 @@ sub check_drops {
     my $status = 0;
     my $drop;
     foreach $drop (@drops) {
-	&{"check_$drop->{type}"}($drop);
+        &{"check_$drop->{type}"}($drop);
     }
     update_biff();
 }
@@ -235,17 +235,17 @@ sub update_biff {
 
     my $drop;
     foreach $drop (@drops) {
-	$status |= $drop->{status};
-	$drop->{status} &= 1; # Unset the bell bit.
+        $status |= $drop->{status};
+        $drop->{status} &= 1; # Unset the bell bit.
     }
     if ($status) {
-	$biff = "Mail";
-	my $ui = ui_name();
-	$ui->set(biff => $biff);
-	$ui->bell() if ($status == 3);
+        $biff = "Mail";
+        my $ui = ui_name();
+        $ui->set(biff => $biff);
+        $ui->bell() if ($status == 3);
     } else {
-	$biff = '';
-	$ui->set(biff => $biff);
+        $biff = '';
+        $ui->set(biff => $biff);
     }
 }
 
@@ -259,75 +259,75 @@ sub biff_cmd {
     my($ui,$args) = @_;
 
     if ($args eq 'off') {
-	if ($active) {
-	    event_u($check_eventid) if ($check_eventid);
-	    undef $check_eventid;
-	    my $drop;
-	    foreach $drop (@drops) {
-		if ($drop->{type} eq 'rpimchk') {
-		    $drop->{sock}->close();
-		    TLily::Event::io_u($drop->{r_eventid});
-		}
-	    }
-	    $biff = '';
-	    $ui->set(biff => $biff);
-	}
-	$active = 0;
-	$ui->print("(Mail notification off)\n");
-	return 0;
+        if ($active) {
+            event_u($check_eventid) if ($check_eventid);
+            undef $check_eventid;
+            my $drop;
+            foreach $drop (@drops) {
+                if ($drop->{type} eq 'rpimchk') {
+                    $drop->{sock}->close();
+                    TLily::Event::io_u($drop->{r_eventid});
+                }
+            }
+            $biff = '';
+            $ui->set(biff => $biff);
+        }
+        $active = 0;
+        $ui->print("(Mail notification off)\n");
+        return 0;
     }
 
     if ($args eq 'on') {
-	if ($active) {
-	    $ui->print("(Mail notification already on)\n");
-	} else {
-	    $check_eventid = TLily::Event::time_r(interval => $check_interval,
-						  call     => \&check_drops);
+        if ($active) {
+            $ui->print("(Mail notification already on)\n");
+        } else {
+            $check_eventid = TLily::Event::time_r(interval => $check_interval,
+                                                  call     => \&check_drops);
 
-	    my $drop;
-	    foreach $drop (@drops) {
-		$drop->{status} = 0;
-		if ($drop->{type} eq 'rpimchk') {
-		    $drop->{port} = $drop->{port} || 1110;
-		    $drop->{sock} = new IO::Socket::INET(
-					  PeerAddr => "$drop->{host}",
-					  PeerPort => "mailchk($drop->{port})",
-				 	  Proto => "udp");
-		    $drop->{request} = pack("CCCa*",0x1,0x1,0x1,$drop->{user});
-		    $drop->{bytes} = 0;
-		    $drop->{r_eventid} = TLily::Event::io_r(
+            my $drop;
+            foreach $drop (@drops) {
+                $drop->{status} = 0;
+                if ($drop->{type} eq 'rpimchk') {
+                    $drop->{port} = $drop->{port} || 1110;
+                    $drop->{sock} = new IO::Socket::INET(
+                                          PeerAddr => "$drop->{host}",
+                                          PeerPort => "mailchk($drop->{port})",
+                                           Proto => "udp");
+                    $drop->{request} = pack("CCCa*",0x1,0x1,0x1,$drop->{user});
+                    $drop->{bytes} = 0;
+                    $drop->{r_eventid} = TLily::Event::io_r(
                                           handle => $drop->{sock},
-					  mode => 'r',
-				          name => "mchk-$drop->{user}",
-				          call => \&handle_rpimchk);
-		}
-	    }
-	    $active = 1;
-	}
-	$ui->print("(Mail notification on)\n");
-	check_drops();
-	return 0;
+                                          mode => 'r',
+                                          name => "mchk-$drop->{user}",
+                                          call => \&handle_rpimchk);
+                }
+            }
+            $active = 1;
+        }
+        $ui->print("(Mail notification on)\n");
+        check_drops();
+        return 0;
     }
 
     if ($args eq 'list') {
-	if (@drops == undef) {
-	    $ui->print("(No maildrops are being monitored)\n");
-	} else {
-	    $ui->print("(The following maildrops are monitored:)\n");
-	    map(print_drop($ui,$_),@drops);
-	}
-	if ($active) {
-	    $ui->print("(Mail notification is on)\n");
-	} else {
-	    $ui->print("(Mail notification is off)\n");
-	}
-	return 0;
+        if (@drops == undef) {
+            $ui->print("(No maildrops are being monitored)\n");
+        } else {
+            $ui->print("(The following maildrops are monitored:)\n");
+            map(print_drop($ui,$_),@drops);
+        }
+        if ($active) {
+            $ui->print("(Mail notification is on)\n");
+        } else {
+            $ui->print("(Mail notification is off)\n");
+        }
+        return 0;
     }
 
     if ($args eq '') {
-	map(print_drop($ui,$_), grep($_->{status} > 0, @drops)) ||
-	  $ui->print("(No unread mail)\n");
-	return 0;
+        map(print_drop($ui,$_), grep($_->{status} > 0, @drops)) ||
+          $ui->print("(No unread mail)\n");
+        return 0;
     }
 
     $ui->print("Usage: %biff [on|off|list]\n");
@@ -354,14 +354,14 @@ if ($config{biff_drops}) {
     @drops = @{$config{biff_drops}};
 } else {
     if ($ENV{MAILDIR}) {
-	$ui->print("(Setting maildrop to MAILDIR environ)\n");
-	push @drops, {'type' => 'maildir', 'path' => $ENV{MAILDIR}};
+        $ui->print("(Setting maildrop to MAILDIR environ)\n");
+        push @drops, {'type' => 'maildir', 'path' => $ENV{MAILDIR}};
     } elsif ($ENV{MAIL}) {
-	$ui->print("(Setting maildrop to MAIL environ)\n");
-	push @drops, {'type' => 'mbox', 'path' => $ENV{MAIL}};
+        $ui->print("(Setting maildrop to MAIL environ)\n");
+        push @drops, {'type' => 'mbox', 'path' => $ENV{MAIL}};
     } else {
-	$ui->print("(Can not find a maildrop!)\n");
-	return 1;
+        $ui->print("(Can not find a maildrop!)\n");
+        return 1;
     }
 }
 

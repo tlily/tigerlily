@@ -35,12 +35,12 @@ my $lines;
 BEGIN {
     eval { require Term::Size; import Term::Size; };
     if ($@) {
-	warn("*** WARNING: Unable to load Term::Size ***\n");
-	$termsize_installed = 0;
-	($cols, $lines) = (80, 24);
+        warn("*** WARNING: Unable to load Term::Size ***\n");
+        $termsize_installed = 0;
+        ($cols, $lines) = (80, 24);
     } else {
-	($cols, $lines) = Term::Size::chars();
-	$termsize_installed = 1;
+        ($cols, $lines) = Term::Size::chars();
+        $termsize_installed = 1;
     }
 }
 
@@ -49,31 +49,31 @@ sub accept_line {
     my($self, $text) = @_;
 
     if (@{$self->{prompt}} > 0) {
-	my $args = shift @{$self->{prompt}};
-	$self->prompt("") if defined ($args->{prompt});
+        my $args = shift @{$self->{prompt}};
+        $self->prompt("") if defined ($args->{prompt});
 
-	if ($args->{password}) {
-	    $self->password(0)
-	} else {
-	    $self->{R}->AddHistory($text);
-	}
+        if ($args->{password}) {
+            $self->password(0)
+        } else {
+            $self->{R}->AddHistory($text);
+        }
 
-	$args->{call}->($self, $text);
+        $args->{call}->($self, $text);
 
-	if (@{$self->{prompt}} > 0) {
-	    $args = $self->{prompt}->[0];
-	    $self->prompt($args->{prompt}) if defined ($args->{prompt});
-	    $self->password(1) if ($args->{password});
-	}
+        if (@{$self->{prompt}} > 0) {
+            $args = $self->{prompt}->[0];
+            $self->prompt($args->{prompt}) if defined ($args->{prompt});
+            $self->password(1) if ($args->{password});
+        }
 
-	return;
+        return;
     }
 
     $self->{R}->AddHistory($text);
 
     TLily::Event::send(type => 'user_input',
-		       text => $text,
-		       ui   => $self);
+                       text => $text,
+                       ui   => $self);
 
     return;
 }
@@ -86,7 +86,7 @@ sub run {
     while ($sigwinch) {
         $sigwinch = 0;
         if ($termsize_installed) {
-	    ($cols, $lines) = Term::Size::chars();
+            ($cols, $lines) = Term::Size::chars();
         }
     }
 
@@ -94,26 +94,26 @@ sub run {
     my $ctrl;
     my $key;
     if ($c == 27) {
-	$meta = 1;
-	return;
+        $meta = 1;
+        return;
     }
 
     if ($c >= 128) {
-	$c -= 128;
-	$meta = 1;
+        $c -= 128;
+        $meta = 1;
     }
 
     if ($c <= 31) {
-	$c += 96;
-	$ctrl = 1;
+        $c += 96;
+        $ctrl = 1;
     }
 
     $key = ($ctrl ? "C-" : "") . ($meta ? "M-" : "") . chr($c);
 
     my $cmd = $self->{bindings}->{$key};
     if ($cmd && $self->{command}->{$cmd}) {
-	$self->command($cmd, $key);
-	return;
+        $self->command($cmd, $key);
+        return;
     }
 
     $c -= 96 if ($ctrl);
@@ -138,7 +138,7 @@ sub new {
     $self->{R} = Term::ReadLine->new('tlily');
 
     if ($self->{R}->ReadLine() !~ /Gnu/) {
-	warn "
+        warn "
 WARNING: At present, the ReadLine UI requires Term::ReadLine::Gnu.
          You have " . $self->{R}->ReadLine() . " installed.  This may not work.
          If you have multiple Term::ReadLine modules installed, you may
@@ -156,9 +156,9 @@ WARNING: At present, the ReadLine UI requires Term::ReadLine::Gnu.
     $self->{printed}  = 0;
 
     TLily::Event::io_r(handle => \*STDIN,
-		       mode   => 'r',
-		       obj    => $self,
-		       call   => \&run);
+                       mode   => 'r',
+                       obj    => $self,
+                       call   => \&run);
 
     $self->inherit_global_bindings();
 
@@ -228,7 +228,7 @@ sub print {
     return unless ($self->{queued} =~ s/^(.*\n)//s);
     my $s = $1;
     foreach my $l (wrap($s, cols => 80, 'indent' => $self->{indent})) {
-	print $l, "\n";
+        print $l, "\n";
     }
     $self->{printed} = 1;
 };
@@ -257,9 +257,9 @@ sub command_u {
 sub bind {
     my($self, $key, $command) = @_;
     if ($command eq "insert-self") {
-	delete $self->{bindings}->{$key};
+        delete $self->{bindings}->{$key};
     } else {
-	$self->{bindings}->{$key} = $command;
+        $self->{bindings}->{$key} = $command;
     }
     return 1;
 }
@@ -297,7 +297,7 @@ sub password {
 sub prompt {
     my($self, $prompt) = @_;
     $self->{R}->callback_handler_install($prompt,
-					 sub { $self->accept_line(@_) });
+                                         sub { $self->accept_line(@_) });
 }
 
 

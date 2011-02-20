@@ -16,81 +16,81 @@ sub pipe_handler {
     my $run = '';
     my $mode = 0;
     while ($cmd) {
-	if ($cmd =~ /^\|\s*(.*)/) {
-	    last if ($mode != 2);
-	    $cmd = $1;
-	    $run .= "| ";
-	    $mode = 1;
-	} elsif ($cmd =~ /^>\s*(\S+)\s*(.*)/) {
-	    last if ($mode != 2);
-	    $cmd = $2;
-	    $run .= "> $1 ";
-	    $mode = 3;
-	} elsif ($cmd =~ /^([^|>]*)(.*)/) {
-	    if ($mode == 0) {
-		$cmd = $2;
-		$lcmd = $1;
-		$mode = 2;
-	    } elsif ($mode == 1) {
-		$cmd = $2;
-		$run .= "$1 ";
-		$mode = 2;
-	    } else {
-		last;
-	    }
-	} else {
-	    last;
-	}
+        if ($cmd =~ /^\|\s*(.*)/) {
+            last if ($mode != 2);
+            $cmd = $1;
+            $run .= "| ";
+            $mode = 1;
+        } elsif ($cmd =~ /^>\s*(\S+)\s*(.*)/) {
+            last if ($mode != 2);
+            $cmd = $2;
+            $run .= "> $1 ";
+            $mode = 3;
+        } elsif ($cmd =~ /^([^|>]*)(.*)/) {
+            if ($mode == 0) {
+                $cmd = $2;
+                $lcmd = $1;
+                $mode = 2;
+            } elsif ($mode == 1) {
+                $cmd = $2;
+                $run .= "$1 ";
+                $mode = 2;
+            } else {
+                last;
+            }
+        } else {
+            last;
+        }
     }
 
     if ($cmd || $mode == 1) {
-	$ui->print("(parse error)\n");
-	return 1;
+        $ui->print("(parse error)\n");
+        return 1;
     }
 
     my $tmpfile = "$::TL_TMPDIR/tlily-out-" . $counter++ . "-" . $$;
 
     if ($mode != 3) {
-	$run .= "> $tmpfile";
-	local(*FD);
-	sysopen(FD, $tmpfile, O_RDWR|O_CREAT, 0600);
-	close(FD);
+        $run .= "> $tmpfile";
+        local(*FD);
+        sysopen(FD, $tmpfile, O_RDWR|O_CREAT, 0600);
+        close(FD);
     }
 
     my $fd = gensym;
     my $rc = open($fd, $run);
     if ($rc == 0) {
-	my $l = $@; $l =~ s/(\\<)/\\$1/g;
-	$ui->print("Error in pipe: $l\n");
+        my $l = $@; $l =~ s/(\\<)/\\$1/g;
+        $ui->print("Error in pipe: $l\n");
     }
 
     $server->cmd_process($lcmd, sub {
-	my($event) = @_;
-	$event->{NOTIFY} = 0;
-	if ($event->{type} eq 'begincmd') {
-	} elsif ($event->{type} eq 'endcmd') {
-	    close $fd;
-	    if ($mode != $3) {
-		local(*FD);
-		open(FD, "<$tmpfile");
-		my @l = <FD>;
-		foreach (@l) {
-		    chomp;
-		    s/(\\<)/\\$1/g;
-		    $ui->print($_, "\n");
-		}
-		close(FD);
-		unlink($tmpfile);
-	    }
-	} elsif (defined $event->{text}) {
-	    if ($fd) {
-		my $rc = print $fd $event->{text}, "\n";
-		unless ($rc) {
-		    close $fd;
-		    undef $fd;
-		}
-	    }
-	}
+        my($event) = @_;
+        $event->{NOTIFY} = 0;
+        if ($event->{type} eq 'begincmd') {
+        } elsif ($event->{type} eq 'endcmd') {
+            close $fd;
+            if ($mode != $3) {
+                local(*FD);
+                open(FD, "<$tmpfile");
+                my @l = <FD>;
+                foreach (@l) {
+                    chomp;
+                    s/(\\<)/\\$1/g;
+                    $ui->print($_, "\n");
+                }
+                close(FD);
+                unlink($tmpfile);
+            }
+        } elsif (defined $event->{text}) {
+            if ($fd) {
+                my $rc = print $fd $event->{text}, "\n";
+                unless ($rc) {
+                    close $fd;
+                    undef $fd;
+                }
+            }
+        }
     });
 
     return 1;

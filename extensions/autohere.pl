@@ -4,8 +4,8 @@
 use strict;
 
 TLily::Event::event_r(type  => "user_input",
-	  		  order => "before",
-			  call  => \&autohere_handler);
+                      order => "before",
+                      call  => \&autohere_handler);
 
 shelp_r("autohere","Make user 'here' when they send messages");
 
