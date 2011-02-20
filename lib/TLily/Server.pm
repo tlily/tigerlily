@@ -87,7 +87,8 @@ sub new {
 
     bless $self, $class;
 
-    my $ui = TLily::UI::name($args{ui_name}) if ($args{ui_name});
+    my $ui;
+    $ui = TLily::UI::name($args{ui_name}) if ($args{ui_name});
 
     croak "required parameter \"host\" missing"
       unless (defined $args{host});
@@ -193,7 +194,9 @@ sub contact {
     my($iaddr, $paddr, $proto);
     local *SOCK;
 
-    my $ui = TLily::UI::name($self->{ui_name}) if ($self->{ui_name});
+    my $ui;
+    $ui = TLily::UI::name($self->{ui_name}) if ($self->{ui_name});
+
     $ui->print("Connecting to $serv, port $port...")
         if $ui;
 
@@ -225,7 +228,8 @@ sub contact_ssl {
     my $cert_path = $ENV{HOME}."/.lily/certs";
     my $cert_filename;
 
-    my $ui = TLily::UI::name($self->{ui_name}) if ($self->{ui_name});
+    my $ui;
+    $ui = TLily::UI::name($self->{ui_name}) if ($self->{ui_name});
     $ui->print("Connecting via SSL to $serv, port " . ($port+1) . "...")
         if $ui;
     $sock = IO::Socket::SSL->new(PeerAddr => $serv,
@@ -604,7 +608,8 @@ sub reader {
 
         # Connection lost/closed
         if (!defined($rc) || $rc == 0) {
-            my $ui = TLily::UI::name($self->{"ui_name"})
+            my $ui;
+            $ui = TLily::UI::name($self->{"ui_name"})
               if ($self->{"ui_name"});
             $ui->print("*** Lost connection to \"" .
                        $self->{"name"} . "\" ***\n") if $ui;

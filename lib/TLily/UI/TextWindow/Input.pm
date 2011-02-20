@@ -429,7 +429,8 @@ sub search_history {
     $dir = ($args{dir} >= 0) ? 1 : -1 if defined $args{dir};
 
     my $hist_idx = $self->{_search_pos};
-    my $length = length $self->{history}->[$hist_idx]
+    my $length;
+    $length = length $self->{history}->[$hist_idx]
         if defined $self->{history}->[$hist_idx];
 
     # Prefix and suffix are used to block off parts of the line from

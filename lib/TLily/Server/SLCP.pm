@@ -96,7 +96,8 @@ sub init () {
         my $ex = shift @{$event->{server}->{_export_queue}};
         return 0 unless $ex;
 
-        my $ui = ui_name($ex->{ui_name}) if (defined $ex->{ui_name});
+        my $ui;
+        $ui = ui_name($ex->{ui_name}) if (defined $ex->{ui_name});
 
         if ($event->{response} eq 'OKAY') {
             foreach my $l (@{$ex->{text}}) {

@@ -47,6 +47,7 @@ my $jay_sherman = Perl::Critic->new(-exclude => [qr/.*/]);
 # For a list of available policies, perldoc Perl::Critic
 my @policies = qw{
     CodeLayout::ProhibitTrailingWhitespace
+    Variables::ProhibitConditionalDeclarations
 };
 
 # XXX These policies were desired at one point, but don't currently pass.
@@ -60,7 +61,6 @@ my @failing_policies = qw{
     Subroutines::RequireFinalReturn
     TestingAndDebugging::RequireUseStrict
     TestingAndDebugging::RequireUseWarnings
-    Variables::ProhibitConditionalDeclarations
 };
 
 foreach my $policy (@policies) {

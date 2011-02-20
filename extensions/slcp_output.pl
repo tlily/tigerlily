@@ -32,7 +32,8 @@ sub private_fmt {
 
     $ui->print("\n");
 
-    my $servname = "(" . $e->{server}->name() . ") "
+    my $servname;
+    $servname = "(" . $e->{server}->name() . ") "
       if (scalar(TLily::Server::find()) > 1);
 
     $ts = timestamp($e->{TIME}) if ($e->{STAMP});
@@ -78,7 +79,8 @@ sub public_fmt {
 
     $ui->print("\n");
 
-    my $servname = "(" . $e->{server}->name() . ") "
+    my $servname;
+    $servname = "(" . $e->{server}->name() . ") "
       if (scalar(TLily::Server::find()) > 1);
 
     $ts = timestamp ($e->{TIME}) if ($e->{STAMP});
@@ -116,7 +118,9 @@ sub emote_fmt {
     my $body_fmt   = $e->{body_fmt}   || "emote_body";
 
     my $dest = $e->{RECIPS};
-    my $servname = "(" . $e->{server}->name() . ") "
+
+    my $servname;
+    $servname = "(" . $e->{server}->name() . ") "
       if (scalar(TLily::Server::find()) > 1);
 
 
