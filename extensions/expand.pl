@@ -70,7 +70,7 @@ sub exp_expand {
     my($pos, $line) = $ui->get_input;
 
     goto end if (!TLily::Server::active());
-    
+
     if ($pos == 0) {
         my $exp;
         if ($key eq '=') {
@@ -88,17 +88,17 @@ sub exp_expand {
         my $serv = active_server();
         my $serv_name = $serv->name();
         $exp =~ s/\@\Q$serv_name\E(?=$|,)//g;
-        
+
         $exp =~ tr/ /_/;
         $ui->set_input(length($exp) + 1, $exp . $key . $line);
         return;
     } elsif (($key eq ':') || ($key eq ';') || ($key eq ',')) {
         my $fore = substr($line, 0, $pos);
         my $aft  = substr($line, $pos);
-    
+
         goto end if ($fore =~ /[:;\/]/);
         goto end if ($fore =~ /^\s*[\/\$\?%]/);
-    
+
         my @dests = split(/,/, $fore);
         foreach (@dests) {
             my $full = mserv_expand_name($_);
@@ -106,12 +106,12 @@ sub exp_expand {
             $_ = $full;
             $_ =~ tr/ /_/;
         }
-    
+
         $fore = join(',', @dests);
         $ui->set_input(length($fore) + 1, $fore . $key . $aft);
         return;
     }
-    
+
   end:
     $ui->command("insert-self", $key);
     return;
@@ -121,7 +121,7 @@ sub exp_expand {
 sub exp_complete {
     my($ui, $command, $key) = @_;
     my($pos, $line) = $ui->get_input;
-    
+
     my $serv = active_server();
     my $serv_name = $serv->name();
 
@@ -165,13 +165,13 @@ sub exp_complete {
               $full = "/$command $expanded";
           }
         }
-    } 
+    }
     if ($full) {
         substr($line, 0, $pos) = $full;
         $pos = length($full);
         $ui->set_input($pos, $line);
     }
-    
+
     return;
 }
 
@@ -189,10 +189,10 @@ sub private_handler {
 
     my $me = $event->{server}->user_name();
     return unless (defined $me);
-    
+
     my $serv_name = $event->{server}->name();
-  
-    # recalc from SHANDLE, since some extensions may muck with the SOURCE 
+
+    # recalc from SHANDLE, since some extensions may muck with the SOURCE
     my $sender = $event->{server}->{HANDLE}->{$event->{SHANDLE}}->{NAME} .
         "@" . $serv_name;
     $sender =~ s/ /_/;
@@ -204,14 +204,14 @@ sub private_handler {
         unshift @past_sends, $sender;
         pop @past_sends if (@past_sends > ($config{tab_ring_size}||5));
     }
-    
+
     my @group = split /, /, $event->{RECIPS};
     if (@group > 1) {
         unshift @group, $event->{SOURCE};
         @group = map { s/ /_/; $_; } grep { $_ ne $me } @group;
         $expansions{sendgroup} = join(",", map($_."@".$serv_name, @group));
     }
-    
+
     return;
 }
 event_r(type => 'private',
@@ -223,10 +223,10 @@ sub user_send_handler {
     my $dlist =
         join(",", map(/@/ ? $_ : ($_."@".$serv_name),
             grep {defined $_} @{$event->{RECIPS}}));
-    
+
     $expansions{recips} = $dlist;
     $last_send = $event->{text};
-    
+
     @past_sends = grep { $_ ne $dlist } @past_sends;
     unshift @past_sends, $dlist;
     pop @past_sends if (@past_sends > ($config{tab_ring_size}||5));
@@ -302,7 +302,7 @@ sub oops_cmd {
         $full =~ tr/ /_/;
         $_ = $full . "@" . $serv_name;
     }
-    
+
     $expansions{recips} = join(",", @dests);
 
     if ($config{emote_oops}) {

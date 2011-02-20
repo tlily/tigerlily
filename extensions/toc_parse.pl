@@ -98,7 +98,7 @@ event_r(type => 'toc_CONFIG',
                 if ($type eq "g") {
                     $current_group = $value;
                 }
-                if ($type eq "b") { 
+                if ($type eq "b") {
 
                     $serv->state(HANDLE      => lc($value),
                                  NAME        => $value,

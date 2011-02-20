@@ -21,7 +21,7 @@ sub pinhead_command_handler {
 	}
 	return;
     }
-    
+
     if (@args != 1) {
 	$ui->print("(%pinhead name; type %help for help)\n");
 	return;
@@ -59,7 +59,7 @@ sub zip_find_candidates {
   my @words=();
   my $pos=0;
   for my $word (split(/(\s+)/,$message)) {
-      if(length($word)>=2 && 
+      if(length($word)>=2 &&
 	 ( $word=~/[a-z]{3,}/ || $word=~/^[A-Z]?[a-z]+/ )) {
 	push @words,[$pos,length($word)];
       }
@@ -67,7 +67,7 @@ sub zip_find_candidates {
   }
   return @words;
 }
-       
+
 sub zippify {
     my($event, $handler) = @_;
     return unless (defined $pinheads{$event->{SHANDLE}});
@@ -127,7 +127,7 @@ DISCO OIL bussing will CREATE a throbbing NAUGAHIDE pipeline running \
 STRAIGHT to the tropics from the rug producing regions and devalue the \
 DOLLAR!
 ");
-} 
+}
 
 
 1;

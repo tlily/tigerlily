@@ -33,7 +33,7 @@ sub new {
     my ($proto,$ui,$name) = @_;
     my $class = ref($proto) || $proto;
     my $self = $class->SUPER::new('name' => $name);
-    
+
     # Outlets - Need to predeclare these for CB magic.
     for my $predefine (qw/Window Screen StatusLeft StatusCenter StatusRight Entry/)  {
         $self->{$predefine} = undef;
@@ -53,9 +53,9 @@ sub new {
 # XXX this is a selector for when input occurs. name seems conflict-prone
 sub input {
   my ($self,$sender) = @_;
-  
+
   $self->{'Screen'}->insertText($sender->stringValue."\n");
-  
+
   my $text = $sender->stringValue;
   # If we're prompting, we should strip it off before sending the event.
     if ($self->{prompt}) {
@@ -63,7 +63,7 @@ sub input {
     } else {
       $self->print($text."\n");
     }
-    
+
     TLily::Event::send(type => 'user_input',
 		   ui   => $self,
 		   text => $text);
@@ -133,7 +133,7 @@ sub set {
         }
     }
     my $sep = " | ";
-    
+
     $self->{StatusLeft}->setEditable(1);
     $self->{StatusCenter}->setEditable(1);
     $self->{StatusRight}->setEditable(1);
@@ -160,19 +160,19 @@ sub print {
     if ($text =~ s/\n$//) {
         $trim = 1;
     }
-    
+
     # If we didn't end with a \n, then we don't need to print the indent next time through.
     if ($trim) {
         $text .= "\n";
         $self->{_noIndent} = 0;
     } else {
         $self->{_noIndent} = 1;
-    } 
-    
+    }
+
 
     #$text =~ s/\n/\n$self->{_indent}->[1]/g;
     $self->{Screen}->insertText($text);
-    
+
     $self->{Screen}->setEditable(0);
 }
 
@@ -217,7 +217,7 @@ sub indent {
     $self->{_indent} = [ @indent ];
 }
 
-# XXX had pulled this out of status for some reason. 
+# XXX had pulled this out of status for some reason.
 # It may be able to go back in there.
 
 sub redraw {

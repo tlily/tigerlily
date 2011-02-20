@@ -10,7 +10,7 @@ sub applescript_cmd {
 
     return unless @_;  # nothing to do.
 
-    my $cmd = join(" ", grep {defined} @_); 
+    my $cmd = join(" ", grep {defined} @_);
 
     $cmd =~ s/\\n/\n/g;
     open (my $fh, '|-', 'osascript 2> /dev/null') ;
@@ -19,7 +19,7 @@ sub applescript_cmd {
 
     return;
 }
-      
+
 command_r('applescript' => \&applescript_cmd);
 
 shelp_r("applescript" => "Run arbitrary applescript");

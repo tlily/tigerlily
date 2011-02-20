@@ -65,7 +65,7 @@ sub disp_stock {
     TLily::Server::HTTP->new(
       url => $url,
       callback => sub {
-      
+
 	my ($response) = @_;
 
 	my @chunks = split ( /\n/, $response->{_content} );
@@ -94,7 +94,7 @@ sub track_stock {
     TLily::Server::HTTP->new(
       url => $url,
       callback => sub {
-      
+
 	my ($response) = @_;
 
 	my @chunks = split ( /\n/, $response->{_content} );
@@ -109,7 +109,7 @@ sub track_stock {
         push @retval, "$stock:$value($change)";
 		}
 
-    
+
   TLily::UI->name("main")->set(stock => join (" ",@retval));
 
   });

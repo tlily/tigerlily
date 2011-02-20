@@ -290,7 +290,7 @@ sub verb_cmd {
         # Attempt to split out the verb spec string.
         goto verb_cmd_usage
           unless ($verb2_str =~ /^(?:(.+)::)?(\#\-?\d+|\$[^:]+)(?::(.+))?$/);
-      
+
         # Attempt to translate the servername given to a server object, or
         # the current active server if no name is given.
         @{$verb2_spec} = ($1, $2, $3);
@@ -391,7 +391,7 @@ sub verb_copy {
             @{$args{text}} = ();
         }
 
-        $server2->store(%args, 
+        $server2->store(%args,
                         target => $verb2->[1],
                         name   => $verb2->[2]);
     };
@@ -450,7 +450,7 @@ sub verb_diff {
     };
 
     my $sub = &$subcon;
-   
+
     $ui->print("(Diffing verb ", scalar $verb1->[0]->name, "::", $verb1->[1], ":", $verb1->[2], " against ", scalar $verb2->[0]->name, "::", $verb2->[1], ":", $verb2->[2], ")\n");
     $server1->fetch(ui     => $ui,
                     type   => "verb",
@@ -475,9 +475,9 @@ shelp_r("prop", "MOO property manipulation functions");
 shelp_r("obj", "MOO object manipulation functions");
 
 help_r("verb", "
-  
+
 Note that <obj> can optionally be of the form server::object.
-  
+
 %verb show <obj>           - Lists the verbs defined on an object.
 %verb show <obj>:<verb>    - Shows a verb's properties.
 %verb list <obj>           - Lists the verbs defined on a object.

@@ -40,12 +40,12 @@ use TLily::Server::AIM;
 
 =head1 DESCRIPTION
 
-This class interfaces tlily to the AIM service.  It also provides a set of 
+This class interfaces tlily to the AIM service.  It also provides a set of
 /commands for use with AIM messenging.
 
 Note:  For compatibility, this is subclassed from SLCP, and all the state
        database-related code is left unmolested.   Ideally though, this code
-       should be refactored into the base class and SLCP and TOC should sit 
+       should be refactored into the base class and SLCP and TOC should sit
        side by side, since TOC is not REALLY a subclass of SLCP.
 
 =head1 FUNCTIONS
@@ -62,7 +62,7 @@ sub init () {
             call => \&parse_sflap);
 }
 
-# need an API to get at the one in TLily::Server.. generally need to refactor 
+# need an API to get at the one in TLily::Server.. generally need to refactor
 # the connect stuff out of that function, so we canuse tlily::Server.
 my %server;
 
@@ -134,7 +134,7 @@ sub new {
                 die "Net::AOLIM callback was invoked - this should not happen.\n";
             }
         );
-        
+
         die "Error creating Net::AOLIM object! (user='$self->{user}')\n"
             unless defined($self->{aim});
 
@@ -184,9 +184,9 @@ sub command {
     # Check global command bindings.
     TLily::Server::command($self, $ui, $text) && return 1;
 
-    $self->cmd_process($text, sub { 
+    $self->cmd_process($text, sub {
         my ($event) = @_;
-        
+
         if (exists($event->{text})) {
             $ui->print($event->{text});
         }
@@ -267,7 +267,7 @@ sub cmd_process {
 
     my $result = "";
     if ($command =~ /^\s*\/(\w+)\s*(.*?)\s*$/) {
-        my $func = \&cmd_default;               
+        my $func = \&cmd_default;
 
         if (exists($commands{lc($1)})) {
             $func = $commands{lc($1)};
@@ -350,7 +350,7 @@ sub send_message {
 
     $message = qq(<html><body><font face="Helvetica" color="#000000">$message</font></body></html>);
     my $ui = TLily::UI::name($self->{ui_name});
-    
+
     foreach my $recip (@recips) {
         my $target  = $self->{aim}->norm_uname($recip);
         next unless ($target =~ /\S/);
@@ -372,7 +372,7 @@ sub send_message {
 # because it was not compatible with our non-blocking IO.
 sub parse_sflap {
     my($event, $handler) = @_;
-    
+
     my $serv = $event->{server};
     my $hlen = $Net::AOLIM::SFLAP_HEADER_LEN;
 
@@ -381,7 +381,7 @@ sub parse_sflap {
     return if (length($serv->{pending}) < $hlen);
 
     my $rsp_header = substr($serv->{pending}, 0, $hlen);
-    
+
     my ($rsp_ast,$rsp_type,$rsp_seq_new,$rsp_dlen) =
         unpack "aCnn", $rsp_header;
 
@@ -389,10 +389,10 @@ sub parse_sflap {
     if ($rsp_dlen && (length($serv->{pending}) < $hlen + $rsp_dlen)) {
         return;
     }
-    
+
     # Yes?  OK, grab it out of the buffer.
     my $rsp_recv_packet = substr($serv->{pending}, $hlen, $hlen+$rsp_dlen);
-    
+
     # .. and take it out of the buffer.
     substr($serv->{pending}, 0, $hlen+$rsp_dlen) = '';
 
@@ -427,7 +427,7 @@ sub parse_sflap {
 
 sub cmd_away {
     my ($self, $awaymsg) = @_;
-    
+
     my $awaymsg ||= "Currently Away";
 
     $self->send_sflap(toc_set_away => $awaymsg);
@@ -440,7 +440,7 @@ sub cmd_away {
 
 sub cmd_here {
     my ($self, $argstr) = @_;
-    
+
     $self->send_sflap('toc_set_away');
 
     $self->state(HANDLE      => lc($self->{user}),
@@ -480,7 +480,7 @@ sub cmd_who {
 
         $gr .= "\nGroup '$group':\n";
         $gr .= "  Name                                      On Since   Idle  State\n";
-        $gr .= "  ----                                   -----------   ----  -----\n";    
+        $gr .= "  ----                                   -----------   ----  -----\n";
 
         foreach my $buddy (sort keys %{$self->{BUDDY_GROUP}{$group}}) {
             my %r = $self->state(HANDLE => lc($buddy));
@@ -494,7 +494,7 @@ sub cmd_who {
             $c++;
 
             my @t = localtime($r{ON_SINCE});
-            my $onsince_str = sprintf("%02d/%02d/%02d", 
+            my $onsince_str = sprintf("%02d/%02d/%02d",
                                       $t[4]+1, $t[3], substr($t[5]+1900,2,2));
             if (time - $r{ON_SINCE} < 24*60*60) {
                 $onsince_str = sprintf("%02d:%02d:%02d", $t[2], $t[1], $t[0]);
@@ -578,7 +578,7 @@ sub idle_str {
 sub cmd_default {
     my ($self, $argstr) = @_;
 
-    return "(unrecognized command)";    
+    return "(unrecognized command)";
 }
 
 

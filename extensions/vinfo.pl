@@ -10,7 +10,7 @@ shelp_r('vinfo', "Automatic version information transmission.");
 
 sub command {
     my $server=active_server();
-    
+
     # The bit about 'send' events below is a hack for occasions when you
     # send a vinfo request to yourself.
     $server->cmd_process(join('', @_), sub {

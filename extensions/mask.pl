@@ -64,7 +64,7 @@ sub masker {
     my $old_source = $event->{SOURCE};
     my $repl;
     if ($config{mask_full}) {
-      $repl = $mask{$event->{SHANDLE}}; 
+      $repl = $mask{$event->{SHANDLE}};
     } else {
       $repl = $event->{SOURCE} . " (" . $mask{$event->{SHANDLE}} .")";
     }
@@ -72,7 +72,7 @@ sub masker {
     if ($event->{type} eq 'blurb') {
        $event->{text} =~ s/$old_source/$repl/;
     }
-  } 
+  }
 
   return;
 }

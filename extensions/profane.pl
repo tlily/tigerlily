@@ -1,5 +1,5 @@
 # -*- Perl -*-
-# $Header: /data/cvs/lily/tigerlily2/extensions/gag.pl,v 1.12 2003/05/10 21:52:20 coke Exp $ 
+# $Header: /data/cvs/lily/tigerlily2/extensions/gag.pl,v 1.12 2003/05/10 21:52:20 coke Exp $
 
 use strict;
 
@@ -181,7 +181,7 @@ Usage: %profane [user]
 The %profane command replaces the text of all sends from a user with a \
 stream of profanity. \
 ");
-} 
+}
 
 
 1;

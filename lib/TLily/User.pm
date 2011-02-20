@@ -49,7 +49,7 @@ TLily::User - User command manager.
 
 =head1 SYNOPSIS
 
-     
+
 use TLily::User;
 
 TLily::User::init();
@@ -92,7 +92,7 @@ my %shelp_modules;
 
 =item init
 
-Initializes the user command and help subsystems.  This command should be 
+Initializes the user command and help subsystems.  This command should be
 called once, from tlily.PL, during client initialization.
 
   TLily::User::init();
@@ -127,7 +127,7 @@ For a list of configuration variables, try "%help variables".
 For a list of available extensions, try "%help extensions".
 If you\'re interested in tlily\'s guts, try "%help internals".
 ');
-    
+
     rebuild_internal_help_idx(rootdir => "$::TL_LIBDIR",
                               filter => "TLily",
                               index => "internals");
@@ -204,7 +204,7 @@ sub rebuild_internal_help_idx {
 =item rebuild_file_help_idx($directory [, index => "indexname"] [, prefix => "prefix")
 
 Rebuilds the file-based on-line help directories.  This portion of the online
-help is used for viewing the POD documentation in the files that make up 
+help is used for viewing the POD documentation in the files that make up
 tigerlily and its extensions.
 
 The first arguement is the pathname of the directory to search for POD docs.
@@ -233,7 +233,7 @@ sub rebuild_file_help_idx {
     closedir(DIR);
 
     my $prefix = $args{'prefix'};
-    my $module;   
+    my $module;
     my $count = 0;
     foreach $module (@files) {
         next if ($module =~ /^\./);
@@ -245,7 +245,7 @@ sub rebuild_file_help_idx {
 
             open(F, '<', $file) ||
               warn "Can't open $file: $!\n";
-       
+
             my $namehead=0;
             while(<F>) {
                 if (/=head1 NAME/) { $namehead = 1; next }
@@ -279,9 +279,9 @@ Registers a new %command.  %commands are tracked via TLily::Registrar.
        $ui->print("You typed %foo $args\n");
     });
 
-The function reference in the second parameter will be invoked when the 
+The function reference in the second parameter will be invoked when the
 %command is typed, and passed two arguments: a UI object and a scalar
-containing any arguments to the %command. 
+containing any arguments to the %command.
 
 =cut
 
@@ -393,7 +393,7 @@ sub help_u {
 =item input_handler
 
 Input handler to parse %commands.
-This is registered automatically by init().    
+This is registered automatically by init().
 
 =cut
 
@@ -423,7 +423,7 @@ sub input_handler {
 =item help_index
 
 Help handler to display the contents of a help index.
-This is registered automatically by init().    
+This is registered automatically by init().
 
 =cut
 
@@ -452,7 +452,7 @@ sub help_index {
 =item help_command
 
 Command handler to provide the %help command.
-This is registered automatically by init().    
+This is registered automatically by init().
 
 =cut
 
@@ -467,8 +467,8 @@ sub help_command {
 
     elsif (ref($help{$arg}) eq "CODE") {
         $help{$arg}->($ui, $arg);
-    } 
-    
+    }
+
     elsif ($help{$arg} =~ /^POD:(\S+)/) {
         my $in_fh = ExoSafe::fetch($1);
         my $out_fh;

@@ -36,12 +36,12 @@ use TLily::Server::IRC;
 
 =head1 DESCRIPTION
 
-This class interfaces tlily to an IRC server.  It also provides a set of 
+This class interfaces tlily to an IRC server.  It also provides a set of
 /commands for use with IRC messenging.
 
 Note:  For compatibility, this is subclassed from SLCP, and all the state
 database-related code is left unmolested.   Ideally though, this code
-should be refactored into the base class and SLCP and IRC should sit 
+should be refactored into the base class and SLCP and IRC should sit
 side by side, since IRC is not REALLY a subclass of SLCP.
 
 =head1 FUNCTIONS
@@ -297,7 +297,7 @@ sub new {
 
                 for my $nick (split ',', $self->{NAME}->{$channel}->{MEMBERS}) {
                     next if $nick eq $self->user_name;
-                    
+
                     $self->state(NAME => $nick, __DELETE => 1)
                         if --$self->{NAME}->{$nick}->{COUNT} == 0;
                 }
@@ -357,13 +357,13 @@ sub new {
         sub {
             my ( $conn, $event ) = @_;
 
-            $ui->print( "Mode: $event->{from} set " . 
+            $ui->print( "Mode: $event->{from} set " .
                 join(" ",@{$event->{args}}) . " (" .
                 join(" ",@{$event->{to}})   . ")\n" );
 
         }
     );
- 
+
     # (no permissions to op, among others)
     $self->{irc}->add_handler(
         482,
@@ -621,7 +621,7 @@ sub cmd_detach {
 
 sub cmd_finger {
     my ( $self, $user ) = @_;
-    
+
     $self->{irc}->whois($user);
     return;
 }
@@ -686,10 +686,10 @@ sub cmd_rename {
 sub cmd_who {
     my ($self, $channel) = @_;
 
-    $channel =~ s/^-?#?//;    
+    $channel =~ s/^-?#?//;
 
     my $ui = TLily::UI::name( $self->{ui_name} );
-    
+
     if ($self->{NAME}->{$channel}->{CREATION}) {
         $ui->print(" Name\n");
         $ui->print(" ----\n");
@@ -701,7 +701,7 @@ sub cmd_who {
     else {
         $ui->print("(could find no discussion to match to \"$channel\")\n");
     }
-    
+
     return;
 }
 
@@ -735,7 +735,7 @@ collapse multiple sends that occcur in a a brief span of time into
 a single user visible send.
 
 Right now, we do this by stripping off the first line of the followup
-messages.  Ideally, we should allow the user to specify a "first send" 
+messages.  Ideally, we should allow the user to specify a "first send"
 and "followup send" format which would each be applied as necessary.
 Users should also be able to specify the throttle speed at which a new
 send (and, in most cases, a new *timestamp* is therefore used.
@@ -746,7 +746,7 @@ and to be honest, the type of sends one sees on IRC more commonly *need*
 this sort of collapse, while lily does not, to the same degree.
 
 Because of the limited use of IRC support, however, we can pretty much
-do whatever we want to IRC sends. Muahahah. 
+do whatever we want to IRC sends. Muahahah.
 
 If this does become a generic server thing, move it to a more appropriate
 location.
@@ -756,7 +756,7 @@ location.
 
 my $last_event;             # Keep track of the last event received.
 my $last_event_ts = -1;     # When did we last process an event?
-my $collapse_interval = 5;  # of seconds before a new send isn't collapsed. 
+my $collapse_interval = 5;  # of seconds before a new send isn't collapsed.
 
 sub queued_event_handler {
     my ($e) = shift;

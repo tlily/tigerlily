@@ -22,10 +22,10 @@ use Carp;
 sub new {
     my ($proto, %args) = @_;
     my $class = ref($proto) || $proto;
-	
+
     $args{port}   ||= 80;
     $args{protocol} = "http" unless defined $args{protocol};
-	
+
     croak "required parameter \"url\" missing"
       unless (defined $args{url});
 
@@ -41,10 +41,10 @@ sub new {
     }
 
     my $self = $class->SUPER::new(%args);
-    
+
     $self->{handler} = TLily::Event::event_r (type => 'server_connected',
 			  call => \&send_url);
-    
+
     $self->{filename} = $args{filename};
     $self->{url} = $args{url};
     $self->{callback} = $args{callback} if (defined($args{callback}));
@@ -57,15 +57,15 @@ sub send_url {
 
     #Since we got this far, we don't need the server_connected callback anymore.
     TLily::Event::event_u($event->{server}->{handler});
-    
+
     return unless exists ($event->{server}->{url});
-   
+
     my $request = "GET " . $event->{server}->{url} . " HTTP/1.0\r\n";
     $request .= "USER-AGENT: Tigerlily\r\n";
     $request .= "host: " . $event->{server}->{host} . "\r\n";
     $request .= "\r\n";
     $event->{server}->send($request);
-    
+
     return;
 }
 

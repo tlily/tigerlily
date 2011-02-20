@@ -6,14 +6,14 @@ bot_r(match => "grope",
       respond => "Me grope good!");
 
 bot_r(match => "answer",
-      respond => "The answer is 42, silly!");		
+      respond => "The answer is 42, silly!");
 
 bot_r(match => "excuse",
-      respond => sub { 
+      respond => sub {
 	  $exc=getquote("http://cgi.cs.wisc.edu/scripts/ballard/bofhserver.pl");
-	  $exc =~ s/The cause of the problem is/Automatic Excuse/;		
+	  $exc =~ s/The cause of the problem is/Automatic Excuse/;
 	  if ($exc =~ /\S/) {
-	      return($exc);		
+	      return($exc);
 	  } else {
 	      return(undef);
 	  }
@@ -34,7 +34,7 @@ bot_r(match => "surreal|weird|compliment",
 
 bot_r(match => "search",
       respond => sub { getsearch(); }
-     );		    
+     );
 
 
 ##############################################################################
@@ -42,7 +42,7 @@ sub getquote {
     my ($url)=@_;
     my ($ret,$p);
 
-    print "getting url\n";    
+    print "getting url\n";
     open (E, '-|', "lynx -dump $url");
     foreach (<E>) {
 	if (/____/) {
@@ -53,7 +53,7 @@ sub getquote {
 	s/\s+/ /g;
 	if ($p) { $ret .= $_; }
     }
-    close(E);    
+    close(E);
 
     $ret;
 }
@@ -62,7 +62,7 @@ sub getsearch {
     my ($ret);
 
     for (1..5) {
-      print "getting url\n";    
+      print "getting url\n";
       open (E, '-|', 'lynx -dump http://www.webcrawler.com/cgi-bin/SearchTicker');
       $ret = <E>;
       $ret = <E>;
@@ -72,12 +72,12 @@ sub getsearch {
       $ret .= "... " . <E>;
       $ret .= "... " . <E>;
       $ret .= "... " . <E>;
-      $ret .= "... " . <E>;      
+      $ret .= "... " . <E>;
       $ret =~ s/[\r\n]//g;
       close(E);
       last unless ($ret =~ /Choose a Channel/);
       $ret = "Unable to get a response from the SearchTicker.";
-      sleep 1;      
+      sleep 1;
     }
     $ret;
 }

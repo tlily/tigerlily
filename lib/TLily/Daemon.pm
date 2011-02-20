@@ -62,9 +62,9 @@ sub new {
     my ($proto, %args) = @_;
     my $class = ref($proto) || $proto;
     my $self = {};
-    
+
     croak "Required parameter \"port\" not found!" unless $args{port};
-    
+
     # Get a name for this server
     # This is stolen (cut-n-pasted) from Server.pm
     my $name = $args{name};
@@ -74,7 +74,7 @@ sub new {
     while ($daemon{$name."#$i"}) { $i++; }
     $name .= "#$i";
     }
-    
+
     $self->{name}      = $name;
     $self->{port}      = $args{port};
     $self->{proto}     = defined($args{protocol}) ? $args{protocol} : "daemon";
@@ -83,7 +83,7 @@ sub new {
     $self->{connected} = ();
 #    $self->{bytes_in}  = 0;
 #    $self->{bytes_out} = 0;
-    
+
     local (*SOCK);
     my $p = getprotobyname($self->{type});
     my $t = (($self->{type} eq 'udp') ? SOCK_DGRAM : SOCK_STREAM);
@@ -91,9 +91,9 @@ sub new {
         warn "socket: $!";
         return;
     }
-    
+
     $self->{sock} = *SOCK;
-    
+
     if (!(setsockopt($self->{sock}, SOL_SOCKET, SO_REUSEADDR, pack("l", 1)))) {
         warn "setsockopt: $!";
         close $self->{sock};
@@ -114,7 +114,7 @@ sub new {
         close $self->{sock};
         return;
     }
-    
+
     my $ui = TLily::UI::name();
     $ui->print("Listening on port " . $self->{port} . "\n");
 
@@ -123,9 +123,9 @@ sub new {
                                          obj    => $self,
                                          call   => \&acceptor);
     $self->{active} = 1;
-    
+
     $daemon{$name} = $self;
-    
+
     return bless $self, $class;
 }
 
@@ -137,19 +137,19 @@ Stops a listening daemon
 
 sub terminate {
     my ($self) = @_;
-    
+
     close($self->{sock}) if ($self->{sock});
     $self->{sock} = undef;
-    
+
     $daemon{$self->{name}} = undef;
-    
+
     TLily::Event::io_u($self->{io_id});
-    
+
     foreach my $cxn ($self->{connected}) {
     $cxn->close() if defined $cxn;
     }
     $self->{connected} = undef;
-    
+
     return;
 }
 
@@ -173,9 +173,9 @@ sub name {
 
 sub cxn_u {
     my ($self, $obj) = @_;
-    
+
     return unless $self->{connected};
-    
+
     $self->{connected} = grep { $_ != $obj } @{$self->{connected}};
     $self->{connected} = () unless $self->{connected};
     return;
@@ -183,20 +183,20 @@ sub cxn_u {
 
 sub acceptor {
     my ($self, $mode, $handler) = @_;
-    
+
     local *NEWSOCK;
     return unless (accept(NEWSOCK, $self->{sock}));
-    
+
     # Force subclasses to deal with nonblocking sockets.  That's just life.
     fcntl(NEWSOCK, F_SETFL, O_NONBLOCK);
-    
+
     my $class = ref($self);
-    my $obj = 
+    my $obj =
       defined($self->{connection_ob}) ? $self->{connection_ob} :
     "${class}::Connection";
     my $sock = *NEWSOCK;
-    
-    my $newobj = 
+
+    my $newobj =
       eval "${obj}->new('sock' => $sock , 'proto' => '$self->{proto}')";
     if (!defined($newobj)) {
         if ($@) {
@@ -207,9 +207,9 @@ sub acceptor {
         close NEWSOCK;
         return;
     }
-    
+
     $newobj->{daemon} = $self;
-    
+
     push @{$self->{connected}}, $newobj;
     return;
 }

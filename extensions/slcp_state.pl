@@ -1,8 +1,8 @@
 # -*- Perl -*-
 # $Id$
 
-# This hash keeps track of what fields from %USER and %DISC are stored in 
-# the state database.  We need to ensure that every one of these state 
+# This hash keeps track of what fields from %USER and %DISC are stored in
+# the state database.  We need to ensure that every one of these state
 # variables that we do store is properly updated by the corresponding %NOTIFY
 # events.
 
@@ -71,7 +71,7 @@ my $sub = sub {
 		     server => $e->{Server});
 	TLily::Event::send(\%event);
     }
-    
+
     return;
 };
 event_r(type  => 'here',
@@ -81,10 +81,10 @@ event_r(type  => 'here',
 $sub = sub {
     my ($e) = @_;
     my $serv = $e->{server};
-    
+
     $serv->state(HANDLE => $e->{SHANDLE},
 		 STATE  => "away");
-    
+
     # if it's me, fire off a userstate event.
     if ($e->{isuser}) {
 	my %event = (type   => 'userstate',
@@ -94,7 +94,7 @@ $sub = sub {
 		     server => $serv);
 	TLily::Event::send(\%event);
     }
-    
+
     return;
 };
 event_r(type  => 'away',
@@ -105,9 +105,9 @@ event_r(type  => 'away',
 # (need to add one.. not that it matters really)
 $sub = sub {
     my ($e) = @_;
-    
+
     my $name = $e->{server}->get_name(HANDLE => $e->{RHANDLE}->[0]);
-    
+
     $e->{server}->state(HANDLE   => $e->{RHANDLE}->[0],
                         NAME     => $name,
                         __DELETE => 1);

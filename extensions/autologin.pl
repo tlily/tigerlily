@@ -27,7 +27,7 @@ unshift @files, $config{'autologin_file'} if ($config{'autologin_file'});
 shelp_r('autologin_file' => "Prepended to list of files to check for autologin information.", "variables");
 
 shelp_r('autologin', "Module for automating the login process.", "concepts");
-help_r('autologin', 
+help_r('autologin',
 "Reads files containing lines of the format:
     alias host port login passwd
 in order to automate your login process to the specified server.  Unlike lclient, all fields must be present or the line will be ignored. (FIXME!)
@@ -56,7 +56,7 @@ sub load {
 	    };
 	}
 	close(FD);
-	
+
 	last;
     }
 }

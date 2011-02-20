@@ -4,7 +4,7 @@
 # NOTES
 #
 # This is not a REMOTELY correct IO module.  I'm trying to implement JUST
-# ENOUGH so that I can play some old infocom games through tlily.  Do not 
+# ENOUGH so that I can play some old infocom games through tlily.  Do not
 # use this as a model.  It's wrong in some ways-- but it works
 #  --Josh Wilmes <josh@hitchhiker.org>
 #
@@ -14,9 +14,9 @@
 #
 # In addition, the @flushed array has one element per screen line, which is
 # a 1 or 0, indicating whether that screen line has been sent to the user.
-# 
-# When we see it printing what looks like a prompt (something matching the 
-# prompt regexp below), we sweep up from the bottom of the screen until we 
+#
+# When we see it printing what looks like a prompt (something matching the
+# prompt regexp below), we sweep up from the bottom of the screen until we
 # find a line which was already sent to the user, and then stop.  The resulting
 # lines are then grouped together into a send to the user and marked 'flushed'.
 #
@@ -54,26 +54,26 @@ sub new {
     my ($type, %options) = @_;
     my $self = new Games::Rezrov::ZIO_Generic();
     bless $self, $type;
-    
+
     ($columns, $rows) = (76, 24);
-    
+
     $self->clear_screen();
-    
+
     return $self;
 }
 
 sub write_string {
-    my ($self, $string, $x, $y) = @_;    
+    my ($self, $string, $x, $y) = @_;
     return if $in_other_window;
 
     $self->absolute_move($x, $y) if defined($x) and defined($y);
 
     if ($string =~ /$prompt/) {
-	# we treat prompts specially, eating them up and sending out any 
+	# we treat prompts specially, eating them up and sending out any
 	# unflushed output
 
 	print "WRITE_STRING($abs_x,$abs_y) [PROMPT]: $string\n" if $debug;
-    
+
 	$self->flush_output();
     } else {
 	print "WRITE_STRING($abs_x,$abs_y): $string\n" if $debug;
@@ -81,24 +81,24 @@ sub write_string {
 	# otherwise, add it to the screen
 	substr($screen[$abs_y],$abs_x) = $string;
 	$flushed[$abs_y] = 0;
-	$abs_x += length($string);        
+	$abs_x += length($string);
     }
 }
 
 sub flush_output {
-    my @out;  
+    my @out;
     my $a;
     for (0..$rows-1) {
-	my $l = $rows-1-$_;	    
+	my $l = $rows-1-$_;
 	last if ($_ > 0 && $flushed[$l]);
 	push @out, $screen[$l] if (! $flushed[$l]);
-	$flushed[$l] = 1;  	  
+	$flushed[$l] = 1;
     }
-    
+
     my $send = "";
     foreach (reverse @out) {
 	$send .= "$_\n";
-    }    
+    }
     $send =~ s/[\n\s]*$//g;
     $send =~ s/^[\n\s]*//g;
     $send = wrap_lines($send);
@@ -118,7 +118,7 @@ sub clear_to_eol {
     my $diff = $columns - $abs_x;
     if ($diff > 0) {
 	substr($screen[$abs_y],$abs_x, $diff) = " " x $diff;
-	$flushed[$abs_y] = 0;     
+	$flushed[$abs_y] = 0;
     }
 }
 
@@ -134,7 +134,7 @@ sub can_split {
 
 sub split_window {
     my ($self, $line) = @_;
-    
+
     $split_line = $line;
 }
 
@@ -160,11 +160,11 @@ sub absolute_move {
     my ($self, $nx, $ny) = @_;
     return if $in_other_window;
     return if ($ny <= $split_line);
-    
+
     print "ABSOLUTE_MOVE($nx,$ny)\n" if $debug;
 
     $abs_x = $nx;
-    $abs_y = $ny;  
+    $abs_y = $ny;
 }
 
 sub newline {
@@ -177,7 +177,7 @@ sub newline {
 	# cursor is at bottom of screen; scroll needed
 	my $str = shift @screen;
 	my $flushed = shift @flushed;
-	
+
 	# add a new line at the bottom.
 	push @screen, "";
 	push @flushed, 0;
@@ -185,7 +185,7 @@ sub newline {
 
 	$abs_y++;
     }
-    
+
     $abs_x = 0;
     Games::Rezrov::StoryFile::register_newline();
 }
@@ -210,7 +210,7 @@ sub get_input {
   	print "#\$# INPUT LINE\n";
     }
     my $input = <STDIN>;
-       
+
     chomp($input);
     return $input;
 }
@@ -233,7 +233,7 @@ sub clear_screen {
     $init=1;
 
     print "CLEAR_SCREEN\n" if $debug;
-    
+
     for (0..25) {
 	$screen[$_] = " " x $columns;
 	$flushed[$_] = 0;
@@ -254,7 +254,7 @@ sub status_hook {
 }
 
 sub set_window {
-    my ($self, $window) = @_;    
+    my ($self, $window) = @_;
     print "SET_WINDOW: $window\n" if $debug;
 
     $self->SUPER::set_window($window);
@@ -291,7 +291,7 @@ sub warned {
 # format messages with space so a multi-line send looks ok on a normal 80
 # column client.
 sub wrap_lines {
-    my ($str) = @_;    
+    my ($str) = @_;
     my $ret;
 
     return $str unless ($str =~ /\n/);

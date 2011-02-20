@@ -27,12 +27,12 @@ sub new {
     my $proto = shift;
     my $class = ref($proto) || $proto;
     my $self  = {};
-    
+
     # Values to pass to select().
     $self->{rbits} = "";
     $self->{wbits} = "";
     $self->{ebits} = "";
-    
+
     bless $self, $class;
 }
 
@@ -413,7 +413,7 @@ sub io_u {
 
 Register a timed event handler.
 
-=over 
+=over
 
 =item call
 
@@ -596,7 +596,7 @@ sub loop_once {
             if ($e->{type} eq $h->{type} or $h->{type} eq 'all') {
                     my $debug = $config{event_debug} &&
                       "$e->{type} $h->{origin}->{file}" =~ $config{event_debug};
-    
+
                     TLily::UI::name()->print("Send $e->{type}:$h->{order} ",
                                              "($h->{id}) via ",
                                              "$h->{origin}->{file}:",

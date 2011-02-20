@@ -83,11 +83,11 @@ sub cmd_handler {
 	  $ui->print("($name was not silenced to begin with.)\n");
 	  return;
         }
-	
+
     }
-    
+
     return;
-} 
+}
 
 sub silencer {
    my($event, $handler) = @_;
@@ -96,7 +96,7 @@ sub silencer {
    # Dirty dirty hack.  I'm so ashamed.
    my $lncnt = length($event->{VALUE})/72;
 
-   if($lncnt >= $lines) { 
+   if($lncnt >= $lines) {
      $event->{VALUE} =~ s/^(.*?[\\\?\\\!\\\.]+).*/$1/g;
      $event->{VALUE} .= " ...but you don't care.";
    }

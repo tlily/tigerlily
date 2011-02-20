@@ -4,7 +4,7 @@
 use strict;
 
 #
-# nicely format group info. -- this is somewhat obsolete with 
+# nicely format group info. -- this is somewhat obsolete with
 #  gad's recent server changes.
 #
 
@@ -61,7 +61,7 @@ sub group_cmd {
       }
     }
   }
-  
+
   if ($subcmd eq "") {
     print_results($ui,"you have no groups defined",%groups);
   } elsif ($subcmd eq "find") {
@@ -89,6 +89,6 @@ sub group_cmd {
     print_results($ui,"see %help group");
   }
   return;
-} 
+}
 #TRUE! They return TRUE!
 1;

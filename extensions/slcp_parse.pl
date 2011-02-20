@@ -155,18 +155,18 @@ sub parse_line {
     # SLCP "%USER" and "%DISC" messages, used to sync up the
     # initial client state database.
     if ($line =~ /^%USER /) {
-	
+
 	$ui->print("(please wait, syncing with SLCP)\n")
 	  if ($ui && !$serv->{SLCP_SYNC});
 	$serv->{SLCP_SYNC} = 1;
-	
+
 	my %args = SLCP_parse($line);
 	foreach (keys %args) {
 	    delete $args{$_} unless $keep{USER}{$_};
 	}
-	
+
 	$serv->state(%args);
-	
+
 	return;
     }
 
@@ -175,9 +175,9 @@ sub parse_line {
 	foreach (keys %args) {
 	    delete $args{$_} unless $keep{DISC}{$_};
 	}
-	
+
 	$serv->state(%args);
-	
+
 	return;
     }
 
@@ -185,15 +185,14 @@ sub parse_line {
     if ($line =~ /^%GROUP /) {
 	my %args = SLCP_parse($line);
 	$serv->state(%args);
-	
+
 	return;
     }
 
-	
     # SLCP "%DATA" messages.
     if ($line =~ /^%DATA /) {
 	my %args = SLCP_parse($line);
-	
+
 	# Sanity check: do we know all these events?
 	if ($args{NAME} eq "events") {
 	    my $e;
@@ -203,7 +202,7 @@ sub parse_line {
 		}
 	    }
 	}
-	
+
 	$serv->state(DATA => 1, %args);
 
 	return;
@@ -230,16 +229,16 @@ sub parse_line {
     if ($line =~ /^%NOTIFY /) {
 
 	%event = SLCP_parse($line);
-	
+
 	# treat event name case-insensitively
 	$event{EVENT} = lc($event{EVENT});
-	
+
 	# SLCP bug?!
 	# Fixed, I think.  -DN
 	if ($event{EVENT} =~ /emote|public|private/) {
 	    $event{NOTIFY} = 1;
 	}
-	
+
 	$event{SHANDLE} = $event{SOURCE};
 	$event{SOURCE}  = $serv->get_name(HANDLE => $event{SOURCE});
 
@@ -247,7 +246,7 @@ sub parse_line {
 	    $event{SOURCE} eq $serv->user_name) {
 	    $event{NOTIFY} = 0;
 	}
-	
+
 	if ($event{RECIPS}) {
 	    $event{RHANDLE} = [ split /,/, $event{RECIPS} ];
 	    $event{RECIPS}  =
@@ -255,7 +254,7 @@ sub parse_line {
 		   map { $serv->get_name(HANDLE => $_) }
 		   @{$event{RHANDLE}});
 	}
-	
+
 	if ($event{TARGETS}) {
 	    $event{THANDLE} = [ split /,/, $event{TARGETS} ];
 	    $event{TARGETS}  =
@@ -263,27 +262,27 @@ sub parse_line {
 		   map { $serv->get_name(HANDLE => $_) }
 		   @{$event{THANDLE}});
 	}
-	
+
 	# Um.  Undef?  Don't set it at all?
 	$event{VALUE} = undef if $event{EMPTY};
-	
+
 	if (exists($events{$event{EVENT}})) {
 	    $event{type} = $event{EVENT};
 	} else {
 	    $event{type}  = "slcp_unknown";
 	}
-	
+
 	# This will only be used if no formatter rewrites the text.
 	$event{text}  = "(notify: $event{SOURCE}";
 	$event{text} .= " -> $event{RECIPS}"       if ($event{RECIPS});
 	$event{text} .= ": $event{EVENT}";
 	$event{text} .= " = \"$event{VALUE}\""     if ($event{VALUE});
 	$event{text} .= ")";
-	
+
 	if ($event{SOURCE} eq $serv->user_name) {
 	    $event{isuser} = 1;
 	}
-	
+
 	goto found;
     }
 
@@ -362,7 +361,7 @@ sub parse_line {
 	%event = (type    => 'options',
 		  options => \@o,
                   text => $line);
-	
+
         if (! $serv->{SEEN_OPTIONS}) {
             $serv->{SEEN_OPTIONS}=1;
             # flush out any pending send data at this point.  We queue the

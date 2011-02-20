@@ -123,12 +123,12 @@ sub spelled_correctly {
 
         return;
     };
-	
+
     my $resp  = <I_READ>;
     while (defined(my $blank = <I_READ>)) {
         last if $blank =~ /^$/;
     }
-	
+
     if ($resp =~ /^[*+-]/) {
         $look_cache{$word}=1;
     } else {

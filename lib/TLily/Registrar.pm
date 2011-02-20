@@ -59,7 +59,7 @@ Creates a new Registrar object.
 sub new {
     my($proto, $name) = @_;
     return $registrars{$name} if ($registrars{$name});
-    
+
     my $class = ref($proto) || $proto;
     my $self  = {};
     $registrars{$name} = $self;
@@ -148,7 +148,7 @@ sub add {
     $self = shift if (@_ > 2);
     $self = ref($self) ? $self : $default[-1];
     return unless $self;
-    
+
     my($class, $data) = @_;
     push @{$self->{$class}}, $data;
 }
@@ -164,7 +164,7 @@ sub remove {
     $self = shift if (@_ > 2);
     $self = ref($self) ? $self : $default[-1];
     return unless $self;
-    
+
     my($class, $data) = @_;
     @{$self->{$class}} = grep { $_ ne $data } @{$self->{$class}};
 }
@@ -179,7 +179,7 @@ sub unwind {
     my $self = shift;
     $self = ref($self) ? $self : $default[-1];
     return unless $self;
-    
+
     my $class;
     foreach $class (keys %$self) {
         my $data;

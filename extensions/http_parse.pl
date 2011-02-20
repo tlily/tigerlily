@@ -11,8 +11,8 @@ sub parse_http {
     my $st;
 
     $daemon = TLily::Daemon::HTTP::daemon() unless defined($daemon);
-    
-    if ($event->{daemon}) {   
+
+    if ($event->{daemon}) {
         $event->{server} = undef;
 
         $st = \$event->{daemon}->{_state};
@@ -26,7 +26,7 @@ sub parse_http {
     }
 
     my $text = $$st->{"_partial"} . $event->{data};
-    
+
     while ($text =~ s/^([^\r\n]+)\r?\n//) {
         my $line = $1;
         TLily::Event::send(type   => 'http_line',
@@ -50,27 +50,27 @@ sub parse_http_line {
     my $text = $event->{data};
     my $st;
 
-    if ($event->{daemon}) {   
+    if ($event->{daemon}) {
         $event->{server} = undef;
 
         $st = \$event->{daemon}->{"_state"};
     } else {
         $st = \$event->{server}->{"_state"};
-   } 
-    
+   }
+
     #    my $ui = TLily::UI::name();
-    
+
     if ((defined $event->{server}) && (!($$st->{_status}))) {
         if ($text !~ /^(HTTP\/\d+\.\d+)[ \t]+(\d+)[ \t]+.*$/) {
             # Do something here.  This is unexpected.
             return;
         }
-        
+
         $event->{server}->{"_state"} = { _proto   => $1,
                                          _status  => $2,
                                          _msg     => $3
                                        };
-        
+
         #    $ui->print ("Server returned status ", $$st->{_status}, "\n");
         return;
     } elsif ((!(defined $event->{server})) && (!($$st->{_command}))) {
@@ -83,12 +83,12 @@ sub parse_http_line {
             $event->{daemon}->close();
             return;
         }
-        
+
         $$st = { _command => $1,
                  _file    => $2,
                  _proto   => $3,
                };
-        
+
         return;
     }
 
@@ -103,14 +103,14 @@ sub complete_http {
 
     my $st;
 
-    if ($event->{daemon}) {   
+    if ($event->{daemon}) {
         $event->{server} = undef;
 
         $st = \$event->{daemon}->{_state};
-        $$st->{_done} = 1;        
+        $$st->{_done} = 1;
     } else {
         $st = \$event->{server}->{_state};
-        $$st->{_done} = 1;        
+        $$st->{_done} = 1;
 
         save_file($event, $handler);
         return;
@@ -129,7 +129,7 @@ sub complete_http {
     # Special case for /
     if ($$st->{_file} =~ m|^/$|) {
         my $d = $event->{daemon};
-        
+
         $d->print("HTTP/1.0 200 OK\r\n");
         $d->print("Date: " . TLily::Daemon::HTTP::date() . "\r\n");
         $d->print("Connection: close\r\n");
@@ -164,7 +164,7 @@ sub save_file {
     my $st;
     my $filename;
 
-    if ($event->{daemon}) {   
+    if ($event->{daemon}) {
         $event->{server} = undef;
 
         $st = \$event->{daemon}->{"_state"};

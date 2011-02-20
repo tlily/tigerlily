@@ -65,7 +65,7 @@ foreach my $policy (@policies) {
 
 # Do this one manually - requires an option.
 $jay_sherman->add_policy(
-    -policy => 'CodeLayout::ProhibitHardTabs', 
+    -policy => 'CodeLayout::ProhibitHardTabs',
     -config => { allow_leading_tabs => 0 }
 );
 

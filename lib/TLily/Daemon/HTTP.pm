@@ -24,9 +24,9 @@ use vars qw(@ISA);
 sub send {
     my ($self, %args) = @_;
     my $filename;
-	
+
     croak "send called without required argument \"file\"!" unless $args{file};
-    
+
     unless (($filename = $self->{daemon}->file_c($args{file}))) {
 	$self->send_error( errno => 404,
 			   title => "File not found",
@@ -37,7 +37,7 @@ sub send {
     }
 
     $self->{filealias} = $args{file};
-    
+
     local *IN;
     if ((! -r $filename) || !(open IN, '<', $filename)) {
 	$self->send_error( errno => 403,
@@ -46,9 +46,9 @@ sub send {
 			   head  => $args{head} );
 	return 0;
     }
-    
+
     $self->{filedes} = *IN;
-    
+
     print {$self->{sock}} "HTTP/1.0 200 OK\r\n";
     print {$self->{sock}} "Date: " . TLily::Daemon::HTTP::date() . "\r\n";
     print {$self->{sock}} "Connection: close\r\n";
@@ -56,7 +56,7 @@ sub send {
     print {$self->{sock}} "Content-Type: application/octet-stream\r\n";
     print {$self->{sock}} "Cache-Control: private\r\n";
     print {$self->{sock}} "\r\n";
-    
+
     # the real data is done elsewhere.
     unless ($args{head}) {
 	$self->{output_id} = TLily::Event::io_r (handle => $self->{sock},
@@ -64,13 +64,13 @@ sub send {
 						 obj    => $self,
 						 call   => \&send_raw);
     }
-    
+
     return 1;
 }
 
 sub send_error {
     my ($self, %args) = @_;
-    
+
     print {$self->{sock}} "HTTP/1.0 ${args{errno}} ${args{title}}\r\n";
     print {$self->{sock}} "Date: " . TLily::Daemon::HTTP::date() . "\r\n";
     if (exists $args{headers}) {
@@ -79,7 +79,7 @@ sub send_error {
 	}
     }
     print {$self->{sock}} "\r\n";
-    
+
     unless ($args{head}) {
 	print {$self->{sock}} "<html><head>\n";
 	print {$self->{sock}} "<title>${args{errno}} ${args{title}}</title>\n";
@@ -169,23 +169,23 @@ Creates a new TLily::Daemon::HTTP object.
 sub new {
     my ($proto, %args) = @_;
     my $class = ref($proto) || $proto;
-    
+
     # Only allow one instance of this class.
     return $inst if defined($inst);
-    
+
     $args{protocol} = "http";
     $args{port}   ||= 8080;
     $args{type}     = 'tcp';
     $args{name}     = "httpd";  # Change this if we ever do multiple instances
-    
+
     my $self = $class->SUPER::new(%args);
-    
+
     return undef unless defined($self);
 
     $inst = $self;
-    
+
     TLily::Registrar::class_r('web_file' => \&file_u);
-    
+
     bless $self, $class;
 }
 
@@ -208,7 +208,7 @@ Terminate the daemon
 
 sub terminate {
     $inst->SUPER::terminate();
-    
+
     $inst = undef;
 }
 
@@ -230,16 +230,16 @@ of the path.
 sub file_r {
     shift if (@_ % 2);
     my (%args) = @_;
-    
+
     croak "File registered without \"file\"" unless defined($args{file});
-    
+
     return undef unless -r $args{file};
-    
+
     my @path = split m|/|, $args{file};
     $args{alias} = pop @path unless defined($args{alias});
-    
+
     TLily::Registrar::add("web_file", $args{alias});
-    
+
     $files{$args{alias}} = $args{file};
     return $inst->{port};
 }
@@ -253,10 +253,10 @@ Unregister a file for export.
 sub file_u {
     shift if (@_ > 1);
     my ($alias) = @_;
-    
+
     my @path = split m|/|, $alias;
     $alias = pop @path if !defined($files{$alias});
-    
+
     $files{$alias} = undef;
 }
 
@@ -269,7 +269,7 @@ Return the real name for $alias, or undef if not found.
 sub file_c {
     shift if (@_ > 1);
     my ($alias) = @_;
-    
+
     return $files{$alias};
 }
 
@@ -283,13 +283,13 @@ with HTTP/1.1 date standards.
 sub date {
     shift if (@_ > 1);
     my ($time) = @_;
-    
+
     $time = time() unless ($time);
     my ($sec, $min, $hour, $mday, $mon, $year, $wday) = gmtime($time);
     my $dayofweek = (qw(Mon Tue Wed Thu Fri Sat Sun))[$wday];
     my $month = (qw(Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec))[$mon];
     $year += 1900;
-    
+
     return sprintf ("${dayofweek}, %02d $month $year %02d:%02d:%02d GMT",
 		    $mday, $hour, $min, $sec);
 }

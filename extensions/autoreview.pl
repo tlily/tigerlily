@@ -89,16 +89,16 @@ sub review_cmd {
 }
 
 sub review_start {
-    my ($server) = @_;       
+    my ($server) = @_;
 
     eval { @to_review = @{$config{autoreview}} };
-    return unless (@to_review); 
+    return unless (@to_review);
     review($server);
 }
 
 sub review {
     my ($server) = @_;
-    
+
     return unless (@to_review);
     my $target = shift @to_review;
     $rev_interesting = 0;

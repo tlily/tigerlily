@@ -4,7 +4,7 @@ use TLily::Bot custom;
 use FileHandle;
 use IPC::Open2;
 use POSIX ":sys_wait_h";
-    
+
 my %running_games;
 my $max_games = 5;
 my $interpreter = "./rezrov_slave.pl ZORK1.DAT";
@@ -13,7 +13,7 @@ $SIG{CHLD} = \&reaper;
 
 event_r(type => 'private',
 	call => sub {
-	    my($event, $handler) = @_;	
+	    my($event, $handler) = @_;
 	    my $message = $event->{VALUE};
 
 	    if (! $running_games{$event->{SHANDLE}}) {
@@ -21,7 +21,7 @@ event_r(type => 'private',
 		    response($event, "Too many games are currently in session.  Please try again later.");
 		    return;
 		}
-		
+
 		start_game($event);
 	    } else {
 		if ($message =~ /^\s*save/i) {
@@ -31,7 +31,7 @@ event_r(type => 'private',
 		my $fh = $running_games{$event->{SHANDLE}}->{"wh"};
 		print $fh "$message\n";
 	    }
-	    
+
 	    return 0;
 	});
 
@@ -39,7 +39,7 @@ event_r(type => 'private',
 
 sub start_game {
     my ($event) = @_;
-    
+
     my $rh = new FileHandle;
     my $wh = new FileHandle;
     $wh->autoflush(1);
@@ -62,12 +62,12 @@ sub start_game {
 					       response($event, $1, 1);
 					   }
 				       });
-    
+
     $running_games{$event->{SHANDLE}} = { rh => $rh,
 					 wh => $wh,
   					 pid => $pid,
 					 iohandler => $iohandler };
-    
+
 }
 
 sub reaper {
@@ -80,8 +80,8 @@ sub reaper {
 	    	print "Reaped PID $child\n";
 	        delete $running_games{$_};
 	    }
-        }	
-    }	
+        }
+    }
 }
 
 sub unload {

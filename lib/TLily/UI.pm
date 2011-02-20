@@ -67,7 +67,7 @@ of UI.  Takes a hash list containing the "name" parameter as its argument.
 sub new {
     my($proto, %a) = @_;
     my $class = ref($proto) || $proto;
-    
+
     croak "Required UI parameter \"name\" missing."  unless ($a{"name"});
     croak "UI \"$a{name}\" already exists." if (exists $ui{$a{"name"}});
 

@@ -30,10 +30,10 @@ sub init_bandwidth {
         my $ui = ui_name("main");
         my $server = active_server();
         return 2 unless ($server);
-    
+
         my $in       = $server->{bytes_in} - $last_in;
         my $last_in  = $server->{bytes_in};
-    
+
         $in  = int($in/$update);
         if ($in > 1024) {
             $in = sprintf "%.1f k", ($in / 1024);
@@ -41,7 +41,7 @@ sub init_bandwidth {
             $in .= " b";
         }
         $in  .= "/s";
-    
+
         $ui->set(bandwidth => $in);
     };
     TLily::Event::time_r(after    => $update,

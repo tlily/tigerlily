@@ -86,11 +86,11 @@ my %snamemap   =
 my %cpairmap   = ("-1 -1" => 0);
 
 # The entity map matches unicode characters to HTML-style
-# entities for non-ASCII characters that might be pasted in from some 
+# entities for non-ASCII characters that might be pasted in from some
 # other program.
 my %entitymap = (
     # Misc
-    128 => '&euro;',   # euro ()   
+    128 => '&euro;',   # euro ()
     130 => '&sbquo;',  # single low-9 quotation mark
     132 => '&bdquo;',  # double low-9 quotation mark
     133 => '&hellip;', # horizontal elipsis
@@ -131,7 +131,7 @@ my %entitymap = (
     8250 => '&rsaquo;', # single right-pointing angle quotation mark
     8364 => '&euro;',   # euro sign
     65279 => '&zwj;',   # zero width no-break space
-    
+
     # ISO 8859-1 Symbols
     160 => '&nbsp;',   # non-breaking space
     161 => '&iexcl;',  # inverted exclamation mark (¡)
@@ -167,7 +167,7 @@ my %entitymap = (
     191 => '&iquest;', # inverted question mark (¿)
     215 => '&times;',  # multiplication (×)
     247 => '&divide;', # division (÷)
-    
+
     # ISO 8859-1 Characters
     192 => '&Agrave;', # capital a, grave accent (À)
     193 => '&Aacute;', # capital a, acute accent (Á)
@@ -232,7 +232,7 @@ my %entitymap = (
     254 => '&thorn;',  # small thorn, Icelandic (þ)
     255 => '&yuml;'    # small y, umlaut mark (ÿ)
 );
-    
+
     sub start {
     # Work around a bug in certain curses implementations where raw() does
     # not appear to clear the "lnext" setting.
@@ -389,7 +389,7 @@ sub read_char {
 	return if ($c2 eq "-1" || !defined $c2);
 
 	# convert utf8 representation ($c, $c2) to unicode number.
-	my $num =  (((ord($c) & 31) << 6) | (ord($c2) & 63)); 
+	my $num =  (((ord($c) & 31) << 6) | (ord($c2) & 63));
 
 	if (exists($entitymap{$num})) {
 	    $c = $entitymap{$num};
@@ -455,7 +455,7 @@ sub clear {
 
 
 sub clear_background {
-    my ($self, $style) = @_;    
+    my ($self, $style) = @_;
 
     $self->{W}->bkgdset
         (ord(' ') | $self->get_style_attr($style));

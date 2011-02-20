@@ -24,13 +24,13 @@ sub new {
     my $proto = shift;
     my $class = ref($proto) || $proto;
     my $self  = $class->SUPER::new(bg => 'status_window', @_);
-    
+
     $self->{left}     = [];
     $self->{right}    = [];
     $self->{override} = [];
     $self->{var}      = {};
     $self->{str}      = '';
-    
+
     bless($self, $class);
 }
 
@@ -43,12 +43,12 @@ sub make_active {
 sub define {
     my($self, $name, $type) = @_;
     $type ||= 'right';
-    
+
     # Remove this variable from the existing lists.
     @{$self->{left}}     = grep { $_ ne $name } @{$self->{left}};
     @{$self->{right}}    = grep { $_ ne $name } @{$self->{right}};
     @{$self->{override}} = grep { $_ ne $name } @{$self->{override}};
-    
+
     if ($type eq 'left') {
 	push @{$self->{left}}, $name;
     } elsif ($type eq 'right') {
@@ -76,7 +76,7 @@ sub build_string {
 	$begin = "";
 	$end = "";
     }
- 
+
     foreach my $v (@{$self->{override}}) {
 	next unless (defined $self->{var}->{$v});
 	my $s = $self->{var}->{$v};
@@ -87,15 +87,15 @@ sub build_string {
 	$self->{str} = $begin . (' ' x $x) . $s . (' ' x $y) . $end;
 	return;
     }
-    
+
     my @l = map({ defined($self->{var}->{$_}) ? $self->{var}->{$_} : () }
 		@{$self->{left}});
     my @r = map({ defined($self->{var}->{$_}) ? $self->{var}->{$_} : () }
 		@{$self->{right}});
-    
+
     my $l = join(" | ", @l);
     my $r = join(" | ", @r);
-    
+
     my $mlen = $cols - (length($l) + length($r));
     $self->{str} = $begin . $l . (' ' x $mlen) . $r . $end;
 }

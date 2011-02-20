@@ -19,8 +19,8 @@ Reformat public, and private sends with fake newlines to use real ones.
 
 =cut
 
-my $newline_re = qr{ 
-  (?:   
+my $newline_re = qr{
+  (?:
     \\n |
     < \s* br \s* /? >   # a br tag, with an optional close brace
   )
@@ -29,7 +29,7 @@ my $newline_re = qr{
 
 sub newline_handler {
     my($event) = @_;
-    
+
     $event->{VALUE} =~ s/$newline_re/\n/g;
     return;
 }
@@ -45,7 +45,7 @@ sub load {
     help_r('newline' => "
 Automatically add newlines to incoming sends where appropriate.
 ");
-} 
+}
 
 
 1;

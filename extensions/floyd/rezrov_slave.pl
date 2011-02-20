@@ -2,13 +2,13 @@
 #
 # $Id$
 #
-# This file is derived from the rezrov test.pl script.  The original 
+# This file is derived from the rezrov test.pl script.  The original
 # copyright message follows:
 #
 # rezrov: a pure perl z-code interpreter; test script
 #
-# Copyright (c) 1998, 1999 Michael Edmonson.  All rights reserved.  
-# This program is free software; you can redistribute it and/or modify 
+# Copyright (c) 1998, 1999 Michael Edmonson.  All rights reserved.
+# This program is free software; you can redistribute it and/or modify
 # it under the same terms as Perl itself.
 #
 
@@ -66,7 +66,7 @@ my $z_version = Games::Rezrov::StoryFile::load(1);
 $zio->set_version(($z_version <= 3 ? 1 : 0));
 
 Games::Rezrov::StoryFile::setup();
-  
+
 #
 #  Start interpreter
 #

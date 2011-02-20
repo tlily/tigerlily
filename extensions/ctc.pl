@@ -38,7 +38,7 @@ sub ctc_cmd {
 	      ("(HTTP service already running on port $http->{port})\n");
 	    return;
 	}
-	
+
 	$http = TLily::Daemon::HTTP->new();
 	return;
     }
@@ -46,21 +46,21 @@ sub ctc_cmd {
     if ($cmd eq 'get') {
 	my ($from, $file) = @rest;
 	my $lfrom;
-	
+
 	if (!defined $from) {
 	    $ui->print ("(you must specify a user to get from)\n");
 	    return;
 	}
-	
+
 	$lfrom = lc($from);
 	if ((!exists($received{$lfrom})) ||
 	    (!(scalar(@{$received{$lfrom}})))) {
 	    $ui->print ("(no pending sends from ${from})\n");
 	    return;
 	}
-	
+
 	my $url = 0;
-	
+
 	if ($file) {
 	    for (my $i = 0; $i < scalar(@{$received{$lfrom}}); $i++) {
 		if ($received{$lfrom}->[$i]->{URL} =~ /$file$/) {
@@ -75,7 +75,7 @@ sub ctc_cmd {
 	} else {
 	    $url = shift @{$received{$lfrom}};
 	}
-	
+
 	#	return passive_get($url, $from) if $url->{Passive};
 	$ui->print ("(getting $url->{URL})\n");
 	TLily::Server::HTTP->new(url => $url->{URL},
@@ -85,7 +85,7 @@ sub ctc_cmd {
 
     if ($cmd eq 'list') {
 	$ui->print(" Type   User                    Filename\n");
-	
+
 	foreach my $p (keys %pending) {
 	    my $s = "SEND"; # Passive eventually, too.
 	    $ui->printf(" $s   %-23s %s\n", $pending{$p}->{to},
@@ -103,13 +103,13 @@ sub ctc_cmd {
 
     if ($cmd eq 'refuse') {
 	my ($from, $file) = @rest;
-	
+
 	my $lfrom = lc($from);
 	if (!$received{$lfrom}) {
 	    $ui->print("(no pending gets from $from)\n");
 	    return;
 	}
-	
+
 	for (my $i = 0; $i < scalar(@{$received{$lfrom}}); $i++) {
 	    if (!$file || $received{$lfrom}->[$i]->{URL} =~ /$file$/) {
 		command ($from, ";@@@ ctc refuse @@@ ",
@@ -137,7 +137,7 @@ sub ctc_cmd {
 
     if ($cmd eq 'send') {
 	my ($to, $file) = @rest;
-	
+
 	# Generate an alias
 	my @tmp = split m|/|, $file;
 	my $shfile = pop @tmp;
@@ -148,7 +148,7 @@ sub ctc_cmd {
 	    $alias .= ($r < 50) ? chr($c + 65) : chr ($c + 97);
 	}
 	$alias .= "/$shfile";
-	
+
 	unless ((TLily::Daemon::HTTP::file_r (file  => $file,
 					      alias => $alias))) {
 	    $ui->print("(unable to find file $file)\n");
@@ -163,7 +163,7 @@ sub ctc_cmd {
 
     if ($cmd eq 'cancel') {
 	my ($to, $file) = @rest;
-	
+
 	for my $p (keys %pending) {
 	    if (!$to || $pending{$p}->{to} eq lc($to)) {
 		TLily::Daemon::HTTP::file_u($p);
@@ -219,7 +219,7 @@ sub file_done {
 
     if (exists $pending{$event->{daemon}->{filealias}}) {
 	my $ui = TLily::UI::name();
-	
+
 	$ui->print ("(File ", $pending{$event->{daemon}->{filealias}}->{file},
 		    " sent successfully)\n");
 	delete $pending{$event->{daemon}->{filealias}};

@@ -104,7 +104,7 @@ sub init {
             $event->{server}->sendln($username);
             return 1;
         }
-        
+
         if ($event->{text} =~ /^password:/) {
             print "(sending password '$password')\n";
             $event->{server}->sendln($password);
@@ -117,7 +117,7 @@ sub init {
             $event->{server}->sendln("N");
             return 1;
         }
-        
+
         # Fallback is to just hit enter at any prompt :)
         print "(sending enter at prompt)\n";
         $event->{server}->sendln("");
@@ -171,16 +171,16 @@ sub import {
         # commands.  Unsurprisingly, it bears a striking resemblance
         # to mechajosh ;-)
         standard_bot_init();
-        
+
         } elsif ($_ eq "custom") {
         # a custom bot defines no message handlers for you- do your
         # own!
-        
+
         } else {
         die("Invalid TLily::Bot option: $_\n");
         }
     }
-    
+
         push @a, ":extension";
     }
 
@@ -227,7 +227,7 @@ sub standard_bot_sendhandler {
 
     # bot commands all begin with the prefix "cmd".
     if ($event->{VALUE} =~ /cmd\s+(.*)/) {
-    
+
     standard_bot_command($event,$1);
     }
 
@@ -302,25 +302,25 @@ sub standard_bot_command {
 
     if ($command =~ /^register private ([^\=]+)\=(.*)/) {
     my ($match,$respond)=($1,$2);
-    
+
     bot_r(match => $match,
           private => 1,
           respond => $respond);
-    
+
     response($event,"Registered handler to match \"$match\". (in private sends only)");
     return 1;
     }
 
     if ($command =~ /^register ([^\=]+)\=(.*)/) {
     my ($match,$respond)=($1,$2);
-    
+
     #XXX
     response($event,"Registering public handlers is not supported at this time.  Try cmd register private.");
     return 1;
     #XXX
     bot_r(match => $match,
           respond => $respond);
-    
+
     response($event,"Registered handler to match \"$match\".");
     return 1;
     }

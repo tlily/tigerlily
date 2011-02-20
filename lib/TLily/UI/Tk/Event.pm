@@ -38,7 +38,7 @@ sub new {
     my $proto = shift;
     my $class = ref($proto) || $proto;
     my $self  = {};
-    
+
     $self->{mainwin} = shift;
 
     $self->{readable} = {};
@@ -58,13 +58,13 @@ sub io_r {
 
     $self->{rselect} ||= IO::Select->new;
     $self->{eselect} ||= IO::Select->new;
-    $self->{wselect} ||= IO::Select->new;    
-    
+    $self->{wselect} ||= IO::Select->new;
+
     if ($^O eq 'MSWin32') {
         if($mode =~ /r/) { $self->{rselect}->add($handle); }
         if($mode =~ /e/) { $self->{eselect}->add($handle); }
         if($mode =~ /w/) { $self->{wselect}->add($handle); }
-        
+
         if (! $self->{_callback_installed}) {
             $self->{mainwin}->repeat(50 => sub { $self->callback() } );
             $self->{_callback_installed} = 1;
@@ -112,9 +112,9 @@ sub io_u {
 sub run {
     my($self, $timeout) = @_;
     print STDERR ": TLily::UI::Tk::Event::run\ntimeout=$timeout\n" if $config{ui_debug};
-    
-    ($rout, $wout, $eout, $nfound) = ("", "", "", 0);    
-    
+
+    ($rout, $wout, $eout, $nfound) = ("", "", "", 0);
+
     $self->{alarm} = 0;
     $self->{after} = $self->{mainwin}->after($timeout*1000,
 					     sub {$self->{alarm} = 1});
@@ -140,7 +140,7 @@ sub run {
 #    print STDERR "<3>nfound:", $nfound, "\n" if $config{ui_debug};
     $self->{mainwin}->after("cancel", $self->{after});
     $self->{alarm} = 0;
-    
+
     return ($rout, $wout, $eout, $nfound);
 }
 

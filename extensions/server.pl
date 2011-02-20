@@ -71,7 +71,7 @@ sub connect_command {
 	$host = $config{server};
 	$port = $config{port};
     }
-    
+
     # Expand host aliases.
     if (!defined($port) && $config{server_info}) {
 	foreach my $i (@{$config{server_info}}) {
@@ -96,7 +96,7 @@ sub connect_command {
 	    }
 	}
     }
-    
+
     my $class = 'TLily::Server::SLCP';
 
     if ($host =~ /^aim$/i) {
@@ -134,7 +134,7 @@ help_r('connect' => "
 Usage: %connect [host] [port]
 
 Create a new connection to a server.
-  
+
 (See also: %close)
 ");
 
@@ -232,7 +232,7 @@ sub send_handler {
 	if (!defined $server) {
 	    $server = $serv;
 	}
-	
+
 	if ($server != $serv) {
 	    $ui->print("(can only send to one server at a time)\n");
 	    return 1;

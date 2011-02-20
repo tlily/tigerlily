@@ -376,7 +376,7 @@ sub save_history_excursion {
             $self->{saved_history}->{$self->{history_pos}} =
               $self->{history}->[$self->{history_pos}];
         }
-    
+
         # Set the current history entry to the current input buffer.
         $self->{history}->[$self->{history_pos}] = $self->{text};
     }
@@ -437,7 +437,7 @@ sub search_history {
 
     # Prefix and suffix are used to block off parts of the line from
     # being viewed.  They are necessary when looking at the current entry
-    # to either extend the search or change its direction. 
+    # to either extend the search or change its direction.
     my ($prefix, $suffix);
 
     if ($args{'next_match'}) {
@@ -474,7 +474,7 @@ sub search_history {
         # _search_anchor tests above, the search will stop at the end of "oooo"
         # rather than the middle, because the search for 'oo' is starting in
         # the same line that the whole search started in, and the
-        # _search_anchor is set at the middle of the line.  
+        # _search_anchor is set at the middle of the line.
         #
         # XXXDCL BUG: Same starting scenario.  C-r o C-r C-r =>
         # now at "o" in "bono".  C-s o => now in middle of "oooo".

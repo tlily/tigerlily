@@ -8,7 +8,7 @@ use strict;
 my $TLILY_BUGS = "tigerlily-bugs\@tlily.org";
 
 # Issue report template
-my $template = 
+my $template =
 "From:
 To: $TLILY_BUGS
 Subject:
@@ -27,20 +27,20 @@ my $version;
 
 sub submit_cmd($) {
     my $ui = shift @_;
-    
+
     if (!defined(determine_mail_method($ui))) {
         $ui->print("(Sorry, %submit is not available on the $^O platform at this time.)\n");
 	return;
     }
-    
+
     my($submit_to,$recover)=split /\s+/, "@_";
- 
+
     if (defined($recover) && $recover ne "-r" && $recover ne "") {
 	$ui->print("Usage: %submit {server|client} [-r]\n");
 	return;
     }
     $recover = ($recover eq "-r")?1:0;
-    
+
     if ($submit_to =~ /^server$/) {
 	$ui->print("(Sorry, %submit server not yet implemented - Feel Free(TM))\n");
 	return;
@@ -148,7 +148,7 @@ sub edit_report(%) {
     TLily::Event::keepalive(5);
 
     unlink($tmpfile);
-    
+
     $ui->print("(Report submitted)\n");
 }
 

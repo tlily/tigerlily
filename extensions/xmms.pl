@@ -34,7 +34,7 @@ my %simple = (
 	prev => "playlist_prev",
 	play => "play",
 );
- 
+
 sub xmms_cmd {
     my ($ui,$cmd) = @_;
 

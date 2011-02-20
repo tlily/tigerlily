@@ -111,7 +111,7 @@ Set the style for text to be added.
 
 =item clear_line($line)
 
-This function should clear the given line and set the point to the 
+This function should clear the given line and set the point to the
 beginning of the deleted line.
 
 =item move_point($line, $col)
@@ -128,7 +128,7 @@ Add a string at the specified position.
 
 =item insch($line, $col, $character)
 
-Insert a character at the given position, pushing the rest of the 
+Insert a character at the given position, pushing the rest of the
 line over one character.
 
 =item delch_at_point()
@@ -193,7 +193,7 @@ sub dispatch_classmethod {
 
     if ($DEBUG) {
         open(F, '>>', 'uilog') || die;
-        print F "$method(@_)\n"; 
+        print F "$method(@_)\n";
         close(F);
     }
 
@@ -201,14 +201,14 @@ sub dispatch_classmethod {
     &{"${UI_CLASS}::${method}"}(@_);
 }
 
-sub NOTIMPLEMENTED { 
+sub NOTIMPLEMENTED {
     my ($object) = @_;
-    
+
     my $method = (caller(1))[3];
     $method =~ s/TLily::FoiledAgain:://g;
-     
+
     if (ref($object) ne $UI_CLASS) {
-       confess "$method(@_) not called as an object method of $UI_CLASS!\n";   
+       confess "$method(@_) not called as an object method of $UI_CLASS!\n";
     } else {
        confess "$method(@_) not implemented by subclass $UI_CLASS.\n";
     }

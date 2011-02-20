@@ -16,10 +16,10 @@ command_r('babelmirror' => \&babelmirror_cmd);
 command_r('unbabelmirror', \&unbabelmirror_cmd);
 shelp_r('babelmirror', "babelmirror a discussion into another");
 shelp_r('unbabelmirror', "undo a %babelmirror");
-help_r('babelmirror', 
+help_r('babelmirror',
        " usage: %babelmirror [fromdisc] [todisc]");
 
-help_r('unbabelmirror', 
+help_r('unbabelmirror',
        " usage: %unbabelmirror [disc]");
 
 my(%babelmirrored, $timed_id, @babelqueue);
@@ -35,7 +35,7 @@ sub babelmirror_cmd {
 
     # (english to spanish)
     $language ||= "en_es";
-    
+
     if ("@_" =~ /^\S*$/) {
 	my $f;
 	foreach (sort keys %babelmirrored) {
@@ -44,38 +44,38 @@ sub babelmirror_cmd {
 	}
 	if (! $f) {
 	    $ui->print("(no discussions are currently being babelmirrored)\n");
-	}    
+	}
 	return 0;
     }
-    
+
     if (! (($fromdisc =~ /\S/) && ($todisc =~ /\S/))) {
 	$ui->print("usage: %babelmirror [fromdisc] [todisc]\n");
 	return 0;
     }
-    
+
     if ($babelmirrored{$fromdisc}) {
 	$ui->print("(error: $fromdisc is already babelmirrored)\n");
 	return 0;
     }
-    
+
     my $e1 = event_r(type => 'public',
 		     call => sub { send_handler($fromdisc,$todisc,@_); });
-    
+
     my $e2 = event_r(type => 'emote',
 		     call => sub { send_handler($fromdisc,$todisc,@_); });
 
     $timed_id ||= TLily::Event::time_r(interval => $trans_interval,
                                        call     => \&timed_handler);
-    
+
     $babelmirrored{$fromdisc}="$e1,$e2,$todisc";
-    
+
     $ui->print("(babelmirroring $fromdisc to $todisc)\n");
     0;
 }
 
 sub unbabelmirror_cmd {
     my ($ui,$disc) = @_;
-    
+
     if ($babelmirrored{$disc}) {
 	my ($e1,$e2,$e3) = split ',',$babelmirrored{$disc};
 	event_u($e1);
@@ -85,17 +85,17 @@ sub unbabelmirror_cmd {
     } else {
 	$ui->print("(\"$disc\" is not being babelmirrored!)\n");
     }
-    
+
 }
 
 sub send_handler {
     my ($from,$to,$e) = @_;
-    
+
     my $match = 0;
     foreach (split ',',$e->{RECIPS}) {
 	if (lc($_) eq $from) { $match=1; last; }
     }
-    
+
     if ($match) {
 	if ($e->{type} eq "emote") {
             push @babelqueue, [ $to, "| (to $e->{RECIPS}) $e->{SOURCE}$e->{VALUE}", $e->{server} ];
@@ -103,7 +103,7 @@ sub send_handler {
             push @babelqueue, [ $to, "($e->{SOURCE} => $e->{RECIPS}) $e->{VALUE}", $e->{server} ];
 	}
     }
-    
+
     0;
 }
 
@@ -114,9 +114,8 @@ sub timed_handler {
         $string .= "x${_}x foo. $babelqueue[$_][1]\n";
     }
 
-    
     if ($string) {
-        my $ui = ui_name();        
+        my $ui = ui_name();
 
         TLily::Event::keepalive();
         $ui->print("translating \"$string\n");
@@ -167,12 +166,12 @@ sub translate {
     if (! $res->is_success) {
         return "HTTP Request Failed: " . $res->status_line();
     }
-    
+
     my $parser = new HTML::Parser(api_version => 3,
                                   start_h => [\&start, "tagname, attr"],
                                   text_h  => [\&text,  "dtext"],
                                   end_h   => [\&end,   "tagname"],
-                                  unbroken_text => 1);    
+                                  unbroken_text => 1);
     $interesting = 0;
     $result = "";
     return "HTTP Request Failed: no data returned" unless $res->content =~ /\S/;
@@ -198,7 +197,7 @@ sub end {
     my ($tagname) = @_;
 
     $interesting = 0;
-}                           
+}
 
 sub text {
     my ($text) = @_;

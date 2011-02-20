@@ -180,7 +180,7 @@ that match a given topic, with an amusing string of mrfls.  Once upon a \
 time, it was possible to retroactively ungag someone -- this is no longer \
 supported.
 ");
-} 
+}
 
 
 1;

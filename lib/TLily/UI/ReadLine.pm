@@ -53,7 +53,7 @@ sub accept_line {
 	$self->prompt("") if defined ($args->{prompt});
 
 	if ($args->{password}) {
-	    $self->password(0) 
+	    $self->password(0)
 	} else {
 	    $self->{R}->AddHistory($text);
 	}

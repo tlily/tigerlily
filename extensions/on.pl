@@ -68,7 +68,7 @@ Examples:
   %on emote to beener like "ice cream" random 10 "$1;screams for ice cream!"
   %on public to news %attr dest_fmt significant
   %on attach from SignificantOther %attr slcp_fmt significant
-  %on attach from JoshTest "%eval `banner wazzup?`"  
+  %on attach from JoshTest "%eval `banner wazzup?`"
   %on emote to bar like "yawn" once every 5m "bar;yawns."
 ]);
 
@@ -369,7 +369,7 @@ sub on_evt_handler {
     $vars{sender} =~ s/ /_/g;
 
     $vars{target} = $e->{server}->expand_name($e->{RHANDLE});
-    $vars{target} = join ',', 
+    $vars{target} = join ',',
      map {my %obj = $e->{server}->state(HANDLE => $_); $obj{NAME}} @{$e->{RHANDLE}};
 
 
@@ -379,9 +379,9 @@ sub on_evt_handler {
     $vars{value} = $e->{VALUE};
 
     my @cmd = @{$mask->{ACTION}};
-    @cmd = map { 
+    @cmd = map {
         foreach my $var (keys %vars) {
-            $_ =~ s/\$$var/$vars{$var}/g; 
+            $_ =~ s/\$$var/$vars{$var}/g;
         }
         $_;
     } @cmd;
@@ -412,7 +412,7 @@ sub on_evt_handler {
 
     my $now = time;
 
-    if (defined $mask->{ONCE}) { 
+    if (defined $mask->{ONCE}) {
         if (defined $mask->{last_invoked}) {
             my $allowed_at = $mask->{ONCE} + $mask->{last_invoked};
             if ($allowed_at >= $now) {

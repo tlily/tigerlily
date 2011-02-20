@@ -95,14 +95,14 @@ my %keycodemap = (
     36 => 'home',
     35 => 'end',
     13 => 'nl',
-    27 => 'esc'    
+    27 => 'esc'
 );
 
 # The stylemap and cstylemap hashes map style names to Curses attributes.
 my %stylemap   = (default => $main::ATTR_NORMAL);
 my %cstylemap  = (default => $main::ATTR_NORMAL);
 
-sub DEBUG { 
+sub DEBUG {
     my ($self) = shift;
 
     my $method = (caller(1))[3];
@@ -124,15 +124,15 @@ my @windows;
 
 sub start {
     # Physical screen
-    $SCREEN = new Win32::Console();    
+    $SCREEN = new Win32::Console();
     $SCREEN->Alloc();
     $SCREEN->Title("TigerLily $TLily::Version::VERSION");
     $SCREEN->Display();
 
     if ($USE_VSCREEN) {
-        # Virtual screen where all changes are made prior to copying to the 
+        # Virtual screen where all changes are made prior to copying to the
         # real screen, $SCREEN.
-        $VSCREEN = new Win32::Console();    
+        $VSCREEN = new Win32::Console();
     } else {
         $VSCREEN = $SCREEN;
     }
@@ -157,17 +157,17 @@ sub bell {
 
 sub screen_width  { ($SCREEN->Size())[0]; }
 sub screen_height { ($SCREEN->Size())[1]; }
-sub update_screen { 
+sub update_screen {
 
     if ($USE_VSCREEN) {
         my ($width, $height) = $SCREEN->Size();
-        
+
         # copy everything from the virtual screen to the real one.
         my $rect = $VSCREEN->ReadRect(0, 0, $width, $height);
         defined($SCREEN->WriteRect($rect, 0, 0, $width, $height)) ||
             die "Error in WriteRect";
     }
-    
+
     # place the cursor as it is in the last window.
     my ($col, $line) =  $windows[-1]->{buffer}->Cursor();
     $col  += $windows[-1]->{begin_x};
@@ -222,10 +222,10 @@ sub read_char {
     $self->read_char_to_queue();
 
     return undef unless @{$self->{input_queue}};
-    
+
     if ($self->{input_queue}[0] eq 'esc') {
         return undef unless (@{$self->{input_queue}} > 1);
-	
+
         shift @{$self->{input_queue}};
 	my $key = shift @{$self->{input_queue}};
         return "M-$key";
@@ -242,11 +242,11 @@ sub read_char_to_queue {
     unless ($INPUT->GetEvents()) {
         return undef;
     }
-    
+
     my @event = $INPUT->Input();
 
     my ($event_type, $key_down, $repeat_count,
-        $virtual_keycode, $virtual_scancode, 
+        $virtual_keycode, $virtual_scancode,
         $char, $control_key_state) = @event;
 
     return undef unless ($event_type == 1);   # 1 = keyboard event
@@ -264,7 +264,7 @@ sub read_char_to_queue {
     } else {
         # non-printable characters which we don't have in the keycode map-
         # ignore them.
-        if ($char == 0) {    
+        if ($char == 0) {
             return undef;
         }
     }
@@ -273,16 +273,16 @@ sub read_char_to_queue {
         if ($control_key_state & (LEFT_ALT_PRESSED | RIGHT_ALT_PRESSED)) {
             $key = "M-$key";
         }
-        
+
         if ($control_key_state & (LEFT_CTRL_PRESSED | RIGHT_CTRL_PRESSED)) {
             $key = "C-$key";
         }
     }
 
-    # a single event can carry more than one keypress, which is why this 
+    # a single event can carry more than one keypress, which is why this
     # input_queue stuff is used.
     push @{$self->{input_queue}}, $key for (1..$repeat_count);
-    
+
     return $key;
 }
 
@@ -292,7 +292,7 @@ sub destroy {
     DEBUG(@_);
 
     undef $self->{Buffer};
-    
+
     # and remove this window from the list..
     @windows = grep { $_ ne $self } @windows;
 }
@@ -328,7 +328,7 @@ sub clear_line {
     DEBUG(@_);
 
     $self->{buffer}->FillChar(" ", $self->{cols}, 0, $y);
-    
+
     $self->move_point($y, 0);
 }
 
@@ -345,7 +345,7 @@ sub addstr_at_point {
     my ($self, $string) = @_;
     DEBUG(@_);
 
-    defined($self->{buffer}->Write($string)) || 
+    defined($self->{buffer}->Write($string)) ||
         die "Error in Write";
 }
 
@@ -396,15 +396,15 @@ sub scroll {
     if ($numlines > 0) {
 
 # Scroll() didn't work for me.
-#        $self->{buffer}->Scroll(0, $numlines, 
-#                                $self->{cols}, $self->{lines} - $numlines, 
-#                                0, 0, 
+#        $self->{buffer}->Scroll(0, $numlines,
+#                                $self->{cols}, $self->{lines} - $numlines,
+#                                0, 0,
 #                                ' ', $attr) || die "Error scrolling window";
-    
+
         # scroll up.
         my $rect = $self->{buffer}->ReadRect(0, $numlines,
 	                                     $self->{cols}, $self->{lines});
-	$self->{buffer}->WriteRect($rect, 
+	$self->{buffer}->WriteRect($rect,
 	                          0, 0,
 				  $self->{cols}, $self->{lines} - $numlines);
 
@@ -412,22 +412,22 @@ sub scroll {
         $self->{buffer}->WriteRect((" " x $numlines * $self->{cols}),
 	                           0, $self->{lines} - $numlines,
 				   $self->{cols}, $self->{lines});
-				  
+
     } else {
-    
-# Scroll() didn't work for me.    
+
+# Scroll() didn't work for me.
 #        $self->{buffer}->Scroll(0, 0,
 #                                $self->{cols}, $self->{lines},
-#                                0, 0-$numlines, 
+#                                0, 0-$numlines,
 #                                ' ', $attr) || die "Error scrolling window";
 
         # scroll down.
         my $rect = $self->{buffer}->ReadRect(0, 0,
 	                                     $self->{cols}, $self->{lines} - $numlines);
-	$self->{buffer}->WriteRect($rect, 
+	$self->{buffer}->WriteRect($rect,
 	                          0, $numlines,
 				  $self->{cols}, $self->{lines});
-  
+
         # blank out the area at the top.
         $self->{buffer}->WriteRect((" " x $numlines * $self->{cols}),
 	                           0, 0,
@@ -435,7 +435,7 @@ sub scroll {
     }
 
     # and slap the cursor at the bottom.
-    $self->move_point($self->{lines} - $numlines, 0);  
+    $self->move_point($self->{lines} - $numlines, 0);
 }
 
 
@@ -450,7 +450,7 @@ sub commit {
         my $rect = $window->{buffer}->ReadRect(0, 0, $width, $height);
         defined($VSCREEN->WriteRect($rect,
                                    $window->{begin_x},
-                                   $window->{begin_y}, 
+                                   $window->{begin_y},
                                    $window->{begin_x} + $width,
                                    $window->{begin_y} + $height - 1)) ||
             die "Error in WriteRect";
@@ -471,7 +471,7 @@ sub reset_styles {
 
 sub defstyle {
     my($style, @attrs) = @_;
-    
+
     if (grep { $_ eq "reverse" } @attrs) {
         $stylemap{$style} = parsestyle(@attrs) | $fg_cnamemap{black} | $bg_cnamemap{white};
     } else {

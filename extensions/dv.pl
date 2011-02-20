@@ -141,7 +141,7 @@ Usage: %dv [user]
 The %dv command disemvowels the text of all sends from a user, \
 or all sends that match a given topic.\
 ");
-} 
+}
 
 
 1;

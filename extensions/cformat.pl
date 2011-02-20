@@ -57,7 +57,7 @@ my %fmt_cache;
 
 sub timestamp {
     my ($time) = @_;
-    
+
     my @a = localtime($time);
     return TLily::Utils::format_time(\@a,
                          delta => "zonedelta",
@@ -140,11 +140,11 @@ sub generic_fmt {
     if (defined $e->{format}) {
         $fmt = $e->{format};
     } elsif ($e->{type} eq 'public') {
-        $fmt = $config{public_fmt} || 
+        $fmt = $config{public_fmt} ||
           '\n%[ -> ]%(Server )%(Time )From %From%{ Blurb}, to %To:%|'.
         '%[ - ]\n%Body\n';
     } elsif ($e->{type} eq 'private') {
-        $fmt = $config{private_fmt} || 
+        $fmt = $config{private_fmt} ||
           '\n%[ -> ]%(Server )%(Time )'.
         'Private message from %From%{ Blurb}, to %To:%|'.
         '%[ - ]\n%Body\n';
@@ -156,7 +156,7 @@ sub generic_fmt {
 =for all evil hacks
 
 If this event is marked as collapsable, then don't use the full format that
-was specified. Instead, just print out the body of the message.  At the time of 
+was specified. Instead, just print out the body of the message.  At the time of
 this writing, this code path is only used by the IRC server.
 
 XXX: the evil hack isn't even quite right. two related issues: public and

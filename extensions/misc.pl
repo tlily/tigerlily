@@ -30,20 +30,20 @@ Runs a shell command from within tlily.  See "%help shell" for details.
 
 =cut
 
-$config{shell_quiet}=0 if (!exists $config{shell_quiet}); 
-$config{shell_silent}=0 if (!exists $config{shell_silent}); 
+$config{shell_quiet}=0 if (!exists $config{shell_quiet});
+$config{shell_silent}=0 if (!exists $config{shell_silent});
 
 my $last_command = '';
 sub shell_handler {
     my($ui, $command) = @_;
-   
+
     $command = $last_command if ($command =~ /^\!/);
     $last_command = $command;
-   
+
     if (! $config{shell_quiet} && ! $config{shell_silent}) {
     	$ui->print("[beginning of command output]\n");
     }
-    
+
     local *FD;
     if ($^O =~ /cygwin/) {
         open(FD, '-|', $command);
@@ -54,10 +54,10 @@ sub shell_handler {
       $ui->print(<FD>);
     }
     close(FD);
-    
+
     if (! $config{shell_quiet} && ! $config{shell_silent}) {
     	$ui->print("[end of command output]\n");
-    } 
+    }
     return;
 }
 
@@ -78,9 +78,9 @@ help_r('shell' => '
 Usage: %shell <command>
        ! <command>
 
-       There are two configuration variables, shell_quiet and shell_silent. 
-       If shell_quiet is set to a true value, then only the output from 
-       the shell is returned.  If shell_quiet is set to false (the default), 
+       There are two configuration variables, shell_quiet and shell_silent.
+       If shell_quiet is set to a true value, then only the output from
+       the shell is returned.  If shell_quiet is set to false (the default),
        then the output is wrapped with beginning/ending tags. shell_silent
        acts as shell_quiet, but also suppresses the command\'s output.
 
@@ -122,7 +122,7 @@ sub eval_handler {
     }
     return;
 }
-	     
+
 command_r('eval' => \&eval_handler);
 shelp_r('eval' => 'run perl code');
 help_r('eval' => '
@@ -134,7 +134,7 @@ list context.
 
 The results of the eval, if any, will be printed.
 ');
-		 
+
 
 #
 # %version
@@ -214,18 +214,18 @@ shelp_r('sync' => 'Resync with SLCP');
 help_r('sync' => 'Usage: %sync');
 command_r('sync' => sub {
     my ($e) = @_;
-	
+
     # workaround for the moment- force the clearing of existing indexes.
     my $server = active_server();
     $server->{HANDLE}   = {};
     $server->{NAME}     = {};
     $server->{DATA}     = {};
-			    
+
     TLily::Event::send({type => 'user_input',
                         ui   => $e->{ui},
                         text => "#\$# slcp-sync\n"});
     });
-	      
+
 
 #
 # Credits.
@@ -290,8 +290,8 @@ help_r("history" => $history);
 #event_r(type => 'user_input',
 #	call => sub {
 #	    my($e, $h) = @_;
-#	    $e->{NOTIFY} = 0 if ($config{hidesend} && 
+#	    $e->{NOTIFY} = 0 if ($config{hidesend} &&
 #				 $e->{text} =~ /^\S*[;:]/);
-#	    
+#
 #	    return 0;
 #	});

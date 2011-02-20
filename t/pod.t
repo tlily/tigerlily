@@ -35,7 +35,7 @@ my $manifest     = maniread('MANIFEST');
 my (@docs, @missing);
 
 foreach my $file (keys(%$manifest)) {
-    # skip missing files 
+    # skip missing files
     next unless -e $file;
     # skip binary files
     next if -B $file;
@@ -47,7 +47,6 @@ foreach my $file (keys(%$manifest)) {
         push @missing, $file;
       }
     }
-    
 }
 
 plan tests => scalar @docs + 1;

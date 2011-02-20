@@ -124,7 +124,7 @@ sub blurb_cmd {
         } else {
             $servers[0] = TLily::Server->active();
         }
-    
+
         foreach my $core (@servers) {
             next if !defined $core;
             $core->cmd_process("/blurb off", sub {
@@ -211,7 +211,7 @@ sub blurb_cmd {
     $failed=1;
     $blurb = substr(join('',@words),0,($max-length($psuedo)));
     $ui->print("(your compressed blurb is is " . abs($max - length($psuedo) - length($blurb)) . " chars too long)\n") if $config{blurb_verbose};
-    
+
     DONE:
     my @servers=();
     if ($config{server_all}) {

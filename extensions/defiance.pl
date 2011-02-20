@@ -32,7 +32,7 @@ my @behaviors = (
     },
     { name    => 'current_stats_active',
       respond => 'if_addressed',
-      match   => [ 'playing', 'current', 'now', 'whats on', 
+      match   => [ 'playing', 'current', 'now', 'whats on',
                   'anything good on', 'whats this' ],
       call    => \&fetch_playing_now
     },
@@ -81,24 +81,24 @@ sub init_behaviors {
     foreach my $behavior (@behaviors) {
         $num++;
 
-        die "Behavior #$num is missing 'name'" 
+        die "Behavior #$num is missing 'name'"
             unless (exists($behavior->{'name'}));
 
         my $name = $behavior->{name};
 
-        die "Behavior '$name' is missing 'respond'" 
+        die "Behavior '$name' is missing 'respond'"
             unless (exists($behavior->{'respond'}));
-        
-        die "Behavior '$name' has invalid 'respond' value" 
+
+        die "Behavior '$name' has invalid 'respond' value"
             unless ($behavior->{'respond'} =~ /^(all|if_addressed|private_only)$/);
 
-        die "Behavior '$name' is missing 'call'" 
+        die "Behavior '$name' is missing 'call'"
             unless (exists($behavior->{'call'}));
 
-        die "Behavior '$name': call is not a code ref'" 
+        die "Behavior '$name': call is not a code ref'"
             unless (ref($behavior->{'call'}) eq "CODE");
 
-        die "Behavior '$name' is missing 'match'" 
+        die "Behavior '$name' is missing 'match'"
             unless (exists($behavior->{'match'}));
 
         if (ref($behavior->{'match'})) {
@@ -115,7 +115,7 @@ sub init_behaviors {
 
 sub sendhandler {
     my($event,$handler) = @_;
-    
+
     my $ui=ui_name();
 
     if ($event->{isuser}) {
@@ -143,7 +143,7 @@ sub sendhandler {
         &{$behavior->{call}}($event);
 
     }
-    
+
     return 1;
 }
 
@@ -153,11 +153,11 @@ sub i_am_being_addressed {
     if ($event->{EVENT} eq "private") {
         return 1;
     }
-    
+
     my $my_name = active_server()->user_name();
     # note: could support aliases (like mechajosh -> mj) as /groups, as
     # in mask.pl.
-    
+
     if ($event->{VALUE} =~ /^\s*$my_name[,:]/i) {
         return 1;
     }
@@ -167,7 +167,7 @@ sub i_am_being_addressed {
 
 sub find_behavior_for_sendtext {
     my ($sendtext) = @_;
-    
+
     # normalize whitespace.
     $sendtext =~ s/\s+/ /g;
     my $sendtext_nopunc = $sendtext;
@@ -238,7 +238,7 @@ sub fetch_current_queue {
            foreach my $song (@songs) {
                $response .= " " . describe_song($song) . "\n";
            }
-           
+
            if (@songs == 0) {
                $response = "No songs currently in the queue.";
            }
@@ -254,7 +254,7 @@ sub do_request {
 
     my ($id, $message) = ($event->{VALUE} =~ /request (\d+)\s*(.*)/);
     if (! defined($id)) {
-        send_response($event, "Request what?");        
+        send_response($event, "Request what?");
         return;
     }
 
@@ -273,16 +273,16 @@ sub do_request {
 
            if ($text == -1) {
                $response = "user not found, or incorrect password with mismatched";
-           } 
+           }
 
            if ($text == -2) {
                $response = "password not supplied and is needed";
            }
 
-           if ($text == -3) { 
+           if ($text == -3) {
                $response = "songID not found in database";
            }
-           
+
            send_response($event, $response);
            return 1;
         }
@@ -299,7 +299,7 @@ sub do_search {
         ($criteria) = ($event->{VALUE} =~ /search (.*)/);
     }
     if (! defined($criteria)) {
-        send_response($event, "Search for what?");        
+        send_response($event, "Search for what?");
         return 1;
     }
 
@@ -323,7 +323,7 @@ sub do_search {
            $response .= "\n (NOTE! The maximum number of results ($max_results) was exceeded, so only the first $num_results will be displayed.)\n" if ($num_results >= $max_results);
 
            $response .= "\n To request a song, use \"request <id>\"\n";
-           
+
            if ($num_results == 0) {
                $response = "No matches to '$criteria'.";
            }
@@ -341,10 +341,10 @@ sub describe_song {
     $descr .= "$song->{artist}: \"$song->{title}\"";
     $descr .= " (album \"$song->{album}\")" if ($song->{album} =~ /\S/);
     my $duration_secs = $song->{duration} / 1000;
-    
+
     my $duration = sprintf("%d:%02d", int($duration_secs / 60), $duration_secs % 60);
     $descr .= " [$duration]";
-    
+
     return $descr;
 }
 
@@ -353,7 +353,7 @@ sub get_xml {
 
     TLily::Server::HTTP->new(
         url => $args{url},
-        callback => sub { 
+        callback => sub {
             my ($response) = @_;
             $response->{_content} =~ s/Æ/AE/g;
 
@@ -369,7 +369,7 @@ sub get_text {
 
     TLily::Server::HTTP->new(
         url => $args{url},
-        callback => sub { 
+        callback => sub {
             my ($response) = @_;
             my $text = $response->{_content};
 
@@ -393,7 +393,7 @@ sub send_response {
     $response = TLily::Bot::wrap_lines($response);
     $response =~ s/\s*$//g;
 
-    my $ui=ui_name();    
+    my $ui=ui_name();
     $ui->print("sending $send_to;$response");
     $original_event->{server}->sendln("$send_to;$response");
 

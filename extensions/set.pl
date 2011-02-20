@@ -85,7 +85,7 @@ sub setter {
 	  $val=[map {s/^\s*//; s/\s*$//; $_} split(/,/,$val)];
 	  $islist=1;
 	} # else, User is specifying a scalar value or is unsetting
-	
+
 	# Check that the data type of the new value is consistent with the
 	# established data type of the config variable
 	if (defined($config{$var})) {
@@ -184,7 +184,7 @@ sub setter {
 	$ui->print("$var not defined.\n");
       }
       return 0;
-	
+
     } else { # No variable was specified, print them all
       $ui->print("Config Variables:\n");
       dumpit($ui,0,%config);

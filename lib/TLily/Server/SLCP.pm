@@ -168,12 +168,12 @@ sub new {
         $self->set_client_name();
         $self->get_user_perms();
         TLily::Event::event_u($h->{id});
-    
+
         return 0;
     };
     TLily::Event::event_r(type => "connected",
                           call => $sub);
-    
+
     # set the client options at the first prompt.
     $sub = sub {
         my ($e,$h) = @_;
@@ -183,10 +183,10 @@ sub new {
         TLily::Event::event_u($h->{id});
 
         $self->set_client_options();
-    
+
         # allow the user's input to go to the server now.
         $self->{ALLOW_SEND} = 1;
-    
+
         if (defined $self->{user}) {
             $ui->print("(using autologin information)\n") if ($ui);
             $self->send($self->{user});
@@ -215,13 +215,13 @@ sub command {
     # We don't allow any the user to send any text to the server until
     # The options sent.   This prevents the "Error -2" condition with slow
     # links.
-    
+
     if ($self->{ALLOW_SEND}) {
         foreach (@{$self->{send_buffer}}) {
             $self->sendln($_);
         }
         undef $self->{send_buffer};
-    
+
         # Send the line on to the server.
         $self->sendln($text);
 
@@ -229,11 +229,11 @@ sub command {
         $self->{send_buffer} ||= [];
         push @{$self->{send_buffer}}, $text;
     }
-    
+
     return 1;
 }
 
-=over 10 
+=over 10
 
 =item cmd_process()
 
@@ -342,7 +342,7 @@ END_DEBUG
             return $self->{NAME}->{$name}->{NAME};
         }
     }
-    
+
     # Check for an exact match.
     $ui->print ("### checking for exact match\n") if $debug;
     if ($self->{NAME}->{$name}) {
@@ -354,7 +354,7 @@ END_DEBUG
             return '-' . $self->{NAME}->{$name}->{NAME};
         }
     }
- 
+
     if ($opts{exact}) {
         $ui->print ("### exact match requested, but not found\n") if $debug;
         return;
@@ -422,8 +422,8 @@ END_DEBUG
     }
 
 
-    # Check for an initial-letter-match on 
-    # failing this does not fail expansion, we still have an 
+    # Check for an initial-letter-match on
+    # failing this does not fail expansion, we still have an
     # in string partial match to fall back on.
     $ui->print ("### checking for studly caps match\n") if $debug;
     STUDLY_CAPS_MATCH: {
@@ -460,7 +460,7 @@ END_DEBUG
         if (@m > 1 && !wantarray) {
             $ui->print ("### ambiguous substring for user: " . scalar(@m) . "matches\n") if $debug;
             $ui->print ("### giving up." . scalar(@m) . "matches\n") if $debug;
-            return; 
+            return;
         }
         # If a user /renamed from a name that's like a discussion,
         # it may be found in @m.  We don't want that.
@@ -571,22 +571,22 @@ or
 
 sub state {
     my ($self,%args) = @_;
-    
+
     # Deal with DATA items.
     # The DATA arg must be set if you want to use these.
     if ($args{DATA}) {
         if ($args{VALUE}) {
-            $self->{DATA}{$args{NAME}} = $args{VALUE};      
+            $self->{DATA}{$args{NAME}} = $args{VALUE};
         }
         return $self->{DATA}{$args{NAME}};
-    } 
-    
+    }
+
     # OK, the rest of this function refers to the normal records, which
     # are indexed by HANDLE and NAME.
-    
+
     carp "bad state call: HANDLE=\"$args{HANDLE}\", NAME=\"$args{NAME}\""
       unless ($args{HANDLE} || $args{NAME});
-    
+
     # figure out if the user is querying or insert/updating.
     my $query = 1;
     foreach (keys %args) {
@@ -594,7 +594,7 @@ sub state {
             $query = 0;
         }
     }
-    
+
     if ($query) {
         # ok, it's a query.  return a copy of the record (preferring
         # the HANDLE index, but using either.
@@ -609,14 +609,14 @@ sub state {
         # OK.  So now we have either an insert or an update.
         # First check to see if we have a record in the
         # database (in which case it's an update)
-    
+
         my $record;
         if ($args{HANDLE}) {
             $record = $self->{HANDLE}{$args{HANDLE}};
         } else {
             $record = $self->{NAME}{lc($args{NAME})};
         }
-    
+
         if (! ref($record)) {
             # create a new record if one was not found.
             $record = {};
@@ -635,14 +635,14 @@ sub state {
         foreach (keys %args) {
             $record->{$_}=$args{$_};
         }
-    
-        # And recreate the indices to make sure things are nice and 
+
+        # And recreate the indices to make sure things are nice and
         # consistent.
         $self->{HANDLE}{$record->{HANDLE}} = $record
           if ($record->{HANDLE});
         $self->{NAME}{lc($record->{NAME})} = $record
           if ($record->{NAME});
-    
+
         # and return a copy of the new record.
         return %{$record};
     }
@@ -655,9 +655,9 @@ sub state {
 
 sub get_name {
     my ($self,%args) = @_;
-    
+
     my %rec = $self->state(%args);
-    
+
     return $rec{NAME} if ($rec{NAME} =~ /\S/);
     return $args{HANDLE} || "[unknown]";
 }
@@ -669,7 +669,7 @@ sub get_name {
 
 sub get_blurb {
     my ($self,%args) = @_;
-    
+
     my %rec = $self->state(%args);
     return $rec{BLURB};
 }
@@ -681,7 +681,7 @@ sub get_blurb {
 
 sub get_title {
     my ($self,%args) = @_;
-    
+
     my %rec = $self->state(%args);
     return $rec{TITLE};
 }
@@ -693,7 +693,7 @@ sub get_title {
 
 sub get_pronoun {
     my ($self,%args) = @_;
-    
+
     my %rec = $self->state(%args);
     return $rec{PRONOUN} || "their";
 }

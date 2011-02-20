@@ -20,7 +20,7 @@ sub handler {
 
     $event->{VALUE} =~ s/idled off the server/$config{todeath_message}/g;
     $event->{text}  =~ s/idled off the server/$config{todeath_message}/g;
-    
+
     $event->{VALUE} =~ s/due to maximum detach time/$config{todeath_message}/g;
     $event->{text}  =~ s/due to maximum detach time/$config{todeath_message}/g;
 

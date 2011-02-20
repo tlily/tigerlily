@@ -313,7 +313,7 @@ sub compile_fmt {
 
             $code .= '  $ui->prints($default => \'' . $prefix . "\',\n";
             $code .=
-                '              $fmts->{' 
+                '              $fmts->{'
               . $var
               . '} || $default => $vars->{'
               . $var . "},\n";
@@ -341,7 +341,7 @@ sub compile_fmt {
     $code .= '  $ui->indent();' . "\n";
     $code .= "}\n";
     dbg_store($code);
-    
+
     return $code;
 }
 
@@ -509,7 +509,7 @@ sub store_status
     $server->store(type   => "memo",
 		   target => "me",
 		   name   => $status_memo,
-		   text   => \@commands);    
+		   text   => \@commands);
 }
 
 ###
@@ -553,7 +553,7 @@ sub restore_status
                    type   => "memo",
 		   target => "me",
 		   name   => $status_memo,
-		   call   => $restore);    
+		   call   => $restore);
 }
 
 ###

@@ -50,11 +50,11 @@ and did a lot of things that some folks thought was waaaaay too chatty.
 He began as a lily-server based magic 8-ball, was ported to a bot using
 tlily version 1. He is now using bleeding edge tlily 2.
 
-=head1 MISC 
+=head1 MISC
 
-I was going to use Josh's Bot.pm to handle a good chunk 
+I was going to use Josh's Bot.pm to handle a good chunk
 of the guts for me, but Bot.pm didn't really seem to meet my needs.
-This rewrite is intended as an exercize to (a) improve stability, (b) 
+This rewrite is intended as an exercize to (a) improve stability, (b)
 improve maintainability, (c) prepare for a similar capability for Flow.
 Perhaps someone could remove most of the functionality here and make
 a ComplexBot module.
@@ -97,7 +97,7 @@ my $eliza = new Chatbot::Eliza { name => $name, prompts_on => 0 };
 
 =head1 Methods
 
-=head2 debug( @complaints) 
+=head2 debug( @complaints)
 
 Helpful when generating debug output for new features.
 
@@ -113,7 +113,7 @@ sub debug {
 # XXX use File::*
 my $config_file = $ENV{HOME} . '/.lily/tlily/CJ.ini';
 
-=head2 asAdmin( $event, $callback) 
+=head2 asAdmin( $event, $callback)
 
 If someone is an admin, perform a task. The bot user should have a group
 called "admins" - if the user is part of that group, then she's a moderator.
@@ -235,7 +235,7 @@ subgain";
 
             $retval =~ s/\s*$//;
             if (@invalid_symbols && $event->{type} eq 'private') {
-                dispatch ($event, 'Invalid Ticker Symbols: ' . 
+                dispatch ($event, 'Invalid Ticker Symbols: ' .
                     join ', ', @invalid_symbols);
             }
             dispatch( $event, $retval );
@@ -297,7 +297,7 @@ sub unshorten {
                 $ans = $response->{_content};
                 $ans =~ s/\s//g;
                 $ans = "Originally: $ans";
-                
+
             }
             &$callback($ans);
         }
@@ -328,9 +328,9 @@ sub shorten {
             my $ans;
             if ( $response->{_state}{_status} == 200 ) {
                 # response should be on first line:
-                $response->{_content} =~ s/^([^\n]*)//;  
+                $response->{_content} =~ s/^([^\n]*)//;
                 $ans = $1;
-                if ($ans) { 
+                if ($ans) {
                   $ans .= " [$original_host]";
                   $shorts{$short} = $ans;
                 }
@@ -368,7 +368,7 @@ $annotation_code{shorten} = {
 
 =head1 %response
 
-This hash contains all the information for how CJ should respond to 
+This hash contains all the information for how CJ should respond to
 public, private, and emote sends. The top level keys are the names
 of the implemented command. Their values are hashrefs of the following
 form:
@@ -397,8 +397,8 @@ Lowest is checked first.
 
 =item HELP
 
-A string with the helptext, or a Coderef that will be run when someone asks 
-for help with this handler. See the help response handler for more details. 
+A string with the helptext, or a Coderef that will be run when someone asks
+for help with this handler. See the help response handler for more details.
 
 =item STOP
 
@@ -466,19 +466,19 @@ $response{bible} = {
             ui_name  => 'main',
             callback => sub {
                 my ($response) = @_;
-                my $passage = 
+                my $passage =
                   scrape_bible( $term, $response->{_content} );
                 if ($passage)
                 {
                     dispatch( $event, $passage) ;
                 }
-                # silently fail 
+                # silently fail
             }
         );
         return;
     },
 
-    HELP => sub { 
+    HELP => sub {
         my $help = <<'END_HELP';
 Quote chapter and verse. Syntax: bible or passage, followed by an optional
 bible version, and then the name of the book and chapter:verse. Possible
@@ -512,7 +512,7 @@ $response{weather} = {
             ui_name  => 'main',
             callback => sub {
                 my ($response) = @_;
-                my $conditions = 
+                my $conditions =
                   scrape_weather( $term, $response->{_content} );
                 if ($conditions )
                 {
@@ -557,7 +557,7 @@ $response{forecast} = {
             ui_name  => 'main',
             callback => sub {
                 my ($response) = @_;
-                my $conditions = 
+                my $conditions =
                   scrape_forecast( $term, $response->{_content} );
                 if ($conditions )
                 {
@@ -747,28 +747,27 @@ $response{anagram} = {
 
         $args =~ $anagramRE;
         my ($term, $include, $exclude);
-        my  $url = 
+        my  $url =
         'http://wordsmith.org/anagram/anagram.cgi?language=english' ;
- 
+
         if ($1) {
           ( $term, $include, $exclude) = ( $1, $2, $3) ;
-        } elsif ($4) { 
+        } elsif ($4) {
           ( $term, $exclude, $include) = ( $4, $5, $6) ;
-        } elsif ($7) { 
+        } elsif ($7) {
           ( $term, $include) = ( $7, $8 );
-        } elsif ($9) { 
+        } elsif ($9) {
           ( $term, $exclude) = ( $9, $10 );
-        } else { 
+        } else {
           ( $term ) = ( $11 );
         }
-        $url .= '&anagram=' . escape ($term); 
+        $url .= '&anagram=' . escape ($term);
         if ($include) {
             $url .= '&include=' . escape ($include);
         }
         if ($exclude) {
             $url .= '&exclude=' . escape ($exclude);
         }
-        
 
         add_throttled_HTTP(
             url      => $url,
@@ -838,9 +837,9 @@ $response{math} = {
         my $term = $1;
 
         my $result = eval $term; # see RE above, must be math-safe.
-        if ($@) { 
+        if ($@) {
             if ($event->{type} eq 'private') {
-                return "that looked mathy, but it isn't." 
+                return "that looked mathy, but it isn't."
             } else {
                 return;
             }
@@ -1033,7 +1032,7 @@ $response{'set'} = {
         my $section = "user $event->{SHANDLE}";
 
         if ( ! @args ) {
-            my @tmp; 
+            my @tmp;
             foreach my $key ($config->Parameters($section))
             {
                 my $val = $config->val($section,$key);
@@ -1057,8 +1056,8 @@ $response{'set'} = {
         }
     },
     HELP => <<'END_HELP',
-Purpose: provide a generic mechanism for preference management. 
-Usage: set [ <var> [ <value> ] ]. 
+Purpose: provide a generic mechanism for preference management.
+Usage: set [ <var> [ <value> ] ].
 Only works in private. Also, we use your SHANDLE via SLCP, in violation of
 the Geneva convention.
 END_HELP
@@ -1307,7 +1306,6 @@ sub scrape_wiktionary {
 
     $content =~ s{.*<span class="mw-headline" id="English">English</span>}{};
     $content =~ s/<div class="printfooter">.*//;
- 
 
     my $skip;
     foreach my $chunk (split /<span class="mw-headline">/sm, $content) {
@@ -1348,11 +1346,11 @@ sub scrape_google_guess {
     my ($lookup, @retval);
 
     $content =~ s/\n/ /g;
-    if ($content =~ m{Did you mean.*<i>([^>]+)</i>}) { 
+    if ($content =~ m{Did you mean.*<i>([^>]+)</i>}) {
         return $1;
     }
     return;
-} 
+}
 
 
 sub scrape_bacon {
@@ -1417,14 +1415,14 @@ $response{bacon} = {
 };
 
 my $horoscopeRE = qr( \b
-    horoscope \s+ (?: for \s+)? 
+    horoscope \s+ (?: for \s+)?
     (?:
     (
       aries | leo | sagittarius | taurus | virgo | capricorn | gemini |
       libra | aquarius | cancer | scorpio | pisces | ophiuchus
     )  |
     (
-      rat | ox | goat | dragon | rabbit | monkey | dog | pig | snake | 
+      rat | ox | goat | dragon | rabbit | monkey | dog | pig | snake |
       tiger | rooster | horse
     )
     )
@@ -1450,7 +1448,7 @@ $response{horoscope} = {
               'http://astrology.shine.yahoo.com/astrology/general/dailyoverview/';
             $type = 'western';
         }
-        else 
+        else
         {
             $term = $2;
             $url  =
@@ -1496,7 +1494,7 @@ $response{define} = {
             callback => sub {
 
                 my ($response) = shift;
-                my $answer = scrape_wiktionary( $term, $response->{_content});  
+                my $answer = scrape_wiktionary( $term, $response->{_content});
                 if ($answer) {
                   dispatch( $event,$answer);
                 } else  {
@@ -1875,7 +1873,7 @@ sub get_types {
 
     return qw{private} unless $type_spec;
 
-    if ($type_spec eq 'all') { 
+    if ($type_spec eq 'all') {
         return qw{public private emote};
     } else {
         return split(' ', $type_spec);
@@ -1964,7 +1962,7 @@ sub cj_event {
                 if ( $event->{type} eq 'public' ) {
                     $re = qr/^\s*(?i:$name\s*,?\s*)?$re/;
                 } elsif ( $event->{type} eq 'emote' ) {
-                    # XXX must anchor emotes by default. 
+                    # XXX must anchor emotes by default.
                     # fixup so things like "drink" work, though.
                     $re = qr/^\s*(?i:$name\s*,?\s*)?$re/;
                 }

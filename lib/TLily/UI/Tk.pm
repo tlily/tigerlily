@@ -543,7 +543,7 @@ sub accept_line {
                            text => $txt,
                            ui   => $self);
 	$self->{event_core}->activate();
-	
+
     }
 }
 

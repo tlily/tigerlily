@@ -32,24 +32,24 @@ sub new {
 					 mode   => 'r',
 					 obj    => $self,
 					 call   => \&receive);
-    
+
     bless $self, $class;
 }
 
 sub receive {
     my ($self, $mode, $handler) = @_;
     my $buf;
-    
+
     my $rc = sysread($self->{sock}, $buf, 4096);
     if ($rc < 0) {
 	return if $errno == $::EAGAIN;
     }
-    
+
     if ($rc <= 0) {
 	$self->close();
 	return;
     }
-    
+
     TLily::Event::send(type   => "$self->{proto}_data",
 		       daemon => $self,
 		       data   => $buf);
@@ -67,13 +67,13 @@ sub print {
 sub close {
     my $self = shift;
 
-    TLily::Event::io_u($self->{io_id});    
+    TLily::Event::io_u($self->{io_id});
 
     close $self->{sock};
-    
+
     TLily::Event::send(type   => "$self->{proto}_close",
 		       daemon => $self);
-    
+
     $self->{daemon}->cxn_u($self);
 }
 

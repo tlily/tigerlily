@@ -33,12 +33,12 @@ TLily::FoiledAgain::TermScreen - Term::Screen implementation of the FoiledAgain 
 
 # The cnamemap hash maps English color names to Term::ScreenColor color attrs.
 my %fg_cnamemap = (
-    '-'        => "black",    
-    mask       => "black",    
-    black      => "black",    
-    red        => "red",   
-    green      => "green",  
-    yellow     => "yellow", 
+    '-'        => "black",
+    mask       => "black",
+    black      => "black",
+    red        => "red",
+    green      => "green",
+    yellow     => "yellow",
     blue       => "blue",
     magenta    => "magenta",
     cyan       => "cyan",
@@ -66,7 +66,7 @@ my %snamemap = (
    'underline'     => "underline",
    'reverse'       => "inverse",
    'blink'         => "blink",
-   'dim'           => "",  
+   'dim'           => "",
    'bold'          => "ansibold",
    'altcharset'    => ""
 );
@@ -77,7 +77,7 @@ my %snamemap = (
 my %stylemap   = (default => "white on black");
 my %cstylemap  = (default => "white on black");
 
-sub DEBUG { 
+sub DEBUG {
     my ($self) = shift;
 
     my $method = (caller(1))[3];
@@ -102,11 +102,11 @@ sub start {
     $SCREEN = new Term::ScreenColor();
 
     # Term::ScreenColor's detection of whether a terminal supports color
-    # is stupid.   Instead, we force it to always think it can, and then 
+    # is stupid.   Instead, we force it to always think it can, and then
     # allow tlily to control this via the want_color method below.
 
     $SCREEN->{is_colorizable} = 1;
-    
+
     $SCREEN->clrscr();
     $SCREEN->at(0,0);
     $SCREEN->raw();
@@ -130,8 +130,8 @@ sub screen_width  { 80; }
 sub screen_height { 24; }
 sub has_resized { 0; }
 
-sub update_screen { 
-    
+sub update_screen {
+
     # place the cursor as it is in the last window.
     my $col  = $windows[-1]->{cursor_x};
     my $line = $windows[-1]->{cursor_y};
@@ -148,8 +148,8 @@ sub new {
     my $self = {};
 
     $self->{events} = [];
-    $self->{lineevents} = [];    
-    $self->{linecontents} = []; 
+    $self->{lineevents} = [];
+    $self->{linecontents} = [];
     if ($SCREEN->dc_exists && $SCREEN->ic_exists) {
         $self->{need_linecontents} = 0;
     } else {
@@ -194,7 +194,7 @@ my $metaflag = 0;
 my $ctrlflag = 0;
 sub read_char {
     my ($self) = @_;
-    
+
     sysread(STDIN, $cbuf, 1024, length $cbuf);
     return undef unless (length $cbuf);
 
@@ -226,7 +226,7 @@ sub read_char {
 
     if (ord($c) == 127) {
         $c = "?";
-        $ctrlflag = 1;        
+        $ctrlflag = 1;
     }
 
     my $res = (($metaflag ? "M-" : "") . ($ctrlflag ? "C-" : "") . $c);
@@ -267,7 +267,7 @@ sub clear_background {
     for my $line (0..$self->{lines}) {
         $self->clear_line($line);
     }
-    
+
     $self->move_point(0,0);
 }
 
@@ -279,7 +279,7 @@ sub set_style {
     my $color = $self->{stylemap}{$style} || $self->{stylemap}{default};
 
     $self->_queue_event(undef,undef,'color',$color);
-                        
+
 }
 
 
@@ -291,7 +291,7 @@ sub clear_line {
         $self->{linecontents}[$y] = (" " x $self->{cols} + 1);
     }
 
-    $self->_queue_event(0, $y, 'clreol'); 
+    $self->_queue_event(0, $y, 'clreol');
 }
 
 
@@ -338,7 +338,7 @@ sub addstr {
 sub insch {
     my ($self, $y, $x, $character) = @_;
     DEBUG(@_);
-    
+
     if ($SCREEN->ic_exists) {
         $self->_queue_event($x, $y, "ic", $character);
     } else {
@@ -377,7 +377,7 @@ sub scroll {
 
     if ($numlines > 0) {
         # toss the scrolled-off line off the screen.
-        
+
         $self->_queue_event(0, 0, 'dl');
 
     } else {
@@ -412,14 +412,14 @@ sub commit {
 
 	    uidebug("commit - $command(@args)\n");
             $SCREEN->$command(@args);
-	    
+
 	    # stash the events in case we need to scroll the window.
 	    my $line = defined($y) ? $y : -1;
-	    
+
 	    if ($line == -1 && (@{$window->{lineevents}} == 0)) {
 	       $line = 0;
 	    }
-	    
+
 	    $window->{lineevents}[$line] ||= [];
 	    push @{$window->{lineevents}[$line]}, $event;
 #	    uidebug("lineevents[$line] = [ $x, $y, $command, @args ]\n");
@@ -449,9 +449,9 @@ sub defstyle {
     foreach (@attrs) { push @style, $snamemap{$_}; }
 
     if (grep { $_ eq "reverse" } @attrs) {
-        push @style, $fg_cnamemap{'black'}, $bg_cnamemap{'white'};        
+        push @style, $fg_cnamemap{'black'}, $bg_cnamemap{'white'};
     } else {
-        push @style, $fg_cnamemap{'white'}, $bg_cnamemap{'black'};        
+        push @style, $fg_cnamemap{'white'}, $bg_cnamemap{'black'};
     }
     $stylemap{$style} = join ' ', @style;
 
@@ -471,7 +471,7 @@ sub defcstyle {
         $fg = $bg; $bg = $oldfg;
     }
 
-    push @style, $fg_cnamemap{$fg}, $bg_cnamemap{$bg};        
+    push @style, $fg_cnamemap{$fg}, $bg_cnamemap{$bg};
     $cstylemap{$style} = join ' ', @style;
 
     uidebug("cstylemap[$style] = $cstylemap{$style}\n");

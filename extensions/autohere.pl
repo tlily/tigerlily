@@ -27,7 +27,6 @@ sub autohere_handler {
 
     my %state = $server->state(NAME => $name);
     next if $state{STATE} ne 'away';
-    
 
     # Test for a send.
     next unless $e->{text} =~ m/^([^@;:=\s]+)[:;]/;

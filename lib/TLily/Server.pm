@@ -201,7 +201,7 @@ sub contact {
         if $ui;
 
     $port = getservbyname($port, 'tcp') if ($port =~ /\D/);
-    croak "No port" unless $port; 
+    croak "No port" unless $port;
     $iaddr = inet_aton($serv);
     die "No such host or address\n" unless defined($iaddr);
 
@@ -212,7 +212,7 @@ sub contact {
     return *SOCK;
 }
 
-#This is the SSL connection routine. 
+#This is the SSL connection routine.
 #it also falls back to non-ssl connections.
 sub contact_ssl {
     my $self = shift;
@@ -236,7 +236,7 @@ sub contact_ssl {
                                 SSL_use_cert => 0,
                                 SSL_verify_mode => 0x00,
                                 );
- 
+
 
     if (!$sock) {
         $ui->print("failed.\n*** WARNING: This session is NOT encrypted ***\n")
@@ -251,12 +251,12 @@ sub contact_ssl {
 
     # This piece of code goes into private data in IO::Socket::SSL, alas
     # there is no other way to get the data that we need, even worse,
-    # the location of the data has changed between versions of 
+    # the location of the data has changed between versions of
     # IO::Socket::SSL.  Expect to revisit this code every so often, in
     # a moderately unpleasant manner. - Phreaker
 
     $cert = Net::SSLeay::get_peer_certificate($sock->_get_ssl_object());
-    
+
     File::Path::mkpath([$cert_path],0,0711);
 
     if(-f $cert_filename) {
@@ -274,7 +274,7 @@ sub contact_ssl {
 
         # Not using a hash is intentional... It's only 6-7k of string compare
         # at the worst. and it's not subject to birthday attacks.
- 
+
         if(($other_cert cmp $string_cert) != 0) {
             return unless $ui;
             $ui->print("\nThe $cert_filename certificate does not match ");
@@ -306,7 +306,7 @@ sub contact_ssl {
         $ui->print("Ctrl-C twice in quick succession (this will kill tlily).\n")
             if $ui;
      }
- 
+
      return $sock;
 }
 
@@ -338,7 +338,7 @@ sub terminate {
     activate($server[0]) if ($active_server == $self);
 
     TLily::Event::io_u($self->{io_id});
-    
+
     TLily::Event::send(type   => 'server_disconnected',
                server => $self);
 
@@ -430,18 +430,18 @@ Given no arguments, will return the list of servers currently open.
 
 sub find {
 
-    my $target = shift; 
+    my $target = shift;
 
     if (defined ($target)) {
- 
+
         return $server{$target} if exists($server{$target});
-  
+
         ## allow a case insensitive match, but only if it's unique.
         my @matches;
         foreach my $potential (@server) {
             if (lc($potential->name) eq lc($target)) {
                 push @matches,$potential;
-            }     
+            }
         }
         if (@matches == 1) {
             return $matches[0];
@@ -449,7 +449,7 @@ sub find {
             return undef;
         }
     }
- 
+
     return @server;
 }
 
@@ -617,7 +617,7 @@ sub reader {
         # Data as usual.
         else {
             $self->{bytes_in} += length($buf);
-    
+
             TLily::Event::send(type   => "$self->{proto}_data",
                                server => $self,
                                data   => $buf);
@@ -634,7 +634,7 @@ sub reader {
 =item tl_nonblocking()
 
 Make a socket non-blocking, cross-platformly.
-  
+
 This code is lifted from POE::Kernel.  Very cool.  I would not have
 figured this out.
 
@@ -645,7 +645,7 @@ sub tl_nonblocking {
 
     if ($^O eq 'MSWin32') {
         my $set_it = "1";
-          
+
         # 126 is FIONBIO (some docs say 0x7F << 16)
         ioctl($handle,
               0x80000000 | (4 << 16) |
@@ -655,7 +655,7 @@ sub tl_nonblocking {
      } else {
 
          # Make the handle stop blocking, the POSIX way.
-            
+
          my $flags = fcntl($handle, F_GETFL, 0)
              or croak "fcntl fails with F_GETFL: $!\n";
          fcntl($handle, F_SETFL, $flags | O_NONBLOCK)

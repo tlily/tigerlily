@@ -9,7 +9,7 @@ ascify.pl - Turn extended ISO 8859-1 characters into ascii approximations.
 
 =head1 DESCRIPTION
 
-Lily only supports plain ASCII, so multibyte characters must be turned into 
+Lily only supports plain ASCII, so multibyte characters must be turned into
 their nearest ASCII approximations to be sent.
 
 When pasting content from a web page that uses extended characters, the tlily
@@ -20,7 +20,7 @@ Currently this feature is supported by the TextWindow UI's Curses backend
 only, but it can be implemented in others where it makes sense.
 
 Note that the default is to strip all accents and diacriticals marks from
-letters.  To approximate them by writing them as two characters, 
+letters.  To approximate them by writing them as two characters,
 letter followed by diacritical, %set ascify_nostrip_accents 1
 
 =head1 COMMANDS
@@ -61,7 +61,7 @@ my @config = (
     '&rsaquo;'  => '>',         'single right-pointing angle quotation mark',
     '&hellip;'  => '...',       'horizontal elipsis',
     '&bull;'    => '-',         'bullet',
-    
+
     # ISO 8859-1 Symbols
     '&nbsp;',   => ' ',         'non-breaking space',
     '&iexcl;'	=> '!',         'inverted exclamation mark (¡)',
@@ -188,10 +188,10 @@ sub ascify_entity {
 	}
 
 	foreach my $char (split '', $ascii) {
-	    $ui->command('insert-self', $char);	
+	    $ui->command('insert-self', $char);
 	}
 
-	return 1; # do no further processing of the entity- instead, 
+	return 1; # do no further processing of the entity- instead,
 	          # other intercepts will process the individual characters
                	  # we ascified it to.
     }
@@ -206,9 +206,9 @@ sub ascify_cmd {
 	    my $ascii = $entity_ascii_map{$entity} || '(not bound)';
 	    if (ref($ascii)) {
 		if ($config{ascify_nostrip_accents}) {
-		    $ascii = $ascii->[1]; 
+		    $ascii = $ascii->[1];
 		} else {
-		    $ascii = $ascii->[0]; 
+		    $ascii = $ascii->[0];
 		}
 	    }
 
@@ -228,12 +228,12 @@ sub ascify_cmd {
 	my $ascii = $entity_ascii_map{$entity};
 	if (ref($ascii)) {
 	    if ($config{ascify_nostrip_accents}) {
-		$ascii = $ascii->[1]; 
+		$ascii = $ascii->[1];
 	    } else {
-		$ascii = $ascii->[0]; 
+		$ascii = $ascii->[0];
 	    }
 	}
-	
+
 	if (exists($entity_ascii_map{$entity})) {
 	    $ui->print("(Entity '$entity' is bound to '$ascii')\n");
 	} else {
