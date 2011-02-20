@@ -1148,7 +1148,7 @@ sub scrape_forecast {
 sub scrape_bible {
     my ( $term, $content ) = @_;
 
-    $content =~ m{result-text-style-normal">(.*)<div id="result-options-info2}sm;
+    $content =~ m{result-text-style-normal">(.*?)</div}sm;
     return cleanHTML($1);
 }
 
