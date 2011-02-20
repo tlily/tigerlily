@@ -9,9 +9,9 @@ fumble.pl - Prevent accidental sends when typing ' or "
 
 =head1 DESCRIPTION
 
-=over 10
+=head2 UI COMMANDS
 
-=head1 UI COMMANDS
+=over 10
 
 =item toggle-fumble-mode
 
@@ -61,3 +61,7 @@ sub load {
 
     $ui->intercept_r(name => "fumble-mode", order => 990);
 }
+
+=back
+
+=cut

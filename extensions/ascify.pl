@@ -23,9 +23,9 @@ Note that the default is to strip all accents and diacriticals marks from
 letters.  To approximate them by writing them as two characters, 
 letter followed by diacritical, %set ascify_nostrip_accents 1
 
-=over 10
-
 =head1 COMMANDS
+
+=over 10
 
 =item ascify
 
@@ -268,4 +268,7 @@ sub load {
 
     $ui->intercept_r(name => "ascify-entity", order => 90);
 }
-    
+
+=back
+
+=cut
