@@ -6,37 +6,63 @@
 #  This program is free software; you can redistribute it and/or modify it
 #  under the terms of the GNU General Public License version 2, as published
 #  by the Free Software Foundation; see the included file COPYING.
+# ================================================================
+#
+# build_tlily - Script to build tlily executable.
+#
+# Usage: build_tlily  target  name=path...
+#
+# Builds 'target', pointing to the various paths.
+#     TL_LIBDIR - Tigerlily's library module directory
+#     TL_ETCDIR - Misc data files
+#     TL_EXTDIR - Path to extension modules
+#     TL_MODDIR - Path to tigerlily modules (??)
+#
+# 'lib', 'etc', 'ext', and 'mod' can be used as synonyms for the
+# above, because who wants to do all that typing?
+
 
 use strict;
 use Config;
 use Symbol;
 
 #
-# Parse options.
+# Parse command-line options.
 #
+my @ALLOWED_OPTIONS = qw(TL_LIBDIR TL_ETCDIR TL_EXTDIR TL_MODDIR);
+my %ALLOWED_OPTIONS = map {$_ => 1} @ALLOWED_OPTIONS;
+my %OPTION_SYNONYMS = (lib => 'TL_LIBDIR',
+                       etc => 'TL_ETCDIR',
+                       ext => 'TL_EXTDIR',
+                       mod => 'TL_MODDIR',
+                      );
 
 sub usage {
     print STDERR "Usage: $0 <file to build> TL_LIBDIR=<path> TL_ETCDIR=<path>\n";
     exit 1;
 }
 
+
 my $file_to_build = shift @ARGV;
-  
+usage()  if (!$file_to_build  ||  $file_to_build =~ /=/);
+
 my %opts;
 for my $opt (@ARGV) {
     if ($opt =~ /^([^=]+)=(.*)/) {
-        $opts{$1} = $2;
+        my $opt_path = $2;
+        my $opt_name = $OPTION_SYNONYMS{$1} || $1;
+        usage()  unless $ALLOWED_OPTIONS{$opt_name};
+        $opts{$opt_name} = $opt_path;
     } else {
-        foreach (qw(TL_LIBDIR TL_ETCDIR)) {
-            usage() unless exists $opts{$_};
-        }
+        usage();
     }
 }
 
-my $TL_LIBDIR    = $opts{'TL_LIBDIR'};
-my $TL_ETCDIR    = $opts{'TL_ETCDIR'};
-my $TL_EXTDIR    = "$opts{TL_LIBDIR}/extensions";
-my $TL_LIBMODDIR = $opts{'TL_LIBDIR'};
+# Set option variables (with defaults)
+my $TL_LIBDIR    =  $opts{TL_LIBDIR} || 'lib';
+my $TL_ETCDIR    =  $opts{TL_ETCDIR} || '.';
+my $TL_EXTDIR    =  $opts{TL_EXTDIR} || $TL_LIBDIR . '/extensions';
+my $TL_LIBMODDIR =  $opts{TL_MODDIR} || $TL_LIBDIR;
 
 
 #
@@ -54,21 +80,21 @@ if ($fallback_EAGAIN =~ /^OK/) {
     print STDERR "Warning: Hardcoding EAGAIN as $1.\n";
     $fallback_EAGAIN = $1;
 }
-$fallback_EAGAIN ||= "undef";    
+$fallback_EAGAIN ||= "undef";
 
 
 if ($file_to_build eq "tlily") {
     my $outfile = "tlily";
-    open(TLILY, ">$outfile") or die "Can't write $outfile: $!\n";
-    print TLILY get_script_header();
-    print TLILY "use lib '$TL_LIBDIR';\n";
-    open (F, "<tlily.PL") || die "Can't read tlily.PL: $!\n";
-    while (<F>) { print TLILY; }
-    close (F);
-    close TLILY;
+    open (my $tlily, '>', $outfile)       or die "Can't write $outfile: $!\n";
+    print $tlily get_script_header();
+    print $tlily "use lib '$TL_LIBDIR';\n";
+    open (my $template, '<', 'tlily.PL')  or die "Can't read tlily.PL: $!\n";
+    print {$tlily}  <$template>;
+    close $template;
+    close $tlily;
     chmod(0777, $outfile);
-    
-    print "tlily executable built as \"$outfile\".\n";
+
+    print qq{tlily executable built as "$outfile".\n};
     exit(0);
 }
 
@@ -77,24 +103,24 @@ if ($file_to_build =~ /tlily\.(.*)\.plx/) {
     my $moduleset = $1;
 
     my $outfile = "tlily.${moduleset}.plx";
-    open(TLILY, ">$outfile") or die "Can't write $outfile: $!\n";
-    print TLILY get_tlily_plx($moduleset);
-    close TLILY;
+    open (my $tlily, '>', $outfile) or die "Can't write $outfile: $!\n";
+    print $tlily get_tlily_plx($moduleset);
+    close $tlily;
     chmod(0777, $outfile);
 
-    print "Single-file executable built as \"$outfile\".\n";
-    exit(0);    
+    print qq{Single-file executable built as "$outfile".\n};
+    exit(0);
 }
 
-die "Unrecognized file '$file_to_build'\n";
+die qq{Unrecognized file "$file_to_build"\n};
 
 
 sub get_tlily_plx {
     my ($moduleset) = @_;
-   
+
     # Override some settings.
-    $TL_EXTDIR = "//INTERNAL/extensions";
-    $TL_LIBDIR = "//INTERNAL/lib";
+    $TL_EXTDIR    = "//INTERNAL/extensions";
+    $TL_LIBDIR    = "//INTERNAL/lib";
     $TL_LIBMODDIR = "//INTERNAL";
 
     my $script = get_script_header();
@@ -130,7 +156,7 @@ sub get_tlily_plx {
 
     if ($moduleset eq "curses") {
         push @modules, qw(TLily::FoiledAgain::Curses);
-    } elsif ($moduleset eq "win32") {   
+    } elsif ($moduleset eq "win32") {
         push @modules, qw(TLily::FoiledAgain::Win32);
     } elsif ($moduleset eq "tk") {
         push @modules, qw(TLily::UI::Tk::Event TLily::UI::Tk);
@@ -141,39 +167,39 @@ sub get_tlily_plx {
 
         my $file = "lib/${module}.pm";
         $file =~ s|::|/|g;
-        
+
         $script .= "{\n";
         $script .= "#### EMBEDDED \"$file\"\n";
         $script .= embedperl($file);
         $script .= "#### END\n";
         $script .= "}\n";
     }
-    
+
     $script .= "{\n";
     $script .= "package main;\n";
     $script .= embedperl("tlily.PL", 1);
     $script .= "}\n";
-    
+
     $script .= "__END__\n";
 
     for my $f (<extensions/*.pl>) {
         #next unless ($f =~ /^extensions\/(.*\.pl$/);
         #my $name = $1;
-            
+
         $script .= "#### EMBEDDED \"$f\"\n";
         $script .= embedperl($f);
         $script .= "#### END\n";
     }
-        
+
     $script .= "#### EMBEDDED \"lib/tlily.global\"\n";
     $script .= embedperl("lib/tlily.global");
     $script .= "#### END\n";
-        
+
     return $script;
 }
 
 
-    
+
 sub embedperl {
     my($file) = @_;
 
@@ -211,22 +237,22 @@ sub embedperl {
 
     return $script;
 }
-    
-    
-    
+
+
+
 sub get_script_header {
 
-    my $PERL = $Config{'startperl'} ? $Config{'startperl'}     : 
+    my $PERL = $Config{'startperl'} ? $Config{'startperl'}     :
                $Config{'perlpath'}  ? "#!".$Config{'perlpath'} :
                                       "#/usr/bin/perl";
-    my $script = <<END
+    my $script = <<END;
 $PERL
 
 ##########################################################################
 ##########################################################################
 ###
 ### Tigerlily:  A client for the lily CMC, written in Perl.
-### Copyright (C) 1999-2006  The TigerLily Team, <tigerlily\@tlily.org>
+### Copyright (C) 1999-2011  The TigerLily Team, <tigerlily\@tlily.org>
 ###                             http://www.tlily.org/tigerlily/
 ###
 ### This program is free software; you can redistribute it and/or modify it
@@ -252,7 +278,7 @@ $PERL
 
 # Tigerlily modules directory.
 \$::TL_LIBMODDIR = "$TL_LIBMODDIR";
-      
+
 # Fallback value for EAGAIN, if it cannot be determined by other means.
 \$::fallback_EAGAIN = $fallback_EAGAIN;
 
@@ -261,8 +287,6 @@ $PERL
 ##########################################################################
 
 END
-  ;
 
     return $script;
 }
-    

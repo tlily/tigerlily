@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 #    TigerLily:  A client for the lily CMC, written in Perl.
-#    Copyright (C) 1999-2003  The TigerLily Team, <tigerlily@tlily.org>
+#    Copyright (C) 1999-2011  The TigerLily Team, <tigerlily@tlily.org>
 #                                http://www.tlily.org/tigerlily/
 #
 #  This program is free software; you can redistribute it and/or modify it
@@ -15,65 +15,67 @@ sub directory_init {
     $::TL_ETCDIR = "."          unless defined($::TL_ETCDIR);
     $::TL_LIBDIR = "lib"        unless defined($::TL_LIBDIR);
     $::TL_EXTDIR = "extensions" unless defined($::TL_EXTDIR);
-    
+
     $::TL_TMPDIR = "/tmp";
     if ($^O =~ /cygwin/) {
         $::TL_TMPDIR = $ENV{TEMP} || 'C:\WINDOWS\TEMP';
         $::TL_TMPDIR =~ s/^.://g;
         $::TL_TMPDIR =~ s/\\/\//g;
     }
-    
+
     if ($^O eq 'MSWin32') {
         $::TL_TMPDIR = $ENV{TEMP} || 'C:\WINDOWS\TEMP';
     }
-    
-    if (defined($::TL_LIBMODDIR) && 
+
+    if (defined($::TL_LIBMODDIR) &&
 	($::TL_LIBMODDIR ne "//INTERNAL")) {
 	unshift @INC, $::TL_LIBMODDIR;
-    }    
+    }
 }
 
-sub platform_init {   
-    if ($^O eq 'MSWin32') {
+sub platform_init
+{
+    if ($^O eq 'MSWin32')
+    {
+        # TODO: "-ap" means "Activestate Perl".  No longer a good
+        # assumption if we're under Windows.
         $TLily::Version::VERSION .= "-ap";
     }
-    
-    if ($^O =~ /cygwin/) {
-        $EAGAIN = $::fallback_EAGAIN;
-    } else {
-        $EAGAIN = eval { require "Errno.pm"; Errno::EAGAIN(); };
-        $EAGAIN = eval { require "errno.ph"; EAGAIN(); } if $@;
-        if ($@) { 
-            if (defined $::fallback_EAGAIN) {
-    	        print STDERR "WARNING: Using fallback EAGAIN.\n";
-                $EAGAIN = $::fallback_EAGAIN;
-            } elsif ($::TL_LIBMODDIR !~ m|^//INTERNAL|) {
-                if (! -f ".tlily-eagain") {
-                    $EAGAIN = `$^X tools/find_eagain`;
-                    if ($EAGAIN =~ /^(\d+)/) {
-                        print STDERR "Saving EAGAIN to .tlily-eagain.\n";
-                        $EAGAIN = $1;
-                        local *FH;
-                        open(FH, '>', '.tlily-eagain') or die ".tlily-eagain: $!\n";
-                        print FH $EAGAIN, "\n";
-                    } else {
-                        die "Cannot determine value for EAGAIN.\n";
-                    }
+
+    # Compute $EAGAIN.
+    # First, try some reasonably standard ways:
+    eval  { require "Errno.pm"; $EAGAIN = Errno::EAGAIN(); 1}
+    or
+    eval  { require "errno.ph"; $EAGAIN = EAGAIN(); 1}
+    or do { $EAGAIN = $::fallback_EAGAIN }    # Did build_tlily compute a fallback?
+    or do {  # So much for the easy way.
+        if ($::TL_LIBMODDIR !~ m|^//INTERNAL|) {
+            if (-f '.tlily-eagain') {         # Did we already go down this road?
+                open(my $fh, '<', '.tlily-eagain') or die "Cannot read .tlily-eagain: $!\n";
+                $EAGAIN = <$fh>;
+                close $fh;
+
+                if ($EAGAIN =~ /^(\d+)/) {
+                    $EAGAIN = $1;
                 } else {
-                    local *FH;
-                    open(FH, '<', '.tlily-eagain') or die ".tlily-eagain: $!\n";
-                    $EAGAIN = <FH>;
-                    if ($EAGAIN =~ /^(\d+)/) {
-                        $EAGAIN = $1;
-                    } else {
-                        die ".tlily-eagain seems to be corrupt; delete it and try again.\n";
-                    }
+                    die ".tlily-eagain seems to be corrupt; delete it and try again.\n";
                 }
             } else {
-                die "Cannot determine value for EAGAIN.\n";
+                $EAGAIN = `$^X tools/find_eagain`;
+                if ($EAGAIN =~ /^(\d+)/) {
+                    print STDERR "Saving EAGAIN to .tlily-eagain.\n";
+                    $EAGAIN = $1;
+                    open(my $fh, '>', '.tlily-eagain') or die "Cannot write .tlily-eagain: $!\n";
+                    print $fh $EAGAIN, "\n";
+                    close $fh;
+                } else {
+                    die "Cannot determine value for EAGAIN.\n";
+                }
             }
+        } else {
+            die "Cannot determine value for EAGAIN.\n";
         }
-    }
+    };
 }
 
 BEGIN { directory_init(); }
@@ -89,7 +91,8 @@ use TLily::Extend;
 use TLily::Version;
 use TLily::Utils;
 
-BEGIN { platform_init(); }
+
+platform_init();
 
 TLily::Config::init();
 TLily::Event::init();
@@ -117,7 +120,7 @@ sub sig_pipe {
     $SIG{PIPE} = \&sig_pipe;
     my ($package, $filename, $line, $subroutine,
 	$hasargs, $wantarray, $evaltext, $is_require) = caller(1);
-    
+
     $ui->print("WARNING: Caught SIGPIPE. (from $package::$subroutine)\n");
 }
 
@@ -139,11 +142,11 @@ sub output_handler {
     my($event, $handler) = @_;
     if ($event->{ui_name}) {
 	my $ui = TLily::UI::name($event->{ui_name});
-	
+
 	if ($event->{BELL}) {
 	    $ui->bell();
 	}
-	
+
 	if ($event->{NOTIFY} && $event->{formatter}) {
 	    $event->{formatter}->($ui, $event);
 	} elsif ($event->{NOTIFY} && $event->{indent}) {
@@ -157,9 +160,9 @@ sub output_handler {
 	} elsif ($event->{NOTIFY}) {
 	    $ui->print($event->{text}, "\n");
 	}
-	
+
     }
-    
+
     return 0;
 }
 TLily::Event::event_r(type  => "all",
@@ -169,27 +172,27 @@ TLily::Event::event_r(type  => "all",
 sub prompt_handler {
     my($event, $handler) = @_;
     my $server = $event->{server};
-    
+
     if (defined($event->{value})) {
 	$server->sendln($event->{value});
 	return;
     }
-    
+
     if ($event->{ui_name}) {
 	my $ui = TLily::UI::name($event->{ui_name});
 	$ui->prompt_for(prompt   => $event->{text},
 			password => $event->{password},
-			call     => sub { 
+			call     => sub {
 			    TLily::Event::send(type => 'user_input',
 					       ui   => $ui,
 					       text => $_[1]);
 			    # or, to bypass the normal handlers (and break
 			    # %commands)
-			    #$server->sendln($_[1]); 
+			    #$server->sendln($_[1]);
 			});
 	return;
     }
-    
+
     # This should never happen.
     warn "Unanswerable prompt: $event->{text}\n";
     return;
@@ -249,7 +252,7 @@ sub load_ui {
     # did they specify a substring or case-insensitive match of an available
     # UI?
     if (! $available{$config{UI}}) {
-	foreach (keys %available) { 
+	foreach (keys %available) {
 	    if (/$config{UI}/i) { $config{UI} = $_; }
 	}
     }
@@ -269,7 +272,7 @@ sub load_ui {
 	# sometimes they die() in the new(), leaving a half-allocated UI.
 	TLily::UI::purge("main");
     }
-    
+
     die "FATAL: Unable to load a UI module.  Exiting.\n" unless $ui;
 
     return $ui;
@@ -317,7 +320,7 @@ L<TLily::Daemon>,
 L<TLily::Server>,
 L<TLily::Daemon::HTTP>,
 L<extensions::slcp_parse>,
-and 
+and
 L<extensions::slcp_output>.
 
 =head1 BUGS
