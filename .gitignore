@@ -7,3 +7,6 @@ tlily.curses.plx
 tlily.tk.plx
 tlily.win32.plx
 
+# Ignore emacs temp files:
+\#*\#
+*~
