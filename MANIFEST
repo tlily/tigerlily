@@ -29,7 +29,6 @@ extensions/cj.pl
 extensions/countdown.pl
 extensions/ctc.pl
 extensions/deblurb.pl
-extensions/defiance.pl
 extensions/dontcare.pl
 extensions/dumpscrollback.pl
 extensions/dv.pl
