@@ -86,9 +86,9 @@ sub DEBUG {
 sub uidebug {
     return unless $TLily::FoiledAgain::DEBUG;
 
-    open(F, '>>', 'uilog') || die;
-    print F @_;
-    close(F);
+    open my $f, '>>', 'uilog'  or die;
+    print $f @_;
+    close $f;
 }
 
 my $SCREEN;

@@ -56,11 +56,12 @@ sub pipe_handler {
         close(FD);
     }
 
-    my $fd = gensym;
-    my $rc = open($fd, $run);
-    if ($rc == 0) {
+    my $fd;
+    # Perl::Critic override: this module opens the "pipe" in a variety of ways. SDN 02/25/2011
+    unless (open $fd, $run) {  ## no critic (ProhibitTwoArgOpen)
         my $l = $@; $l =~ s/(\\<)/\\$1/g;
         $ui->print("Error in pipe: $l\n");
+        return;
     }
 
     $server->cmd_process($lcmd, sub {
@@ -70,15 +71,14 @@ sub pipe_handler {
         } elsif ($event->{type} eq 'endcmd') {
             close $fd;
             if ($mode != $3) {
-                local(*FD);
-                open(FD, "<$tmpfile");
-                my @l = <FD>;
+                open my $fd2, '<', $tmpfile;
+                my @l = <$fd2>;
                 foreach (@l) {
                     chomp;
                     s/(\\<)/\\$1/g;
                     $ui->print($_, "\n");
                 }
-                close(FD);
+                close $fd2;
                 unlink($tmpfile);
             }
         } elsif (defined $event->{text}) {

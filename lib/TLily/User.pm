@@ -235,16 +235,18 @@ sub rebuild_file_help_idx {
     foreach $module (@files) {
         next if ($module =~ /^\./);
 
-        local(*F);
         my $file = "$dir/$module";
         if ( -f "$file" ) {
             next unless ($file =~ /\.pm$|\.pl$|\.pod$/);
 
-            open(F, '<', $file) ||
-              warn "Can't open $file: $!\n";
+            my $fh;
+            unless (open $fh, '<', $file) {
+                warn "Can't open $file: $!\n";
+                next;
+            }
 
             my $namehead=0;
-            while(<F>) {
+            while(<$fh>) {
                 if (/=head1 NAME/) { $namehead = 1; next }
                 if (/=head1/) { $namehead = 0; last; }
                 next unless $namehead;

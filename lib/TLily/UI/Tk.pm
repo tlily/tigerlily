@@ -995,15 +995,14 @@ sub bell {
 sub dump_to_file {
     my($self, $filename) = @_;
 
-    local(*FILE);
-    open(FILE, '>', $filename);
-    if($!) {
+    my $file;
+    unless (open $file, '>', $filename) {
         $self->print("(Unable to open $filename for writing: $!)\n");
         return 0;
     }
 
-    print FILE $self->{text}->get("1.0", "end");
-    close(FILE);
+    print $file $self->{text}->get("1.0", "end");
+    close $file;
     return int($self->{text}->index("end"))-1;
 }
 

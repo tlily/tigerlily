@@ -36,8 +36,8 @@ sub send {
 
     $self->{filealias} = $args{file};
 
-    local *IN;
-    if ((! -r $filename) || !(open IN, '<', $filename)) {
+    my $in;
+    if ((! -r $filename) || !(open $in, '<', $filename)) {
         $self->send_error( errno => 403,
                            title => "Forbidden",
                            long  => "Unable to open $args{file}.",
@@ -45,12 +45,12 @@ sub send {
         return 0;
     }
 
-    $self->{filedes} = *IN;
+    $self->{filedes} = $in;
 
     print {$self->{sock}} "HTTP/1.0 200 OK\r\n";
     print {$self->{sock}} "Date: " . TLily::Daemon::HTTP::date() . "\r\n";
     print {$self->{sock}} "Connection: close\r\n";
-    print {$self->{sock}} "Content-Length: " . (-s IN) . "\r\n";
+    print {$self->{sock}} "Content-Length: " . (-s $in) . "\r\n";
     print {$self->{sock}} "Content-Type: application/octet-stream\r\n";
     print {$self->{sock}} "Cache-Control: private\r\n";
     print {$self->{sock}} "\r\n";

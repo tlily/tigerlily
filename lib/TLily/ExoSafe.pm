@@ -117,12 +117,11 @@ sub symtab {
 
 sub load_internal_files {
     if (keys %internal_files == 0) {
-        local *FH;
-        my $rc = open(FH, '<', $0) or die "$0: $!";
+        open (my $fh, '<', $0) or die "$0: $!";
 
         my $name;
         my $data = "";
-        while (<FH>) {
+        while (<$fh>) {
             if (defined($name)) {
                 if (/^\#\#\#\# END/) {
                     $internal_files{$name} = $data;
@@ -137,6 +136,7 @@ sub load_internal_files {
                 }
             }
         }
+        close $fh;
     }
 }
 

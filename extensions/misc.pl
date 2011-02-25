@@ -43,16 +43,16 @@ sub shell_handler {
             $ui->print("[beginning of command output]\n");
     }
 
-    local *FD;
+    my $fd;
     if ($^O =~ /cygwin/) {
-        open(FD, '-|', $command);
+        open($fd, '-|', $command);
     } else {
-        open(FD, '-|', "$command 2>&1");
+        open($fd, '-|', "$command 2>&1");
     }
     if (! $config{shell_silent}) {
-      $ui->print(<FD>);
+      $ui->print(<$fd>);
     }
-    close(FD);
+    close($fd);
 
     if (! $config{shell_quiet} && ! $config{shell_silent}) {
             $ui->print("[end of command output]\n");

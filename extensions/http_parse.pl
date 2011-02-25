@@ -180,15 +180,15 @@ sub save_file {
     if (!defined $event->{server}->{callback}) {
 
         unless (defined $$st->{_filehandle}) {
-            local *FH;
-            unless (open FH, '>', $filename) {
+            if (open my $fh, '>', $filename) {
+                $$st->{_filehandle} = $fh;
+            } else {
                 my $ui = TLily::UI::name();
                 $ui->print ("(Unable to save file $filename: $!)\n");
                 $event->{server}->terminate() if $event->{server};
                 $event->{daemon}->close() if $event->{daemon};
                 return;
             }
-            $$st->{_filehandle} = *FH;
         }
         syswrite ($$st->{_filehandle}, $event->{data}, length($event->{data}));
     } else {

@@ -75,13 +75,15 @@ sub edit_report(%) {
 
     if ($args{'recover'}) {
         $ui->print("(Recalling saved report)\n");
-        my $rc = open(FH, '<', $tmpfile);
-        unless ($rc) {
+        if (open my $fh, '<', $tmpfile) {
+            local $/;   # read whole file at once
+            $form = <$fh>;
+            close $fh;
+        }
+        else {
             $ui->print("(edit buffer file not found)\n");
             return;
         }
-        $form = join("",<FH>);
-        close FH;
     }
 
     $form =~ s/^Lily_Core:$/Lily_Core: $args{'version'}/m;
@@ -97,10 +99,15 @@ sub edit_report(%) {
     my $mtime = 0;
 
     unlink($tmpfile);
-    open(FH, '>', $tmpfile) or die "$tmpfile: $!";
-    print FH "$form";
-    $mtime = (stat FH)[10];
-    close FH;
+    if (open $fh, '>', $tmpfile) {
+        print $fh $form;
+        $mtime = (stat $fh)[10];
+        close $fh;
+    }
+    else {
+        # TODO: Should this really *die*?  -- SDN 02/25/2011
+        die "$tmpfile: $!";
+    }
 
     $ui->suspend;
     TLily::Event::keepalive();
@@ -108,21 +115,22 @@ sub edit_report(%) {
     TLily::Event::keepalive(5);
     $ui->resume;
 
-    my $rc = open(FH, '<', $tmpfile);
-    unless ($rc) {
+    if (open $fh, '<', $tmpfile) {
+        if ((stat $fh)[10] == $mtime) {
+            $ui->print("(report not submitted)\n");
+            close $fh;
+            unlink($tmpfile);
+            return;
+        }
+
+        my @data = <$fh>;
+        close $fh;
+    }
+    else {
         $ui->print("(edit buffer file not found)\n");
         return;
     }
 
-    if ((stat FH)[10] == $mtime) {
-        $ui->print("(report not submitted)\n");
-        close FH;
-        unlink($tmpfile);
-        return;
-    }
-
-    my @data = <FH>;
-    close FH;
     $form = join("",@data);
     if ($form =~ /Description:$/) {
         $ui->print("(No description - report not submitted; please re-edit with %submit $args{'type'} -r)\n");
@@ -178,10 +186,9 @@ sub sendmail {
     my $method = determine_mail_method($ui);
 
     if ($method =~ m|^/|) {
-        my $rc = open(FH, '|-', "$method -oi $TLILY_BUGS");
-        if ($rc) {
-            print FH $mail;
-            close FH;
+        if (open $fh, '|-', "$method -oi $$tlily_$bugs") {
+            print $fh $mail;
+            close $fh;
         } else {
             die "sendmail: $!";
         }

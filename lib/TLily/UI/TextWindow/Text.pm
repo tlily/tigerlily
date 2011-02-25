@@ -217,22 +217,24 @@ sub draw_line {
 sub dump_to_file {
     my ($self, $filename) = @_;
 
-    local(*FILE);
-    open(FILE, '>', $filename) ||
-       $self->print("(Unable to open $filename for writing: $!)\n");
+    my $file;
+    unless (open $file, '>', $filename) {
+        $self->print("(Unable to open $filename for writing: $!)\n");
+        return 0;
+    }
 
     my $count = 0;
     foreach my $line ($self->fetch_lines()) {
         my $start = $line->[0];
         for (my $i = 3; $i < @$line; $i+=2) {
-            print FILE (substr($self->{text}, $start, $line->[$i+1]));
+            print $file (substr($self->{text}, $start, $line->[$i+1]));
             $start += $line->[$i+1];
         }
-        print FILE "\n";
+        print $file "\n";
         $count++;
     }
 
-    close(FILE);
+    close $file;
     return $count;
 }
 

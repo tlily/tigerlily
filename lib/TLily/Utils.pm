@@ -55,24 +55,23 @@ sub columnize_list {
 sub edit_text {
     my($ui, $text, $quiet) = @_;
 
-    local(*FH);
     my $tmpfile = "$::TL_TMPDIR/tlily.$$";
     my $mtime = 0;
 
     unlink($tmpfile);
-    open(FH, '>', $tmpfile) or die "$tmpfile: $!";
+    open my $fh, '>', $tmpfile  or die "Can't write $tmpfile: $!";
     if (@{$text}) {
         foreach (@{$text}) {
             chomp;
             if ($^O =~ /cygwin/) {
-            print FH "$_\r\n";
+            print $fh "$_\r\n";
         } else {
-            print FH "$_\n";
+            print $fh "$_\n";
         }
     }
-        $mtime = (stat FH)[10];
+        $mtime = (stat $fh)[10];
     }
-    close FH;
+    close $fh;
 
     $ui->suspend;
     TLily::Event::keepalive();
@@ -89,29 +88,30 @@ sub edit_text {
 
     $ui->resume;
 
-    my $rc = open(FH, '<', $tmpfile);
-    unless ($rc) {
+    my $fh;
+    my $rc = ;
+    unless (open $fh, '<', $tmpfile) {
         $ui->print("(edit buffer file not found)\n") unless $quiet;
         return;
     }
 
     if ($^O =~ /cygwin/) {
     # blah!
-    } elsif ((stat FH)[10] == $mtime) {
-        close FH;
+    } elsif ((stat $fh)[10] == $mtime) {
+        close $fh;
         unlink($tmpfile);
         $ui->print("(file unchanged)\n") unless $quiet;
         return;
     }
 
-    @{$text} = <FH>;
+    @{$text} = <$fh>;
     if ($^O =~ /cygwin/) {
         local($/ = "\r\n");
         chomp(@{$text});
     } else {
     chomp(@{$text});
     }
-    close FH;
+    close $fh;
     unlink($tmpfile);
 
     return 1;
@@ -120,22 +120,24 @@ sub edit_text {
 
 sub diff_text {
   my ( $a, $b ) = @_;
-  local(*FH);
+  my $fh;
   my $diff = [];
+
+  # TODO: error-check these open() statements.   SDN 02/25/2011
 
   my $tmpfile_a = "$::TL_TMPDIR/tlily-diff-a.$$";
   my $tmpfile_b = "$::TL_TMPDIR/tlily-diff-b.$$";
-  open FH, '>', $tmpfile_a;
-  foreach (@{$a}) { print FH "$_\n" };
-  close FH;
+  open $fh, '>', $tmpfile_a;
+  foreach (@{$a}) { print $fh "$_\n" };
+  close $fh;
 
-  open FH, '>', $tmpfile_b;
-  foreach (@{$b}) { print FH "$_\n" };
-  close FH;
+  open $fh, '>', $tmpfile_b;
+  foreach (@{$b}) { print $fh "$_\n" };
+  close $fh;
 
-  open FH, '-|', "diff $tmpfile_a $tmpfile_b";
-  @{$diff} = <FH>;
-  close FH;
+  open $fh, '-|', "diff $tmpfile_a $tmpfile_b";
+  @{$diff} = <$fh>;
+  close $fh;
 
   unlink $tmpfile_a;
   unlink $tmpfile_b;
@@ -159,13 +161,12 @@ sub save_deadfile {
 
     unlink($deadfile);
 
-    local *DF;
-    open(DF, '>', $deadfile) || return;
+    open my $df, '>', $deadfile  or return;
 
     foreach my $l (@{$text}) {
-        print DF $l, "\n";
+        print $df $l, "\n";
     }
-    close DF;
+    close $df;
 
     return 1;
 }
@@ -177,12 +178,11 @@ sub get_deadfile {
     $escaped_name =~ s|/|,|g;
     my $deadfile = $ENV{HOME}."/.lily/tlily/dead.$type.$escaped_name";
 
-    local *DF;
-    open(DF, '<', $deadfile) || return;
+    open $df, '<', $deadfile  or return;
 
     my $text;
-    @{$text} = <DF>;
-    close DF;
+    @{$text} = <$df>;
+    close $df;
     unlink($deadfile);
 
     return $text;

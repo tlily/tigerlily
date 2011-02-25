@@ -261,15 +261,14 @@ sub contact_ssl {
     File::Path::mkpath([$cert_path],0,0711);
 
     if(-f $cert_filename) {
-        $temp = $/;
-        undef $/;
 
-        # Slurp in the whole certificate.
-        open(SSL_CERT, '<', $cert_filename);
-        sysread(SSL_CERT, $other_cert, 500000);
-        close(SSL_CERT);
-
-        $/ = $temp;
+        {
+            # Slurp in the whole certificate.
+            local $/ = undef;
+            open my $ssl_cert, '<', $cert_filename;
+            sysread($ssl_cert, $other_cert, 500000);
+            close $ssl_cert;
+        }
 
         $string_cert =  Net::SSLeay::PEM_get_string_X509($cert);
 
@@ -313,11 +312,11 @@ sub contact_ssl {
 
 sub write_cert {
     my($cert, $file) = @_;
-    my($str_cert);
-    open(SSL_CERT, '>', $file);
-    $str_cert = Net::SSLeay::PEM_get_string_X509($cert);
-    print(SSL_CERT $str_cert);
-    close(SSL_CERT);
+    my $str_cert = Net::SSLeay::PEM_get_string_X509($cert);
+
+    open my $ssl_cert, '>', $file;
+    print $ssl_cert $str_cert;
+    close $ssl_cert;
 }
 
 

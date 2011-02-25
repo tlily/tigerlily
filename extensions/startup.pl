@@ -12,13 +12,13 @@ sub startup_handler ($$) {
     my $ui = ui_name();
 
     if(-f $ENV{HOME}."/.lily/tlily/Startup") {
-        local(*SUP);
-        if (! open(SUP, '<', "$ENV{HOME}/.lily/tlily/Startup")) {
+        my $sup;
+        unless (open $sup, '<', "$ENV{HOME}/.lily/tlily/Startup") {
             $ui->print("Error opening Startup: $!\n");
             return 0;
         }
         $ui->print("(Running ~/.lily/tlily/Startup)\n\n");
-        while(<SUP>) {
+        while(<$sup>) {
             next if /^(#|\s+$)/;
             chomp;
             TLily::Event::send({type    => 'user_input',
@@ -26,7 +26,7 @@ sub startup_handler ($$) {
                                 startup => 1,
                                 text    => $_});
         }
-        close(SUP);
+        close($sup);
     } else {
         $ui->print("(No startup file found.)\n");
         $ui->print("(If you want to install one, " .

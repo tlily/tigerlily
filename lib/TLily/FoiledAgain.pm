@@ -189,9 +189,9 @@ sub dispatch_classmethod {
         unless defined($UI_CLASS);
 
     if ($DEBUG) {
-        open(F, '>>', 'uilog') || die;
-        print F "$method(@_)\n";
-        close(F);
+        open my $f, '>>', 'uilog' or die;
+        print $f "$method(@_)\n";
+        close $f;
     }
 
     no strict 'refs';

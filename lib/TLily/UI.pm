@@ -219,11 +219,10 @@ sub log {
     $self->{log_queued} = "";
 
     if (defined $file) {
-        local *FH;
-        open(FH, '>>', $file) or die "$file: $!\n";
-        my $fh = select(FH); $|=1; select($fh);
+        open (my $fh, '>>', $file) or die "$file: $!\n";
+        my $oldfh = select($fh); $|=1; select($oldfh);
         $self->{log_file} = $file;
-        $self->{log_fh}   = *FH;
+        $self->{log_fh}   = $fh;
     }
 
     return;

@@ -43,8 +43,8 @@ sub getquote {
     my ($ret,$p);
 
     print "getting url\n";
-    open (E, '-|', "lynx -dump $url");
-    foreach (<E>) {
+    open (my $e, '-|', "lynx -dump $url");
+    foreach (<$e>) {
         if (/____/) {
             $p=! defined($p);
             next;
@@ -53,7 +53,7 @@ sub getquote {
         s/\s+/ /g;
         if ($p) { $ret .= $_; }
     }
-    close(E);
+    close($e);
 
     $ret;
 }

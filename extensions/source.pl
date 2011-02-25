@@ -9,21 +9,18 @@ sub do_source {
     if (scalar(@args) == 1) {
 
         my $fname=$args[0];
-        my $i;
-        local(*FH);
-
         return if $fname eq "";
 
-        my $rc = open (FH, '<',  $fname);
-        unless ($rc) {
+        my $fh;
+        unless (open $fh, '<',  $fname) {
             $ui->print("($fname not found)\n");
             return;
         }
 
         $ui->print("(sourcing $fname)\n");
 
-        my @data = <FH>;
-            close FH;
+        my @data = <$fh>;
+            close $fh;
             process_source(@data);
         return;
     } elsif ($args[0] eq "memo") {

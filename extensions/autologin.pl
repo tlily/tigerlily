@@ -38,10 +38,9 @@ Config options for autologin:
 sub load {
     $config{server_info} = [];
 
-    local *FD;
     foreach my $file (@files) {
-        open(FD, '<', $file) or next;
-        while (<FD>) {
+        open my $fd, '<', $file  or next;
+        while (<$fd>) {
             next if (/^\s*(\#.*)?$/);
             my ($alias, $host, $port, $user, $pass) = split;
             next unless defined($port);
@@ -54,7 +53,7 @@ sub load {
                 pass  => $pass
             };
         }
-        close(FD);
+        close $fd;
 
         last;
     }
