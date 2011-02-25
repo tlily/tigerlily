@@ -47,13 +47,13 @@ my $jay_sherman = Perl::Critic->new(-exclude => [qr/.*/]);
 # For a list of available policies, perldoc Perl::Critic
 my @policies = qw{
     CodeLayout::ProhibitTrailingWhitespace
+    InputOutput::ProhibitBarewordFileHandles
+    InputOutput::ProhibitTwoArgOpen
     Variables::ProhibitConditionalDeclarations
 };
 
 # XXX These policies were desired at one point, but don't currently pass.
 my @failing_policies = qw{
-    InputOutput::ProhibitBarewordFileHandles
-    InputOutput::ProhibitTwoArgOpen
     NamingConventions::ProhibitAmbiguousNames
     Subroutines::ProhibitBuiltinHomonyms
     Subroutines::ProhibitExplicitReturnUndef
