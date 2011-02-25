@@ -99,7 +99,7 @@ sub edit_report(%) {
     my $mtime = 0;
 
     unlink($tmpfile);
-    if (open $fh, '>', $tmpfile) {
+    if (open my $fh, '>', $tmpfile) {
         print $fh $form;
         $mtime = (stat $fh)[10];
         close $fh;
@@ -115,7 +115,8 @@ sub edit_report(%) {
     TLily::Event::keepalive(5);
     $ui->resume;
 
-    if (open $fh, '<', $tmpfile) {
+    my @data;
+    if (open my $fh, '<', $tmpfile) {
         if ((stat $fh)[10] == $mtime) {
             $ui->print("(report not submitted)\n");
             close $fh;
@@ -123,7 +124,7 @@ sub edit_report(%) {
             return;
         }
 
-        my @data = <$fh>;
+        @data = <$fh>;
         close $fh;
     }
     else {
@@ -186,7 +187,7 @@ sub sendmail {
     my $method = determine_mail_method($ui);
 
     if ($method =~ m|^/|) {
-        if (open $fh, '|-', "$method -oi $$tlily_$bugs") {
+        if (open my $fh, '|-', "$method -oi $TLILY_BUGS") {
             print $fh $mail;
             close $fh;
         } else {

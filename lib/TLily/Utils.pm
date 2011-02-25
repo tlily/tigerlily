@@ -88,8 +88,6 @@ sub edit_text {
 
     $ui->resume;
 
-    my $fh;
-    my $rc = ;
     unless (open $fh, '<', $tmpfile) {
         $ui->print("(edit buffer file not found)\n") unless $quiet;
         return;
@@ -106,7 +104,7 @@ sub edit_text {
 
     @{$text} = <$fh>;
     if ($^O =~ /cygwin/) {
-        local($/ = "\r\n");
+        local $/ = "\r\n";
         chomp(@{$text});
     } else {
     chomp(@{$text});
@@ -178,7 +176,7 @@ sub get_deadfile {
     $escaped_name =~ s|/|,|g;
     my $deadfile = $ENV{HOME}."/.lily/tlily/dead.$type.$escaped_name";
 
-    open $df, '<', $deadfile  or return;
+    open my $df, '<', $deadfile  or return;
 
     my $text;
     @{$text} = <$df>;
