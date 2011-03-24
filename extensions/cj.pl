@@ -1331,6 +1331,50 @@ $response{bacon} = {
     RE   => qr/bacon/i,
 };
 
+my $wolfram_url = "http://www.wolframalpha.com/input/?i=";
+
+$response{compute} = {
+    TYPE => "all",
+    CODE => sub {
+        my ($event) = @_;
+        my $args = $event->{VALUE};
+        if ( !( $args =~ m/\bcompute\s+(.*)$/i ) ) {
+            return 'ERROR: Expected compute RE not matched!';
+        }
+        
+        my $url  = $wolfram_url . escape($1);
+        add_throttled_HTTP(
+            url      => $url,
+            ui_name  => 'main',
+            callback => sub {
+                my ($response) = @_;
+                dispatch( $event, scrape_wolfram( $response->{_content} ) );
+            }
+        );
+        return;
+    },
+    HELP => "Compute something using WolframAlpha.com",
+    POS  => -1,
+    STOP => 1,
+    RE   => qr/compute/i,
+};
+
+sub scrape_wolfram {
+    my ($content) = shift;
+
+    my $footer = " [wolframalpha.com]";
+    if ($content =~ m/context.jsonArray.popups.pod_0200.push\( {"stringified": "(.*)","mInput/) {
+        my $response = $1;
+        $response =~ s/\\n/ /g;
+        $response =~ s/\\'/'/g;
+
+        return "$response $footer";
+    }
+
+    return "Didn't understand that. $footer";
+}
+
+
 my $horoscopeRE = qr( \b
     horoscope \s+ (?: for \s+)?
     (?:
@@ -1877,14 +1921,13 @@ sub cj_event {
                   if !grep { /$event->{type}/ } @types;
                 my $re = $response{$handler}->{RE};
                 if ( $event->{type} eq 'public' ) {
-                    $re = qr/^\s*(?i:$name\s*,?\s*)?$re/;
+                    $re = qr/(?i:$name\s*,?\s*)?$re/;
                 } elsif ( $event->{type} eq 'emote' ) {
                     # XXX must anchor emotes by default.
                     # fixup so things like "drink" work, though.
-                    $re = qr/^\s*(?i:$name\s*,?\s*)?$re/;
+                    $re = qr/(?i:$name\s*,?\s*)?$re/;
                 }
-                $re = qr/^\s*\b$re/; # anchor to the beginning of a send
-
+                $re = qr/^\s*$re/; # anchor to the beginning of a send
                 if ( $event->{VALUE} =~ m/$re/ ) {
                     $served{ $event->{type} . ' messages' }++;
                     $served{$handler}++;
