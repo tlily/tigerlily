@@ -581,6 +581,7 @@ my %languages = (
     german           => 'de',
     greek            => 'el',
     "haitian creole" => 'ht',
+    hindi            => 'hi',
     italian          => 'it',
     japanese         => 'ja',
     portuguese       => 'pt',
