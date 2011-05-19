@@ -13,6 +13,9 @@ use URI;
 use Config::IniFiles;
 
 use Chatbot::Eliza;
+use Text::Unidecode;
+
+use LWP::UserAgent;
 
 =head1 AUTHOR
 
@@ -92,6 +95,9 @@ my $name = TLily::Server->active()->user_name();
 
 # we'll use Eliza to handle any commands we don't understand, so set her up.
 my $eliza = new Chatbot::Eliza { name => $name, prompts_on => 0 };
+
+my $ua = LWP::UserAgent->new;
+$ua->agent("CJ-bot/1.0");
 
 =head1 Methods
 
@@ -275,34 +281,6 @@ sub do_throttled_HTTP {
 
 my %shorts;    # briefs?
 
-sub unshorten {
-    my ( $short, $callback ) = @_;
-
-    my $url = 'http://metamark.net/api/rest/simple?short_url=' . escape($short);
-
-    add_throttled_HTTP(
-        url      => $url,
-        ui_name  => 'main',
-        callback => sub {
-
-            my ($response) = @_[0];
-
-            my $ans;
-            if ( $response->{_content} =~ 'ERROR' ) {
-                $ans = "Pshaw. That's not right, and you know it.";
-            }
-            else {
-                $ans = $response->{_content};
-                $ans =~ s/\s//g;
-                $ans = "Originally: $ans";
-
-            }
-            &$callback($ans);
-        }
-    );
-    return;
-}
-
 sub shorten {
     my ( $short, $callback ) = @_;
 
@@ -312,33 +290,32 @@ sub shorten {
         return;
     }
 
+    # This used to add a throttled HTTP request. now it does it inline
+    # This could be bad. TLily::Server::HTTP needs to be updated.
+
     my $original_host = new URI($short)->host();
 
-    my $url = 'http://metamark.net/api/rest/simple?long_url=' . escape($short);
+    my $url = 'https://www.googleapis.com/urlshortener/v1/url?key=' . 
+            $config->val('googleapi', 'APIkey');
 
-    add_throttled_HTTP(
-        url      => $url,
-        ui_name  => 'main',
-        callback => sub {
+    my $req = HTTP::Request->new(POST => $url);
+    $req->content_type('application/json');
+    $req->content(<<"EJSON");
+{
+longUrl: "$short"
+}
+EJSON
+    my $res = $ua->request($req);
 
-            my ($response) = @_[0];
-
-            my $ans;
-            if ( $response->{_state}{_status} == 200 ) {
-                # response should be on first line:
-                $response->{_content} =~ s/^([^\n]*)//;
-                $ans = $1;
-                if ($ans) {
-                  $ans .= " [$original_host]";
-                  $shorts{$short} = $ans;
-                }
-            }
-            if ($ans !~ /500 Internal Server Error/)  {
-              # must be returning a 500 error code text, but a 200 status http code
-              &$callback($ans) if $ans;
-            }
+    if ($res->is_success) {
+        if ($res->content =~ /"id": "(.*)",/) {
+            my $ans = $1 . " [$original_host]";
+            &$callback($ans) if $ans;
         }
-    );
+    } else {
+        debug("shorten failed: " . $res->status_line);
+    } 
+
     return;
 }
 
@@ -352,16 +329,14 @@ $annotation_code{shorten} = {
         my $end = $start + length($shorten);
 
         if ($end <= 79 ) {return; } # don't shorten if it fit on one line anyway.
-        if ( $shorten !~ m|^http://xrl.us| ) {
-            shorten(
-                $shorten,
-                sub {
-                    my ($short_url) = shift;
-                    dispatch( $event, "$event->{SOURCE}'s url is $short_url" );
-                }
-            );
-        }
-      }
+        shorten(
+            $shorten,
+            sub {
+                my ($short_url) = shift;
+                dispatch( $event, "$event->{SOURCE}'s url is $short_url" );
+            }
+        );
+    }
 };
 
 =head1 %response
@@ -532,7 +507,7 @@ $response{weather} = {
         return;
     },
     HELP => 'Given a location, get the current weather.',
-    TYPE => qw/public private/,
+    TYPE => 'all',
     POS  => -1,
     STOP => 1,
     RE   => qr/\bweather\b/i
@@ -858,16 +833,11 @@ $response{shorten} = {
             return 'ERROR: Expected shorten RE not matched!';
         }
         my $shorten = $1;
-        if ( $shorten =~ m|^http://xrl.us/(.*)| ) {
-            unshorten( $1, sub { dispatch( $event, shift ) } );
-        }
-        else {
-            shorten( $shorten, sub { dispatch( $event, shift ) } );
-        }
+        shorten( $shorten, sub { dispatch( $event, shift ) } );
         return;
     },
     HELP => <<'END_HELP',
-Given a URL, return an xrl.us shortened version of the url.  Or, vice versa.
+Given a URL, return a shortened version of the url.
 END_HELP
     POS  => 1,
     STOP => 1,
@@ -1331,8 +1301,6 @@ $response{bacon} = {
     RE   => qr/bacon/i,
 };
 
-my $wolfram_url = "http://www.wolframalpha.com/input/?i=";
-
 $response{compute} = {
     TYPE => "all",
     CODE => sub {
@@ -1341,8 +1309,11 @@ $response{compute} = {
         if ( !( $args =~ m/\bcompute\s+(.*)$/i ) ) {
             return 'ERROR: Expected compute RE not matched!';
         }
-        
-        my $url  = $wolfram_url . escape($1);
+    
+        my $url = "http://api.wolframalpha.com/v2/query?appid=" . 
+            $config->val('wolfram', 'appID') . "&format=plaintext&input=" .
+            escape($1);
+
         add_throttled_HTTP(
             url      => $url,
             ui_name  => 'main',
@@ -1356,22 +1327,29 @@ $response{compute} = {
     HELP => "Compute something using WolframAlpha.com",
     POS  => -1,
     STOP => 1,
-    RE   => qr/compute/i,
+    RE   => qr/\bcompute\b/i,
 };
 
 sub scrape_wolfram {
     my ($content) = shift;
 
     my $footer = " [wolframalpha.com]";
-    if ($content =~ m/context.jsonArray.popups.pod_0200.push\( {"stringified": "(.*)","mInput/) {
-        my $response = $1;
-        $response =~ s/\\n/ /g;
-        $response =~ s/\\'/'/g;
 
-        return "$response $footer";
+    if ($content =~ m/success='false'/) {
+         return "I didn't understand that, sorry. $footer";
     }
 
-    return "Didn't understand that. $footer";
+    my $results = "";
+
+    while ($content =~ m/<pod title='(.*?)'.*?<plaintext>(.*?)<\/plaintext>/sig) {
+        my $section = $1;
+        my $plaintext = $2;
+        $plaintext =~ s/\n/ /g;
+        $results .= "$section: $plaintext\n";
+    }
+
+    $results .= $footer;
+    return wrap( split( /\n/, $results ) );
 }
 
 
@@ -1771,6 +1749,7 @@ sub cleanHTML {
     $a =~ s/\n/ /;
     $a =~ s/<[^>]*>/ /g;
 
+
     # translate some common html-escapes.
     $a =~ s/&lt;/</gi;
     $a =~ s/&gt;/>/gi;
@@ -1786,8 +1765,7 @@ sub cleanHTML {
     $a =~ s/&nbsp;/ /ig;
     $a =~ s/&uuml;/u"/ig;
 
-    # XXX translate any utf8 codes to ascii representations:
-    # Use Text::Unidecode if it's available...
+    $a = unidecode($a);
 
     # cleanup whitespace.
     $a =~ s/\s+/ /g;
