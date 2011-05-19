@@ -558,61 +558,21 @@ $response{forecast} = {
     RE   => qr/\bforecast\b/i
 };
 
-my $babelfish_url = "http://babelfish.yahoo.com/translate_txt?trtext=%s&lp=%s_%s";
-
 my %languages = (
-    english    => 'en',
-    german     => 'de',
+    afrikaans  => 'af',
+    albanian   => 'sq',
+    basque     => 'hy',
+    catalan    => 'ca',
+    croatian   => 'hr',
     dutch      => 'nl',
+    english    => 'en',
     french     => 'fr',
+    german     => 'de',
     greek      => 'el',
     italian    => 'it',
     portuguese => 'pt',
     spanish    => 'es',
 );
-
-$response{engrish} = {
-    CODE => sub {
-        my ($event) = @_;
-        my $args = $event->{VALUE};
-        if ( $args !~ m/engrish*\s*(.*)\s*$/i ) {
-            return 'ERROR: Expected engrish RE not matched!';
-        }
-        my $term     = escape $1;
-
-        my @choices = grep {$_ ne 'english'} (keys %languages);
-        my $choice = pickRandom(\@choices);
-        my $language = $languages{$choice};
-        my $url = sprintf $babelfish_url, $term, 'en', $language;
-        add_throttled_HTTP(
-            url      => $url,
-            ui_name  => 'main',
-            callback => sub {
-                my ($response) = @_;
-                my $xlated =
-                  escape scrape_translate( $term, $response->{_content} );
-
-                  my $url = sprintf $babelfish_url, $xlated, $language, 'en';
-                add_throttled_HTTP(
-                    url      => $url,
-                    ui_name  => 'main',
-                    callback => sub {
-                        my ($response) = @_;
-                        my $engrish =
-                          scrape_translate( $term, $response->{_content} );
-                        dispatch( $event, $engrish );
-                    }
-                );
-            }
-        );
-        return;
-    },
-    HELP => 'Given an english phrase, botch it.',
-    TYPE => 'all',
-    POS  => -1,
-    STOP => 1,
-    RE   => qr/\bengrish\b/i
-};
 
 sub get_lang {
     my $guess = lc shift;
@@ -673,22 +633,20 @@ $response{translate} = {
             dispatch( $event, "I don't speak $guess_to" );
             return;
         }
-        my $url = sprintf $babelfish_url, $term, $from, $to;
-        add_throttled_HTTP(
-            url      => $url,
-            ui_name  => 'main',
-            callback => sub {
-                my ($response) = @_;
-                my $xlated = scrape_translate( $term, $response->{_content} );
-                if ($xlated) {
-                    dispatch( $event, $xlated );
-                }
-                else {
-                    dispatch( $event, "Apparently I can't do that." );
-                }
-            }
-        );
-        return;
+
+        my $url = "https://www.googleapis.com/language/translate/v2?key=" .
+            $config->val('googleapi','APIkey') . "&q=" . $term . 
+            "&source=" . $from . "&target=" . $to;
+
+        my $req = HTTP::Request->new(GET => $url);
+        my $res = $ua->request($req);
+
+        if ($res->is_success && $res->content =~ /"translatedText": "(.*)"\n/) {
+           dispatch( $event, unidecode($1) );
+	   return;
+        }
+        dispatch( $event, "Apparently I can't do that:" . $res->status_line);
+	return;
     },
     HELP => sub {
         return
@@ -1165,18 +1123,6 @@ sub scrape_anagram{
     else {
         return;
     }
-}
-
-sub scrape_translate {
-    my ( $term, $content ) = @_;
-
-    if ( $content =~
-        m{<input type="hidden" name="p" value="([^"]*)">}i )
-    {
-        return cleanHTML($1);
-    }
-
-    return;
 }
 
 sub scrape_wiktionary {
