@@ -9,6 +9,7 @@ use CGI qw/escape unescape/;
 use Data::Dumper;
 
 use TLily::Server::HTTP;
+use JSON;
 use URI;
 use Config::IniFiles;
 
@@ -562,7 +563,10 @@ my %languages = (
     afrikaans        => 'af',
     albanian         => 'sq',
     basque           => 'hy',
+    belarusian       => 'be',
+    bulgarian        => 'bg',
     catalan          => 'ca',
+    chinese          => 'zh',
     croatian         => 'hr',
     czech            => 'cs',
     danish           => 'da',
@@ -573,11 +577,14 @@ my %languages = (
     finnish          => 'fi',
     french           => 'fr',
     galacian         => 'gl',
+    georgian         => 'ka',
     german           => 'de',
     greek            => 'el',
     "haitian creole" => 'ht',
     italian          => 'it',
+    japanese         => 'ja',
     portuguese       => 'pt',
+    russian          => 'ru',
     spanish          => 'es',
 );
 
@@ -648,8 +655,9 @@ $response{translate} = {
         my $req = HTTP::Request->new(GET => $url);
         my $res = $ua->request($req);
 
-        if ($res->is_success && $res->content =~ /"translatedText": "(.*)"\n/) {
-           dispatch( $event, unidecode($1) );
+        my $content = decode_json $res->content;
+        if ($res->is_success) {
+           dispatch( $event, unidecode($content->{data}{translations}[0]{translatedText}) );
 	   return;
         }
         dispatch( $event, "Apparently I can't do that:" . $res->status_line);
