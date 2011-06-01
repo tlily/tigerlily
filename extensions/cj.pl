@@ -587,6 +587,7 @@ my %languages = (
     portuguese       => 'pt',
     russian          => 'ru',
     spanish          => 'es',
+    yiddish          => 'yi',
 );
 
 sub get_lang {
