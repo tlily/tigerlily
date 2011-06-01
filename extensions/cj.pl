@@ -1720,6 +1720,7 @@ sub cleanHTML {
     $a =~ s/&#46;/./g;
     $a =~ s/&#160;/ /g;
     $a =~ s/&#176;/o/g;
+    $a =~ s/&deg;/o/ig;
     $a =~ s/&#0?39;/'/g;
     $a =~ s/&quot;/"/ig;
     $a =~ s/&laquo;/<</ig;
