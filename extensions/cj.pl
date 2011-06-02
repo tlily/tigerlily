@@ -841,7 +841,7 @@ $response{cal} = {
         }
         return wrap( split( /\n/, $retval ) );
     },
-    HELP => 'like the unix command',
+    HELP => '"cal" shows the current month. "cal 1 2010" shows january 2010.',
     POS  => 0,
     STOP => 1,
     RE   => qr(\bcal\b)i,
