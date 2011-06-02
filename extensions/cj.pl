@@ -740,41 +740,6 @@ $response{anagram} = {
     RE   => $anagramRE,
 };
 
-my $convertRE      = qr/
-  (?:
-  \b convert \s+ (\d+ .? \d+?)? \s* ([a-z]*) \s+ (?:(?:in)?to \s+)? ([a-z]*)
-  )
-/ix;
-
-$response{convert} = {
-    CODE => sub {
-        my ($event) = @_;
-        my $args = $event->{VALUE};
-
-        my ($from, $to, $count);
-        if ($2)  {
-          ($count, $from, $to ) = ($1, $2, $3);
-          $count = 1 unless defined ($count);
-        }
-
-        # should be safe, only alpha units are allowed
-        my $units_output = `units $from $to`;
-        if ($units_output =~ m/(conformbility error)/ ) {
-          return $1;
-        } elsif ($units_output =~ m/(unknown unit '[a-z]*')/i ) {
-          return $1
-        }
-        $units_output =~ s/\n.*//smx;
-        $a = eval "$count $units_output";
-        return "$a $to";
-    },
-    HELP => 'convert units: convert (amount) from_units to_units',
-    TYPE => 'all',
-    POS  => 1,
-    STOP => 1,
-    RE   => $convertRE,
-};
-
 my $mathRE = qr{^([+*/\d\s().-]*)\??$};
 
 $response{math} = {
