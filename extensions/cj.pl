@@ -91,6 +91,8 @@ my $beener;       # special handling for the beener discussion.
 my $uptime = time();    #uptime indicator.
 my %served;             #stats.
 
+my $wrapline = 76;    # This is where we wrap lines...
+
 # we don't expect to be changing our name frequently, cache it.
 my $name = TLily::Server->active()->user_name();
 
@@ -153,14 +155,12 @@ sub pickRandom {
 
 ### Process stock requests
 
-my $wrapline = 76;    # This is where we wrap lines...
 
 sub get_stock {
     my ( $event, @stock ) = @_;
     my %stock     = ();
     my %purchased = ();
     my $cnt       = 0;
-    my $wrap      = 76;
     my @retval;
 
     if ( $stock[0] =~ /^[\d@.]+$/ ) {
@@ -234,7 +234,7 @@ subgain";
             foreach my $tmp (@retval) {
                 $tmp = cleanHTML($tmp);
 
-                my $pad = ' ' x ( $wrap - ( ( length $tmp ) % $wrap ) );
+                my $pad = ' ' x ( $wrapline - ( ( length $tmp ) % $wrapline ) );
                 $retval .= $tmp . $pad;
             }
 
@@ -249,10 +249,9 @@ subgain";
 }
 
 sub wrap {
-    my $wrap = 76;
     my $retval;
     foreach my $tmp (@_) {
-        my $pad = ' ' x ( $wrap - ( ( length $tmp ) % $wrap ) );
+        my $pad = ' ' x ( $wrapline - ( ( length $tmp ) % $wrapline ) );
         $retval .= $tmp . $pad;
     }
     $retval =~ s/\s+$//;
