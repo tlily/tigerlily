@@ -844,7 +844,7 @@ $response{cal} = {
     HELP => 'like the unix command',
     POS  => 0,
     STOP => 1,
-    RE   => qr(\bunset\b)i,
+    RE   => qr(\bcal\b)i,
 };
 
 $response{'set'} = {
