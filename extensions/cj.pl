@@ -732,31 +732,6 @@ $response{anagram} = {
     RE   => $anagramRE,
 };
 
-my $mathRE = qr{^([+*/\d\s().-]*)\??$};
-
-$response{math} = {
-    CODE => sub {
-        my ($event) = @_;
-        my $args = $event->{VALUE};
-        $args =~ $mathRE;
-        my $term = $1;
-
-        my $result = eval $term; # see RE above, must be math-safe.
-        if ($@) {
-            if ($event->{type} eq 'private') {
-                return "that looked mathy, but it isn't."
-            } else {
-                return;
-            }
-        }
-        return $result;
-    },
-    HELP => 'math stuff',
-    POS  => 1,
-    STOP => 1,
-    RE   => $mathRE,
-};
-
 $response{shorten} = {
     CODE => sub {
         my ($event) = @_;
