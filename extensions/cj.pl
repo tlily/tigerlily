@@ -230,15 +230,8 @@ subgain";
                 push @retval, "Total value: $total";
             }
 
-            my $retval;
-            foreach my $tmp (@retval) {
-                $tmp = cleanHTML($tmp);
+            my $retval = wrap(@retval);
 
-                my $pad = ' ' x ( $wrapline - ( ( length $tmp ) % $wrapline ) );
-                $retval .= $tmp . $pad;
-            }
-
-            $retval =~ s/\s*$//;
             if (@invalid_symbols && $event->{type} eq 'private') {
                 dispatch ($event, 'Invalid Ticker Symbols: ' .
                     join ', ', @invalid_symbols);
