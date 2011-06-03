@@ -194,7 +194,7 @@ sub get_stock {
             my @chunks = split( /\n/, $response->{_content} );
             foreach my $chunk (@chunks) {
                 my ( $stock, $value, $date, $time, $change, $volume ) =
-                  map { s/^"(.*)"$/$1/; $_ } split( /,/, $chunk );
+                  map { s/^"(.*)"$/$1/; $_ } split( /,/, cleanHTML($chunk) );
                 if ($volume =~ m{N/A}) {
                     # skip unknown stocks.
                     push @invalid_symbols, $stock;
