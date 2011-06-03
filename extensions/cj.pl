@@ -1,6 +1,3 @@
-# -*- Perl -*-
-# $Header: /data/cvs/lily/tigerlily2/extensions/cj.pl,v 1.2 2000/12/01 19:22:54 coke Exp $
-
 use strict;
 
 use lib qw(/Users/cjsrv/lib);    # XXX hack.
