@@ -48,16 +48,7 @@ from an RSS feed), and then announce this information to certain discussions.
 CJ was a bot. He did a lot of things that some folks found useful,
 and did a lot of things that some folks thought was waaaaay too chatty.
 He began as a lily-server based magic 8-ball, was ported to a bot using
-tlily version 1. He is now using bleeding edge tlily 2.
-
-=head1 MISC
-
-I was going to use Josh's Bot.pm to handle a good chunk
-of the guts for me, but Bot.pm didn't really seem to meet my needs.
-This rewrite is intended as an exercize to (a) improve stability, (b)
-improve maintainability, (c) prepare for a similar capability for Flow.
-Perhaps someone could remove most of the functionality here and make
-a ComplexBot module.
+the version implementation of tlily, and is now running on git-latest.
 
 =cut
 
