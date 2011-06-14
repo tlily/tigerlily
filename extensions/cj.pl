@@ -1,5 +1,8 @@
 use strict;
 
+use Cwd;
+use Symbol 'qualify_to_ref';
+
 use CGI qw/escape unescape/;
 use Data::Dumper;
 
@@ -381,6 +384,26 @@ have wanted it.
 
 =cut
 
+# load external commands
+# XXX - currently forcing them into %response - can skip this step and update
+# response-related code when all is external.
+
+my @external_commands = qw/ascii/;
+foreach my $command (@external_commands) {
+    my $file = getcwd . "/extensions/cj/" . $command . ".pm" ;
+    do $file or debug("loading external command: $file: $!/$@");
+    my $glob = qualify_to_ref("::CJ::command::" . $command . "::" );
+    $response{$command} = {
+        CODE => sub { &{*$glob{HASH}{response}}(@_) },
+        HELP => sub { &{*$glob{HASH}{help}}(@_) },
+        TYPE => ${*$glob{HASH}{TYPE}},
+        POS  => ${*$glob{HASH}{POSITION}},
+        STOP => ${*$glob{HASH}{LAST}},
+        RE   => ${*$glob{HASH}{RE}},
+    };
+}
+
+### builtin commands
 my $bibles = {
     'niv'   => { id => 31,    name => 'New International Version' },
     'nasb'  => { id => 49,    name => 'New American Standard Bible' },
@@ -1433,41 +1456,6 @@ $response{foldoc} = {
     RE   => qr/foldoc/i,
 };
 
-my @ascii
-    = qw/NUL SOH STX ETX EOT ENQ ACK BEL BS HT LF VT FF CR SO SI DLE DC1 DC2 DC3 DC4 NAK SYN ETB CAN EM SUB ESC FS GS RS US SPACE/;
-my %ascii;
-
-for my $cnt ( 0 .. $#ascii ) {
-    $ascii{ $ascii[$cnt] } = $cnt;
-}
-$ascii{DEL} = 0x7f;
-
-sub format_ascii {
-    my $val = @_[0];
-
-    my $format = '%s => %d (dec); 0x%x (hex); 0%o (oct)';
-
-    if ( $val < 0 || $val > 255 ) {
-        return 'Ascii is 7 bit, silly!';
-    }
-    my $chr = "'" . chr($val) . "'";
-
-    my $control;
-    if ( $val >= 1 && $val <= 26 ) {
-        $control = '; control-' . chr( $val + ord('A') - 1 );
-    }
-
-    if ( $val < $#ascii ) {
-        $chr = $ascii[$val];
-    }
-
-    if ( $val == 0x7f ) {
-        $chr = 'DEL';
-    }
-
-    return sprintf( $format, $chr, $val, $val, $val ) . $control;
-}
-
 $response{rot13} = {
     CODE => sub {
         my ($event) = @_;
@@ -1516,54 +1504,6 @@ $response{urlencode} = {
     POS  => 0,
     STOP => 1,
     RE   => qr/\burlencode\b/i,
-};
-
-$response{ascii} = {
-    CODE => sub {
-        my ($event) = @_;
-        my $args = $event->{VALUE};
-        if ( !( $args =~ s/.*ascii\s+(.*)/$1/i ) ) {
-            return 'ERROR: Expected ascii RE not matched!';
-        }
-        if ( $args =~ m/^'(.)'$/ ) {
-            return format_ascii( ord($1) );
-        }
-        elsif ( $args =~ m/^0[Xx][0-9A-Fa-f]+$/ ) {
-            return format_ascii( oct($args) );
-        }
-        elsif ( $args =~ m/^0[0-7]+$/ ) {
-            return format_ascii( oct($args) );
-        }
-        elsif ( $args =~ m/^[1-9]\d*$/ ) {
-            return format_ascii($args);
-        }
-        elsif ( $args =~ m/^\\[Cc]([A-Z])$/ ) {
-            return format_ascii( ord($1) - ord('A') + 1 );
-        }
-        elsif ( $args =~ m/^\\[Cc]([a-z])$/ ) {
-            return format_ascii( ord($1) - ord('a') + 1 );
-        }
-        elsif ( $args =~ m/^[Cc]-([a-z])$/ ) {
-            return format_ascii( ord($1) - ord('a') + 1 );
-        }
-        elsif ( $args =~ m/^[Cc]-([A-Z])$/ ) {
-            return format_ascii( ord($1) - ord('A') + 1 );
-        }
-        elsif ( exists $ascii{ uc $args } ) {
-            return format_ascii( $ascii{ uc $args } );
-        }
-        else {
-            return "Sorry, $args doesn't make any sense to me.";
-        }
-    },
-    HELP => <<'END_HELP',
-Usage: ascii <val>, where val can be a char ('a'), hex (0x1), octal (01),
-decimal (1) an emacs (C-A) or perl (\cA) control sequence, or an ASCII
-control name (SOH)
-END_HELP
-    POS  => 0,
-    STOP => 1,
-    RE   => qr/\bascii\b/i,
 };
 
 $response{country} = {
@@ -1949,6 +1889,9 @@ sub unload {
     checkpoint();
 
     TLily::Event->time_u($frequently);
+  
+    # clean up %INC (used for dispatch) 
+    delete @INC{grep m:/extensions/cj/[a-z]*\.pm$:, keys %INC};
 }
 
 1;
