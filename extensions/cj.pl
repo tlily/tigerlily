@@ -64,7 +64,7 @@ my %disc_annotations
     ;    # A cached copy of which discussions each annotation goes to.
 my %annotations;        # A cached copy of what our annotations do.
 my %annotation_code;    # ala response, but for annotations.
-my ( $every_10m, $every_30s, $frequently );    #timers
+my $frequently;         # timers
 
 # some array refs of sayings...
 my $sayings;     # pithy 8ball-isms.
@@ -1948,8 +1948,6 @@ release any external resources we have open.
 sub unload {
     checkpoint();
 
-    TLily::Event->time_u($every_10m);
-    TLily::Event->time_u($every_30s);
     TLily::Event->time_u($frequently);
 }
 
