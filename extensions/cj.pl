@@ -14,6 +14,7 @@ use Chatbot::Eliza;
 use Text::Unidecode;
 
 use LWP::UserAgent;
+use LWP::Protocol::https; # declare dependency, not used directly. 
 
 =head1 AUTHOR
 
