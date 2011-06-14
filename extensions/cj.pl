@@ -12,7 +12,7 @@ use Chatbot::Eliza;
 use Text::Unidecode;
 
 use LWP::UserAgent;
-use LWP::Protocol::https; # declare dependency, not used directly. 
+use LWP::Protocol::https;    # declare dependency, not used directly.
 
 =head1 AUTHOR
 
@@ -58,27 +58,27 @@ my %throttle;    #Container for all throttling information.
 my %irc;         #Container for all irc channel information
 my $throttle_interval = 1;    #seconds
 my $throttle_safety   = 5;    #seconds
-my $config;    # Config::IniFiles object storing preferences.
-my $disc       = 'cj-admin';    #where we keep our memos.
+my $config;                   # Config::IniFiles object storing preferences.
+my $disc       = 'cj-admin';  #where we keep our memos.
 my $debug_disc = 'cj-admin';
 my %disc_annotations
-  ;               # A cached copy of which discussions each annotation goes to.
+    ;    # A cached copy of which discussions each annotation goes to.
 my %annotations;        # A cached copy of what our annotations do.
 my %annotation_code;    # ala response, but for annotations.
 my ( $every_10m, $every_30s, $frequently );    #timers
 
 # some array refs of sayings...
-my $sayings;      # pithy 8ball-isms.
-my $overhear;     # listen for my name occasionally;
+my $sayings;     # pithy 8ball-isms.
+my $overhear;    # listen for my name occasionally;
 
 # Unify this into generic special handling. =-)
-my $unified;      # special handling for the unified discussion.
-my $beener;       # special handling for the beener discussion.
+my $unified;     # special handling for the unified discussion.
+my $beener;      # special handling for the beener discussion.
 
 my $uptime = time();    #uptime indicator.
 my %served;             #stats.
 
-my $wrapline = 76;    # This is where we wrap lines...
+my $wrapline = 76;      # This is where we wrap lines...
 
 # we don't expect to be changing our name frequently, cache it.
 my $name = TLily::Server->active()->user_name();
@@ -98,9 +98,10 @@ Helpful when generating debug output for new features.
 =cut
 
 sub debug {
+
     # join and split to catch any embedded newlines
-    my $args = join("\n",@_);
-    my @lines = split(/\n/, $args);
+    my $args = join( "\n", @_ );
+    my @lines = split( /\n/, $args );
     TLily::Server->active()->cmd_process("$debug_disc: $_") for @lines;
 }
 
@@ -119,7 +120,7 @@ sub asAdmin {
     my $server = TLily::Server::active();
 
     my $isAdmin = grep { $event->{SHANDLE} eq $_ }
-      split( /,/, $server->{NAME}->{'admins'}->{'MEMBERS'} );
+        split( /,/, $server->{NAME}->{'admins'}->{'MEMBERS'} );
 
     if ($isAdmin) {
         $sub->();
@@ -141,7 +142,6 @@ sub pickRandom {
 }
 
 ### Process stock requests
-
 
 sub get_stock {
     my ( $event, @stock ) = @_;
@@ -166,10 +166,10 @@ sub get_stock {
     my $total = 0;
     my $gain  = 0;
 
-    my $url =
-        'http://download.finance.yahoo.com/d/quotes.csv?s='
-      . join( ',', @stock )
-      . '&f=sl1d1t1c2v';
+    my $url
+        = 'http://download.finance.yahoo.com/d/quotes.csv?s='
+        . join( ',', @stock )
+        . '&f=sl1d1t1c2v';
     add_throttled_HTTP(
         url      => $url,
         ui_name  => 'main',
@@ -180,9 +180,11 @@ sub get_stock {
 
             my @chunks = split( /\n/, $response->{_content} );
             foreach my $chunk (@chunks) {
-                my ( $stock, $value, $date, $time, $change, $volume ) =
-                  map { s/^"(.*)"$/$1/; $_ } split( /,/, cleanHTML($chunk) );
-                if ($volume =~ m{N/A}) {
+                my ( $stock, $value, $date, $time, $change, $volume )
+                    = map { s/^"(.*)"$/$1/; $_ }
+                    split( /,/, cleanHTML($chunk) );
+                if ( $volume =~ m{N/A} ) {
+
                     # skip unknown stocks.
                     push @invalid_symbols, $stock;
                     next;
@@ -192,21 +194,21 @@ sub get_stock {
                     my $sub = $value * $stock{$stock};
                     $total += $sub;
                     if ( $purchased{$stock} ) {
-                        my $subgain =
-                          ( $value - $purchased{$stock} ) * $stock{$stock};
+                        my $subgain = ( $value - $purchased{$stock} )
+                            * $stock{$stock};
                         $gain += $subgain;
                         push @retval,
-"$stock: Last $date $time, $value: Change $change: Gain: $
+                            "$stock: Last $date $time, $value: Change $change: Gain: $
 subgain";
                     }
                     else {
                         push @retval,
-"$stock: Last $date $time, $value: Change $change: Tot: $sub";
+                            "$stock: Last $date $time, $value: Change $change: Tot: $sub";
                     }
                 }
                 else {
                     push @retval,
-"$stock: Last $date $time, $value: Change $change: Vol: $volume";
+                        "$stock: Last $date $time, $value: Change $change: Vol: $volume";
                 }
             }
 
@@ -219,9 +221,9 @@ subgain";
 
             my $retval = wrap(@retval);
 
-            if (@invalid_symbols && $event->{type} eq 'private') {
-                dispatch ($event, 'Invalid Ticker Symbols: ' .
-                    join ', ', @invalid_symbols);
+            if ( @invalid_symbols && $event->{type} eq 'private' ) {
+                dispatch( $event, 'Invalid Ticker Symbols: ' . join ', ',
+                    @invalid_symbols );
             }
             dispatch( $event, $retval );
         }
@@ -275,10 +277,10 @@ sub shorten {
 
     my $original_host = new URI($short)->host();
 
-    my $url = 'https://www.googleapis.com/urlshortener/v1/url?key=' . 
-            $config->val('googleapi', 'APIkey');
+    my $url = 'https://www.googleapis.com/urlshortener/v1/url?key='
+        . $config->val( 'googleapi', 'APIkey' );
 
-    my $req = HTTP::Request->new(POST => $url);
+    my $req = HTTP::Request->new( POST => $url );
     $req->content_type('application/json');
     $req->content(<<"EJSON");
 {
@@ -287,14 +289,15 @@ longUrl: "$short"
 EJSON
     my $res = $ua->request($req);
 
-    if ($res->is_success) {
-        if ($res->content =~ /"id": "(.*)",/) {
+    if ( $res->is_success ) {
+        if ( $res->content =~ /"id": "(.*)",/ ) {
             my $ans = $1 . " [$original_host]";
             &$callback($ans) if $ans;
         }
-    } else {
-        debug("shorten failed: " . $res->status_line);
-    } 
+    }
+    else {
+        debug( "shorten failed: " . $res->status_line );
+    }
 
     return;
 }
@@ -305,10 +308,12 @@ $annotation_code{shorten} = {
         my ($event)   = shift;
         my ($shorten) = shift;
 
-        my $start = index($event->{VALUE}, $shorten) + 4; # prefix on send.
+        my $start = index( $event->{VALUE}, $shorten ) + 4;  # prefix on send.
         my $end = $start + length($shorten);
 
-        if ($end <= 79 ) {return; } # don't shorten if it fit on one line anyway.
+        if ( $end <= 79 ) {
+            return;
+        }    # don't shorten if it fit on one line anyway.
         shorten(
             $shorten,
             sub {
@@ -316,7 +321,7 @@ $annotation_code{shorten} = {
                 dispatch( $event, "$event->{SOURCE}'s url is $short_url" );
             }
         );
-    }
+        }
 };
 
 =head1 %response
@@ -377,54 +382,52 @@ have wanted it.
 
 =cut
 
-
 my $bibles = {
-  'niv'   => {id => 31, name => 'New International Version'},
-  'nasb'  => {id => 49, name => 'New American Standard Bible'},
-  'tm'    => {id => 65, name => 'The Message'},
-  'ab'    => {id => 45, name => 'Amplified Bible'},
-  'nlt'   => {id => 51, name => 'New Living Translation'},
-  'kjv'   => {id => 'kjv', name => 'King James Version'},
-  'esv'   => {id => 47, name => 'English Standard Version'},
-  'cev'   => {id => 46, name => 'Contemporary English Version'},
-  'nkjv'  => {id => 50, name => 'New King James Version'},
-  '21kjv' => {id => 48, name => '21st Century King James Version'},
-  'asv'   => {id =>  8, name => 'American Standard Version'},
-  'ylt'   => {id => 15, name => "Young's Literal Translation"},
-  'dt'    => {id => 16, name => 'Darby Translation'},
-  'nlv'   => {id => 74, name => 'New Life Version'},
-  'hcsb'  => {id => 77, name => 'Holman Christian Standard Bible'},
-  'wnt'   => {id => 53, name => 'Wycliffe New Testament'},
-  'we'    => {id => 73, name => 'Worldwide English (New Testament)'},
-  'nivuk' => {id => 64, name => 'New International Version - UK'},
-  'tniv'  => {id => 72, name => "Today's New International Version"},
-  'vulg'  => {id =>  4, name => "Biblia Sacra Vulgata"},
+    'niv'   => { id => 31,    name => 'New International Version' },
+    'nasb'  => { id => 49,    name => 'New American Standard Bible' },
+    'tm'    => { id => 65,    name => 'The Message' },
+    'ab'    => { id => 45,    name => 'Amplified Bible' },
+    'nlt'   => { id => 51,    name => 'New Living Translation' },
+    'kjv'   => { id => 'kjv', name => 'King James Version' },
+    'esv'   => { id => 47,    name => 'English Standard Version' },
+    'cev'   => { id => 46,    name => 'Contemporary English Version' },
+    'nkjv'  => { id => 50,    name => 'New King James Version' },
+    '21kjv' => { id => 48,    name => '21st Century King James Version' },
+    'asv'   => { id => 8,     name => 'American Standard Version' },
+    'ylt'   => { id => 15,    name => "Young's Literal Translation" },
+    'dt'    => { id => 16,    name => 'Darby Translation' },
+    'nlv'   => { id => 74,    name => 'New Life Version' },
+    'hcsb'  => { id => 77,    name => 'Holman Christian Standard Bible' },
+    'wnt'   => { id => 53,    name => 'Wycliffe New Testament' },
+    'we'    => { id => 73,    name => 'Worldwide English (New Testament)' },
+    'nivuk' => { id => 64,    name => 'New International Version - UK' },
+    'tniv'  => { id => 72,    name => "Today's New International Version" },
+    'vulg'  => { id => 4,     name => "Biblia Sacra Vulgata" },
 };
 
 $response{bible} = {
     CODE => sub {
         my ($event) = @_;
-        my $args = $event->{VALUE};
-        my $bible    = $1;
-        my $term     = escape $2;
+        my $args    = $event->{VALUE};
+        my $bible   = $1;
+        my $term    = escape $2;
 
         $bible = 'kjv' unless $bible;
         $bible = $bibles->{$bible}->{id};
 
-        my $url      =
-            "http://www.biblegateway.com/passage/?search=$term&version=$bible";
+        my $url
+            = "http://www.biblegateway.com/passage/?search=$term&version=$bible";
 
         add_throttled_HTTP(
             url      => $url,
             ui_name  => 'main',
             callback => sub {
                 my ($response) = @_;
-                my $passage =
-                  scrape_bible( $term, $response->{_content} );
-                if ($passage)
-                {
-                    dispatch( $event, $passage) ;
+                my $passage = scrape_bible( $term, $response->{_content} );
+                if ($passage) {
+                    dispatch( $event, $passage );
                 }
+
                 # silently fail
             }
         );
@@ -437,7 +440,7 @@ Quote chapter and verse. Syntax: bible or passage, followed by an optional
 bible version, and then the name of the book and chapter:verse. Possible
 translations include:
 END_HELP
-        foreach my $key (keys %$bibles) {
+        foreach my $key ( keys %$bibles ) {
             $help .= $key . ' {' . $bibles->{$key}->{name} . '} ';
         }
         return $help;
@@ -445,7 +448,8 @@ END_HELP
     TYPE => 'all',
     POS  => -1,
     STOP => 1,
-    RE   => qr/\b(?:bible|passage)\s*(niv|nasb|tm|ab|nlt|kjv|esv|cev|nkjv|21kjv|asv|ylt|dt|nlv|hcsb|wnt|we|nivuk|tniv|vulg)?\s+(.*\d+:\d+)/i,
+    RE =>
+        qr/\b(?:bible|passage)\s*(niv|nasb|tm|ab|nlt|kjv|esv|cev|nkjv|21kjv|asv|ylt|dt|nlv|hcsb|wnt|we|nivuk|tniv|vulg)?\s+(.*\d+:\d+)/i,
 };
 
 $response{weather} = {
@@ -456,30 +460,28 @@ $response{weather} = {
             return 'ERROR: Expected weather RE not matched!';
         }
         my $term = $1;
-        $term =~ s/\?$//; #XXX add this to RE above...
-        $term     = escape $term;
-        my $url      =
-            "http://mobile.wunderground.com/cgi-bin/findweather/getForecast?brand=mobile&query=$term";
+        $term =~ s/\?$//;    #XXX add this to RE above...
+        $term = escape $term;
+        my $url
+            = "http://mobile.wunderground.com/cgi-bin/findweather/getForecast?brand=mobile&query=$term";
         add_throttled_HTTP(
             url      => $url,
             ui_name  => 'main',
             callback => sub {
                 my ($response) = @_;
-                my $conditions =
-                  scrape_weather( $term, $response->{_content} );
-                if ($conditions )
-                {
-                    dispatch( $event, $conditions) ;
+                my $conditions
+                    = scrape_weather( $term, $response->{_content} );
+                if ($conditions) {
+                    dispatch( $event, $conditions );
                 }
-                else
-                {
+                else {
                     $term = unescape($term);
-                    if (length($term) > 10) {
-                        $term  = substr($term,0,7);
+                    if ( length($term) > 10 ) {
+                        $term = substr( $term, 0, 7 );
                         $term .= '...';
                     }
-                    if ($event->{type} eq 'private') {
-                        dispatch ($event, "Can't find weather for '$term'.");
+                    if ( $event->{type} eq 'private' ) {
+                        dispatch( $event, "Can't find weather for '$term'." );
                     }
                 }
             }
@@ -501,30 +503,29 @@ $response{forecast} = {
             return 'ERROR: Expected forecast RE not matched!';
         }
         my $term = $1;
-        $term =~ s/\?$//; #XXX add this to RE above...
-        $term     = escape $term;
-        my $url      =
-            "http://mobile.wunderground.com/cgi-bin/findweather/getForecast?brand=mobile&query=$term";
+        $term =~ s/\?$//;    #XXX add this to RE above...
+        $term = escape $term;
+        my $url
+            = "http://mobile.wunderground.com/cgi-bin/findweather/getForecast?brand=mobile&query=$term";
         add_throttled_HTTP(
             url      => $url,
             ui_name  => 'main',
             callback => sub {
                 my ($response) = @_;
-                my $conditions =
-                  scrape_forecast( $term, $response->{_content} );
-                if ($conditions )
-                {
-                    dispatch( $event, $conditions) ;
+                my $conditions
+                    = scrape_forecast( $term, $response->{_content} );
+                if ($conditions) {
+                    dispatch( $event, $conditions );
                 }
-                else
-                {
+                else {
                     $term = unescape($term);
-                    if (length($term) > 10) {
-                        $term  = substr($term,0,7);
+                    if ( length($term) > 10 ) {
+                        $term = substr( $term, 0, 7 );
                         $term .= '...';
                     }
-                    if ($event->{type} eq 'private') {
-                        dispatch ($event, "Can't find forecast for '$term'.");
+                    if ( $event->{type} eq 'private' ) {
+                        dispatch( $event,
+                            "Can't find forecast for '$term'." );
                     }
                 }
             }
@@ -612,7 +613,8 @@ $response{translate} = {
             ( $term, $guess_from, $guess_to ) = ( $7, $8, $default_language );
         }
         elsif ($9) {
-            ( $term, $guess_from, $guess_to ) = ( $9, $default_language, $10 );
+            ( $term, $guess_from, $guess_to )
+                = ( $9, $default_language, $10 );
         }
         $term = escape $term;
         my $from = get_lang($guess_from);
@@ -626,26 +628,36 @@ $response{translate} = {
             return;
         }
 
-        my $url = "https://www.googleapis.com/language/translate/v2?key=" .
-            $config->val('googleapi','APIkey') . "&q=" . $term . 
-            "&source=" . $from . "&target=" . $to;
+        my $url
+            = "https://www.googleapis.com/language/translate/v2?key="
+            . $config->val( 'googleapi', 'APIkey' ) . "&q="
+            . $term
+            . "&source="
+            . $from
+            . "&target="
+            . $to;
 
-        my $req = HTTP::Request->new(GET => $url);
+        my $req = HTTP::Request->new( GET => $url );
         my $res = $ua->request($req);
 
         my $content = decode_json $res->content;
-        if ($res->is_success) {
-           dispatch( $event, unidecode($content->{data}{translations}[0]{translatedText}) );
-	   return;
+        if ( $res->is_success ) {
+            dispatch(
+                $event,
+                unidecode(
+                    $content->{data}{translations}[0]{translatedText}
+                )
+            );
+            return;
         }
-        dispatch( $event, "Apparently I can't do that:" . $res->status_line);
-	return;
+        dispatch( $event, "Apparently I can't do that:" . $res->status_line );
+        return;
     },
     HELP => sub {
         return
-"for example, 'translate some text from english to german' (valid languages: "
-          . join( ', ', keys %languages )
-          . ") (either the from or to is optional, and defaults to $default_language)";
+            "for example, 'translate some text from english to german' (valid languages: "
+            . join( ', ', keys %languages )
+            . ") (either the from or to is optional, and defaults to $default_language)";
     },
     TYPE => 'all',
     POS  => -1,
@@ -653,7 +665,7 @@ $response{translate} = {
     RE   => $translateRE,
 };
 
-my $anagramRE      = qr/
+my $anagramRE = qr/
   (?:
   \b anagram \s+ (.*) \s+ with    \s+ (.*) \s+ without \s+ (.*) |
   \b anagram \s+ (.*) \s+ without \s+ (.*) \s+ with    \s+ (.*) |
@@ -670,27 +682,30 @@ $response{anagram} = {
         my $args = $event->{VALUE};
 
         $args =~ $anagramRE;
-        my ($term, $include, $exclude);
-        my  $url =
-        'http://wordsmith.org/anagram/anagram.cgi?language=english' ;
+        my ( $term, $include, $exclude );
+        my $url = 'http://wordsmith.org/anagram/anagram.cgi?language=english';
 
         if ($1) {
-          ( $term, $include, $exclude) = ( $1, $2, $3) ;
-        } elsif ($4) {
-          ( $term, $exclude, $include) = ( $4, $5, $6) ;
-        } elsif ($7) {
-          ( $term, $include) = ( $7, $8 );
-        } elsif ($9) {
-          ( $term, $exclude) = ( $9, $10 );
-        } else {
-          ( $term ) = ( $11 );
+            ( $term, $include, $exclude ) = ( $1, $2, $3 );
         }
-        $url .= '&anagram=' . escape ($term);
+        elsif ($4) {
+            ( $term, $exclude, $include ) = ( $4, $5, $6 );
+        }
+        elsif ($7) {
+            ( $term, $include ) = ( $7, $8 );
+        }
+        elsif ($9) {
+            ( $term, $exclude ) = ( $9, $10 );
+        }
+        else {
+            ($term) = ($11);
+        }
+        $url .= '&anagram=' . escape($term);
         if ($include) {
-            $url .= '&include=' . escape ($include);
+            $url .= '&include=' . escape($include);
         }
         if ($exclude) {
-            $url .= '&exclude=' . escape ($exclude);
+            $url .= '&exclude=' . escape($exclude);
         }
 
         add_throttled_HTTP(
@@ -747,18 +762,19 @@ $response{help} = {
         if ( $args eq q{} ) {
 
             # XXX respect PRIVILEGE
-            my @cmds =
-              grep { $_ ne 'help' } keys %response;
+            my @cmds
+                = grep { $_ ne 'help' } keys %response;
             return
-"Hello. I'm a bot. Try 'help' followed by one of the following for more information: "
-              . join( ', ', sort @cmds )
-              . '. In general, commands can appear anywhere in private sends, but must begin public sends.';
+                "Hello. I'm a bot. Try 'help' followed by one of the following for more information: "
+                . join( ', ', sort @cmds )
+                . '. In general, commands can appear anywhere in private sends, but must begin public sends.';
         }
         if ( exists ${response}{$args} ) {
             my $helper = $response{$args}{HELP};
-            my $type = ' [' . join(',', get_types ($response{$args})) . ']';
-            my $help = (ref $helper eq 'CODE') ? &$helper() : $helper;
-            return join(' ', ( split /\n/, $help . $type ) );
+            my $type
+                = ' [' . join( ',', get_types( $response{$args} ) ) . ']';
+            my $help = ( ref $helper eq 'CODE' ) ? &$helper() : $helper;
+            return join( ' ', ( split /\n/, $help . $type ) );
         }
         return "ERROR: '$args' , unknown help topic.";
     },
@@ -781,8 +797,8 @@ $response{cal} = {
             $retval = `cal $1 $2 2>&1`;
         }
         elsif ( $args =~ m/cal\s+($year)/i ) {
-            $retval =
-'A fine year. Nice vintage. Too much output, though, pick a month.';
+            $retval
+                = 'A fine year. Nice vintage. Too much output, though, pick a month.';
         }
         elsif ( $args =~ m/\bcal\s*$/ ) {
             $retval = `cal 2>&1`;
@@ -809,27 +825,25 @@ $response{'set'} = {
 
         my $section = "user $event->{SHANDLE}";
 
-        if ( ! @args ) {
+        if ( !@args ) {
             my @tmp;
-            foreach my $key ($config->Parameters($section))
-            {
-                my $val = $config->val($section,$key);
-                push @tmp,  $key . " = \'" . $val . "\'";
+            foreach my $key ( $config->Parameters($section) ) {
+                my $val = $config->val( $section, $key );
+                push @tmp, $key . " = \'" . $val . "\'";
             }
             return join( ', ', @tmp );
         }
         elsif ( scalar @args == 1 ) {
-            my $val = $config->val($section,$args[0]);
-            return (defined($val)? "\"$val\"":'undef');
+            my $val = $config->val( $section, $args[0] );
+            return ( defined($val) ? "\"$val\"" : 'undef' );
         }
-        else
-        {
+        else {
             my $key = shift @args;
-            my $val = join(' ',@args);
+            my $val = join( ' ', @args );
             if ( $key =~ m:^\*: ) {
                 return 'You may not modify ' . $key . ' directly.';
             }
-            $config->setval($section,$key,$val);
+            $config->setval( $section, $key, $val );
             return $key . " = \'" . $val . "\'";
         }
     },
@@ -992,7 +1006,7 @@ sub scrape_weather {
     my ( $term, $content ) = @_;
 
     $content =~ m/(Updated:.*)Current Radar/s;
-    my @results = map {cleanHTML($_)} split(/<tr>/, $1);
+    my @results = map { cleanHTML($_) } split( /<tr>/, $1 );
     return wrap(@results);
 }
 
@@ -1000,9 +1014,10 @@ sub scrape_forecast {
     my ( $term, $content ) = @_;
 
     $content =~ m/(Forecast as of .*)Units:/s;
-    my @results = map {cleanHTML($_), q{}} split(/<b>/, $1);
-    pop @results; # remove trailing empty line.
-    @results = @results[0..10]; # limit responses. 5 days, 1 header, 5 blanks
+    my @results = map { cleanHTML($_), q{} } split( /<b>/, $1 );
+    pop @results;                # remove trailing empty line.
+    @results
+        = @results[ 0 .. 10 ];   # limit responses. 5 days, 1 header, 5 blanks
     return wrap(@results);
 }
 
@@ -1019,13 +1034,12 @@ sub scrape_horoscope {
     $content =~ m/<big class="yastshsign">([^<]*)<\/big>/i;
     my $sign = $1;
 
-    if ($type eq 'chinese') {
+    if ( $type eq 'chinese' ) {
         $content =~ m:<small>Year In General(.*)Previous Day</a>:s;
         my $reading = $1;
         return cleanHTML("$sign : $reading");
     }
-    else
-    {
+    else {
         $content =~ m/<span class="yastshdate">([^<]*)<\/span>/i;
         my $dates = $1;
         $content =~ m/<b class="yastshdotxt">Overview:<\/b><br>([^<]*)<\/td>/;
@@ -1035,23 +1049,21 @@ sub scrape_horoscope {
 
 }
 
-sub scrape_anagram{
+sub scrape_anagram {
     my ( $term, $content ) = @_;
 
-    if ( $content =~
-        s{.*\d+ found\. Displaying}{}smi )
-    {
+    if ( $content =~ s{.*\d+ found\. Displaying}{}smi ) {
         my @results;
         my @lines = split /\n/, $content;
         shift @lines;
         foreach my $line (@lines) {
-          $line = cleanHTML($line);
-          last if $line eq '';
-          next if lc $line eq $term;
-          push @results, $line;
+            $line = cleanHTML($line);
+            last if $line eq '';
+            next if lc $line eq $term;
+            push @results, $line;
         }
         return unless @results;
-        return pickRandom( [@results]);
+        return pickRandom( [@results] );
     }
     else {
         return;
@@ -1061,12 +1073,13 @@ sub scrape_anagram{
 sub scrape_wiktionary {
     my ( $term, $content ) = @_;
 
-    if ( $content =~ m/Wiktionary does not have an entry for this exact word/ ||
-         $content =~ m/Sorry, there were no exact matches to your query/ ) {
-      return;
+    if ( $content =~ m/Wiktionary does not have an entry for this exact word/
+        || $content =~ m/Sorry, there were no exact matches to your query/ )
+    {
+        return;
     }
 
-    my ($lookup, @retval);
+    my ( $lookup, @retval );
 
     $content =~ s/\n/ /g;
 
@@ -1074,30 +1087,30 @@ sub scrape_wiktionary {
     $content =~ s/<div class="printfooter">.*//;
 
     my $skip;
-    foreach my $chunk (split /<span class="mw-headline">/sm, $content) {
-      my ($m,$n) = split (/<\/span>/, $chunk, 2);
-      $m = cleanHTML($m);
-      $m =~ s/^\s+//;
-      $m =~ s/\s*\[\s*edit\s*\]//;
-      next unless $m;
-      next if lc $m eq 'references';
-      next if lc $m eq 'derived terms';
-      next if lc $m eq 'english';
-      next if lc $m eq 'pronunciation';
-      next if lc $m eq 'translations';
-      next if lc $m eq 'translations to be checked';
+    foreach my $chunk ( split /<span class="mw-headline">/sm, $content ) {
+        my ( $m, $n ) = split( /<\/span>/, $chunk, 2 );
+        $m = cleanHTML($m);
+        $m =~ s/^\s+//;
+        $m =~ s/\s*\[\s*edit\s*\]//;
+        next unless $m;
+        next if lc $m eq 'references';
+        next if lc $m eq 'derived terms';
+        next if lc $m eq 'english';
+        next if lc $m eq 'pronunciation';
+        next if lc $m eq 'translations';
+        next if lc $m eq 'translations to be checked';
 
-      my $definition_number = 1;
-      $n =~ s/<li>/$definition_number++ . ': '/ge ;
+        my $definition_number = 1;
+        $n =~ s/<li>/$definition_number++ . ': '/ge;
 
-      $n = cleanHTML($n);
-      $n =~ s/^\s+//;
-      $n =~ s/\s*\[\s*edit\s*\]//;
-      $n =~ s/\s+([.,])\s+/\1 /g;
-      next unless $n;
+        $n = cleanHTML($n);
+        $n =~ s/^\s+//;
+        $n =~ s/\s*\[\s*edit\s*\]//;
+        $n =~ s/\s+([.,])\s+/\1 /g;
+        next unless $n;
 
-      $chunk = $m . ' :: ' . $n;
-      push @retval, $chunk;
+        $chunk = $m . ' :: ' . $n;
+        push @retval, $chunk;
     }
 
     unshift @retval, 'According to Wiktionary:';
@@ -1106,22 +1119,20 @@ sub scrape_wiktionary {
 }
 
 sub scrape_google_guess {
-    my $term = shift;
+    my $term    = shift;
     my $content = shift;
 
-    my ($lookup, @retval);
+    my ( $lookup, @retval );
 
     $content =~ s/\n/ /g;
-    if ($content =~ m{Did you mean.*<i>([^>]+)</i>}) {
+    if ( $content =~ m{Did you mean.*<i>([^>]+)</i>} ) {
         return $1;
     }
     return;
 }
 
-
 sub scrape_bacon {
     my ($content) = shift;
-
 
     if ( $content =~ /The Oracle cannot find/ ) {
         $content =~ s/.*?(The Oracle cannot find)/\1/sm;
@@ -1140,10 +1151,10 @@ sub scrape_bacon {
     return $content;
 }
 
-my $bacon_url = 'http://oracleofbacon.org/cgi-bin/movielinks?a=Kevin+Bacon' .
- '&end_year=2050&start_year=1850&game=0&u0=on';
-foreach my $g (0..27) {
-  $bacon_url .= "&g$g=on";
+my $bacon_url = 'http://oracleofbacon.org/cgi-bin/movielinks?a=Kevin+Bacon'
+    . '&end_year=2050&start_year=1850&game=0&u0=on';
+foreach my $g ( 0 .. 27 ) {
+    $bacon_url .= "&g$g=on";
 }
 
 $response{bacon} = {
@@ -1154,16 +1165,18 @@ $response{bacon} = {
             return 'ERROR: Expected bacon RE not matched!';
         }
         my $term = $1;
-        if (lc($term) eq 'kevin bacon') {
-            dispatch($event,'Are you congenitally insane or irretrievably stupid?');
+        if ( lc($term) eq 'kevin bacon' ) {
+            dispatch( $event,
+                'Are you congenitally insane or irretrievably stupid?' );
             return;
         }
-        if ($term =~ m/ \s* (\w+) \s* , \s* (\w+) \s+ \(([ivxlcm]*)\) /smix) {
+        if ( $term =~ m/ \s* (\w+) \s* , \s* (\w+) \s+ \(([ivxlcm]*)\) /smix )
+        {
             $term = "$2 $1 ($3)";
         }
 
         $term = escape($term);
-        my $url  = $bacon_url . "&b=$term";
+        my $url = $bacon_url . "&b=$term";
         add_throttled_HTTP(
             url      => $url,
             ui_name  => 'main',
@@ -1188,10 +1201,12 @@ $response{compute} = {
         if ( !( $args =~ m/\bcompute\s+(.*)$/i ) ) {
             return 'ERROR: Expected compute RE not matched!';
         }
-    
-        my $url = "http://api.wolframalpha.com/v2/query?appid=" . 
-            $config->val('wolfram', 'appID') . "&format=plaintext&input=" .
-            escape($1);
+
+        my $url
+            = "http://api.wolframalpha.com/v2/query?appid="
+            . $config->val( 'wolfram', 'appID' )
+            . "&format=plaintext&input="
+            . escape($1);
 
         add_throttled_HTTP(
             url      => $url,
@@ -1214,14 +1229,16 @@ sub scrape_wolfram {
 
     my $footer = " [wolframalpha.com]";
 
-    if ($content =~ m/success='false'/) {
-         return "I didn't understand that, sorry. $footer";
+    if ( $content =~ m/success='false'/ ) {
+        return "I didn't understand that, sorry. $footer";
     }
 
     my $results = "";
 
-    while ($content =~ m/<pod title='(.*?)'.*?<plaintext>(.*?)<\/plaintext>/sig) {
-        my $section = $1;
+    while (
+        $content =~ m/<pod title='(.*?)'.*?<plaintext>(.*?)<\/plaintext>/sig )
+    {
+        my $section   = $1;
         my $plaintext = $2;
         $plaintext =~ s/\n/ /g;
         $results .= "$section: $plaintext\n";
@@ -1230,7 +1247,6 @@ sub scrape_wolfram {
     $results .= $footer;
     return wrap( split( /\n/, $results ) );
 }
-
 
 my $horoscopeRE = qr( \b
     horoscope \s+ (?: for \s+)?
@@ -1250,32 +1266,31 @@ $response{horoscope} = {
     CODE => sub {
         my ($event) = @_;
         my $args = $event->{VALUE};
-        my ($term, $url, $type);
+        my ( $term, $url, $type );
 
-        #XXX this should be done in the handler caller, not the handler itself.
+       #XXX this should be done in the handler caller, not the handler itself.
         $args =~ $horoscopeRE;
 
-        if ($1)
-        {
+        if ($1) {
             $term = $1;
-            if (lc($term) eq 'ophiuchus') {
+            if ( lc($term) eq 'ophiuchus' ) {
+
                 # support those unlucky enough to be in this sign.
                 $term = 'sagittarius';
             }
-            $url  =
-              'http://astrology.shine.yahoo.com/astrology/general/dailyoverview/';
+            $url
+                = 'http://astrology.shine.yahoo.com/astrology/general/dailyoverview/';
             $type = 'western';
         }
-        else
-        {
+        else {
             $term = $2;
-            $url  =
-              'http://astrology.shine.yahoo.com/chinese/general/dailyoverview/';
+            $url
+                = 'http://astrology.shine.yahoo.com/chinese/general/dailyoverview/';
             $type = 'chinese';
         }
 
         $term = lc $term;
-        $url = $url . $term;
+        $url  = $url . $term;
         add_throttled_HTTP(
             url      => $url,
             ui_name  => 'main',
@@ -1305,31 +1320,40 @@ $response{define} = {
             return 'ERROR: Expected define RE not matched!';
         }
         my $term = escape $1;
-        my $url  = "http://en.wiktionary.org/w/index.php?printable=yes&title=$term";
+        my $url
+            = "http://en.wiktionary.org/w/index.php?printable=yes&title=$term";
         add_throttled_HTTP(
             url      => $url,
             ui_name  => 'main',
             callback => sub {
 
                 my ($response) = shift;
-                my $answer = scrape_wiktionary( $term, $response->{_content});
+                my $answer
+                    = scrape_wiktionary( $term, $response->{_content} );
                 if ($answer) {
-                  dispatch( $event,$answer);
-                } else  {
-                  my $url2 = "http://www.google.com/search?num=0&hl=en&lr=&as_qdr=all&q=$term&btnG=Search";
-                  add_throttled_HTTP(
-                      url      =>  $url2,
-                      ui_name  => 'main',
-                      callback => sub {
-                          my ($response2) = shift;
-                          $answer= scrape_google_guess( $term, $response->{_content} );
-                          if ($answer) {
-                              dispatch( $event, "No match for '$term', did you mean '$answer'?" );
-                           } else {
-                               dispatch( $event, "Sorry, '$term' not found");
-                           }
-                      }
-                  );
+                    dispatch( $event, $answer );
+                }
+                else {
+                    my $url2
+                        = "http://www.google.com/search?num=0&hl=en&lr=&as_qdr=all&q=$term&btnG=Search";
+                    add_throttled_HTTP(
+                        url      => $url2,
+                        ui_name  => 'main',
+                        callback => sub {
+                            my ($response2) = shift;
+                            $answer = scrape_google_guess( $term,
+                                $response->{_content} );
+                            if ($answer) {
+                                dispatch( $event,
+                                    "No match for '$term', did you mean '$answer'?"
+                                );
+                            }
+                            else {
+                                dispatch( $event,
+                                    "Sorry, '$term' not found" );
+                            }
+                        }
+                    );
                 }
             }
         );
@@ -1349,22 +1373,27 @@ $response{spell} = {
             return 'ERROR: Expected spell RE not matched!';
         }
         my $term = escape $1;
-              my $url = "http://www.google.com/search?num=0&hl=en&lr=&as_qdr=all&q=$term&btnG=Search";
-              add_throttled_HTTP(
-                  url      =>  $url,
-                  ui_name  => 'main',
-                  callback => sub {
-                      my ($response) = shift;
-                      my $answer= scrape_google_guess( $term, $response->{_content} );
-                      if ($answer) {
-                          dispatch( $event, "No match for '$term', did you mean '$answer'?" );
-                      } else {
-                          dispatch( $event, "Looks OK, but google could be wrong.");
-                      }
-                  }
-              );
-          return;
-        },
+        my $url
+            = "http://www.google.com/search?num=0&hl=en&lr=&as_qdr=all&q=$term&btnG=Search";
+        add_throttled_HTTP(
+            url      => $url,
+            ui_name  => 'main',
+            callback => sub {
+                my ($response) = shift;
+                my $answer
+                    = scrape_google_guess( $term, $response->{_content} );
+                if ($answer) {
+                    dispatch( $event,
+                        "No match for '$term', did you mean '$answer'?" );
+                }
+                else {
+                    dispatch( $event,
+                        "Looks OK, but google could be wrong." );
+                }
+            }
+        );
+        return;
+    },
     HELP => 'have google check your spelling...',
     POS  => -1,
     STOP => 1,
@@ -1372,14 +1401,14 @@ $response{spell} = {
 };
 
 $response{foldoc} = {
-    CODE     => sub {
+    CODE => sub {
         my ($event) = @_;
         my $args = $event->{VALUE};
         if ( !( $args =~ s/.*foldoc\s+(.*)/$1/i ) ) {
             return 'ERROR: Expected foldoc RE not matched!';
         }
         add_throttled_HTTP(
-            url => "http://foldoc.org/index.cgi?query=$args",
+            url      => "http://foldoc.org/index.cgi?query=$args",
             callback => sub {
                 my $content = shift()->{_content};
 
@@ -1405,8 +1434,8 @@ $response{foldoc} = {
     RE   => qr/foldoc/i,
 };
 
-my @ascii =
-  qw/NUL SOH STX ETX EOT ENQ ACK BEL BS HT LF VT FF CR SO SI DLE DC1 DC2 DC3 DC4 NAK SYN ETB CAN EM SUB ESC FS GS RS US SPACE/;
+my @ascii
+    = qw/NUL SOH STX ETX EOT ENQ ACK BEL BS HT LF VT FF CR SO SI DLE DC1 DC2 DC3 DC4 NAK SYN ETB CAN EM SUB ESC FS GS RS US SPACE/;
 my %ascii;
 
 for my $cnt ( 0 .. $#ascii ) {
@@ -1553,12 +1582,14 @@ $response{country} = {
             return 'No Match.';
         }
         else {
-            my @a =
-              split( /\n/, `grep -i \'$args\' /Users/cjsrv/CJ/countries.txt` );
+            my @a
+                = split( /\n/,
+                `grep -i \'$args\' /Users/cjsrv/CJ/countries.txt` );
             if ( scalar(@a) > 10 ) {
-                return 'Your search found '
-                  . scalar(@a)
-                  . ' countries. Be more specific (I can only show you 10).';
+                return
+                      'Your search found '
+                    . scalar(@a)
+                    . ' countries. Be more specific (I can only show you 10).';
             }
             elsif ( scalar(@a) > 0 ) {
                 my $tmp = join( "\'; ", @a );
@@ -1592,13 +1623,14 @@ $response{utf8} = {
             return $a;
         }
         else {
-            my @a =
-              split( /\n/,
+            my @a
+                = split( /\n/,
                 `grep -i \'\|\.\*$args\' /Users/cjsrv/CJ/unicode2.txt` );
             if ( scalar(@a) > 10 ) {
-                return 'Your search found '
-                  . scalar(@a)
-                  . ' glyphs. Please be more specific.';
+                return
+                      'Your search found '
+                    . scalar(@a)
+                    . ' glyphs. Please be more specific.';
             }
             elsif ( scalar(@a) > 0 ) {
                 my $tmp = join( "\'; ", @a );
@@ -1627,7 +1659,6 @@ sub cleanHTML {
     $a = join( ' ', @_ );
     $a =~ s/\n/ /;
     $a =~ s/<[^>]*>/ /g;
-
 
     # translate some common html-escapes.
     $a =~ s/&lt;/</gi;
@@ -1665,7 +1696,8 @@ sub dispatch {
         $message = '"' . $message;
     }
     my $line = $event->{_recips} . ':' . $message;
-    TLily::Server->active()->cmd_process( $line, sub { $_[0]->{NOTIFY} = 0; } );
+    TLily::Server->active()
+        ->cmd_process( $line, sub { $_[0]->{NOTIFY} = 0; } );
 }
 
 # keep myself busy.
@@ -1675,7 +1707,7 @@ sub away_event {
     if ( $event->{SOURCE} eq $name ) {
         my $line = '/here';
         TLily::Server->active()
-          ->cmd_process( $line, sub { $_[0]->{NOTIFY} = 0; } );
+            ->cmd_process( $line, sub { $_[0]->{NOTIFY} = 0; } );
     }
 
 }
@@ -1687,15 +1719,16 @@ Given an event handler, return all the types that handler is valid for.
 =cut
 
 sub get_types {
-    my $handler = shift;
+    my $handler   = shift;
     my $type_spec = $handler->{TYPE};
 
     return qw{private} unless $type_spec;
 
-    if ($type_spec eq 'all') {
+    if ( $type_spec eq 'all' ) {
         return qw{public private emote};
-    } else {
-        return split(' ', $type_spec);
+    }
+    else {
+        return split( ' ', $type_spec );
     }
 }
 
@@ -1713,16 +1746,17 @@ sub cj_event {
 
     # throttle:
     my $last   = $throttle{ $event->{SOURCE} }{last};
-    my $status = $throttle{ $event->{SOURCE} }{status};    #normal(0)|danger(1)
+    my $status = $throttle{ $event->{SOURCE} }{status};   #normal(0)|danger(1)
     $throttle{ $event->{SOURCE} }{last} = time;
 
-    if ( ( $throttle{ $event->{SOURCE} }{last} - $last ) < $throttle_interval )
+    if (( $throttle{ $event->{SOURCE} }{last} - $last ) < $throttle_interval )
     {
 
-        #TLily::UI->name('main')->print("$event->{SOURCE} tripped throttle!\n");
+      #TLily::UI->name('main')->print("$event->{SOURCE} tripped throttle!\n");
         $throttle{ $event->{SOURCE} }{count} += 1;
     }
-    elsif ( ( $throttle{ $event->{SOURCE} }{last} - $last ) > $throttle_safety )
+    elsif (
+        ( $throttle{ $event->{SOURCE} }{last} - $last ) > $throttle_safety )
     {
 
         $throttle{ $event->{SOURCE} }{count}  = 0;
@@ -1769,23 +1803,25 @@ sub cj_event {
 
     # Workhorse for responses:
     my $message;
-  HANDLE_OUTER: foreach my $order (qw/-2 -1 0 1 2/) {
-      HANDLE_INNER: foreach my $handler ( keys %response ) {
+HANDLE_OUTER: foreach my $order (qw/-2 -1 0 1 2/) {
+    HANDLE_INNER: foreach my $handler ( keys %response ) {
 
             # XXX respect PRIVILEGE
-            my @types = get_types ($response{$handler});
+            my @types = get_types( $response{$handler} );
             if ( $response{$handler}->{POS} eq $order ) {
                 next
-                  if !grep { /$event->{type}/ } @types;
+                    if !grep {/$event->{type}/} @types;
                 my $re = $response{$handler}->{RE};
                 if ( $event->{type} eq 'public' ) {
                     $re = qr/(?i:$name\s*,?\s*)?$re/;
-                } elsif ( $event->{type} eq 'emote' ) {
+                }
+                elsif ( $event->{type} eq 'emote' ) {
+
                     # XXX must anchor emotes by default.
                     # fixup so things like "drink" work, though.
                     $re = qr/(?i:$name\s*,?\s*)?$re/;
                 }
-                $re = qr/^\s*$re/; # anchor to the beginning of a send
+                $re = qr/^\s*$re/;    # anchor to the beginning of a send
                 if ( $event->{VALUE} =~ m/$re/ ) {
                     $served{ $event->{type} . ' messages' }++;
                     $served{$handler}++;
@@ -1838,7 +1874,7 @@ event_r( type => 'away', order => 'after', call => \&away_event );
 sub load {
     my $server = TLily::Server->active();
     $config = new Config::IniFiles( -file => $config_file )
-      or die @Config::IniFiles::errors;
+        or die @Config::IniFiles::errors;
 
     foreach my $disc ( $config->GroupMembers('discussion') ) {
         my $discname = $disc;
@@ -1853,31 +1889,32 @@ sub load {
     foreach my $annotation ( $config->GroupMembers('annotation') ) {
         my $ann_name = $annotation;
         $ann_name =~ s/^annotation //;
-        $annotations{$ann_name}{RE}     = $config->val( $annotation, 'regexp' );
-        $annotations{$ann_name}{action} = $config->val( $annotation, 'action' );
+        $annotations{$ann_name}{RE} = $config->val( $annotation, 'regexp' );
+        $annotations{$ann_name}{action}
+            = $config->val( $annotation, 'action' );
     }
 
     $server->fetch(
         call => sub { my %event = @_; $sayings = $event{text} },
-        type   => 'memo',
+        type => 'memo',
         target => $disc,
         name   => 'sayings'
     );
     $server->fetch(
         call => sub { my %event = @_; $overhear = $event{text} },
-        type   => 'memo',
+        type => 'memo',
         target => $disc,
         name   => 'overhear'
     );
     $server->fetch(
         call => sub { my %event = @_; $unified = $event{text} },
-        type   => 'memo',
+        type => 'memo',
         target => $disc,
         name   => '-unified'
     );
     $server->fetch(
         call => sub { my %event = @_; $beener = $event{text} },
-        type   => 'memo',
+        type => 'memo',
         target => $disc,
         name   => '-beener'
     );
