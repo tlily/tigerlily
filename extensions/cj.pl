@@ -55,7 +55,6 @@ the version implementation of tlily, and is now running on git-latest.
 my %response;    #Container for all response handlers.
 my %throttle;    #Container for all throttling information.
 
-my %irc;         #Container for all irc channel information
 my $throttle_interval = 1;    #seconds
 my $throttle_safety   = 5;    #seconds
 my $config;                   # Config::IniFiles object storing preferences.
