@@ -1,7 +1,5 @@
 use strict;
 
-use lib qw(/Users/cjsrv/lib);    # XXX hack.
-
 use CGI qw/escape unescape/;
 use Data::Dumper;
 
