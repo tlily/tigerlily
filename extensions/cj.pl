@@ -70,12 +70,12 @@ my %annotation_code;    # ala response, but for annotations.
 my $frequently;         # timers
 
 # some array refs of sayings...
-my $sayings;     # pithy 8ball-isms.
-my $overhear;    # listen for my name occasionally;
+my $sayings;            # pithy 8ball-isms.
+my $overhear;           # listen for my name occasionally;
 
 # Unify this into generic special handling. =-)
-my $unified;     # special handling for the unified discussion.
-my $beener;      # special handling for the beener discussion.
+my $unified;            # special handling for the unified discussion.
+my $beener;             # special handling for the beener discussion.
 
 my $uptime = time();    #uptime indicator.
 my %served;             #stats.
@@ -390,16 +390,16 @@ have wanted it.
 
 my @external_commands = qw/ascii/;
 foreach my $command (@external_commands) {
-    my $file = getcwd . "/extensions/cj/" . $command . ".pm" ;
+    my $file = getcwd . "/extensions/cj/" . $command . ".pm";
     do $file or debug("loading external command: $file: $!/$@");
-    my $glob = qualify_to_ref("::CJ::command::" . $command . "::" );
+    my $glob = qualify_to_ref( "::CJ::command::" . $command . "::" );
     $response{$command} = {
-        CODE => sub { &{*$glob{HASH}{response}}(@_) },
-        HELP => sub { &{*$glob{HASH}{help}}(@_) },
-        TYPE => ${*$glob{HASH}{TYPE}},
-        POS  => ${*$glob{HASH}{POSITION}},
-        STOP => ${*$glob{HASH}{LAST}},
-        RE   => ${*$glob{HASH}{RE}},
+        CODE => sub { &{ *$glob{HASH}{response} }(@_) },
+        HELP => sub { &{ *$glob{HASH}{help} }(@_) },
+        TYPE => ${ *$glob{HASH}{TYPE} },
+        POS  => ${ *$glob{HASH}{POSITION} },
+        STOP => ${ *$glob{HASH}{LAST} },
+        RE   => ${ *$glob{HASH}{RE} },
     };
 }
 
@@ -784,8 +784,7 @@ $response{help} = {
         if ( $args eq q{} ) {
 
             # XXX respect PRIVILEGE
-            my @cmds
-                = grep { $_ ne 'help' } keys %response;
+            my @cmds = grep { $_ ne 'help' } keys %response;
             return
                 "Hello. I'm a bot. Try 'help' followed by one of the following for more information: "
                 . join( ', ', sort @cmds )
@@ -1521,8 +1520,7 @@ $response{country} = {
             return 'No Match.';
         }
         else {
-            my @a
-                = split( /\n/,
+            my @a = split( /\n/,
                 `grep -i \'$args\' /Users/cjsrv/CJ/countries.txt` );
             if ( scalar(@a) > 10 ) {
                 return
@@ -1562,8 +1560,7 @@ $response{utf8} = {
             return $a;
         }
         else {
-            my @a
-                = split( /\n/,
+            my @a = split( /\n/,
                 `grep -i \'\|\.\*$args\' /Users/cjsrv/CJ/unicode2.txt` );
             if ( scalar(@a) > 10 ) {
                 return
@@ -1889,9 +1886,9 @@ sub unload {
     checkpoint();
 
     TLily::Event->time_u($frequently);
-  
-    # clean up %INC (used for dispatch) 
-    delete @INC{grep m:/extensions/cj/[a-z]*\.pm$:, keys %INC};
+
+    # clean up %INC (used for dispatch)
+    delete @INC{ grep m:/extensions/cj/[a-z]*\.pm$:, keys %INC };
 }
 
 1;
