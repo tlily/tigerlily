@@ -4,7 +4,7 @@ use strict;
 our $TYPE     = "all";
 our $POSITION = 0;
 our $LAST     = 1;
-our $RE       = qr/\bascii\b/i;
+our $RE       = qr/\bascii\s+(.*)/i;
 
 my @ascii
     = qw/NUL SOH STX ETX EOT ENQ ACK BEL BS HT LF VT FF CR SO SI DLE DC1 DC2 DC3 DC4 NAK SYN ETB CAN EM SUB ESC FS GS RS US SPACE/;
@@ -43,10 +43,9 @@ sub _format_ascii {
 
 sub response {
     my ($event) = @_;
-    my $args = $event->{VALUE};
-    if ( !( $args =~ s/.*ascii\s+(.*)/$1/i ) ) {
-        return 'ERROR: Expected ascii RE not matched!';
-    }
+    $event->{VALUE} =~ $RE;
+    my $args = $1;
+
     if ( $args =~ m/^'(.)'$/ ) {
         return _format_ascii( ord($1) );
     }
