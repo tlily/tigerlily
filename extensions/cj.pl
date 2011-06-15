@@ -574,17 +574,6 @@ $response{'ping'} = {
     RE   => qr/ping/i,
 };
 
-$response{'stomach pump'} = {
-    CODE => sub {
-        return 'Eeeek!';
-    },
-    HELP => 'stomach pumps scare me.',
-    TYPE => 'all',
-    POS  => 0,
-    STOP => 1,
-    RE   => qr/stomach pump/i,
-};
-
 $response{cmd} = {
     PRIVILEGE => 'admin',
     CODE      => sub {
