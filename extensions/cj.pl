@@ -221,7 +221,7 @@ subgain";
                 push @retval, "Total value: $total";
             }
 
-            my $retval = wrap(@retval);
+            my $retval = CJ::wrap(@retval);
 
             if ( @invalid_symbols && $event->{type} eq 'private' ) {
                 CJ::dispatch( $event, 'Invalid Ticker Symbols: ' . join ', ',
@@ -232,7 +232,7 @@ subgain";
     );
 }
 
-sub wrap {
+sub CJ::wrap {
     my $retval;
     foreach my $tmp (@_) {
         my $pad = ' ' x ( $wrapline - ( ( length $tmp ) % $wrapline ) );
@@ -389,7 +389,7 @@ have wanted it.
 # XXX - currently forcing them into %response - can skip this step and update
 # response-related code when all is external.
 
-my @external_commands = qw/ascii bible rot13 translate/;
+my @external_commands = qw/ascii bible rot13 translate weather/;
 foreach my $command (@external_commands) {
     my $file = getcwd . "/extensions/cj/" . $command . ".pm";
     do $file or CJ::debug("loading external command: $file: $!/$@");
@@ -405,50 +405,6 @@ foreach my $command (@external_commands) {
 }
 
 ### builtin commands
-$response{weather} = {
-    CODE => sub {
-        my ($event) = @_;
-        my $args = $event->{VALUE};
-        if ( $args !~ m/weather\s*(.*)\s*$/i ) {
-            return 'ERROR: Expected weather RE not matched!';
-        }
-        my $term = $1;
-        $term =~ s/\?$//;    #XXX add this to RE above...
-        $term = escape $term;
-        my $url
-            = "http://mobile.wunderground.com/cgi-bin/findweather/getForecast?brand=mobile&query=$term";
-        CJ::add_throttled_HTTP(
-            url      => $url,
-            ui_name  => 'main',
-            callback => sub {
-                my ($response) = @_;
-                my $conditions
-                    = scrape_weather( $term, $response->{_content} );
-                if ($conditions) {
-                    CJ::dispatch( $event, $conditions );
-                }
-                else {
-                    $term = unescape($term);
-                    if ( length($term) > 10 ) {
-                        $term = substr( $term, 0, 7 );
-                        $term .= '...';
-                    }
-                    if ( $event->{type} eq 'private' ) {
-                        CJ::dispatch( $event,
-                            "Can't find weather for '$term'." );
-                    }
-                }
-            }
-        );
-        return;
-    },
-    HELP => 'Given a location, get the current weather.',
-    TYPE => 'all',
-    POS  => -1,
-    STOP => 1,
-    RE   => qr/\bweather\b/i
-
-};
 $response{forecast} = {
     CODE => sub {
         my ($event) = @_;
@@ -633,7 +589,7 @@ $response{cal} = {
         else {
             $retval = "I can't find my watch.";
         }
-        return wrap( split( /\n/, $retval ) );
+        return CJ::wrap( split( /\n/, $retval ) );
     },
     HELP => '"cal" shows the current month. "cal 1 2010" shows january 2010.',
     POS  => 0,
@@ -754,7 +710,7 @@ $response{cmd} = {
                         $newevent->{NOTIFY} = 0;
                         return if ( $newevent->{type} eq 'begincmd' );
                         if ( $newevent->{type} eq 'endcmd' ) {
-                            CJ::dispatch( $event, wrap(@response) );
+                            CJ::dispatch( $event, CJ::wrap(@response) );
                         }
                         if ( $newevent->{text} ne q{} ) {
                             push @response, $newevent->{text};
@@ -829,14 +785,6 @@ END_HELP
     RE   => qr/.*/,
 };
 
-sub scrape_weather {
-    my ( $term, $content ) = @_;
-
-    $content =~ m/(Updated:.*)Current Radar/s;
-    my @results = map { CJ::cleanHTML($_) } split( /<tr>/, $1 );
-    return wrap(@results);
-}
-
 sub scrape_forecast {
     my ( $term, $content ) = @_;
 
@@ -845,7 +793,7 @@ sub scrape_forecast {
     pop @results;                # remove trailing empty line.
     @results
         = @results[ 0 .. 10 ];   # limit responses. 5 days, 1 header, 5 blanks
-    return wrap(@results);
+    return CJ::wrap(@results);
 }
 
 sub scrape_horoscope {
@@ -934,7 +882,7 @@ sub scrape_wiktionary {
     }
 
     unshift @retval, 'According to Wiktionary:';
-    return wrap(@retval);
+    return CJ::wrap(@retval);
 
 }
 
@@ -1066,7 +1014,7 @@ sub scrape_wolfram {
     }
 
     $results .= $footer;
-    return wrap( split( /\n/, $results ) );
+    return CJ::wrap( split( /\n/, $results ) );
 }
 
 my $horoscopeRE = qr( \b
