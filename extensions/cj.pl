@@ -138,7 +138,7 @@ Given a ref to a list, return a random element from it.
 
 =cut
 
-sub pickRandom {
+sub CJ::pickRandom {
     my @list = @{ $_[0] };
     return $list[ int( rand( scalar(@list) ) ) ];
 }
@@ -389,7 +389,8 @@ have wanted it.
 # XXX - currently forcing them into %response - can skip this step and update
 # response-related code when all is external.
 
-my @external_commands = qw/ascii bible forecast rot13 translate weather/;
+my @external_commands
+    = qw/anagram ascii bible forecast rot13 translate weather/;
 foreach my $command (@external_commands) {
     my $file = getcwd . "/extensions/cj/" . $command . ".pm";
     do $file or CJ::debug("loading external command: $file: $!/$@");
@@ -405,72 +406,6 @@ foreach my $command (@external_commands) {
 }
 
 ### builtin commands
-my $anagramRE = qr/
-  (?:
-  \b anagram \s+ (.*) \s+ with    \s+ (.*) \s+ without \s+ (.*) |
-  \b anagram \s+ (.*) \s+ without \s+ (.*) \s+ with    \s+ (.*) |
-  \b anagram \s+ (.*) \s+ with    \s+ (.*) |
-  \b anagram \s+ (.*) \s+ without \s+ (.*) |
-  \b anagram \s+ (.*)
-  )
-  \s* $
-/ix;
-
-$response{anagram} = {
-    CODE => sub {
-        my ($event) = @_;
-        my $args = $event->{VALUE};
-
-        $args =~ $anagramRE;
-        my ( $term, $include, $exclude );
-        my $url = 'http://wordsmith.org/anagram/anagram.cgi?language=english';
-
-        if ($1) {
-            ( $term, $include, $exclude ) = ( $1, $2, $3 );
-        }
-        elsif ($4) {
-            ( $term, $exclude, $include ) = ( $4, $5, $6 );
-        }
-        elsif ($7) {
-            ( $term, $include ) = ( $7, $8 );
-        }
-        elsif ($9) {
-            ( $term, $exclude ) = ( $9, $10 );
-        }
-        else {
-            ($term) = ($11);
-        }
-        $url .= '&anagram=' . escape($term);
-        if ($include) {
-            $url .= '&include=' . escape($include);
-        }
-        if ($exclude) {
-            $url .= '&exclude=' . escape($exclude);
-        }
-
-        CJ::add_throttled_HTTP(
-            url      => $url,
-            ui_name  => 'main',
-            callback => sub {
-                my ($response) = @_;
-                my $anagram = scrape_anagram( $term, $response->{_content} );
-                if ($anagram) {
-                    CJ::dispatch( $event, $anagram );
-                }
-                else {
-                    CJ::dispatch( $event, "That's unanagrammaticatable!" );
-                }
-            }
-        );
-        return;
-    },
-    HELP => 'given a phrase, return an anagram of it.',
-    TYPE => 'all',
-    POS  => -1,
-    STOP => 1,
-    RE   => $anagramRE,
-};
-
 $response{shorten} = {
     CODE => sub {
         my ($event) = @_;
@@ -717,7 +652,7 @@ $response{kibo} = {
         elsif ( $event->{RECIPS} eq 'beener' ) {
             $list = [ (@$beener) x 2, @$list ];
         }
-        my ($message) = sprintf( pickRandom($list), $event->{SOURCE} );
+        my ($message) = sprintf( CJ::pickRandom($list), $event->{SOURCE} );
         return $message;
     },
     HELP => 'I respond to public questions addressed to me.',
@@ -760,27 +695,6 @@ sub scrape_horoscope {
         return CJ::cleanHTML("$sign ($dates): $reading");
     }
 
-}
-
-sub scrape_anagram {
-    my ( $term, $content ) = @_;
-
-    if ( $content =~ s{.*\d+ found\. Displaying}{}smi ) {
-        my @results;
-        my @lines = split /\n/, $content;
-        shift @lines;
-        foreach my $line (@lines) {
-            $line = CJ::cleanHTML($line);
-            last if $line eq '';
-            next if lc $line eq $term;
-            push @results, $line;
-        }
-        return unless @results;
-        return pickRandom( [@results] );
-    }
-    else {
-        return;
-    }
 }
 
 sub scrape_wiktionary {
