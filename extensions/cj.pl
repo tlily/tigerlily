@@ -1017,40 +1017,6 @@ $response{spell} = {
     RE   => qr/\bspell\b/i
 };
 
-$response{foldoc} = {
-    CODE => sub {
-        my ($event) = @_;
-        my $args = $event->{VALUE};
-        if ( !( $args =~ s/.*foldoc\s+(.*)/$1/i ) ) {
-            return 'ERROR: Expected foldoc RE not matched!';
-        }
-        CJ::add_throttled_HTTP(
-            url      => "http://foldoc.org/index.cgi?query=$args",
-            callback => sub {
-                my $content = shift()->{_content};
-
-                if ( $content =~ /No match for/ ) {
-                    CJ::dispatch( $event, 'No match, sorry.' );
-                    return;
-                }
-
-                $content =~ s/.*<h1>//ms;
-                $content =~ s/Try this search.*//ms;
-
-                $content = CJ::cleanHTML($content);
-
-                CJ::dispatch( $event, 'According to FOLDOC: ' . $content );
-            }
-        );
-        return;
-    },
-    HELP => 'Define things from the Free Online Dictionary of Computing',
-    TYPE => 'all',
-    POS  => 0,
-    STOP => 1,
-    RE   => qr/foldoc/i,
-};
-
 $response{urldecode} = {
     CODE => sub {
         my ($event) = @_;
