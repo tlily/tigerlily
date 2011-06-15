@@ -99,7 +99,7 @@ Helpful when generating debug output for new features.
 
 =cut
 
-sub debug {
+sub CJ::debug {
 
     # join and split to catch any embedded newlines
     my $args = join( "\n", @_ );
@@ -128,7 +128,7 @@ sub asAdmin {
         $sub->();
     }
     else {
-        dispatch( $event, "I'm a frayed knot." );
+        CJ::dispatch( $event, "I'm a frayed knot." );
     }
 }
 
@@ -172,7 +172,7 @@ sub get_stock {
         = 'http://download.finance.yahoo.com/d/quotes.csv?s='
         . join( ',', @stock )
         . '&f=sl1d1t1c2v';
-    add_throttled_HTTP(
+    CJ::add_throttled_HTTP(
         url      => $url,
         ui_name  => 'main',
         callback => sub {
@@ -184,7 +184,7 @@ sub get_stock {
             foreach my $chunk (@chunks) {
                 my ( $stock, $value, $date, $time, $change, $volume )
                     = map { s/^"(.*)"$/$1/; $_ }
-                    split( /,/, cleanHTML($chunk) );
+                    split( /,/, CJ::cleanHTML($chunk) );
                 if ( $volume =~ m{N/A} ) {
 
                     # skip unknown stocks.
@@ -224,10 +224,10 @@ subgain";
             my $retval = wrap(@retval);
 
             if ( @invalid_symbols && $event->{type} eq 'private' ) {
-                dispatch( $event, 'Invalid Ticker Symbols: ' . join ', ',
+                CJ::dispatch( $event, 'Invalid Ticker Symbols: ' . join ', ',
                     @invalid_symbols );
             }
-            dispatch( $event, $retval );
+            CJ::dispatch( $event, $retval );
         }
     );
 }
@@ -248,7 +248,7 @@ sub wrap {
 
 my @throttled_events;
 
-sub add_throttled_HTTP {
+sub CJ::add_throttled_HTTP {
     my (%options) = @_;
 
     push @throttled_events, \%options;
@@ -298,7 +298,7 @@ EJSON
         }
     }
     else {
-        debug( "shorten failed: " . $res->status_line );
+        CJ::debug( "shorten failed: " . $res->status_line );
     }
 
     return;
@@ -320,7 +320,7 @@ $annotation_code{shorten} = {
             $shorten,
             sub {
                 my ($short_url) = shift;
-                dispatch( $event, "$event->{SOURCE}'s url is $short_url" );
+                CJ::dispatch( $event, "$event->{SOURCE}'s url is $short_url" );
             }
         );
         }
@@ -388,10 +388,10 @@ have wanted it.
 # XXX - currently forcing them into %response - can skip this step and update
 # response-related code when all is external.
 
-my @external_commands = qw/ascii rot13/;
+my @external_commands = qw/ascii bible rot13/;
 foreach my $command (@external_commands) {
     my $file = getcwd . "/extensions/cj/" . $command . ".pm";
-    do $file or debug("loading external command: $file: $!/$@");
+    do $file or CJ::debug("loading external command: $file: $!/$@");
     my $glob = qualify_to_ref( "::CJ::command::" . $command . "::" );
     $response{$command} = {
         CODE => sub { &{ *$glob{HASH}{response} }(@_) },
@@ -404,76 +404,6 @@ foreach my $command (@external_commands) {
 }
 
 ### builtin commands
-my $bibles = {
-    'niv'   => { id => 31,    name => 'New International Version' },
-    'nasb'  => { id => 49,    name => 'New American Standard Bible' },
-    'tm'    => { id => 65,    name => 'The Message' },
-    'ab'    => { id => 45,    name => 'Amplified Bible' },
-    'nlt'   => { id => 51,    name => 'New Living Translation' },
-    'kjv'   => { id => 'kjv', name => 'King James Version' },
-    'esv'   => { id => 47,    name => 'English Standard Version' },
-    'cev'   => { id => 46,    name => 'Contemporary English Version' },
-    'nkjv'  => { id => 50,    name => 'New King James Version' },
-    '21kjv' => { id => 48,    name => '21st Century King James Version' },
-    'asv'   => { id => 8,     name => 'American Standard Version' },
-    'ylt'   => { id => 15,    name => "Young's Literal Translation" },
-    'dt'    => { id => 16,    name => 'Darby Translation' },
-    'nlv'   => { id => 74,    name => 'New Life Version' },
-    'hcsb'  => { id => 77,    name => 'Holman Christian Standard Bible' },
-    'wnt'   => { id => 53,    name => 'Wycliffe New Testament' },
-    'we'    => { id => 73,    name => 'Worldwide English (New Testament)' },
-    'nivuk' => { id => 64,    name => 'New International Version - UK' },
-    'tniv'  => { id => 72,    name => "Today's New International Version" },
-    'vulg'  => { id => 4,     name => "Biblia Sacra Vulgata" },
-};
-
-$response{bible} = {
-    CODE => sub {
-        my ($event) = @_;
-        my $args    = $event->{VALUE};
-        my $bible   = $1;
-        my $term    = escape $2;
-
-        $bible = 'kjv' unless $bible;
-        $bible = $bibles->{$bible}->{id};
-
-        my $url
-            = "http://www.biblegateway.com/passage/?search=$term&version=$bible";
-
-        add_throttled_HTTP(
-            url      => $url,
-            ui_name  => 'main',
-            callback => sub {
-                my ($response) = @_;
-                my $passage = scrape_bible( $term, $response->{_content} );
-                if ($passage) {
-                    dispatch( $event, $passage );
-                }
-
-                # silently fail
-            }
-        );
-        return;
-    },
-
-    HELP => sub {
-        my $help = <<'END_HELP';
-Quote chapter and verse. Syntax: bible or passage, followed by an optional
-bible version, and then the name of the book and chapter:verse. Possible
-translations include:
-END_HELP
-        foreach my $key ( keys %$bibles ) {
-            $help .= $key . ' {' . $bibles->{$key}->{name} . '} ';
-        }
-        return $help;
-    },
-    TYPE => 'all',
-    POS  => -1,
-    STOP => 1,
-    RE =>
-        qr/\b(?:bible|passage)\s*(niv|nasb|tm|ab|nlt|kjv|esv|cev|nkjv|21kjv|asv|ylt|dt|nlv|hcsb|wnt|we|nivuk|tniv|vulg)?\s+(.*\d+:\d+)/i,
-};
-
 $response{weather} = {
     CODE => sub {
         my ($event) = @_;
@@ -486,7 +416,7 @@ $response{weather} = {
         $term = escape $term;
         my $url
             = "http://mobile.wunderground.com/cgi-bin/findweather/getForecast?brand=mobile&query=$term";
-        add_throttled_HTTP(
+        CJ::add_throttled_HTTP(
             url      => $url,
             ui_name  => 'main',
             callback => sub {
@@ -494,7 +424,7 @@ $response{weather} = {
                 my $conditions
                     = scrape_weather( $term, $response->{_content} );
                 if ($conditions) {
-                    dispatch( $event, $conditions );
+                    CJ::dispatch( $event, $conditions );
                 }
                 else {
                     $term = unescape($term);
@@ -503,7 +433,7 @@ $response{weather} = {
                         $term .= '...';
                     }
                     if ( $event->{type} eq 'private' ) {
-                        dispatch( $event, "Can't find weather for '$term'." );
+                        CJ::dispatch( $event, "Can't find weather for '$term'." );
                     }
                 }
             }
@@ -529,7 +459,7 @@ $response{forecast} = {
         $term = escape $term;
         my $url
             = "http://mobile.wunderground.com/cgi-bin/findweather/getForecast?brand=mobile&query=$term";
-        add_throttled_HTTP(
+        CJ::add_throttled_HTTP(
             url      => $url,
             ui_name  => 'main',
             callback => sub {
@@ -537,7 +467,7 @@ $response{forecast} = {
                 my $conditions
                     = scrape_forecast( $term, $response->{_content} );
                 if ($conditions) {
-                    dispatch( $event, $conditions );
+                    CJ::dispatch( $event, $conditions );
                 }
                 else {
                     $term = unescape($term);
@@ -546,7 +476,7 @@ $response{forecast} = {
                         $term .= '...';
                     }
                     if ( $event->{type} eq 'private' ) {
-                        dispatch( $event,
+                        CJ::dispatch( $event,
                             "Can't find forecast for '$term'." );
                     }
                 }
@@ -641,12 +571,12 @@ $response{translate} = {
         $term = escape $term;
         my $from = get_lang($guess_from);
         if ( !$from ) {
-            dispatch( $event, "I don't speak $guess_from" );
+            CJ::dispatch( $event, "I don't speak $guess_from" );
             return;
         }
         my $to = get_lang($guess_to);
         if ( !$to ) {
-            dispatch( $event, "I don't speak $guess_to" );
+            CJ::dispatch( $event, "I don't speak $guess_to" );
             return;
         }
 
@@ -664,7 +594,7 @@ $response{translate} = {
 
         my $content = decode_json $res->content;
         if ( $res->is_success ) {
-            dispatch(
+            CJ::dispatch(
                 $event,
                 unidecode(
                     $content->{data}{translations}[0]{translatedText}
@@ -672,7 +602,7 @@ $response{translate} = {
             );
             return;
         }
-        dispatch( $event, "Apparently I can't do that:" . $res->status_line );
+        CJ::dispatch( $event, "Apparently I can't do that:" . $res->status_line );
         return;
     },
     HELP => sub {
@@ -730,17 +660,17 @@ $response{anagram} = {
             $url .= '&exclude=' . escape($exclude);
         }
 
-        add_throttled_HTTP(
+        CJ::add_throttled_HTTP(
             url      => $url,
             ui_name  => 'main',
             callback => sub {
                 my ($response) = @_;
                 my $anagram = scrape_anagram( $term, $response->{_content} );
                 if ($anagram) {
-                    dispatch( $event, $anagram );
+                    CJ::dispatch( $event, $anagram );
                 }
                 else {
-                    dispatch( $event, "That's unanagrammaticatable!" );
+                    CJ::dispatch( $event, "That's unanagrammaticatable!" );
                 }
             }
         );
@@ -761,7 +691,7 @@ $response{shorten} = {
             return 'ERROR: Expected shorten RE not matched!';
         }
         my $shorten = $1;
-        shorten( $shorten, sub { dispatch( $event, shift ) } );
+        shorten( $shorten, sub { CJ::dispatch( $event, shift ) } );
         return;
     },
     HELP => <<'END_HELP',
@@ -911,7 +841,7 @@ sub humanTime {
 
 $response{'ping'} = {
     CODE => sub {
-        my $a = cleanHTML( Dumper( \%served ) );
+        my $a = CJ::cleanHTML( Dumper( \%served ) );
         $a =~ s/\$VAR1 =/ number of commands and messages processed: /;
         return 'pong. uptime: ' . humanTime( time() - $uptime ) . "; $a";
     },
@@ -948,7 +878,7 @@ $response{cmd} = {
                         $newevent->{NOTIFY} = 0;
                         return if ( $newevent->{type} eq 'begincmd' );
                         if ( $newevent->{type} eq 'endcmd' ) {
-                            dispatch( $event, wrap(@response) );
+                            CJ::dispatch( $event, wrap(@response) );
                         }
                         if ( $newevent->{text} ne q{} ) {
                             push @response, $newevent->{text};
@@ -1027,7 +957,7 @@ sub scrape_weather {
     my ( $term, $content ) = @_;
 
     $content =~ m/(Updated:.*)Current Radar/s;
-    my @results = map { cleanHTML($_) } split( /<tr>/, $1 );
+    my @results = map { CJ::cleanHTML($_) } split( /<tr>/, $1 );
     return wrap(@results);
 }
 
@@ -1035,18 +965,11 @@ sub scrape_forecast {
     my ( $term, $content ) = @_;
 
     $content =~ m/(Forecast as of .*)Units:/s;
-    my @results = map { cleanHTML($_), q{} } split( /<b>/, $1 );
+    my @results = map { CJ::cleanHTML($_), q{} } split( /<b>/, $1 );
     pop @results;                # remove trailing empty line.
     @results
         = @results[ 0 .. 10 ];   # limit responses. 5 days, 1 header, 5 blanks
     return wrap(@results);
-}
-
-sub scrape_bible {
-    my ( $term, $content ) = @_;
-
-    $content =~ m{result-text-style-normal">(.*?)</div}sm;
-    return cleanHTML($1);
 }
 
 sub scrape_horoscope {
@@ -1058,14 +981,14 @@ sub scrape_horoscope {
     if ( $type eq 'chinese' ) {
         $content =~ m:<small>Year In General(.*)Previous Day</a>:s;
         my $reading = $1;
-        return cleanHTML("$sign : $reading");
+        return CJ::cleanHTML("$sign : $reading");
     }
     else {
         $content =~ m/<span class="yastshdate">([^<]*)<\/span>/i;
         my $dates = $1;
         $content =~ m/<b class="yastshdotxt">Overview:<\/b><br>([^<]*)<\/td>/;
         my $reading = $1;
-        return cleanHTML("$sign ($dates): $reading");
+        return CJ::cleanHTML("$sign ($dates): $reading");
     }
 
 }
@@ -1078,7 +1001,7 @@ sub scrape_anagram {
         my @lines = split /\n/, $content;
         shift @lines;
         foreach my $line (@lines) {
-            $line = cleanHTML($line);
+            $line = CJ::cleanHTML($line);
             last if $line eq '';
             next if lc $line eq $term;
             push @results, $line;
@@ -1110,7 +1033,7 @@ sub scrape_wiktionary {
     my $skip;
     foreach my $chunk ( split /<span class="mw-headline">/sm, $content ) {
         my ( $m, $n ) = split( /<\/span>/, $chunk, 2 );
-        $m = cleanHTML($m);
+        $m = CJ::cleanHTML($m);
         $m =~ s/^\s+//;
         $m =~ s/\s*\[\s*edit\s*\]//;
         next unless $m;
@@ -1124,7 +1047,7 @@ sub scrape_wiktionary {
         my $definition_number = 1;
         $n =~ s/<li>/$definition_number++ . ': '/ge;
 
-        $n = cleanHTML($n);
+        $n = CJ::cleanHTML($n);
         $n =~ s/^\s+//;
         $n =~ s/\s*\[\s*edit\s*\]//;
         $n =~ s/\s+([.,])\s+/\1 /g;
@@ -1164,7 +1087,7 @@ sub scrape_bacon {
     $content =~ s/.*<div id="main">//sm;
     $content =~ s/<form.*//sm;
 
-    $content = cleanHTML($content);
+    $content = CJ::cleanHTML($content);
     $content =~ s/(was in\s+)(.*?)(\s+\(\d)/$1 _$2_ $3/g;
     $content =~ s/with\s+(.*?)\s+was in/with $1, who was in/g;
     $content =~ s/\s+/ /g;
@@ -1187,7 +1110,7 @@ $response{bacon} = {
         }
         my $term = $1;
         if ( lc($term) eq 'kevin bacon' ) {
-            dispatch( $event,
+            CJ::dispatch( $event,
                 'Are you congenitally insane or irretrievably stupid?' );
             return;
         }
@@ -1198,12 +1121,12 @@ $response{bacon} = {
 
         $term = escape($term);
         my $url = $bacon_url . "&b=$term";
-        add_throttled_HTTP(
+        CJ::add_throttled_HTTP(
             url      => $url,
             ui_name  => 'main',
             callback => sub {
                 my ($response) = @_;
-                dispatch( $event, scrape_bacon( $response->{_content} ) );
+                CJ::dispatch( $event, scrape_bacon( $response->{_content} ) );
             }
         );
         return;
@@ -1229,12 +1152,12 @@ $response{compute} = {
             . "&format=plaintext&input="
             . escape($1);
 
-        add_throttled_HTTP(
+        CJ::add_throttled_HTTP(
             url      => $url,
             ui_name  => 'main',
             callback => sub {
                 my ($response) = @_;
-                dispatch( $event, scrape_wolfram( $response->{_content} ) );
+                CJ::dispatch( $event, scrape_wolfram( $response->{_content} ) );
             }
         );
         return;
@@ -1312,12 +1235,12 @@ $response{horoscope} = {
 
         $term = lc $term;
         $url  = $url . $term;
-        add_throttled_HTTP(
+        CJ::add_throttled_HTTP(
             url      => $url,
             ui_name  => 'main',
             callback => sub {
                 my ($response) = @_;
-                dispatch( $event,
+                CJ::dispatch( $event,
                     scrape_horoscope( $term, $response->{_content}, $type ) );
             }
         );
@@ -1343,7 +1266,7 @@ $response{define} = {
         my $term = escape $1;
         my $url
             = "http://en.wiktionary.org/w/index.php?printable=yes&title=$term";
-        add_throttled_HTTP(
+        CJ::add_throttled_HTTP(
             url      => $url,
             ui_name  => 'main',
             callback => sub {
@@ -1352,12 +1275,12 @@ $response{define} = {
                 my $answer
                     = scrape_wiktionary( $term, $response->{_content} );
                 if ($answer) {
-                    dispatch( $event, $answer );
+                    CJ::dispatch( $event, $answer );
                 }
                 else {
                     my $url2
                         = "http://www.google.com/search?num=0&hl=en&lr=&as_qdr=all&q=$term&btnG=Search";
-                    add_throttled_HTTP(
+                    CJ::add_throttled_HTTP(
                         url      => $url2,
                         ui_name  => 'main',
                         callback => sub {
@@ -1365,12 +1288,12 @@ $response{define} = {
                             $answer = scrape_google_guess( $term,
                                 $response->{_content} );
                             if ($answer) {
-                                dispatch( $event,
+                                CJ::dispatch( $event,
                                     "No match for '$term', did you mean '$answer'?"
                                 );
                             }
                             else {
-                                dispatch( $event,
+                                CJ::dispatch( $event,
                                     "Sorry, '$term' not found" );
                             }
                         }
@@ -1396,7 +1319,7 @@ $response{spell} = {
         my $term = escape $1;
         my $url
             = "http://www.google.com/search?num=0&hl=en&lr=&as_qdr=all&q=$term&btnG=Search";
-        add_throttled_HTTP(
+        CJ::add_throttled_HTTP(
             url      => $url,
             ui_name  => 'main',
             callback => sub {
@@ -1404,11 +1327,11 @@ $response{spell} = {
                 my $answer
                     = scrape_google_guess( $term, $response->{_content} );
                 if ($answer) {
-                    dispatch( $event,
+                    CJ::dispatch( $event,
                         "No match for '$term', did you mean '$answer'?" );
                 }
                 else {
-                    dispatch( $event,
+                    CJ::dispatch( $event,
                         "Looks OK, but google could be wrong." );
                 }
             }
@@ -1428,22 +1351,22 @@ $response{foldoc} = {
         if ( !( $args =~ s/.*foldoc\s+(.*)/$1/i ) ) {
             return 'ERROR: Expected foldoc RE not matched!';
         }
-        add_throttled_HTTP(
+        CJ::add_throttled_HTTP(
             url      => "http://foldoc.org/index.cgi?query=$args",
             callback => sub {
                 my $content = shift()->{_content};
 
                 if ( $content =~ /No match for/ ) {
-                    dispatch( $event, 'No match, sorry.' );
+                    CJ::dispatch( $event, 'No match, sorry.' );
                     return;
                 }
 
                 $content =~ s/.*<h1>//ms;
                 $content =~ s/Try this search.*//ms;
 
-                $content = cleanHTML($content);
+                $content = CJ::cleanHTML($content);
 
-                dispatch( $event, 'According to FOLDOC: ' . $content );
+                CJ::dispatch( $event, 'According to FOLDOC: ' . $content );
             }
         );
         return;
@@ -1571,7 +1494,7 @@ END_HELP
 
 # This is pretty unweildly.
 #
-sub cleanHTML {
+sub CJ::cleanHTML {
 
     # join blank lines, remove excess whitespace and kill tags.
     $a = join( ' ', @_ );
@@ -1604,7 +1527,7 @@ sub cleanHTML {
     return $a;
 }
 
-sub dispatch {
+sub CJ::dispatch {
 
     my ( $event, $message ) = @_;
 
@@ -1751,7 +1674,7 @@ HANDLE_OUTER: foreach my $order (qw/-2 -1 0 1 2/) {
             }
         }
     }
-    dispatch( $event, $message );
+    CJ::dispatch( $event, $message );
 
     # Handle Discussion Annotations
 
