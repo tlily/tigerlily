@@ -388,7 +388,7 @@ have wanted it.
 # XXX - currently forcing them into %response - can skip this step and update
 # response-related code when all is external.
 
-my @external_commands = qw/ascii/;
+my @external_commands = qw/ascii rot13/;
 foreach my $command (@external_commands) {
     my $file = getcwd . "/extensions/cj/" . $command . ".pm";
     do $file or debug("loading external command: $file: $!/$@");
@@ -1455,24 +1455,6 @@ $response{foldoc} = {
     RE   => qr/foldoc/i,
 };
 
-$response{rot13} = {
-    CODE => sub {
-        my ($event) = @_;
-        my $args = $event->{VALUE};
-        if ( !( $args =~ s/.*rot13\s+(.*)/$1/i ) ) {
-            return 'ERROR: Expected rot13 RE not matched!';
-        }
-
-        $args =~ tr/[A-Za-z]/[N-ZA-Mn-za-m]/;
-
-        return $args;
-    },
-    HELP => 'Usage: rot13 <val>',
-    POS  => 0,
-    STOP => 1,
-    RE   => qr/\brot13\b/i,
-};
-
 $response{urldecode} = {
     CODE => sub {
         my ($event) = @_;
@@ -1888,7 +1870,7 @@ sub unload {
     TLily::Event->time_u($frequently);
 
     # clean up %INC (used for dispatch)
-    delete @INC{ grep m:/extensions/cj/[a-z]*\.pm$:, keys %INC };
+    delete @INC{ grep m:/extensions/cj/\w*\.pm$:, keys %INC };
 }
 
 1;
