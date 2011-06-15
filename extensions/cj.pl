@@ -686,54 +686,6 @@ sub scrape_horoscope {
 
 }
 
-sub scrape_wiktionary {
-    my ( $term, $content ) = @_;
-
-    if ( $content =~ m/Wiktionary does not have an entry for this exact word/
-        || $content =~ m/Sorry, there were no exact matches to your query/ )
-    {
-        return;
-    }
-
-    my ( $lookup, @retval );
-
-    $content =~ s/\n/ /g;
-
-    $content =~ s{.*<span class="mw-headline" id="English">English</span>}{};
-    $content =~ s/<div class="printfooter">.*//;
-
-    my $skip;
-    foreach my $chunk ( split /<span class="mw-headline">/sm, $content ) {
-        my ( $m, $n ) = split( /<\/span>/, $chunk, 2 );
-        $m = CJ::cleanHTML($m);
-        $m =~ s/^\s+//;
-        $m =~ s/\s*\[\s*edit\s*\]//;
-        next unless $m;
-        next if lc $m eq 'references';
-        next if lc $m eq 'derived terms';
-        next if lc $m eq 'english';
-        next if lc $m eq 'pronunciation';
-        next if lc $m eq 'translations';
-        next if lc $m eq 'translations to be checked';
-
-        my $definition_number = 1;
-        $n =~ s/<li>/$definition_number++ . ': '/ge;
-
-        $n = CJ::cleanHTML($n);
-        $n =~ s/^\s+//;
-        $n =~ s/\s*\[\s*edit\s*\]//;
-        $n =~ s/\s+([.,])\s+/\1 /g;
-        next unless $n;
-
-        $chunk = $m . ' :: ' . $n;
-        push @retval, $chunk;
-    }
-
-    unshift @retval, 'According to Wiktionary:';
-    return CJ::wrap(@retval);
-
-}
-
 sub scrape_google_guess {
     my $term    = shift;
     my $content = shift;
@@ -927,59 +879,6 @@ END_HELP
     POS  => -1,
     STOP => 1,
     RE   => $horoscopeRE,
-};
-
-$response{define} = {
-    CODE => sub {
-        my ($event) = @_;
-        my $args = $event->{VALUE};
-        if ( !( $args =~ m/define*\s*(.*)\s*$/i ) ) {
-            return 'ERROR: Expected define RE not matched!';
-        }
-        my $term = escape $1;
-        my $url
-            = "http://en.wiktionary.org/w/index.php?printable=yes&title=$term";
-        CJ::add_throttled_HTTP(
-            url      => $url,
-            ui_name  => 'main',
-            callback => sub {
-
-                my ($response) = shift;
-                my $answer
-                    = scrape_wiktionary( $term, $response->{_content} );
-                if ($answer) {
-                    CJ::dispatch( $event, $answer );
-                }
-                else {
-                    my $url2
-                        = "http://www.google.com/search?num=0&hl=en&lr=&as_qdr=all&q=$term&btnG=Search";
-                    CJ::add_throttled_HTTP(
-                        url      => $url2,
-                        ui_name  => 'main',
-                        callback => sub {
-                            my ($response2) = shift;
-                            $answer = scrape_google_guess( $term,
-                                $response->{_content} );
-                            if ($answer) {
-                                CJ::dispatch( $event,
-                                    "No match for '$term', did you mean '$answer'?"
-                                );
-                            }
-                            else {
-                                CJ::dispatch( $event,
-                                    "Sorry, '$term' not found" );
-                            }
-                        }
-                    );
-                }
-            }
-        );
-        return;
-    },
-    HELP => 'Look up a word on wiktionary.org/ (english only)',
-    POS  => -1,
-    STOP => 1,
-    RE   => qr/\bdefine\b/i
 };
 
 $response{spell} = {
