@@ -7,7 +7,6 @@ use CGI qw/escape unescape/;
 use Data::Dumper;
 
 use TLily::Server::HTTP;
-use JSON;
 use URI;
 use Config::IniFiles;
 
@@ -60,7 +59,8 @@ my %throttle;    #Container for all throttling information.
 
 my $throttle_interval = 1;    #seconds
 my $throttle_safety   = 5;    #seconds
-my $config;                   # Config::IniFiles object storing preferences.
+   $CJ::config;               # Config::Inifiles object.
+
 my $disc       = 'cj-admin';  #where we keep our memos.
 my $debug_disc = 'cj-admin';
 my %disc_annotations
@@ -88,8 +88,8 @@ my $name = TLily::Server->active()->user_name();
 # we'll use Eliza to handle any commands we don't understand, so set her up.
 my $eliza = new Chatbot::Eliza { name => $name, prompts_on => 0 };
 
-my $ua = LWP::UserAgent->new;
-$ua->agent("CJ-bot/1.0");
+$CJ::ua = LWP::UserAgent->new;
+$CJ::ua->agent("CJ-bot/1.0");
 
 =head1 Methods
 
@@ -280,7 +280,7 @@ sub shorten {
     my $original_host = new URI($short)->host();
 
     my $url = 'https://www.googleapis.com/urlshortener/v1/url?key='
-        . $config->val( 'googleapi', 'APIkey' );
+        . $CJ::config->val( 'googleapi', 'APIkey' );
 
     my $req = HTTP::Request->new( POST => $url );
     $req->content_type('application/json');
@@ -289,7 +289,7 @@ sub shorten {
 longUrl: "$short"
 }
 EJSON
-    my $res = $ua->request($req);
+    my $res = $CJ::ua->request($req);
 
     if ( $res->is_success ) {
         if ( $res->content =~ /"id": "(.*)",/ ) {
@@ -388,7 +388,7 @@ have wanted it.
 # XXX - currently forcing them into %response - can skip this step and update
 # response-related code when all is external.
 
-my @external_commands = qw/ascii bible rot13/;
+my @external_commands = qw/ascii bible rot13 translate/;
 foreach my $command (@external_commands) {
     my $file = getcwd . "/extensions/cj/" . $command . ".pm";
     do $file or CJ::debug("loading external command: $file: $!/$@");
@@ -489,132 +489,6 @@ $response{forecast} = {
     POS  => -1,
     STOP => 1,
     RE   => qr/\bforecast\b/i
-};
-
-my %languages = (
-    afrikaans        => 'af',
-    albanian         => 'sq',
-    basque           => 'hy',
-    belarusian       => 'be',
-    bulgarian        => 'bg',
-    catalan          => 'ca',
-    chinese          => 'zh',
-    croatian         => 'hr',
-    czech            => 'cs',
-    danish           => 'da',
-    estonian         => 'et',
-    dutch            => 'nl',
-    english          => 'en',
-    filipino         => 'tl',
-    finnish          => 'fi',
-    french           => 'fr',
-    galacian         => 'gl',
-    georgian         => 'ka',
-    german           => 'de',
-    greek            => 'el',
-    "haitian creole" => 'ht',
-    hindi            => 'hi',
-    italian          => 'it',
-    japanese         => 'ja',
-    portuguese       => 'pt',
-    russian          => 'ru',
-    spanish          => 'es',
-    yiddish          => 'yi',
-);
-
-sub get_lang {
-    my $guess = lc shift;
-
-    $guess =~ s/^\s+//;
-    $guess =~ s/\s+$//;
-
-    if ( exists $languages{$guess} ) {
-        return $languages{$guess};
-    }
-    if ( grep { $_ eq $guess } ( values %languages ) ) {
-        return $guess;
-    }
-    return;
-}
-
-my $default_language = 'English';
-my $translateRE      = qr/
-  (?:
-  \b translate \s+ (.*) \s+ from      \s+ (.*) \s+ (?:in)?to \s+ (.*) |
-  \b translate \s+ (.*) \s+ (?:in)?to \s+ (.*) \s+ from      \s+ (.*) |
-  \b translate \s+ (.*) \s+ from      \s+ (.*)                        |
-  \b translate \s+ (.*) \s+ (?:in)?to \s+ (.*)
-  )
-  \s* $
-/ix;
-
-$response{translate} = {
-    CODE => sub {
-        my ($event) = @_;
-        my $args = $event->{VALUE};
-        $args =~ $translateRE;
-
-        my ( $term, $guess_from, $guess_to );
-        if ($1) {
-            ( $term, $guess_from, $guess_to ) = ( $1, $2, $3 );
-        }
-        elsif ($4) {
-            ( $term, $guess_from, $guess_to ) = ( $4, $5, $6 );
-        }
-        elsif ($7) {
-            ( $term, $guess_from, $guess_to ) = ( $7, $8, $default_language );
-        }
-        elsif ($9) {
-            ( $term, $guess_from, $guess_to )
-                = ( $9, $default_language, $10 );
-        }
-        $term = escape $term;
-        my $from = get_lang($guess_from);
-        if ( !$from ) {
-            CJ::dispatch( $event, "I don't speak $guess_from" );
-            return;
-        }
-        my $to = get_lang($guess_to);
-        if ( !$to ) {
-            CJ::dispatch( $event, "I don't speak $guess_to" );
-            return;
-        }
-
-        my $url
-            = "https://www.googleapis.com/language/translate/v2?key="
-            . $config->val( 'googleapi', 'APIkey' ) . "&q="
-            . $term
-            . "&source="
-            . $from
-            . "&target="
-            . $to;
-
-        my $req = HTTP::Request->new( GET => $url );
-        my $res = $ua->request($req);
-
-        my $content = decode_json $res->content;
-        if ( $res->is_success ) {
-            CJ::dispatch(
-                $event,
-                unidecode(
-                    $content->{data}{translations}[0]{translatedText}
-                )
-            );
-            return;
-        }
-        CJ::dispatch( $event, "Apparently I can't do that:" . $res->status_line );
-        return;
-    },
-    HELP => sub {
-        return
-            "for example, 'translate some text from english to german' (valid languages: "
-            . join( ', ', keys %languages )
-            . ") (either the from or to is optional, and defaults to $default_language)";
-    },
-    TYPE => 'all',
-    POS  => -1,
-    STOP => 1,
-    RE   => $translateRE,
 };
 
 my $anagramRE = qr/
@@ -778,14 +652,14 @@ $response{'set'} = {
 
         if ( !@args ) {
             my @tmp;
-            foreach my $key ( $config->Parameters($section) ) {
-                my $val = $config->val( $section, $key );
+            foreach my $key ( $CJ::config->Parameters($section) ) {
+                my $val = $CJ::config->val( $section, $key );
                 push @tmp, $key . " = \'" . $val . "\'";
             }
             return join( ', ', @tmp );
         }
         elsif ( scalar @args == 1 ) {
-            my $val = $config->val( $section, $args[0] );
+            my $val = $CJ::config->val( $section, $args[0] );
             return ( defined($val) ? "\"$val\"" : 'undef' );
         }
         else {
@@ -794,7 +668,7 @@ $response{'set'} = {
             if ( $key =~ m:^\*: ) {
                 return 'You may not modify ' . $key . ' directly.';
             }
-            $config->setval( $section, $key, $val );
+            $CJ::config->setval( $section, $key, $val );
             return $key . " = \'" . $val . "\'";
         }
     },
@@ -1148,7 +1022,7 @@ $response{compute} = {
 
         my $url
             = "http://api.wolframalpha.com/v2/query?appid="
-            . $config->val( 'wolfram', 'appID' )
+            . $CJ::config->val( 'wolfram', 'appID' )
             . "&format=plaintext&input="
             . escape($1);
 
@@ -1714,25 +1588,25 @@ event_r( type => 'away', order => 'after', call => \&away_event );
 
 sub load {
     my $server = TLily::Server->active();
-    $config = new Config::IniFiles( -file => $config_file )
+    $CJ::config = new Config::IniFiles( -file => $config_file )
         or die @Config::IniFiles::errors;
 
-    foreach my $disc ( $config->GroupMembers('discussion') ) {
+    foreach my $disc ( $CJ::config->GroupMembers('discussion') ) {
         my $discname = $disc;
         $discname =~ s/^discussion //;
 
-        my @annotations = split /\n/, $config->val( $disc, 'annotations' );
+        my @annotations = split /\n/, $CJ::config->val( $disc, 'annotations' );
         foreach my $annotation (@annotations) {
             $disc_annotations{$discname}{$annotation} = 1;
         }
 
     }
-    foreach my $annotation ( $config->GroupMembers('annotation') ) {
+    foreach my $annotation ( $CJ::config->GroupMembers('annotation') ) {
         my $ann_name = $annotation;
         $ann_name =~ s/^annotation //;
-        $annotations{$ann_name}{RE} = $config->val( $annotation, 'regexp' );
+        $annotations{$ann_name}{RE} = $CJ::config->val( $annotation, 'regexp' );
         $annotations{$ann_name}{action}
-            = $config->val( $annotation, 'action' );
+            = $CJ::config->val( $annotation, 'action' );
     }
 
     $server->fetch(
@@ -1777,7 +1651,7 @@ writing to our local config file(s).
 =cut
 
 sub checkpoint {
-    $config->RewriteConfig();
+    $CJ::config->RewriteConfig();
 }
 
 =head2 unload ()
