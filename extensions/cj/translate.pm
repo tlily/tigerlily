@@ -67,6 +67,7 @@ sub _get_lang {
     }
     return;
 }
+
 sub response {
     my ($event) = @_;
 
@@ -115,7 +116,8 @@ sub response {
             unidecode( $content->{data}{translations}[0]{translatedText} ) );
         return;
     }
-    CJ::dispatch( $event, "Apparently I can't do that: " . $res->status_line );
+    CJ::dispatch( $event,
+        "Apparently I can't do that: " . $res->status_line );
     return;
 }
 

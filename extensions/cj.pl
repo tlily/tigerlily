@@ -59,7 +59,7 @@ my %throttle;    #Container for all throttling information.
 
 my $throttle_interval = 1;    #seconds
 my $throttle_safety   = 5;    #seconds
-   $CJ::config;               # Config::Inifiles object.
+$CJ::config;                  # Config::Inifiles object.
 
 my $disc       = 'cj-admin';  #where we keep our memos.
 my $debug_disc = 'cj-admin';
@@ -320,7 +320,8 @@ $annotation_code{shorten} = {
             $shorten,
             sub {
                 my ($short_url) = shift;
-                CJ::dispatch( $event, "$event->{SOURCE}'s url is $short_url" );
+                CJ::dispatch( $event,
+                    "$event->{SOURCE}'s url is $short_url" );
             }
         );
         }
@@ -433,7 +434,8 @@ $response{weather} = {
                         $term .= '...';
                     }
                     if ( $event->{type} eq 'private' ) {
-                        CJ::dispatch( $event, "Can't find weather for '$term'." );
+                        CJ::dispatch( $event,
+                            "Can't find weather for '$term'." );
                     }
                 }
             }
@@ -1031,7 +1033,8 @@ $response{compute} = {
             ui_name  => 'main',
             callback => sub {
                 my ($response) = @_;
-                CJ::dispatch( $event, scrape_wolfram( $response->{_content} ) );
+                CJ::dispatch( $event,
+                    scrape_wolfram( $response->{_content} ) );
             }
         );
         return;
@@ -1595,7 +1598,8 @@ sub load {
         my $discname = $disc;
         $discname =~ s/^discussion //;
 
-        my @annotations = split /\n/, $CJ::config->val( $disc, 'annotations' );
+        my @annotations = split /\n/,
+            $CJ::config->val( $disc, 'annotations' );
         foreach my $annotation (@annotations) {
             $disc_annotations{$discname}{$annotation} = 1;
         }
@@ -1604,7 +1608,8 @@ sub load {
     foreach my $annotation ( $CJ::config->GroupMembers('annotation') ) {
         my $ann_name = $annotation;
         $ann_name =~ s/^annotation //;
-        $annotations{$ann_name}{RE} = $CJ::config->val( $annotation, 'regexp' );
+        $annotations{$ann_name}{RE}
+            = $CJ::config->val( $annotation, 'regexp' );
         $annotations{$ann_name}{action}
             = $CJ::config->val( $annotation, 'action' );
     }
