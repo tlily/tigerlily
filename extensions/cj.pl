@@ -389,7 +389,7 @@ have wanted it.
 # XXX - currently forcing them into %response - can skip this step and update
 # response-related code when all is external.
 
-my @external_commands = qw/ascii bible rot13 translate weather/;
+my @external_commands = qw/ascii bible forecast rot13 translate weather/;
 foreach my $command (@external_commands) {
     my $file = getcwd . "/extensions/cj/" . $command . ".pm";
     do $file or CJ::debug("loading external command: $file: $!/$@");
@@ -405,50 +405,6 @@ foreach my $command (@external_commands) {
 }
 
 ### builtin commands
-$response{forecast} = {
-    CODE => sub {
-        my ($event) = @_;
-        my $args = $event->{VALUE};
-        if ( $args !~ m/forecast\s*(.*)\s*$/i ) {
-            return 'ERROR: Expected forecast RE not matched!';
-        }
-        my $term = $1;
-        $term =~ s/\?$//;    #XXX add this to RE above...
-        $term = escape $term;
-        my $url
-            = "http://mobile.wunderground.com/cgi-bin/findweather/getForecast?brand=mobile&query=$term";
-        CJ::add_throttled_HTTP(
-            url      => $url,
-            ui_name  => 'main',
-            callback => sub {
-                my ($response) = @_;
-                my $conditions
-                    = scrape_forecast( $term, $response->{_content} );
-                if ($conditions) {
-                    CJ::dispatch( $event, $conditions );
-                }
-                else {
-                    $term = unescape($term);
-                    if ( length($term) > 10 ) {
-                        $term = substr( $term, 0, 7 );
-                        $term .= '...';
-                    }
-                    if ( $event->{type} eq 'private' ) {
-                        CJ::dispatch( $event,
-                            "Can't find forecast for '$term'." );
-                    }
-                }
-            }
-        );
-        return;
-    },
-    HELP => 'Given a location, get the weather forecast.',
-    TYPE => 'all',
-    POS  => -1,
-    STOP => 1,
-    RE   => qr/\bforecast\b/i
-};
-
 my $anagramRE = qr/
   (?:
   \b anagram \s+ (.*) \s+ with    \s+ (.*) \s+ without \s+ (.*) |
@@ -784,17 +740,6 @@ END_HELP
     STOP => 1,
     RE   => qr/.*/,
 };
-
-sub scrape_forecast {
-    my ( $term, $content ) = @_;
-
-    $content =~ m/(Forecast as of .*)Units:/s;
-    my @results = map { CJ::cleanHTML($_), q{} } split( /<b>/, $1 );
-    pop @results;                # remove trailing empty line.
-    @results
-        = @results[ 0 .. 10 ];   # limit responses. 5 days, 1 header, 5 blanks
-    return CJ::wrap(@results);
-}
 
 sub scrape_horoscope {
     my ( $term, $content, $type ) = @_;
