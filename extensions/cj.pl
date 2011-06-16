@@ -665,27 +665,6 @@ END_HELP
     RE   => qr/.*/,
 };
 
-sub scrape_horoscope {
-    my ( $term, $content, $type ) = @_;
-
-    $content =~ m/<big class="yastshsign">([^<]*)<\/big>/i;
-    my $sign = $1;
-
-    if ( $type eq 'chinese' ) {
-        $content =~ m:<small>Year In General(.*)Previous Day</a>:s;
-        my $reading = $1;
-        return CJ::cleanHTML("$sign : $reading");
-    }
-    else {
-        $content =~ m/<span class="yastshdate">([^<]*)<\/span>/i;
-        my $dates = $1;
-        $content =~ m/<b class="yastshdotxt">Overview:<\/b><br>([^<]*)<\/td>/;
-        my $reading = $1;
-        return CJ::cleanHTML("$sign ($dates): $reading");
-    }
-
-}
-
 sub scrape_google_guess {
     my $term    = shift;
     my $content = shift;
@@ -816,70 +795,6 @@ sub scrape_wolfram {
     $results .= $footer;
     return CJ::wrap( split( /\n/, $results ) );
 }
-
-my $horoscopeRE = qr( \b
-    horoscope \s+ (?: for \s+)?
-    (?:
-    (
-      aries | leo | sagittarius | taurus | virgo | capricorn | gemini |
-      libra | aquarius | cancer | scorpio | pisces | ophiuchus
-    )  |
-    (
-      rat | ox | goat | dragon | rabbit | monkey | dog | pig | snake |
-      tiger | rooster | horse
-    )
-    )
-\b )xi;
-
-$response{horoscope} = {
-    CODE => sub {
-        my ($event) = @_;
-        my $args = $event->{VALUE};
-        my ( $term, $url, $type );
-
-       #XXX this should be done in the handler caller, not the handler itself.
-        $args =~ $horoscopeRE;
-
-        if ($1) {
-            $term = $1;
-            if ( lc($term) eq 'ophiuchus' ) {
-
-                # support those unlucky enough to be in this sign.
-                $term = 'sagittarius';
-            }
-            $url
-                = 'http://astrology.shine.yahoo.com/astrology/general/dailyoverview/';
-            $type = 'western';
-        }
-        else {
-            $term = $2;
-            $url
-                = 'http://astrology.shine.yahoo.com/chinese/general/dailyoverview/';
-            $type = 'chinese';
-        }
-
-        $term = lc $term;
-        $url  = $url . $term;
-        CJ::add_throttled_HTTP(
-            url      => $url,
-            ui_name  => 'main',
-            callback => sub {
-                my ($response) = @_;
-                CJ::dispatch( $event,
-                    scrape_horoscope( $term, $response->{_content}, $type ) );
-            }
-        );
-        return;
-    },
-    HELP => <<'END_HELP',
-Ask me about your sign to get a daily horoscope. We speak chinese.
-(Usage: horoscope [for] sign)
-END_HELP
-    TYPE => 'all',
-    POS  => -1,
-    STOP => 1,
-    RE   => $horoscopeRE,
-};
 
 $response{spell} = {
     CODE => sub {
