@@ -3,7 +3,7 @@ use strict;
 
 use Chatbot::Eliza;
 
-our $TYPE     = "all";
+our $TYPE     = "private";
 our $POSITION = 2;
 our $LAST     = 1;
 our $RE       = qr/.*/;
