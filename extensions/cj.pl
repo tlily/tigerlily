@@ -3,7 +3,7 @@ use strict;
 use Cwd;
 use Symbol 'qualify_to_ref';
 
-use CGI qw/escape unescape/;
+use CGI qw/escape/;
 use Data::Dumper;
 
 use TLily::Server::HTTP;
@@ -297,7 +297,7 @@ have wanted it.
 # response-related code when all is external.
 
 my @external_commands
-    = qw/anagram ascii bacon bible eliza forecast help rot13 stock translate weather/;
+    = qw/anagram ascii bacon bible eliza forecast help rot13 stock translate urldecode weather/;
 foreach my $command (@external_commands) {
     my $file = getcwd . "/extensions/cj/" . $command . ".pm";
     do $file or CJ::debug("loading external command: $file: $!/$@");
@@ -605,22 +605,6 @@ $CJ::response{spell} = {
     POS  => -1,
     STOP => 1,
     RE   => qr/\bspell\b/i
-};
-
-$CJ::response{urldecode} = {
-    CODE => sub {
-        my ($event) = @_;
-        my $args = $event->{VALUE};
-        if ( !( $args =~ s/.*urldecode\s+(.*)/$1/i ) ) {
-            return 'ERROR: Expected urldecode RE not matched!';
-        }
-
-        return unescape $args;
-    },
-    HELP => 'Usage: urldecode <val>',
-    POS  => 0,
-    STOP => 1,
-    RE   => qr/\burldecode\b/i,
 };
 
 $CJ::response{urlencode} = {
