@@ -54,7 +54,7 @@ the version implementation of tlily, and is now running on git-latest.
 
 #########################################################################
 %CJ::response;    #Container for all response handlers.
-my %throttle;    #Container for all throttling information.
+my %throttle;     #Container for all throttling information.
 
 my $throttle_interval = 1;    #seconds
 my $throttle_safety   = 5;    #seconds
@@ -297,7 +297,7 @@ have wanted it.
 # response-related code when all is external.
 
 my @external_commands
-    = qw/anagram ascii bacon bible eliza forecast rot13 stock translate weather/;
+    = qw/anagram ascii bacon bible eliza forecast help rot13 stock translate weather/;
 foreach my $command (@external_commands) {
     my $file = getcwd . "/extensions/cj/" . $command . ".pm";
     do $file or CJ::debug("loading external command: $file: $!/$@");
@@ -330,39 +330,6 @@ END_HELP
     POS  => 1,
     STOP => 1,
     RE   => qr/\bshorten\b/i
-};
-
-$CJ::response{help} = {
-    CODE => sub {
-        my ($event) = @_;
-        my $args = $event->{VALUE};
-        if ( !( $args =~ s/help\b(.*)$/$1/i ) ) {
-            return 'ERROR: Expected help RE not matched!';
-        }
-        $args =~ s/^\s+//;
-        $args =~ s/\s+$//;
-        if ( $args eq q{} ) {
-
-            # XXX respect PRIVILEGE
-            my @cmds = grep { $_ ne 'help' } keys %CJ::response;
-            return
-                "Hello. I'm a bot. Try 'help' followed by one of the following for more information: "
-                . join( ', ', sort @cmds )
-                . '. In general, commands can appear anywhere in private sends, but must begin public sends.';
-        }
-        if ( exists ${CJ::response}{$args} ) {
-            my $helper = $CJ::response{$args}{HELP};
-            my $type
-                = ' [' . join( ',', get_types( $CJ::response{$args} ) ) . ']';
-            my $help = ( ref $helper eq 'CODE' ) ? &$helper() : $helper;
-            return join( ' ', ( split /\n/, $help . $type ) );
-        }
-        return "ERROR: '$args' , unknown help topic.";
-    },
-    HELP => "You're kidding, right?",
-    POS  => -2,
-    STOP => 1,
-    RE   => qr/\bhelp\b/i,
 };
 
 my $year  = qr/\d{4}/;
@@ -821,7 +788,7 @@ Given an event handler, return all the types that handler is valid for.
 
 =cut
 
-sub get_types {
+sub CJ::get_types {
     my $handler   = shift;
     my $type_spec = $handler->{TYPE};
 
@@ -910,7 +877,7 @@ HANDLE_OUTER: foreach my $order (qw/-2 -1 0 1 2/) {
     HANDLE_INNER: foreach my $handler ( keys %CJ::response ) {
 
             # XXX respect PRIVILEGE
-            my @types = get_types( $CJ::response{$handler} );
+            my @types = CJ::get_types( $CJ::response{$handler} );
             if ( $CJ::response{$handler}->{POS} eq $order ) {
                 next
                     if !grep {/$event->{type}/} @types;
