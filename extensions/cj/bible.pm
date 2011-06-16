@@ -10,26 +10,24 @@ our $LAST     = 1;
 our $RE = qr/\b(?:bible|passage)\s*(kjv|asv|vulg)?\s+(.*\d+:\d+)/;
 
 our $bibles = {
-    'kjv'  => { id => 'KJV', name => 'King James Version' },
-    'asv'  => { id => 'ASV', name => 'American Standard Version' },
-    'vulg' => {
-        id => 'VULGATE', name => "Biblia Sacra Vulgata" },
+    'kjv'  => { id => 'KJV',     name => 'King James Version' },
+    'asv'  => { id => 'ASV',     name => 'American Standard Version' },
+    'vulg' => { id => 'VULGATE', name => "Biblia Sacra Vulgata" },
 };
 
 sub response {
     my ($event) = @_;
-    my $args    = $event->{VALUE};
+    my $args = $event->{VALUE};
 
     $event->{VALUE} =~ $RE;
 
-    my $bible   = lc $1;
-    my $term    = escape $2;
+    my $bible = lc $1;
+    my $term  = escape $2;
 
     $bible = 'kjv' unless $bible;
     my $id = $bibles->{$bible}->{id};
 
-    my $url
-        = "http://www.biblegateway.com/passage/?search=$term&version=$id";
+    my $url = "http://www.biblegateway.com/passage/?search=$term&version=$id";
 
     CJ::add_throttled_HTTP(
         url      => $url,
@@ -40,7 +38,7 @@ sub response {
             if ($passage) {
                 CJ::dispatch( $event, $passage );
             }
-        return;
+            return;
         }
     );
     return;
@@ -59,7 +57,7 @@ END_HELP
 }
 
 sub _scrape_bible {
-    my ( $content ) = @_;
+    my ($content) = @_;
 
     $content =~ m{<sup class="versenum".*?>(.*?)</p}sm;
     return CJ::cleanHTML($1);

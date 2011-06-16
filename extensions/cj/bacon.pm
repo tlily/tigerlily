@@ -34,36 +34,35 @@ sub _scrape_bacon {
 }
 
 sub response {
-        my ($event) = @_;
-        $event->{VALUE} =~ $RE;
-        my $term = $1;
+    my ($event) = @_;
+    $event->{VALUE} =~ $RE;
+    my $term = $1;
 
-        if ( lc($term) eq 'kevin bacon' ) {
-            CJ::dispatch( $event,
-                'Are you congenitally insane or irretrievably stupid?' );
-            return;
-        }
-        if ( $term =~ m/ \s* (\w+) \s* , \s* (\w+) \s+ \(([ivxlcm]*)\) /smix )
-        {
-            $term = "$2 $1 ($3)";
-        }
-
-        $term = escape($term);
-        my $url = $bacon_url . "&b=$term";
-        CJ::add_throttled_HTTP(
-            url      => $url,
-            ui_name  => 'main',
-            callback => sub {
-                my ($response) = @_;
-                CJ::dispatch( $event, _scrape_bacon( $response->{_content} ) );
-            }
-        );
+    if ( lc($term) eq 'kevin bacon' ) {
+        CJ::dispatch( $event,
+            'Are you congenitally insane or irretrievably stupid?' );
         return;
     }
+    if ( $term =~ m/ \s* (\w+) \s* , \s* (\w+) \s+ \(([ivxlcm]*)\) /smix ) {
+        $term = "$2 $1 ($3)";
+    }
+
+    $term = escape($term);
+    my $url = $bacon_url . "&b=$term";
+    CJ::add_throttled_HTTP(
+        url      => $url,
+        ui_name  => 'main',
+        callback => sub {
+            my ($response) = @_;
+            CJ::dispatch( $event, _scrape_bacon( $response->{_content} ) );
+        }
+    );
+    return;
+}
 
 sub help {
-    return "Find someone's bacon number using http://oracleofbacon.org/." .
-	"Usage: bacon <actor>";
+    return "Find someone's bacon number using http://oracleofbacon.org/."
+        . "Usage: bacon <actor>";
 }
 
 1;
