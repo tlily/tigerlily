@@ -24,12 +24,11 @@ sub _scrape_bacon {
     }
 
     $content =~ s/.*<div id="main">//sm;
-    $content =~ s/<form.*//sm;
-
     $content = CJ::cleanHTML($content);
-    $content =~ s/(was in\s+)(.*?)(\s+\(\d)/$1 _$2_ $3/g;
-    $content =~ s/with\s+(.*?)\s+was in/with $1, who was in/g;
-    $content =~ s/\s+/ /g;
+    $content =~ s/(Kevin Bacon).*$/$1/sm;
+
+    $content =~ s/\bwas in\b/who was in/g;
+    $content =~ s/who was in/was in/;
 
     return $content;
 }
