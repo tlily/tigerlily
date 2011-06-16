@@ -296,8 +296,10 @@ have wanted it.
 # XXX - currently forcing them into %response - can skip this step and update
 # response-related code when all is external.
 
-my @external_commands
-    = qw/anagram ascii bacon bible eliza forecast help rot13 stock translate urldecode weather/;
+my @external_commands = qw/
+    anagram ascii bacon bible eliza forecast help rot13 stock translate
+    urldecode urlencode weather
+    /;
 foreach my $command (@external_commands) {
     my $file = getcwd . "/extensions/cj/" . $command . ".pm";
     do $file or CJ::debug("loading external command: $file: $!/$@");
@@ -605,22 +607,6 @@ $CJ::response{spell} = {
     POS  => -1,
     STOP => 1,
     RE   => qr/\bspell\b/i
-};
-
-$CJ::response{urlencode} = {
-    CODE => sub {
-        my ($event) = @_;
-        my $args = $event->{VALUE};
-        if ( !( $args =~ s/.*urlencode\s+(.*)/$1/i ) ) {
-            return 'ERROR: Expected urlencode RE not matched!';
-        }
-
-        return escape $args;
-    },
-    HELP => 'Usage: urlencode <val>',
-    POS  => 0,
-    STOP => 1,
-    RE   => qr/\burlencode\b/i,
 };
 
 $CJ::response{country} = {
