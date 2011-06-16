@@ -53,7 +53,7 @@ the version implementation of tlily, and is now running on git-latest.
 =cut
 
 #########################################################################
-my %response;    #Container for all response handlers.
+%CJ::response;    #Container for all response handlers.
 my %throttle;    #Container for all throttling information.
 
 my $throttle_interval = 1;    #seconds
@@ -302,7 +302,7 @@ foreach my $command (@external_commands) {
     my $file = getcwd . "/extensions/cj/" . $command . ".pm";
     do $file or CJ::debug("loading external command: $file: $!/$@");
     my $glob = qualify_to_ref( "::CJ::command::" . $command . "::" );
-    $response{$command} = {
+    $CJ::response{$command} = {
         CODE => sub { &{ *$glob{HASH}{response} }(@_) },
         HELP => sub { &{ *$glob{HASH}{help} }(@_) },
         TYPE => ${ *$glob{HASH}{TYPE} },
@@ -313,7 +313,7 @@ foreach my $command (@external_commands) {
 }
 
 ### builtin commands
-$response{shorten} = {
+$CJ::response{shorten} = {
     CODE => sub {
         my ($event) = @_;
         my $args = $event->{VALUE};
@@ -332,7 +332,7 @@ END_HELP
     RE   => qr/\bshorten\b/i
 };
 
-$response{help} = {
+$CJ::response{help} = {
     CODE => sub {
         my ($event) = @_;
         my $args = $event->{VALUE};
@@ -344,16 +344,16 @@ $response{help} = {
         if ( $args eq q{} ) {
 
             # XXX respect PRIVILEGE
-            my @cmds = grep { $_ ne 'help' } keys %response;
+            my @cmds = grep { $_ ne 'help' } keys %CJ::response;
             return
                 "Hello. I'm a bot. Try 'help' followed by one of the following for more information: "
                 . join( ', ', sort @cmds )
                 . '. In general, commands can appear anywhere in private sends, but must begin public sends.';
         }
-        if ( exists ${response}{$args} ) {
-            my $helper = $response{$args}{HELP};
+        if ( exists ${CJ::response}{$args} ) {
+            my $helper = $CJ::response{$args}{HELP};
             my $type
-                = ' [' . join( ',', get_types( $response{$args} ) ) . ']';
+                = ' [' . join( ',', get_types( $CJ::response{$args} ) ) . ']';
             my $help = ( ref $helper eq 'CODE' ) ? &$helper() : $helper;
             return join( ' ', ( split /\n/, $help . $type ) );
         }
@@ -368,7 +368,7 @@ $response{help} = {
 my $year  = qr/\d{4}/;
 my $month = qr/(?:[1-9]|10|11|12)/;
 
-$response{cal} = {
+$CJ::response{cal} = {
     CODE => sub {
         my ($event) = @_;
         my ($args)  = $event->{VALUE};
@@ -395,7 +395,7 @@ $response{cal} = {
     RE   => qr(\bcal\b)i,
 };
 
-$response{'set'} = {
+$CJ::response{'set'} = {
     CODE => sub {
         my ($event) = @_;
         my $args = $event->{VALUE};
@@ -469,7 +469,7 @@ sub humanTime {
     return ( join( ', ', @result ) );
 }
 
-$response{'ping'} = {
+$CJ::response{'ping'} = {
     CODE => sub {
         my $a = CJ::cleanHTML( Dumper( \%served ) );
         $a =~ s/\$VAR1 =/ number of commands and messages processed: /;
@@ -481,7 +481,7 @@ $response{'ping'} = {
     RE   => qr/ping/i,
 };
 
-$response{cmd} = {
+$CJ::response{cmd} = {
     PRIVILEGE => 'admin',
     CODE      => sub {
         my ($event) = @_;
@@ -516,7 +516,7 @@ END_HELP
     RE   => qr/\bcmd\b/i,
 };
 
-$response{kibo} = {
+$CJ::response{kibo} = {
     CODE => sub {
         my ($event) = @_;
         my $list = $sayings;
@@ -549,7 +549,7 @@ sub scrape_google_guess {
     return;
 }
 
-$response{compute} = {
+$CJ::response{compute} = {
     TYPE => "all",
     CODE => sub {
         my ($event) = @_;
@@ -605,7 +605,7 @@ sub scrape_wolfram {
     return CJ::wrap( split( /\n/, $results ) );
 }
 
-$response{spell} = {
+$CJ::response{spell} = {
     CODE => sub {
         my ($event) = @_;
         my $args = $event->{VALUE};
@@ -640,7 +640,7 @@ $response{spell} = {
     RE   => qr/\bspell\b/i
 };
 
-$response{urldecode} = {
+$CJ::response{urldecode} = {
     CODE => sub {
         my ($event) = @_;
         my $args = $event->{VALUE};
@@ -656,7 +656,7 @@ $response{urldecode} = {
     RE   => qr/\burldecode\b/i,
 };
 
-$response{urlencode} = {
+$CJ::response{urlencode} = {
     CODE => sub {
         my ($event) = @_;
         my $args = $event->{VALUE};
@@ -672,7 +672,7 @@ $response{urlencode} = {
     RE   => qr/\burlencode\b/i,
 };
 
-$response{country} = {
+$CJ::response{country} = {
     CODE => sub {
         my ($event) = @_;
         my $args = $event->{VALUE};
@@ -714,7 +714,7 @@ END_HELP
     RE   => qr/\bcountry\b/i,
 };
 
-$response{utf8} = {
+$CJ::response{utf8} = {
     CODE => sub {
         my ($event) = @_;
         my $args = $event->{VALUE};
@@ -907,14 +907,14 @@ sub cj_event {
     # Workhorse for responses:
     my $message;
 HANDLE_OUTER: foreach my $order (qw/-2 -1 0 1 2/) {
-    HANDLE_INNER: foreach my $handler ( keys %response ) {
+    HANDLE_INNER: foreach my $handler ( keys %CJ::response ) {
 
             # XXX respect PRIVILEGE
-            my @types = get_types( $response{$handler} );
-            if ( $response{$handler}->{POS} eq $order ) {
+            my @types = get_types( $CJ::response{$handler} );
+            if ( $CJ::response{$handler}->{POS} eq $order ) {
                 next
                     if !grep {/$event->{type}/} @types;
-                my $re = $response{$handler}->{RE};
+                my $re = $CJ::response{$handler}->{RE};
                 if ( $event->{type} eq 'public' ) {
                     $re = qr/(?i:$CJ::name\s*,?\s*)?$re/;
                 }
@@ -928,8 +928,8 @@ HANDLE_OUTER: foreach my $order (qw/-2 -1 0 1 2/) {
                 if ( $event->{VALUE} =~ m/$re/ ) {
                     $served{ $event->{type} . ' messages' }++;
                     $served{$handler}++;
-                    $message .= &{ $response{$handler}{CODE} }($event);
-                    if ( $response{$handler}->{STOP} ) {
+                    $message .= &{ $CJ::response{$handler}{CODE} }($event);
+                    if ( $CJ::response{$handler}->{STOP} ) {
                         last HANDLE_OUTER;
                     }
                 }
