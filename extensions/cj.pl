@@ -10,7 +10,6 @@ use TLily::Server::HTTP;
 use URI;
 use Config::IniFiles;
 
-use Chatbot::Eliza;
 use Text::Unidecode;
 
 use LWP::UserAgent;
@@ -83,10 +82,7 @@ my %served;             #stats.
 my $wrapline = 76;      # This is where we wrap lines...
 
 # we don't expect to be changing our name frequently, cache it.
-my $name = TLily::Server->active()->user_name();
-
-# we'll use Eliza to handle any commands we don't understand, so set her up.
-my $eliza = new Chatbot::Eliza { name => $name, prompts_on => 0 };
+$CJ::name = TLily::Server->active()->user_name();
 
 $CJ::ua = LWP::UserAgent->new;
 $CJ::ua->agent("CJ-bot/1.0");
@@ -390,7 +386,7 @@ have wanted it.
 # response-related code when all is external.
 
 my @external_commands
-    = qw/anagram ascii bacon bible forecast rot13 translate weather/;
+    = qw/anagram ascii bacon bible eliza forecast rot13 translate weather/;
 foreach my $command (@external_commands) {
     my $file = getcwd . "/extensions/cj/" . $command . ".pm";
     do $file or CJ::debug("loading external command: $file: $!/$@");
@@ -648,21 +644,7 @@ $response{kibo} = {
     TYPE => qw/public emote/,
     POS  => 1,
     STOP => 1,
-    RE   => qr/\b$name\b.*\?/i,
-};
-
-$response{eliza} = {
-    CODE => sub {
-        my ($event) = @_;
-        return $eliza->transform( $event->{VALUE} );
-    },
-    HELP => <<'END_HELP',
-I've been doing some research into psychotherapy,
-I'd be glad to help you work through your agression.
-END_HELP
-    POS  => 2,
-    STOP => 1,
-    RE   => qr/.*/,
+    RE   => qr/\b$CJ::name\b.*\?/i,
 };
 
 sub scrape_google_guess {
@@ -936,7 +918,7 @@ sub CJ::dispatch {
 sub away_event {
     my ( $event, $handler ) = @_;
 
-    if ( $event->{SOURCE} eq $name ) {
+    if ( $event->{SOURCE} eq $CJ::name ) {
         my $line = '/here';
         TLily::Server->active()
             ->cmd_process( $line, sub { $_[0]->{NOTIFY} = 0; } );
@@ -972,7 +954,7 @@ sub cj_event {
     # I should never respond to myself. There be dragons!
     #  this is actually an issue with emotes, which automatically
     #  send the message back to the user.
-    if ( $event->{SOURCE} eq $name ) {
+    if ( $event->{SOURCE} eq $CJ::name ) {
         return;
     }
 
@@ -1028,7 +1010,7 @@ sub cj_event {
         }
     }
 
-    @recips = grep { !/^$name$/ } @recips;
+    @recips = grep { !/^$CJ::name$/ } @recips;
     my $recips = join( ',', @recips );
     $recips =~ s/ /_/g;
     $event->{_recips} = $recips;
@@ -1045,13 +1027,13 @@ HANDLE_OUTER: foreach my $order (qw/-2 -1 0 1 2/) {
                     if !grep {/$event->{type}/} @types;
                 my $re = $response{$handler}->{RE};
                 if ( $event->{type} eq 'public' ) {
-                    $re = qr/(?i:$name\s*,?\s*)?$re/;
+                    $re = qr/(?i:$CJ::name\s*,?\s*)?$re/;
                 }
                 elsif ( $event->{type} eq 'emote' ) {
 
                     # XXX must anchor emotes by default.
                     # fixup so things like "drink" work, though.
-                    $re = qr/(?i:$name\s*,?\s*)?$re/;
+                    $re = qr/(?i:$CJ::name\s*,?\s*)?$re/;
                 }
                 $re = qr/^\s*$re/;    # anchor to the beginning of a send
                 if ( $event->{VALUE} =~ m/$re/ ) {
