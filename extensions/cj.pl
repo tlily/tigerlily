@@ -390,7 +390,7 @@ have wanted it.
 # response-related code when all is external.
 
 my @external_commands
-    = qw/anagram ascii bible forecast rot13 translate weather/;
+    = qw/anagram ascii bacon bible forecast rot13 translate weather/;
 foreach my $command (@external_commands) {
     my $file = getcwd . "/extensions/cj/" . $command . ".pm";
     do $file or CJ::debug("loading external command: $file: $!/$@");
@@ -677,68 +677,6 @@ sub scrape_google_guess {
     }
     return;
 }
-
-sub scrape_bacon {
-    my ($content) = shift;
-
-    if ( $content =~ /The Oracle cannot find/ ) {
-        $content =~ s/.*?(The Oracle cannot find)/\1/sm;
-        $content =~ s/Arnie.*//sm;
-        return "No match.";
-    }
-
-    $content =~ s/.*<div id="main">//sm;
-    $content =~ s/<form.*//sm;
-
-    $content = CJ::cleanHTML($content);
-    $content =~ s/(was in\s+)(.*?)(\s+\(\d)/$1 _$2_ $3/g;
-    $content =~ s/with\s+(.*?)\s+was in/with $1, who was in/g;
-    $content =~ s/\s+/ /g;
-
-    return $content;
-}
-
-my $bacon_url = 'http://oracleofbacon.org/cgi-bin/movielinks?a=Kevin+Bacon'
-    . '&end_year=2050&start_year=1850&game=0&u0=on';
-foreach my $g ( 0 .. 27 ) {
-    $bacon_url .= "&g$g=on";
-}
-
-$response{bacon} = {
-    CODE => sub {
-        my ($event) = @_;
-        my $args = $event->{VALUE};
-        if ( !( $args =~ m/\bbacon*\s*(.*)\s*$/i ) ) {
-            return 'ERROR: Expected bacon RE not matched!';
-        }
-        my $term = $1;
-        if ( lc($term) eq 'kevin bacon' ) {
-            CJ::dispatch( $event,
-                'Are you congenitally insane or irretrievably stupid?' );
-            return;
-        }
-        if ( $term =~ m/ \s* (\w+) \s* , \s* (\w+) \s+ \(([ivxlcm]*)\) /smix )
-        {
-            $term = "$2 $1 ($3)";
-        }
-
-        $term = escape($term);
-        my $url = $bacon_url . "&b=$term";
-        CJ::add_throttled_HTTP(
-            url      => $url,
-            ui_name  => 'main',
-            callback => sub {
-                my ($response) = @_;
-                CJ::dispatch( $event, scrape_bacon( $response->{_content} ) );
-            }
-        );
-        return;
-    },
-    HELP => "Find someone's bacon number using http://oracleofbacon.org/",
-    POS  => -1,
-    STOP => 1,
-    RE   => qr/bacon/i,
-};
 
 $response{compute} = {
     TYPE => "all",
