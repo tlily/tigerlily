@@ -898,6 +898,8 @@ HANDLE_OUTER: foreach my $order (qw/-2 -1 0 1 2/) {
         $local_event->{_recips} = join( ',', @{ $ds->{TARGETS} } );
         foreach my $value ( @{ $ds->{VALUES} } ) {
             &{ $annotation_code{$annotation}{CODE} }( $local_event, $value );
+            $served{$annotation}++;
+            $served{"public messages"}++;
         }
     }
 
