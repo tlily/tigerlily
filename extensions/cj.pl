@@ -4,7 +4,6 @@ use Cwd;
 use Symbol 'qualify_to_ref';
 
 use CGI qw/escape/;
-use Data::Dumper;
 
 use TLily::Server::HTTP;
 use URI;
@@ -76,8 +75,8 @@ my $overhear;           # listen for my name occasionally;
 my $unified;            # special handling for the unified discussion.
 my $beener;             # special handling for the beener discussion.
 
-my $uptime = time();    #uptime indicator.
-my %served;             #stats.
+$CJ::uptime = time();   #uptime indicator.
+%CJ::served;            #stats.
 
 my $wrapline = 76;      # This is where we wrap lines...
 
@@ -297,7 +296,7 @@ have wanted it.
 # response-related code when all is external.
 
 my @external_commands = qw/
-    anagram ascii bacon bible eliza forecast help rot13 stock translate
+    anagram ascii bacon bible eliza forecast help ping rot13 stock translate
     urldecode urlencode weather
     /;
 foreach my $command (@external_commands) {
@@ -412,7 +411,7 @@ my $min  = 60;
 my $hour = $min * 60;
 my $day  = $hour * 24;
 
-sub humanTime {
+sub CJ::humanTime {
     my $seconds = shift;
 
     my ( @result, $chunk );
@@ -437,18 +436,6 @@ sub humanTime {
 
     return ( join( ', ', @result ) );
 }
-
-$CJ::response{'ping'} = {
-    CODE => sub {
-        my $a = CJ::cleanHTML( Dumper( \%served ) );
-        $a =~ s/\$VAR1 =/ number of commands and messages processed: /;
-        return 'pong. uptime: ' . humanTime( time() - $uptime ) . "; $a";
-    },
-    HELP => "Yes, I'm alive. And have some stats while you're at it.",
-    POS  => 0,
-    STOP => 1,
-    RE   => qr/ping/i,
-};
 
 $CJ::response{cmd} = {
     PRIVILEGE => 'admin',
@@ -863,8 +850,8 @@ HANDLE_OUTER: foreach my $order (qw/-2 -1 0 1 2/) {
                 }
                 $re = qr/^\s*$re/;    # anchor to the beginning of a send
                 if ( $event->{VALUE} =~ m/$re/ ) {
-                    $served{ $event->{type} . ' messages' }++;
-                    $served{$handler}++;
+                    $CJ::served{ $event->{type} . ' messages' }++;
+                    $CJ::served{$handler}++;
                     $message .= &{ $CJ::response{$handler}{CODE} }($event);
                     if ( $CJ::response{$handler}->{STOP} ) {
                         last HANDLE_OUTER;
@@ -898,8 +885,8 @@ HANDLE_OUTER: foreach my $order (qw/-2 -1 0 1 2/) {
         $local_event->{_recips} = join( ',', @{ $ds->{TARGETS} } );
         foreach my $value ( @{ $ds->{VALUES} } ) {
             &{ $annotation_code{$annotation}{CODE} }( $local_event, $value );
-            $served{$annotation}++;
-            $served{"public messages"}++;
+            $CJ::served{$annotation}++;
+            $CJ::served{"public messages"}++;
         }
     }
 
