@@ -274,8 +274,8 @@ have wanted it.
 # response-related code when all is external.
 
 my @external_commands = qw/
-    anagram ascii bacon bible cmd eliza forecast help ping rot13 shorten stock
-    translate urldecode urlencode weather
+    anagram ascii bacon bible cmd eliza forecast help ping rot13 shorten spell
+    stock translate urldecode urlencode weather
     /;
 foreach my $command (@external_commands) {
     my $file = getcwd . "/extensions/cj/" . $command . ".pm";
@@ -416,19 +416,6 @@ $CJ::response{kibo} = {
     RE   => qr/\b$CJ::name\b.*\?/i,
 };
 
-sub scrape_google_guess {
-    my $term    = shift;
-    my $content = shift;
-
-    my ( $lookup, @retval );
-
-    $content =~ s/\n/ /g;
-    if ( $content =~ m{Did you mean.*<i>([^>]+)</i>} ) {
-        return $1;
-    }
-    return;
-}
-
 $CJ::response{compute} = {
     TYPE => "all",
     CODE => sub {
@@ -484,41 +471,6 @@ sub scrape_wolfram {
     $results .= $footer;
     return CJ::wrap( split( /\n/, $results ) );
 }
-
-$CJ::response{spell} = {
-    CODE => sub {
-        my ($event) = @_;
-        my $args = $event->{VALUE};
-        if ( !( $args =~ m/spell\s+(.*)\s*$/i ) ) {
-            return 'ERROR: Expected spell RE not matched!';
-        }
-        my $term = escape $1;
-        my $url
-            = "http://www.google.com/search?num=0&hl=en&lr=&as_qdr=all&q=$term&btnG=Search";
-        CJ::add_throttled_HTTP(
-            url      => $url,
-            ui_name  => 'main',
-            callback => sub {
-                my ($response) = shift;
-                my $answer
-                    = scrape_google_guess( $term, $response->{_content} );
-                if ($answer) {
-                    CJ::dispatch( $event,
-                        "No match for '$term', did you mean '$answer'?" );
-                }
-                else {
-                    CJ::dispatch( $event,
-                        "Looks OK, but google could be wrong." );
-                }
-            }
-        );
-        return;
-    },
-    HELP => 'have google check your spelling...',
-    POS  => -1,
-    STOP => 1,
-    RE   => qr/\bspell\b/i
-};
 
 $CJ::response{country} = {
     CODE => sub {
