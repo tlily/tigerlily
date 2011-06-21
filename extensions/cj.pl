@@ -3,8 +3,6 @@ use strict;
 use Cwd;
 use Symbol 'qualify_to_ref';
 
-use CGI qw/escape/;
-
 use TLily::Server::HTTP;
 use URI;
 use Config::IniFiles;
@@ -274,8 +272,8 @@ have wanted it.
 # response-related code when all is external.
 
 my @external_commands = qw/
-    anagram ascii bacon bible cmd eliza forecast help ping rot13 shorten spell
-    stock translate urldecode urlencode weather
+    anagram ascii bacon bible cmd compute eliza forecast help ping rot13
+    shorten spell stock translate urldecode urlencode weather
     /;
 foreach my $command (@external_commands) {
     my $file = getcwd . "/extensions/cj/" . $command . ".pm";
@@ -415,62 +413,6 @@ $CJ::response{kibo} = {
     STOP => 1,
     RE   => qr/\b$CJ::name\b.*\?/i,
 };
-
-$CJ::response{compute} = {
-    TYPE => "all",
-    CODE => sub {
-        my ($event) = @_;
-        my $args = $event->{VALUE};
-        if ( !( $args =~ m/\bcompute\s+(.*)$/i ) ) {
-            return 'ERROR: Expected compute RE not matched!';
-        }
-
-        my $url
-            = "http://api.wolframalpha.com/v2/query?appid="
-            . $CJ::config->val( 'wolfram', 'appID' )
-            . "&format=plaintext&input="
-            . escape($1);
-
-        CJ::add_throttled_HTTP(
-            url      => $url,
-            ui_name  => 'main',
-            callback => sub {
-                my ($response) = @_;
-                CJ::dispatch( $event,
-                    scrape_wolfram( $response->{_content} ) );
-            }
-        );
-        return;
-    },
-    HELP => "Compute something using WolframAlpha.com",
-    POS  => -1,
-    STOP => 1,
-    RE   => qr/\bcompute\b/i,
-};
-
-sub scrape_wolfram {
-    my ($content) = shift;
-
-    my $footer = " [wolframalpha.com]";
-
-    if ( $content =~ m/success='false'/ ) {
-        return "I didn't understand that, sorry. $footer";
-    }
-
-    my $results = "";
-
-    while (
-        $content =~ m/<pod title='(.*?)'.*?<plaintext>(.*?)<\/plaintext>/sig )
-    {
-        my $section   = $1;
-        my $plaintext = $2;
-        $plaintext =~ s/\n/ /g;
-        $results .= "$section: $plaintext\n";
-    }
-
-    $results .= $footer;
-    return CJ::wrap( split( /\n/, $results ) );
-}
 
 $CJ::response{country} = {
     CODE => sub {
