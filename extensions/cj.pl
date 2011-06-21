@@ -57,20 +57,13 @@ my $throttle_interval = 1;    #seconds
 my $throttle_safety   = 5;    #seconds
 $CJ::config;                  # Config::Inifiles object.
 
-my $disc       = 'cj-admin';  #where we keep our memos.
+$CJ::disc       = 'cj-admin';  #where we keep our memos.
 my $debug_disc = 'cj-admin';
 my %disc_annotations
     ;    # A cached copy of which discussions each annotation goes to.
 my %annotations;        # A cached copy of what our annotations do.
 my %annotation_code;    # ala response, but for annotations.
 my $frequently;         # timers
-
-# some array refs of sayings...
-my $sayings;            # pithy 8ball-isms.
-
-# Unify this into generic special handling. =-)
-my $unified;            # special handling for the unified discussion.
-my $beener;             # special handling for the beener discussion.
 
 $CJ::uptime = time();   #uptime indicator.
 %CJ::served;            #stats.
@@ -271,7 +264,7 @@ have wanted it.
 # response-related code when all is external.
 
 my @external_commands = qw/
-    anagram ascii bacon bible cmd compute eliza forecast help ping rot13
+    anagram ascii bacon bible cmd compute eliza forecast help kibo ping rot13
     shorten spell stock translate urldecode urlencode weather
     /;
 foreach my $command (@external_commands) {
@@ -286,8 +279,10 @@ foreach my $command (@external_commands) {
         STOP => ${ *$glob{HASH}{LAST} },
         RE   => ${ *$glob{HASH}{RE} },
     };
+    if (exists *$glob{HASH}{load}) {
+        $CJ::response{$command}{load} = sub { &{ *$glob{HASH}{load} }() };
+    }
 }
-
 ### builtin commands
 my $year  = qr/\d{4}/;
 my $month = qr/(?:[1-9]|10|11|12)/;
@@ -348,26 +343,6 @@ sub CJ::humanTime {
 
     return ( join( ', ', @result ) );
 }
-
-$CJ::response{kibo} = {
-    CODE => sub {
-        my ($event) = @_;
-        my $list = $sayings;
-        if ( $event->{RECIPS} eq 'unified' ) {
-            $list = [ (@$unified) x 2, @$list ];
-        }
-        elsif ( $event->{RECIPS} eq 'beener' ) {
-            $list = [ (@$beener) x 2, @$list ];
-        }
-        my ($message) = sprintf( CJ::pickRandom($list), $event->{SOURCE} );
-        return $message;
-    },
-    HELP => 'I respond to public questions addressed to me.',
-    TYPE => "public emote",
-    POS  => 1,
-    STOP => 1,
-    RE   => qr/\b$CJ::name\b.*\?/i,
-};
 
 $CJ::response{country} = {
     CODE => sub {
@@ -698,31 +673,19 @@ sub load {
             = $CJ::config->val( $annotation, 'action' );
     }
 
-    $server->fetch(
-        call => sub { my %event = @_; $sayings = $event{text} },
-        type => 'memo',
-        target => $disc,
-        name   => 'sayings'
-    );
-    $server->fetch(
-        call => sub { my %event = @_; $unified = $event{text} },
-        type => 'memo',
-        target => $disc,
-        name   => '-unified'
-    );
-    $server->fetch(
-        call => sub { my %event = @_; $beener = $event{text} },
-        type => 'memo',
-        target => $disc,
-        name   => '-beener'
-    );
-
     $frequently = TLily::Event::time_r(
         call => sub {
             do_throttled_HTTP();
         },
         interval => 2.0
     );
+
+    foreach my $key (keys %CJ::response) {
+        if (defined($CJ::response{$key}{load})) {
+            $CJ::response{$key}{load}();
+        }
+    }
+
     TLily::Server->active()->cmd_process('/blurb off');
 }
 
