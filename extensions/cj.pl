@@ -170,8 +170,7 @@ sub do_throttled_HTTP {
 # of the URL and pass it to the callback. Or the other thing.
 
 my %shorts;    # briefs?
-
-sub shorten {
+sub CJ::shorten {
     my ( $short, $callback ) = @_;
 
     # If we've already seen this URL, don't bother asking again.
@@ -222,7 +221,7 @@ $annotation_code{shorten} = {
         if ( $end <= 79 ) {
             return;
         }    # don't shorten if it fit on one line anyway.
-        shorten(
+        CJ::shorten(
             $shorten,
             sub {
                 my ($short_url) = shift;
@@ -322,7 +321,7 @@ $CJ::response{shorten} = {
             return 'ERROR: Expected shorten RE not matched!';
         }
         my $shorten = $1;
-        shorten( $shorten, sub { CJ::dispatch( $event, shift ) } );
+        CJ::shorten( $shorten, sub { CJ::dispatch( $event, shift ) } );
         return;
     },
     HELP => <<'END_HELP',
