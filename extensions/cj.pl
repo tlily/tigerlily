@@ -320,50 +320,6 @@ $CJ::response{cal} = {
     RE   => qr(\bcal\b)i,
 };
 
-$CJ::response{'set'} = {
-    CODE => sub {
-        my ($event) = @_;
-        my $args = $event->{VALUE};
-        if ( !( $args =~ s/\bset(.*)$/$1/ ) ) {
-            return 'ERROR: Expected set RE not matched!';
-        }
-        my @args = split( ' ', $args, 2 );
-
-        my $section = "user $event->{SHANDLE}";
-
-        if ( !@args ) {
-            my @tmp;
-            foreach my $key ( $CJ::config->Parameters($section) ) {
-                my $val = $CJ::config->val( $section, $key );
-                push @tmp, $key . " = \'" . $val . "\'";
-            }
-            return join( ', ', @tmp );
-        }
-        elsif ( scalar @args == 1 ) {
-            my $val = $CJ::config->val( $section, $args[0] );
-            return ( defined($val) ? "\"$val\"" : 'undef' );
-        }
-        else {
-            my $key = shift @args;
-            my $val = join( ' ', @args );
-            if ( $key =~ m:^\*: ) {
-                return 'You may not modify ' . $key . ' directly.';
-            }
-            $CJ::config->setval( $section, $key, $val );
-            return $key . " = \'" . $val . "\'";
-        }
-    },
-    HELP => <<'END_HELP',
-Purpose: provide a generic mechanism for preference management.
-Usage: set [ <var> [ <value> ] ].
-Only works in private. Also, we use your SHANDLE via SLCP, in violation of
-the Geneva convention.
-END_HELP
-    POS  => 0,
-    STOP => 1,
-    RE   => qr(\bset\b)i,
-};
-
 my $min  = 60;
 my $hour = $min * 60;
 my $day  = $hour * 24;
