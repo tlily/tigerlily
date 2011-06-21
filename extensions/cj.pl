@@ -105,28 +105,6 @@ sub CJ::debug {
 # XXX use File::*
 my $config_file = $ENV{HOME} . '/.lily/tlily/CJ.ini';
 
-=head2 asAdmin( $event, $callback)
-
-If someone is an admin, perform a task. The bot user should have a group
-called "admins" - if the user is part of that group, then she's a moderator.
-
-=cut
-
-sub asAdmin {
-    my ( $event, $sub ) = @_;
-    my $server = TLily::Server::active();
-
-    my $isAdmin = grep { $event->{SHANDLE} eq $_ }
-        split( /,/, $server->{NAME}->{'admins'}->{'MEMBERS'} );
-
-    if ($isAdmin) {
-        $sub->();
-    }
-    else {
-        CJ::dispatch( $event, "I'm a frayed knot." );
-    }
-}
-
 =head2 pickRandom( $listref )
 
 Given a ref to a list, return a random element from it.
@@ -296,7 +274,7 @@ have wanted it.
 # response-related code when all is external.
 
 my @external_commands = qw/
-    anagram ascii bacon bible eliza forecast help ping rot13 shorten stock
+    anagram ascii bacon bible cmd eliza forecast help ping rot13 shorten stock
     translate urldecode urlencode weather
     /;
 foreach my $command (@external_commands) {
@@ -417,41 +395,6 @@ sub CJ::humanTime {
 
     return ( join( ', ', @result ) );
 }
-
-$CJ::response{cmd} = {
-    PRIVILEGE => 'admin',
-    CODE      => sub {
-        my ($event) = @_;
-        ( my $cmd = $event->{VALUE} ) =~ s/.*\bcmd\b\s*(.*)/$1/;
-        asAdmin(
-            $event,
-            sub {
-                my @response;
-                TLily::Server->active()->cmd_process(
-                    $cmd,
-                    sub {
-                        my ($newevent) = @_;
-                        $newevent->{NOTIFY} = 0;
-                        return if ( $newevent->{type} eq 'begincmd' );
-                        if ( $newevent->{type} eq 'endcmd' ) {
-                            CJ::dispatch( $event, CJ::wrap(@response) );
-                        }
-                        if ( $newevent->{text} ne q{} ) {
-                            push @response, $newevent->{text};
-                        }
-                    }
-                );
-            }
-        );
-    },
-    HELP => <<'END_HELP',
-If you're a cj admin, use this command to boss me around.
-Usage: cmd <lily command>
-END_HELP
-    POS  => 0,
-    STOP => 1,
-    RE   => qr/\bcmd\b/i,
-};
 
 $CJ::response{kibo} = {
     CODE => sub {
