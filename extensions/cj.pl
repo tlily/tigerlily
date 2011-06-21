@@ -35,8 +35,9 @@ to the discussion(s) or user the original message was targeted to.
 
 =item 2
 
-Broadcasts. Timers run every so often which look for new information (say,
-from an RSS feed), and then announce this information to certain discussions.
+Annotations. Each discussion (set by name) may have an annotation
+associated with it - when sends matching an RE are seen, CJ may followup
+to that send with another of his own. (e.g. url shortening)
 
 =back
 
@@ -57,7 +58,7 @@ my $throttle_interval = 1;    #seconds
 my $throttle_safety   = 5;    #seconds
 $CJ::config;                  # Config::Inifiles object.
 
-$CJ::disc       = 'cj-admin';  #where we keep our memos.
+$CJ::disc = 'cj-admin';       #where we keep our memos.
 my $debug_disc = 'cj-admin';
 my %disc_annotations
     ;    # A cached copy of which discussions each annotation goes to.
@@ -76,9 +77,9 @@ $CJ::ua->agent("CJ-bot/1.0");
 
 =head1 Methods
 
-=head2 debug( @complaints)
+=head2 CJ::debug( @complaints)
 
-Helpful when generating debug output for new features.
+Send text to our debug discussion.
 
 =cut
 
@@ -105,7 +106,7 @@ sub CJ::pickRandom {
 }
 
 sub CJ::wrap {
-    my $wrapline = 76;      # This is where we wrap lines...
+    my $wrapline = 76;    # This is where we wrap lines...
 
     my $retval;
     foreach my $tmp (@_) {
@@ -203,6 +204,9 @@ $annotation_code{shorten} = {
 
 =head1 %response
 
+XXX - leftover from internal command handling - instead, use
+vars/subs directly from external commands namespaces.
+
 This hash contains all the information for how CJ should respond to
 public, private, and emote sends. The top level keys are the names
 of the implemented command. Their values are hashrefs of the following
@@ -260,9 +264,11 @@ have wanted it.
 =cut
 
 # load external commands
-# XXX - currently forcing them into %response - can skip this step and update
-# response-related code when all is external.
+# XXX - currently forcing them into %response because that's how we did it
+# when everything was internal. can now skip this step and update
+# response-related code to work directly against the namespaces
 
+# XXX move to extensions/cj/commands/, and just load everything in that folder.
 my @external_commands = qw/
     anagram ascii bacon bible cmd compute eliza forecast help kibo ping rot13
     shorten spell stock translate urldecode urlencode weather
@@ -279,11 +285,16 @@ foreach my $command (@external_commands) {
         STOP => ${ *$glob{HASH}{LAST} },
         RE   => ${ *$glob{HASH}{RE} },
     };
-    if (exists *$glob{HASH}{load}) {
+    if ( exists *$glob{HASH}{load} ) {
         $CJ::response{$command}{load} = sub { &{ *$glob{HASH}{load} }() };
     }
 }
 
+=head2 CJ::humanTime
+
+Given an elapsed time in seconds, produce a human readable elapsed time.
+
+=cut
 
 sub CJ::humanTime {
     my $seconds = shift;
@@ -315,8 +326,13 @@ sub CJ::humanTime {
     return ( join( ', ', @result ) );
 }
 
-# This is pretty unweildly.
-#
+=head2 CJ::cleanHTML
+
+Given an array of lines, return a string with the HTML stripped and
+ASCII-fied (lily is 7 bit).
+
+=cut
+
 sub CJ::cleanHTML {
 
     # join blank lines, remove excess whitespace and kill tags.
@@ -350,6 +366,13 @@ sub CJ::cleanHTML {
     return $a;
 }
 
+=head2 CJ::dispatch 
+
+Given a TLily event and a string, send that message, properly formatted,
+to the recipients of the original message.
+
+=cut
+
 sub CJ::dispatch {
 
     my ( $event, $message ) = @_;
@@ -376,7 +399,7 @@ sub away_event {
 
 }
 
-=head2 get_types
+=head2 CJ::get_types
 
 Given an event handler, return all the types that handler is valid for.
 
@@ -569,8 +592,8 @@ sub load {
         interval => 2.0
     );
 
-    foreach my $key (keys %CJ::response) {
-        if (defined($CJ::response{$key}{load})) {
+    foreach my $key ( keys %CJ::response ) {
+        if ( defined( $CJ::response{$key}{load} ) ) {
             $CJ::response{$key}{load}();
         }
     }
@@ -580,8 +603,7 @@ sub load {
 
 =head2 checkpoint ()
 
-Call this to save our in memory config out, either by saving memos or
-writing to our local config file(s).
+Call this to save our in memory config out to our config file.
 
 =cut
 
