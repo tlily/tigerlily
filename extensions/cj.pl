@@ -364,7 +364,7 @@ $CJ::response{kibo} = {
         return $message;
     },
     HELP => 'I respond to public questions addressed to me.',
-    TYPE => qw/public emote/,
+    TYPE => "public emote",
     POS  => 1,
     STOP => 1,
     RE   => qr/\b$CJ::name\b.*\?/i,
