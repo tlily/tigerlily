@@ -67,7 +67,6 @@ my $frequently;         # timers
 
 # some array refs of sayings...
 my $sayings;            # pithy 8ball-isms.
-my $overhear;           # listen for my name occasionally;
 
 # Unify this into generic special handling. =-)
 my $unified;            # special handling for the unified discussion.
@@ -704,12 +703,6 @@ sub load {
         type => 'memo',
         target => $disc,
         name   => 'sayings'
-    );
-    $server->fetch(
-        call => sub { my %event = @_; $overhear = $event{text} },
-        type => 'memo',
-        target => $disc,
-        name   => 'overhear'
     );
     $server->fetch(
         call => sub { my %event = @_; $unified = $event{text} },
