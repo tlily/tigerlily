@@ -283,7 +283,7 @@ foreach my $command (@external_commands) {
         $CJ::response{$command}{load} = sub { &{ *$glob{HASH}{load} }() };
     }
 }
-### builtin commands
+
 my $min  = 60;
 my $hour = $min * 60;
 my $day  = $hour * 24;
@@ -313,48 +313,6 @@ sub CJ::humanTime {
 
     return ( join( ', ', @result ) );
 }
-
-$CJ::response{country} = {
-    CODE => sub {
-        my ($event) = @_;
-        my $args = $event->{VALUE};
-        if ( !( $args =~ s/.*country\s+(.*)/$1/i ) ) {
-            return 'ERROR: Expected country RE not matched!';
-        }
-        if ( $args =~ m/^(..)$/ ) {
-
-            my $a = `grep -i '\|$1\$' /Users/cjsrv/CJ/countries.txt`;
-            $a =~ m/^([^\|]*)/;
-            return $1 unless ( $1 eq q{} );
-            return 'No Match.';
-        }
-        else {
-            my @a = split( /\n/,
-                `grep -i \'$args\' /Users/cjsrv/CJ/countries.txt` );
-            if ( scalar(@a) > 10 ) {
-                return
-                      'Your search found '
-                    . scalar(@a)
-                    . ' countries. Be more specific (I can only show you 10).';
-            }
-            elsif ( scalar(@a) > 0 ) {
-                my $tmp = join( "\'; ", @a );
-                $tmp =~ s/\|/=\'/g;
-                return $tmp . "'";
-            }
-            else {
-                return 'Found no matches.';
-            }
-        }
-    },
-    HELP => <<'END_HELP',
-Usage: country <val>, where val is either a 2 character country code, or a
-string to match against possible countries.
-END_HELP
-    POS  => 0,
-    STOP => 1,
-    RE   => qr/\bcountry\b/i,
-};
 
 # This is pretty unweildly.
 #
