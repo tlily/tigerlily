@@ -356,46 +356,6 @@ END_HELP
     RE   => qr/\bcountry\b/i,
 };
 
-$CJ::response{utf8} = {
-    CODE => sub {
-        my ($event) = @_;
-        my $args = $event->{VALUE};
-        if ( !( $args =~ s/.*utf8\s+(.*)/$1/i ) ) {
-            return 'ERROR: Expected utf8 RE not matched!';
-        }
-        if ( $args =~ m/^[Uu]\+([0-9A-Fa-f]*)$/ ) {
-            my $a = `grep -i '^$1\|' /Users/cjsrv/CJ/unicode2.txt`;
-            $a =~ s/^[^|]+\|(.*)/$1/;
-            return $a;
-        }
-        else {
-            my @a = split( /\n/,
-                `grep -i \'\|\.\*$args\' /Users/cjsrv/CJ/unicode2.txt` );
-            if ( scalar(@a) > 10 ) {
-                return
-                      'Your search found '
-                    . scalar(@a)
-                    . ' glyphs. Please be more specific.';
-            }
-            elsif ( scalar(@a) > 0 ) {
-                my $tmp = join( "\'; ", @a );
-                $tmp =~ s/\|/=\'/g;
-                return $tmp . "'";
-            }
-            else {
-                return 'Found no matches.';
-            }
-        }
-    },
-    HELP => <<'END_HELP',
-Usage: utf8 <val>, where val is either U+<hex> or a string to match
-against possible characters.
-END_HELP
-    POS  => 0,
-    STOP => 1,
-    RE   => qr/\butf8\b/i,
-};
-
 # This is pretty unweildly.
 #
 sub CJ::cleanHTML {
