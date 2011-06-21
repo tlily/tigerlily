@@ -284,12 +284,13 @@ foreach my $command (@external_commands) {
     }
 }
 
-my $min  = 60;
-my $hour = $min * 60;
-my $day  = $hour * 24;
 
 sub CJ::humanTime {
     my $seconds = shift;
+
+    my $min  = 60;
+    my $hour = $min * 60;
+    my $day  = $hour * 24;
 
     my ( @result, $chunk );
     if ( $seconds >= $day ) {
