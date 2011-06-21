@@ -68,8 +68,6 @@ my $frequently;         # timers
 $CJ::uptime = time();   #uptime indicator.
 %CJ::served;            #stats.
 
-my $wrapline = 76;      # This is where we wrap lines...
-
 # we don't expect to be changing our name frequently, cache it.
 $CJ::name = TLily::Server->active()->user_name();
 
@@ -107,6 +105,8 @@ sub CJ::pickRandom {
 }
 
 sub CJ::wrap {
+    my $wrapline = 76;      # This is where we wrap lines...
+
     my $retval;
     foreach my $tmp (@_) {
         my $pad = ' ' x ( $wrapline - ( ( length $tmp ) % $wrapline ) );
