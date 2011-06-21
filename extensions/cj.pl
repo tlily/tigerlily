@@ -170,6 +170,7 @@ sub do_throttled_HTTP {
 # of the URL and pass it to the callback. Or the other thing.
 
 my %shorts;    # briefs?
+
 sub CJ::shorten {
     my ( $short, $callback ) = @_;
 
@@ -295,8 +296,8 @@ have wanted it.
 # response-related code when all is external.
 
 my @external_commands = qw/
-    anagram ascii bacon bible eliza forecast help ping rot13 stock translate
-    urldecode urlencode weather
+    anagram ascii bacon bible eliza forecast help ping rot13 shorten stock
+    translate urldecode urlencode weather
     /;
 foreach my $command (@external_commands) {
     my $file = getcwd . "/extensions/cj/" . $command . ".pm";
@@ -313,25 +314,6 @@ foreach my $command (@external_commands) {
 }
 
 ### builtin commands
-$CJ::response{shorten} = {
-    CODE => sub {
-        my ($event) = @_;
-        my $args = $event->{VALUE};
-        if ( !( $args =~ s/shorten\s+(.*)\s*$/$1/i ) ) {
-            return 'ERROR: Expected shorten RE not matched!';
-        }
-        my $shorten = $1;
-        CJ::shorten( $shorten, sub { CJ::dispatch( $event, shift ) } );
-        return;
-    },
-    HELP => <<'END_HELP',
-Given a URL, return a shortened version of the url.
-END_HELP
-    POS  => 1,
-    STOP => 1,
-    RE   => qr/\bshorten\b/i
-};
-
 my $year  = qr/\d{4}/;
 my $month = qr/(?:[1-9]|10|11|12)/;
 
