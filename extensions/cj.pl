@@ -284,36 +284,6 @@ foreach my $command (@external_commands) {
     }
 }
 ### builtin commands
-my $year  = qr/\d{4}/;
-my $month = qr/(?:[1-9]|10|11|12)/;
-
-$CJ::response{cal} = {
-    CODE => sub {
-        my ($event) = @_;
-        my ($args)  = $event->{VALUE};
-        my $retval;
-
-        if ( $args =~ m/cal\s+($month)\s+($year)/i ) {
-            $retval = `cal $1 $2 2>&1`;
-        }
-        elsif ( $args =~ m/cal\s+($year)/i ) {
-            $retval
-                = 'A fine year. Nice vintage. Too much output, though, pick a month.';
-        }
-        elsif ( $args =~ m/\bcal\s*$/ ) {
-            $retval = `cal 2>&1`;
-        }
-        else {
-            $retval = "I can't find my watch.";
-        }
-        return CJ::wrap( split( /\n/, $retval ) );
-    },
-    HELP => '"cal" shows the current month. "cal 1 2010" shows january 2010.',
-    POS  => 0,
-    STOP => 1,
-    RE   => qr(\bcal\b)i,
-};
-
 my $min  = 60;
 my $hour = $min * 60;
 my $day  = $hour * 24;
