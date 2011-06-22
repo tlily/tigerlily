@@ -275,7 +275,6 @@ foreach my $file (@external_commands) {
     my $glob = qualify_to_ref( "::CJ::command::" . $command . "::" );
     $CJ::response{$command} = {
         CODE => sub { &{ *$glob{HASH}{response} }(@_) },
-        HELP => sub { &{ *$glob{HASH}{help} }(@_) },
         TYPE => ${ *$glob{HASH}{TYPE} },
         POS  => ${ *$glob{HASH}{POSITION} },
         STOP => ${ *$glob{HASH}{LAST} },
