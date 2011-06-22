@@ -585,6 +585,7 @@ sub load {
         interval => 2.0
     );
 
+    # fire any "load" subs present in command modules.
     foreach my $ns (values %CJ::command::) {
         my $load = *{ qualify_to_ref($ns) }{HASH}{load};
         if ( defined($load) ) {
