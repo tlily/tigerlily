@@ -268,9 +268,9 @@ have wanted it.
 # when everything was internal. can now skip this step and update
 # response-related code to work directly against the namespaces
 
-my @external_commands = glob(getcwd ."/extensions/CJ/command/*pm");
+my @external_commands = glob( getcwd . "/extensions/CJ/command/*pm" );
 foreach my $file (@external_commands) {
-    (my $command) = $file =~ /(\w+)\.pm/;
+    ( my $command ) = $file =~ /(\w+)\.pm/;
     do $file or CJ::debug("loading external command: $file: $!/$@");
     my $glob = qualify_to_ref( "::CJ::command::" . $command . "::" );
     $CJ::response{$command} = {
@@ -281,9 +281,6 @@ foreach my $file (@external_commands) {
         STOP => ${ *$glob{HASH}{LAST} },
         RE   => ${ *$glob{HASH}{RE} },
     };
-    if ( exists *$glob{HASH}{load} ) {
-        $CJ::response{$command}{load} = sub { &{ *$glob{HASH}{load} }() };
-    }
 }
 
 =head2 CJ::humanTime
@@ -588,9 +585,11 @@ sub load {
         interval => 2.0
     );
 
-    foreach my $key ( keys %CJ::response ) {
-        if ( defined( $CJ::response{$key}{load} ) ) {
-            $CJ::response{$key}{load}();
+    foreach my $ns (%CJ::command::) {
+        my $load = *{ qualify_to_ref($ns) }{HASH}{load};
+        if ( defined($load) ) {
+            CJ::debug("loading $ns");
+            $load->();
         }
     }
 
