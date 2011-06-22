@@ -380,18 +380,6 @@ sub CJ::dispatch {
         ->cmd_process( $line, sub { $_[0]->{NOTIFY} = 0; } );
 }
 
-# keep myself busy.
-sub away_event {
-    my ( $event, $handler ) = @_;
-
-    if ( $event->{SOURCE} eq $CJ::name ) {
-        my $line = '/here';
-        TLily::Server->active()
-            ->cmd_process( $line, sub { $_[0]->{NOTIFY} = 0; } );
-    }
-
-}
-
 =head2 CJ::get_types
 
 Given an event handler, return all the types that handler is valid for.
@@ -551,7 +539,21 @@ HANDLE_OUTER: foreach my $order (qw/-2 -1 0 1 2/) {
 for (qw/public private emote/) {
     event_r( type => $_, order => 'before', call => \&cj_event );
 }
-event_r( type => 'away', order => 'after', call => \&away_event );
+
+# a bot never sleeps.
+event_r(
+    type  => 'away',
+    order => 'after',
+    call  => sub {
+        my $event = shift;
+
+        if ( $event->{SOURCE} eq $CJ::name ) {
+            my $line = '/here';
+            TLily::Server->active()
+                ->cmd_process( $line, sub { $_[0]->{NOTIFY} = 0; } );
+        }
+    }
+);
 
 sub load {
     my $server = TLily::Server->active();
@@ -586,7 +588,7 @@ sub load {
     );
 
     # fire any "load" subs present in command modules.
-    foreach my $ns (values %CJ::command::) {
+    foreach my $ns ( values %CJ::command:: ) {
         my $load = *{ qualify_to_ref($ns) }{HASH}{load};
         if ( defined($load) ) {
             CJ::debug("loading $ns");
