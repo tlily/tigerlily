@@ -268,13 +268,9 @@ have wanted it.
 # when everything was internal. can now skip this step and update
 # response-related code to work directly against the namespaces
 
-# XXX move to extensions/cj/commands/, and just load everything in that folder.
-my @external_commands = qw/
-    anagram ascii bacon bible cmd compute eliza forecast help kibo ping rot13
-    shorten spell stock translate urldecode urlencode weather
-    /;
-foreach my $command (@external_commands) {
-    my $file = getcwd . "/extensions/CJ/command/" . $command . ".pm";
+my @external_commands = glob(getcwd ."/extensions/CJ/command/*pm");
+foreach my $file (@external_commands) {
+    (my $command) = $file =~ /(\w+)\.pm/;
     do $file or CJ::debug("loading external command: $file: $!/$@");
     my $glob = qualify_to_ref( "::CJ::command::" . $command . "::" );
     $CJ::response{$command} = {
