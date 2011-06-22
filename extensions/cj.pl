@@ -274,7 +274,7 @@ my @external_commands = qw/
     shorten spell stock translate urldecode urlencode weather
     /;
 foreach my $command (@external_commands) {
-    my $file = getcwd . "/extensions/cj/" . $command . ".pm";
+    my $file = getcwd . "/extensions/CJ/command/" . $command . ".pm";
     do $file or CJ::debug("loading external command: $file: $!/$@");
     my $glob = qualify_to_ref( "::CJ::command::" . $command . "::" );
     $CJ::response{$command} = {
