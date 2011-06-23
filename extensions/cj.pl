@@ -637,7 +637,6 @@ sub load {
     foreach my $ns ( values %CJ::command:: ) {
         my $load = *{ qualify_to_ref($ns) }{HASH}{load};
         if ( defined($load) ) {
-            CJ::debug("loading $ns");
             $load->();
         }
     }
