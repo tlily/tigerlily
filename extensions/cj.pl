@@ -41,13 +41,6 @@ to that send with another of his own. (e.g. url shortening)
 
 =back
 
-=head1 HISTORY
-
-CJ was a bot. He did a lot of things that some folks found useful,
-and did a lot of things that some folks thought was waaaaay too chatty.
-He began as a lily-server based magic 8-ball, was ported to a bot using
-the version implementation of tlily, and is now running on git-latest.
-
 =cut
 
 #########################################################################
