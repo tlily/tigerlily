@@ -282,6 +282,49 @@ foreach my $file (@external_commands) {
     };
 }
 
+=head2 CJ::asModerator($event, $disc, $sub) 
+
+Determine if the user who generated the event is a moderator for the 
+discussion; if so, run the passed in sub.
+
+=cut
+
+sub CJ::asModerator {
+    my $event = shift;
+    my $disc  = shift;
+    my $sub   = shift;
+
+    my $server = TLily::Server->active();
+    my $user   = $event->{SOURCE};
+    $disc = $server->expand_name($disc);
+
+    my $response;
+    $server->cmd_process(
+        "/what $disc",
+        sub {
+            my ($newevent) = @_;
+            $newevent->{NOTIFY} = 0;
+            return if ( $newevent->{type} eq 'begincmd' );
+            if ( $newevent->{type} eq 'endcmd' ) {
+                $response =~ /Moderators: (.*)Authors/ms;
+                my $moderators = $1;
+                my @moderator
+                    = grep { $_ eq $user } split( /,\s+/, $moderators );
+                if (@moderator) {
+                    $sub->();
+                }
+                else {
+                    CJ::dispatch( $event,
+                        "You are not a moderator for $disc" );
+                }
+            }
+            if ( $newevent->{text} ne q{} ) {
+                $response .= $newevent->{text};
+            }
+        }
+    );
+}
+
 =head2 CJ::humanTime
 
 Given an elapsed time in seconds, produce a human readable elapsed time.
