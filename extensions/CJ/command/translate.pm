@@ -112,8 +112,12 @@ sub response {
 
     my $content = decode_json $res->content;
     if ( $res->is_success ) {
-        CJ::dispatch( $event,
-            unidecode( $content->{data}{translations}[0]{translatedText} ) );
+        CJ::dispatch(
+            $event,
+            CJ::cleanHTML(
+                $content->{data}{translations}[0]{translatedText}
+            )
+        );
         return;
     }
     CJ::dispatch( $event,
