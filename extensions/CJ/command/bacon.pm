@@ -22,6 +22,9 @@ sub _scrape_bacon {
         $content =~ s/Arnie.*//sm;
         return "No match.";
     }
+    elsif ( $content =~ /There are \d+ people named/ ) {
+        return "That's not a unique name, sorry.";
+    }
 
     $content =~ s/.*<div id="main">//sm;
     $content = CJ::cleanHTML($content);
