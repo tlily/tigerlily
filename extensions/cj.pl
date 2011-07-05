@@ -18,26 +18,26 @@ Will "Coke" Coleda
 
 =head1 PURPOSE
 
-This extension allows a player to act like a bot. It is designed to run
-as a standalone user: don't expect to login to lily as yourself and run
+This extension allows a player (lily user) to act like a bot. It is designed
+to run as a standalone user: don't expect to login to lily as yourself and run
 this, it will take over your session.
 
-There are two types of output that are generated:
+There are two types of output that CJ generates. In both cases, CJ matches
+each send against regular expressions, and if a match happens, runs some
+code (potentially using information in the send) and posts a response or
+a followup.
 
 =over 4
 
-=item 1
+=item * commands
 
-Responses to queries. Each public, private or emote type send is checked
-to see if matches certain regular expressions. If the expression matches,
-a chunk of code is run against that event, and a response may be generated
-to the discussion(s) or user the original message was targeted to.
+These are always on: if CJ is in a discussion, he will respond if one
+of the commands is matched.
 
-=item 2
+=item * annotations
 
-Annotations. Each discussion (set by name) may have an annotation
-associated with it - when sends matching an RE are seen, CJ may followup
-to that send with another of his own. (e.g. url shortening)
+Each discussion can opt in to individual annotations (e.g. url shortening).
+These are conditionally enabled or disabled per discussion.
 
 =back
 
@@ -398,10 +398,10 @@ sub CJ::cleanHTML {
     return $a;
 }
 
-=head2 CJ::dispatch 
+=head2 CJ::dispatch($event, $message) 
 
-Given a TLily event and a string, send that message, properly formatted,
-to the recipients of the original message.
+Given a TLily event and a message, send that message to the recipients of the
+original event. (Dealing with emote discussions).
 
 =cut
 
@@ -419,9 +419,9 @@ sub CJ::dispatch {
         ->cmd_process( $line, sub { $_[0]->{NOTIFY} = 0; } );
 }
 
-=head2 CJ::get_types
+=head2 CJ::get_types($command)
 
-Given an event handler, return all the types that handler is valid for.
+Given a command, return all the types that handler is valid for.
 
 =cut
 
