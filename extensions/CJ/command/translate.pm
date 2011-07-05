@@ -48,6 +48,7 @@ our %languages = (
     italian          => 'it',
     japanese         => 'ja',
     portuguese       => 'pt',
+    polish           => 'pl',
     russian          => 'ru',
     spanish          => 'es',
     yiddish          => 'yi',
