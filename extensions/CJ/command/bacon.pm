@@ -46,6 +46,10 @@ sub response {
             'Are you congenitally insane or irretrievably stupid?' );
         return;
     }
+    elsif ( lc($term) eq 'coke' ) {
+        CJ::dispatch( $event, 'Heart attack in a glass, baby.' );
+        return;
+    }
     if ( $term =~ m/ \s* (\w+) \s* , \s* (\w+) \s+ \(([ivxlcm]*)\) /smix ) {
         $term = "$2 $1 ($3)";
     }
