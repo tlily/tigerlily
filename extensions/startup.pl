@@ -1,5 +1,3 @@
-# -*- Perl -*-
-
 use strict;
 
 event_r(type  => 'connected',

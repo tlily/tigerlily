@@ -1,4 +1,3 @@
-# -*- Perl -*-
 # Last changed $Date$ by $Author$
 
 # Change HTML entity characters to their ascii equivalents, where

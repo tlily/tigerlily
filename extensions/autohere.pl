@@ -1,5 +1,3 @@
-# -*- Perl -*-
-
 use strict;
 
 TLily::Event::event_r(type  => "user_input",

@@ -1,5 +1,3 @@
-# -*- Perl -*-
-
 use strict;
 
 my $repeat_quelch = 60 * 5;

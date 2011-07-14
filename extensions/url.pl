@@ -1,5 +1,3 @@
-# -*- Perl -*-
-
 #
 # URL handling
 #

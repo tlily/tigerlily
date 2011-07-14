@@ -1,5 +1,3 @@
-# -*- Perl -*-
-
 use TLily::Version;
 use strict;
 use warnings;

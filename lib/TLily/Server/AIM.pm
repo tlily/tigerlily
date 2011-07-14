@@ -3,7 +3,6 @@
 #
 # Need to handle toc_set_config to persist buddy settings.
 
-# -*- Perl -*-
 #    TigerLily:  A client for the lily CMC, written in Perl.
 #    Copyright (C) 2004  The TigerLily Team, <tigerlily@tlily.org>
 #                                http://www.tlily.org/tigerlily/

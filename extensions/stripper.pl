@@ -1,5 +1,3 @@
-# -*- Perl -*-
-
 # strip out leading spaces on sends.
 
 use strict;

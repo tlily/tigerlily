@@ -1,4 +1,3 @@
-# -*- Perl -*-
 #
 # Piped command processing.
 #
