@@ -1,5 +1,3 @@
-# -*- Perl -*-
-
 use strict;
 eval 'use Xmms::Remote;';
 if ($@) {

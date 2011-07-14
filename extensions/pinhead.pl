@@ -1,5 +1,3 @@
-# -*- Perl -*-
-
 use strict;
 
 my %pinheads;

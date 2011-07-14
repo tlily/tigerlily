@@ -1,4 +1,3 @@
-# -*- Perl -*-
 # $Header: /data/cvs/lily/tigerlily2/extensions/gag.pl,v 1.12 2003/05/10 21:52:20 coke Exp $
 
 use strict;

@@ -1,5 +1,3 @@
-# -*- Perl -*-
-
 use strict;
 use Text::ParseWords qw(quotewords);
 use TLily::Bot;

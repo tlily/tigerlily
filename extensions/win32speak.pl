@@ -1,5 +1,3 @@
-# -*- Perl -*-
-
 use strict;
 
 # Josh's experiment in win32 silliness.

@@ -1,5 +1,3 @@
-# -*- Perl -*-
-
 use TLily::Utils 'get_deadfile';
 
 sub verb_showlist {

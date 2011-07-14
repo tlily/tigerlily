@@ -1,5 +1,3 @@
-# -*- Perl -*-
-
 use TLily::Version;
 use Config;
 use strict;

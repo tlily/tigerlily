@@ -1,5 +1,3 @@
-# -*- Perl -*-
-
 #
 # A Biff module
 #

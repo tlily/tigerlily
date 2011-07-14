@@ -1,5 +1,3 @@
-# -*- Perl -*-
-
 event_r(type => 'private',
         order => 'before',
         call => \&send_handler);

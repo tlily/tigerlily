@@ -1,5 +1,3 @@
-# -*- Perl -*-
-
 eval 'use Net::Domain qw(hostfqdn);';
 if ($@) {
     die "ctc.pl requires Net::Domain to be installed.\n";

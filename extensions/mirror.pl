@@ -1,5 +1,3 @@
-# -*- Perl -*-
-
 use strict;
 
 command_r('mirror' => \&mirror_cmd);

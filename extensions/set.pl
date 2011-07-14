@@ -1,5 +1,3 @@
-# -*- Perl -*-
-
 use strict;
 
 sub dumpit {

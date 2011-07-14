@@ -1,5 +1,3 @@
-# -*- Perl -*-
-
 use strict;
 
 #Author: Will "Coke" Coleda
