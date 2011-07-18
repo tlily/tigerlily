@@ -18,7 +18,9 @@ sub response {
 sub help {
     return <<'END_HELP',
 Usage: stock <LIST of comma or space separated symbols> for generic information
-or stock (<amount> <stock>) to show the value of a certain number of shares
+or stock (<amount> <stock>) to show the value of a certain number of shares.
+Stock information comes from yahoo, and CJ makes no guarantee as to the
+accuracy or timeliness of this information.
 END_HELP
 }
 
@@ -46,7 +48,7 @@ sub _get_stock {
     my $gain  = 0;
 
     my $url
-        = 'http://download.finance.yahoo.com/d/quotes.csv?s='
+        = 'http://download.finance.yahoo.com/d/quotes.txt?s='
         . join( ',', @stock )
         . '&f=sl1d1t1c2v';
     CJ::add_throttled_HTTP(
