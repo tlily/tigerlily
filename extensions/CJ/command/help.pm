@@ -35,7 +35,7 @@ sub response {
     if ( exists $help{$args} ) {
         my $helper = $help{$args};
         my $type
-            = ' [' . join( ',', CJ::get_types( $CJ::response{$args} ) ) . ']';
+            = ' [' . join( ', ', CJ::get_types( $CJ::response{$args} ) ) . ']';
         my $help = $helper->();
         return join( ' ', ( split /\n/, $help . $type ) );
     }
