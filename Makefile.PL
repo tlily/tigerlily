@@ -232,9 +232,9 @@ sub MY::processPL {
 }
 
 sub MY::postamble {
-    qq|
+    return <<"ETCDIR" . <<'SETUP_CONFIG';
 INSTALLSITEETC=$main::TL_ETCDIR
-| . q|
+ETCDIR
 INST_ETC=./blib/etc
 TL_SITE_CF=$(INST_ETC)/tlily.site
 TL_GLOBAL_CF=$(INST_LIBDIR)/tlily.global
@@ -244,19 +244,13 @@ all :: $(TL_SITE_CF) $(TL_GLOBAL_CF)
 $(INST_ETC):
 	@$(MKPATH) $(INST_ETC)
 	-@$(CHMOD) 755 $(INST_ETC)
-	
+
 $(TL_SITE_CF): $(INST_ETC)
-	@$(RM_F) $(TL_SITE_CF)
-	@if [ -f "$(INSTALLSITEETC)/tlily.site" ] ; then \
-	    echo "Copying current tlily.site" ; \
-	    $(CP) $(INSTALLSITEETC)/tlily.site $(TL_SITE_CF) ; \
-	    $(CHMOD) 644 $(TL_SITE_CF) ; \
-	else \
-	    echo "Writing tlily.site" ; \
-	    echo '# Site configuration file for TigerLily.' > $(TL_SITE_CF) ; \
-	    echo '# Please edit this, NOT the global configuration file.' >> $(TL_SITE_CF) ; \
-	    $(CHMOD) 644 $(TL_SITE_CF) ; \
-	fi
+	echo "Writing tlily.site"
+	echo '# Site configuration file for TigerLily.' > $(TL_SITE_CF)
+	echo '# Please edit this, NOT the global configuration file.' >> $(TL_SITE_CF)
+	-$(CP) $(INSTALLSITEETC)/tlily.site $(TL_SITE_CF)
+	$(CHMOD) 644 $(TL_SITE_CF)
 
 $(TL_GLOBAL_CF):
 	-$(RM_F) $(TL_GLOBAL_CF)
@@ -264,7 +258,7 @@ $(TL_GLOBAL_CF):
 
 release:
 	@echo "Please use tools/makerelease to make a release."
-|;
+SETUP_CONFIG
 }
 
 sub MY::libscan {
