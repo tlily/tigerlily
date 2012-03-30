@@ -74,17 +74,8 @@ sub edit_text {
 
     $ui->suspend;
     TLily::Event::keepalive();
-
-    if ($^O =~ /cygwin/) {
-         my $tmpfile2 = "C:$tmpfile";
-        $tmpfile2 =~ s/\//\\/g;
-        system($config{editor}, $tmpfile2);
-        TLily::Event::keepalive(60);
-    } else {
-        system($config{editor}, $tmpfile);
-        TLily::Event::keepalive(5);
-    }
-
+    system($config{editor}, $tmpfile);
+    TLily::Event::keepalive(5);
     $ui->resume;
 
     unless (open $fh, '<', $tmpfile) {
