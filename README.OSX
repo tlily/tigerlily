@@ -4,12 +4,3 @@ Curses
   If you want to run the command line version, and you don't already have
 Curses.pm installed, you will need to download, build and install Curses.pm
 from CPAN (www.cpan.org).
-
-  As of version 1.13, Curses.pm is broken out of the box on OS/X.  To fix
-it, do the following after untarring it:
-  $ cd hints
-  $ cp c-freebsd.ncurses.h c-darwin.h
-and then build as normal:
-  $ perl Makefile.PL
-  $ make
-  # make install
