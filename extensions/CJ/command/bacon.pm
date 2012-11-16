@@ -8,7 +8,7 @@ our $POSITION = -1;
 our $LAST     = 1;
 our $RE       = qr/\bbacon*\s*(.*)\s*$/i;
 
-our $bacon_url = 'http://oracleofbacon.org/cgi-bin/movielinks?a=Kevin+Bacon'
+our $bacon_url = 'http://oracleofbacon.org/movielinks.php?a=Kevin+Bacon'
     . '&end_year=2050&start_year=1850&game=0&u0=on';
 foreach my $g ( 0 .. 27 ) {
     $bacon_url .= "&g$g=on";
