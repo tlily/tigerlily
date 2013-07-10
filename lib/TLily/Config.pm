@@ -203,7 +203,7 @@ sub read_init_files {
                 }
             }
         }
-        if(defined %entry) {
+        if (%entry) {
 #            print STDERR "TYPE: HASH\n";
             my($k);
             foreach $k (keys %entry) {

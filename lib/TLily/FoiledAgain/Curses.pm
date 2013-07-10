@@ -277,34 +277,6 @@ sub refresh {
 }
 
 
-#
-# Use Term::Size to determine the terminal size after a SIGWINCH, but don't
-# actually require that it be installed.
-#
-
-my $termsize_installed;
-my $have_ioctl_ph;
-BEGIN {
-    eval { require Term::Size; import Term::Size; };
-    if ($@) {
-        $termsize_installed = 0;
-    } else {
-        $termsize_installed = 1;
-    }
-
-    eval { require qw(sys/ioctl.ph); };
-    if ($@) {
-        $have_ioctl_ph = 0;
-    } else {
-        $have_ioctl_ph = 1;
-    }
-
-    if (!$termsize_installed && !$have_ioctl_ph) {
-        warn("*** WARNING: Unable to load Term::Size or ioctl.ph ***\n");
-        warn("*** resizes will probably not work ***\n");
-        sleep(2);
-    }
-}
 
 sub has_resized {
     my $resized;
@@ -312,15 +284,7 @@ sub has_resized {
     while ($sigwinch) {
         $resized = 1;
         $sigwinch = 0;
-        if ($termsize_installed) {
-            ($ENV{'COLUMNS'}, $ENV{'LINES'}) = Term::Size::chars();
-        } elsif ($have_ioctl_ph) {
-            ioctl(STDIN, &TIOCGWINSZ, my $winsize);
-            return 0 if (!defined($winsize));
-            my ($row, $col, $xpixel, $ypixel) = unpack('S4', $winsize);
-            return 0 if (!defined($row));
-            ($ENV{'COLUMNS'}, $ENV{'LINES'}) = ($col, $row);
-        }
+
         stop();
         refresh;
         start();

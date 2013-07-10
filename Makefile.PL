@@ -160,7 +160,6 @@ if ($^O eq 'MSWin32') {
     };
 } else {
     $prereq = {
-        'Term::Size'     => 0,
         'Curses'         => 0
     };    
 }

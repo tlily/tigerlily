@@ -501,8 +501,9 @@ sub run {
 
     if (TLily::FoiledAgain::has_resized()) {
         $self->layout();
+	$self->force_redraw();
     }
-    #$self->force_redraw();
+
 
     my $key = $self->{input}->read_char();
     return unless defined($key);

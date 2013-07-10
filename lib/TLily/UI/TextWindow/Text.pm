@@ -97,18 +97,34 @@ sub size {
     my $self = shift;
     my $newc = $_[3];
 
+    # are we being resized?
+    if (@_) {
+	$self->SUPER::size(@_);
+    }
+
     # If we are being resized, and our width changed, we need to
     # re-word-wrap the buffer.
     if ($newc && $self->{cols} && ($newc != $self->{cols})) {
+        # Save where we were in the text before we regenerate the indexes.
+	my $anchor_offset = $self->{indexes}[$self->{idx_anchor}];
+	my $unseen_offset = $self->{indexes}[$self->{idx_unseen}];
+
         $self->{indexes}  = [ 0 ];
         pos($self->{text}) = 0;
         while (next_line($self->{text}, $self->{cols})) {
             push @{$self->{indexes}}, pos($self->{text});
         }
         pop @{$self->{indexes}} if (@{$self->{indexes}} > 1);
+
+	# Figure out the new values for idx_anchor and idx_unseen.
+	$self->{idx_anchor} = binary_index_search($self->{indexes}, $anchor_offset, 1);	
+	$self->{idx_unseen} = binary_index_search($self->{indexes}, $unseen_offset, 1);	
+
+	$self->redraw();
     }
 
-    return $self->SUPER::size(@_);
+    # return current size.
+    return $self->SUPER::size();
 }
 
 
@@ -251,9 +267,16 @@ sub binary_index_search {
     while (1) {
         my $pos = $min+int(($max-$min)/2);
         my $idx = $pos * $sz;
+
+	if ($aref->[$idx] == $offset) {
+	    return $idx;
+	}
+
         #print STDERR " min=$min max=$max pos=$pos idx=$idx\n";
         if ($aref->[$idx] > $offset) {
             $max = $pos;
+	} elsif ($aref->[$idx+$sz] == $offset) {
+	    return $idx+$sz;
         } elsif ($aref->[$idx+$sz] <= $offset) {
             $min = $pos;
         } else {
