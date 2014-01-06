@@ -35,7 +35,7 @@ sub _get_stock {
         while (@stock) {
             my $num   = shift @stock;
             my $stock = uc( shift @stock );
-            $num =~ /^(\d+)(@([\d.])+)?$/;
+            $num =~ /^([\d.]+)(@([\d.])+)?$/;
             my $shares   = $1;
             my $purchase = $3;
             $stock{$stock}     = $shares;
@@ -64,8 +64,7 @@ sub _get_stock {
                 my ( $stock, $value, $date, $time, $change, $volume )
                     = map { s/^"(.*)"$/$1/; $_ }
                     split( /,/, CJ::cleanHTML($chunk) );
-                if ( $volume =~ m{N/A} ) {
-
+                if ( $volume =~ m{N/A} && $change =~ "N/A") {
                     # skip unknown stocks.
                     push @invalid_symbols, $stock;
                     next;
