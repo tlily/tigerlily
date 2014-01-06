@@ -3,7 +3,7 @@ use strict;
 
 use Data::Dumper;
 
-our $TYPE     = "all";
+our $TYPE     = "private";
 our $POSITION = 0;
 our $LAST     = 1;
 our $RE       = qr/\bping\b/i;
