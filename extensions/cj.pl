@@ -162,6 +162,7 @@ EJSON
     if ( $res->is_success ) {
         if ( $res->content =~ /"id": "(.*)",/ ) {
             my $ans = $1 . " [$original_host]";
+            $ans =~ s/^http/https/;
             &$callback($ans) if $ans;
         }
     }
