@@ -4,14 +4,18 @@ use strict;
 our $TYPE     = "all";
 our $POSITION = 1;
 our $LAST     = 1;
-our $RE       = qr/\bshorten\s+(.*)\s*$/i;
+our $RE       = qr/\bshorten\b\s*(.*)\s*$/i;
 
 sub response {
     my ($event) = @_;
     $event->{VALUE} =~ $RE;
     my $url = $1;
 
-    CJ::shorten( $url, sub { CJ::dispatch( $event, shift ) } );
+    if ($url eq "") {
+        CJ::dispatch( $event, "Shorten what?" ); 
+    } else {
+        CJ::shorten( $url, sub { CJ::dispatch( $event, shift ) } );
+    }
     return;
 }
 
