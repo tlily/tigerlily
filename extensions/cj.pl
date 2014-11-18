@@ -404,15 +404,18 @@ sub CJ::cleanHTML {
 Given a TLily event and a message, send that message to the recipients of the
 original event. (Dealing with emote discussions).
 
+For emotes, defaults to converting the send to be spoken; pass in a true
+value for $raw_emote to override this behavior.
+
 =cut
 
 sub CJ::dispatch {
 
-    my ( $event, $message ) = @_;
+    my ( $event, $message, $raw_emote ) = @_;
 
     return if ( $message eq q{} );
 
-    if ( $event->{type} eq 'emote' ) {
+    if ( $event->{type} eq 'emote' && !$raw_emote ) {
         $message = '"' . $message;
     }
     my $line = $event->{_recips} . ':' . $message;
