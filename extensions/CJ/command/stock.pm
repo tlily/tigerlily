@@ -48,7 +48,7 @@ sub _get_stock {
     my $gain  = 0;
 
     my $url
-        = 'http://download.finance.yahoo.com/d/quotes.txt?s='
+        = 'http://download.finance.yahoo.com/d/quotes.csv?s='
         . join( ',', @stock )
         . '&f=sl1d1t1c2v';
     CJ::add_throttled_HTTP(
