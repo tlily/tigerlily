@@ -189,7 +189,7 @@ sub read_init_files {
 #            print STDERR "TYPE: SCALAR\n";
             $config{$key} = $entry;
         }
-        if(defined @entry) {
+        if(@entry) {
 #            print STDERR "TYPE: ARRAY\n";
             if(scalar(@entry) == 1 && !defined $entry[0]) {
                 if(not exists $config{$key}) {
