@@ -30,7 +30,7 @@ sub new {
       unless (defined $args{url});
 
     # WJC: "fixed" re so that urls with path info are preserved.
-    if ($args{url} =~ m|^http://([^/:]+)(?::(\d+))?(/[/\S]+)$|) {  # A full url
+    if ($args{url} =~ m|^https?://([^/:]+)(?::(\d+))?(/[/\S]+)$|) {  # A full url
         $args{port} = $2 if defined $2;
         $args{url} = $3;
         $args{host} = $1;
