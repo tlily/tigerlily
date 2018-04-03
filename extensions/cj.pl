@@ -12,6 +12,8 @@ use Text::Unidecode;
 use LWP::UserAgent;
 use LWP::Protocol::https;    # declare dependency, not used directly.
 
+use CGI qw/escape/;
+
 =head1 AUTHOR
 
 Will "Coke" Coleda
@@ -147,23 +149,19 @@ sub CJ::shorten {
 
     my $original_host = new URI($short)->host();
 
-    my $url = 'https://www.googleapis.com/urlshortener/v1/url?key='
-        . $CJ::config->val( 'googleapi', 'APIkey' );
+    my $url = 'https://api-ssl.bitly.com/v3/shorten?longURL=' . escape($short) 
+        . '&access_token=' . $CJ::config->val( 'bitlyapi', 'APIkey' );
 
-    my $req = HTTP::Request->new( POST => $url );
-    $req->content_type('application/json');
-    $req->content(<<"EJSON");
-{
-longUrl: "$short"
-}
-EJSON
+    my $req = HTTP::Request->new( GET => $url );
     my $res = $CJ::ua->request($req);
 
     if ( $res->is_success ) {
-        if ( $res->content =~ /"id": "(.*)",/ ) {
+        if ( $res->content =~ /"url":"([^"]+)",/ ) {
             my $ans = $1 . " [$original_host]";
-            $ans =~ s/^http:/https:/;
+            #$ans =~ s/^http:/https:/;
             &$callback($ans) if $ans;
+        } else {
+            CJ::debug("url not found:" . $res->content);
         }
     }
     else {
