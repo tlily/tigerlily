@@ -158,7 +158,7 @@ sub CJ::shorten {
     if ( $res->is_success ) {
         if ( $res->content =~ /"url":"([^"]+)",/ ) {
             my $ans = $1 . " [$original_host]";
-            #$ans =~ s/^http:/https:/;
+            $ans =~ s/^http:/https:/;
             &$callback($ans) if $ans;
         } else {
             CJ::debug("url not found:" . $res->content);
