@@ -23,18 +23,21 @@ sub new {
     my ($proto, %args) = @_;
     my $class = ref($proto) || $proto;
 
-    $args{port}   ||= 80;
-    $args{protocol} = "http" unless defined $args{protocol};
 
     croak "required parameter \"url\" missing"
       unless (defined $args{url});
 
     # WJC: "fixed" re so that urls with path info are preserved.
-    if ($args{url} =~ m|^https?://([^/:]+)(?::(\d+))?(/[/\S]+)$|) {  # A full url
-        $args{port} = $2 if defined $2;
-        $args{url} = $3;
-        $args{host} = $1;
+    if ($args{url} =~ m|^(https?)://([^/:]+)(?::(\d+))?(/[/\S]+)$|) {  # A full url
+        $args{port} = $3 if defined $3;
+        $args{url} = $4;
+        $args{host} = $2;
+        $args{protocol} = $1;
+        $args{port} = 443 if ($args{protocol} eq "https" && !defined $args{port});
     }
+    $args{protocol} = "http" unless defined $args{protocol};
+    $args{port}   ||= 80;
+
     unless (defined $args{filename}) {
         my @t = split m|/|, $args{url};
         $args{filename} = pop @t;
