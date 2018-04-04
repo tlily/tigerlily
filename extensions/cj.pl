@@ -171,7 +171,12 @@ sub CJ::shorten {
     return;
 }
 
-# Should find a better place to put this.
+# This system was setup to support multiple possible
+# annotations that could be enabled per discussion; it's
+# ended up in a state where the only existing annotation is shorten
+# and everyone wants it by default. 
+# For now, leaving the framework, but making shorten available by default
+
 $annotation_code{shorten} = {
     CODE => sub {
         my ($event)   = shift;
@@ -550,6 +555,9 @@ HANDLE_OUTER: foreach my $order (qw/-2 -1 0 1 2/) {
     my @targets = split /,/, $event->{_recips};
     my $notations;    # -> type -> {TARGETS => [], VALUES => []}
     foreach my $target (@targets) {
+        # Add our default annotations
+        $disc_annotations{$target}{shorten} = 1;
+  
         foreach my $annotation ( keys %{ $disc_annotations{$target} } ) {
             my $RE  = $annotations{$annotation}{RE};
             my $VAL = $event->{VALUE};
