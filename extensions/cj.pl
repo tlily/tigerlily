@@ -298,7 +298,7 @@ sub CJ::asModerator {
             $newevent->{NOTIFY} = 0;
             return if ( $newevent->{type} eq 'begincmd' );
             if ( $newevent->{type} eq 'endcmd' ) {
-                $response =~ /Owner: (.*?)\s+State/;
+                $response =~ /Owner: (.*?)\s+Joined/;
                 if ( $1 eq $user ) {
                     $sub->();
                     return;
