@@ -28,7 +28,7 @@ sub response {
 sub help {
     return <<END_HELP;
 As a moderator or owner of a discussion, you can have me join or quit a discussion.
-Usage: (join|quit|leave) <disc>
+You must specify the full name.  Usage: (join|quit|leave) <disc>
 END_HELP
 }
 1;
