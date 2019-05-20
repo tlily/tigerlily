@@ -11,6 +11,7 @@ package TLily::Config;
 
 use TLily::ExoSafe;
 use Exporter;
+use lib '.';
 #require "TLily/dumpvar.pl";
 
 @ISA = qw(Exporter);
