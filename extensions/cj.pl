@@ -149,7 +149,16 @@ sub CJ::shorten {
 
     my $original_host = new URI($short)->host();
 
-    my $url = 'https://api-ssl.bitly.com/v3/shorten?longURL=' . escape($short) 
+    # While escape() would handle all the characters we need, some
+    # Sites are very finicky about their :, so we'll manually escape the ones we know bitly cares about
+    my $escaped_short = $short;
+    $escaped_short =~ s/\%/%25/g;
+    $escaped_short =~ s/\=/%3D/g;
+    $escaped_short =~ s/\&/%26/g;
+    $escaped_short =~ s/\?/%3F/g;
+    $escaped_short =~ s/\#/%23/g;
+
+    my $url = 'https://api-ssl.bitly.com/v3/shorten?longURL=' . $escaped_short
         . '&access_token=' . $CJ::config->val( 'bitlyapi', 'APIkey' );
 
     my $req = HTTP::Request->new( GET => $url );
