@@ -21,8 +21,7 @@ sub help {
     return <<'END_HELP',
 Usage: stock <LIST of comma or space separated symbols> for basic information.
 Stock information comes from yahoo, and CJ makes no guarantee as to the
-accuracy or timeliness of this information. Multi-line responses will look
-horrible unless your client is 80 characters wide.
+accuracy or timeliness of this information.
 END_HELP
 }
 
@@ -44,11 +43,14 @@ sub _get_stock {
         foreach (@{$content->{quoteResponse}{result}}) {
             my $data = $_;
 
-            push @results, 
-                ($data->{symbol} . ' [' . $data->{shortName}
-                . '] '. (sprintf '%.2f', $data->{regularMarketPrice})
-                . ' ' . $data->{financialCurrency}
-                . ', Change: ' . (sprintf '%.2f', $data->{regularMarketChangePercent}) . "%");
+            push @results,
+                sprintf "%-6s %7.2f %3s, Chg: %6.1f%% [%s]",
+                    $data->{symbol},
+                    $data->{regularMarketPrice},
+                    $data->{financialCurrency},
+                    $data->{regularMarketChangePercent},
+                    $data->{shortName}
+
         }
         if (! @results ) {
             CJ::dispatch( $event,
@@ -56,7 +58,9 @@ sub _get_stock {
             return;
         }
 
-        CJ::dispatch( $event, CJ::wrap( @results ) );
+        foreach (@results) {
+            CJ::dispatch( $event, $_);
+        }
         return;
     }
 
