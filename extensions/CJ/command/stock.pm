@@ -33,7 +33,7 @@ sub _get_stock {
         return;
     }
 
-    my $stock = uc @stock[0];
+    my $stock = @stock[0];
     my $url
         = 'https://query1.finance.yahoo.com/v7/finance/quote?symbols='
         . $stock;
@@ -53,7 +53,7 @@ sub _get_stock {
         CJ::dispatch(
             $event,
             CJ::cleanHTML(
-                $stock . ' [' . $data->{shortName}
+                $data->{symbol} . ' [' . $data->{shortName}
                 . '] '. (sprintf '%.2f', $data->{regularMarketPrice})
                 . ' ' . $data->{financialCurrency}
                 . ', Change: ' . (sprintf '%.2f', $data->{regularMarketChangePercent}) . "%"
