@@ -1,6 +1,8 @@
 package CJ::command::stock;
 use strict;
 
+use JSON;
+
 our $TYPE     = "all";
 our $POSITION = 0;
 our $LAST     = 1;
@@ -17,8 +19,7 @@ sub response {
 
 sub help {
     return <<'END_HELP',
-Usage: stock <LIST of comma or space separated symbols> for generic information
-or stock (<amount> <stock>) to show the value of a certain number of shares.
+Usage: stock <ticker symbol> for basic information.
 Stock information comes from yahoo, and CJ makes no guarantee as to the
 accuracy or timeliness of this information.
 END_HELP
@@ -26,88 +27,44 @@ END_HELP
 
 sub _get_stock {
     my ( $event, @stock ) = @_;
-    my %stock     = ();
-    my %purchased = ();
-    my $cnt       = 0;
-    my @retval;
 
-    if ( $stock[0] =~ /^[\d@.]+$/ ) {
-        while (@stock) {
-            my $num   = shift @stock;
-            my $stock = uc( shift @stock );
-            $num =~ /^([\d.]+)(@([\d.])+)?$/;
-            my $shares   = $1;
-            my $purchase = $3;
-            $stock{$stock}     = $shares;
-            $purchased{$stock} = $purchase;
-        }
-        @stock = keys %stock;
+    if (@stock != 1) {
+        CJ::dispatch( $event, "Please specify a single ticker symbol");
+        return;
     }
 
-    my $total = 0;
-    my $gain  = 0;
-
+    my $stock = uc @stock[0];
     my $url
-        = 'http://download.finance.yahoo.com/d/quotes.csv?s='
-        . join( ',', @stock )
-        . '&f=sl1d1t1c2v';
-    CJ::add_throttled_HTTP(
-        url      => $url,
-        ui_name  => 'main',
-        callback => sub {
+        = 'https://query1.finance.yahoo.com/v7/finance/quote?symbols='
+        . $stock;
 
-            my ($response) = @_;
-            my (@invalid_symbols);
+    my $req = HTTP::Request->new( GET => $url );
+    my $res = $CJ::ua->request($req);
 
-            my @chunks = split( /\n/, $response->{_content} );
-            foreach my $chunk (@chunks) {
-                my ( $stock, $value, $date, $time, $change, $volume )
-                    = map { s/^"(.*)"$/$1/; $_ }
-                    split( /,/, CJ::cleanHTML($chunk) );
-                if ( $volume =~ m{N/A} && $change =~ "N/A") {
-                    # skip unknown stocks.
-                    push @invalid_symbols, $stock;
-                    next;
-                }
-                $change =~ s/^(.*) - (.*)$/$1 ($2)/;
-                if (%stock) {
-                    my $sub = $value * $stock{$stock};
-                    $total += $sub;
-                    if ( $purchased{$stock} ) {
-                        my $subgain = ( $value - $purchased{$stock} )
-                            * $stock{$stock};
-                        $gain += $subgain;
-                        push @retval,
-                            "$stock: Last $date $time, $value: Change $change: Gain: $
-subgain";
-                    }
-                    else {
-                        push @retval,
-                            "$stock: Last $date $time, $value: Change $change: Tot: $sub";
-                    }
-                }
-                else {
-                    push @retval,
-                        "$stock: Last $date $time, $value: Change $change: Vol: $volume";
-                }
-            }
+    my $content = decode_json $res->content;
 
-            if ( %stock && @stock > 1 ) {
-                if ($gain) {
-                    push @retval, "Total gain:  $gain";
-                }
-                push @retval, "Total value: $total";
-            }
-
-            my $retval = CJ::wrap(@retval);
-
-            if ( @invalid_symbols && $event->{type} eq 'private' ) {
-                CJ::dispatch( $event, 'Invalid Ticker Symbols: ' . join ', ',
-                    @invalid_symbols );
-            }
-            CJ::dispatch( $event, $retval );
+    if ( $res->is_success ) {
+        if (! $content->{quoteResponse}{result}[0] ) {
+            CJ::dispatch( $event,
+                "Invalid ticker symbol" );
+            return;
         }
-    );
+        my $data = $content->{quoteResponse}{result}[0];
+        CJ::dispatch(
+            $event,
+            CJ::cleanHTML(
+                $stock . ' [' . $data->{shortName}
+                . '] '. (sprintf '%.2f', $data->{regularMarketPrice})
+                . ' ' . $data->{financialCurrency}
+                . ', Change: ' . (sprintf '%.2f', $data->{regularMarketChangePercent}) . "%"
+            )
+        );
+        return;
+    }
+    CJ::dispatch( $event,
+        "Apparently I can't do that: " . $res->status_line );
+    return;
+
 }
 
 1;
