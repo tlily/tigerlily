@@ -1,6 +1,8 @@
 package CJ::command::stock;
 use strict;
 
+use List::MoreUtils qw/uniq/;
+
 use JSON;
 
 our $TYPE     = "all";
@@ -30,7 +32,7 @@ sub _get_stock {
 
     my $url
         = 'https://query1.finance.yahoo.com/v7/finance/quote?symbols='
-        . join(',', @stock);
+        . join(',', uniq @stock);
 
     my $req = HTTP::Request->new( GET => $url );
     my $res = $CJ::ua->request($req);
