@@ -6,7 +6,7 @@ use CGI qw/escape unescape/;
 our $TYPE     = "all";
 our $POSITION = -1;
 our $LAST     = 1;
-our $RE       = qr/\bbacon*\s*(.*)\s*$/i;
+our $RE       = qr/\bbacon\s+(.*)\s*$/i;
 
 our $bacon_url = 'http://oracleofbacon.org/movielinks.php?a=Kevin+Bacon'
     . '&end_year=2050&start_year=1850&game=0&u0=on';
