@@ -27,11 +27,10 @@ sub _scrape_bacon {
     }
 
     $content =~ s/.*<div id="main">//sm;
-    $content = CJ::cleanHTML($content);
-    $content =~ s/(Kevin Bacon).*$/$1/sm;
+    $content =~ s/(Kevin Bacon)<\/a>.*/$1/sm;
+    $content =~ s/<script.*?<\/script>//smg;
 
-    $content =~ s/\bwas in\b/who was in/g;
-    $content =~ s/who was in/was in/;
+    $content = CJ::cleanHTML($content);
 
     return $content;
 }
