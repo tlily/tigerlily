@@ -42,7 +42,8 @@ sub response {
 
     if ( lc($term) eq 'kevin bacon' ) {
         CJ::dispatch( $event,
-            'Are you congenitally insane or irretrievably stupid?' );
+            'Kevin Bacon has a Bacon number of 0.'
+        );
         return;
     }
     elsif ( lc($term) eq 'coke' ) {
