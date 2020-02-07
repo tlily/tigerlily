@@ -27,13 +27,14 @@ sub response {
     $bible = 'kjv' unless $bible;
     my $id = $bibles->{$bible}->{id};
 
-    my $url = "http://www.biblegateway.com/passage/?search=$term&version=$id";
+    my $url = "https://www.biblegateway.com/passage/?search=$term&version=$id";
 
     CJ::add_throttled_HTTP(
         url      => $url,
         ui_name  => ' main ',
         callback => sub {
             my ($response) = @_;
+ CJ::debug(keys %$response);
             my $passage = _scrape_bible( $response->{_content} );
             if ($passage) {
                 CJ::dispatch( $event, $passage );
@@ -59,6 +60,7 @@ END_HELP
 sub _scrape_bible {
     my ($content) = @_;
 
+CJ::debug($content);
     $content =~ m{<sup class="versenum".*?>(.*?)</p}sm;
     return CJ::cleanHTML($1);
 }

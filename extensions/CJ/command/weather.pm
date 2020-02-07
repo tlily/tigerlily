@@ -1,7 +1,7 @@
 package CJ::command::weather;
 use strict;
 
-use CGI qw/escape/;
+use CGI qw/escape unescape/;
 
 our $TYPE     = "all";
 our $POSITION = -1;
