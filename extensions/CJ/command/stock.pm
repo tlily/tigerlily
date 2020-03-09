@@ -46,10 +46,10 @@ sub _get_stock {
             my $data = $_;
 
             push @results,
-                sprintf "%-6s %7.2f %3s, Chg: %6.1f%% [%s]",
+                sprintf "%-6s %7.2f, Chg: %4.2f (%.1f%%) [%s]",
                     $data->{symbol},
                     $data->{regularMarketPrice},
-                    $data->{financialCurrency},
+                    $data->{regularMarketChange},
                     $data->{regularMarketChangePercent},
                     $data->{shortName}
 
