@@ -14,6 +14,8 @@ use LWP::Protocol::https;    # declare dependency, not used directly.
 
 use CGI qw/escape/;
 
+use JSON;
+
 =head1 AUTHOR
 
 Will "Coke" Coleda
@@ -149,29 +151,23 @@ sub CJ::shorten {
 
     my $original_host = new URI($short)->host();
 
-    # While escape() would handle all the characters we need, some
-    # Sites are very finicky about their :, so we'll manually escape the ones we know bitly cares about
-    my $escaped_short = $short;
-    $escaped_short =~ s/\%/%25/g;
-    $escaped_short =~ s/\=/%3D/g;
-    $escaped_short =~ s/\&/%26/g;
-    $escaped_short =~ s/\?/%3F/g;
-    $escaped_short =~ s/\#/%23/g;
-
-    my $url = 'https://api-ssl.bitly.com/v3/shorten?longURL=' . $escaped_short
-        . '&access_token=' . $CJ::config->val( 'bitlyapi', 'APIkey' );
-
-    my $req = HTTP::Request->new( GET => $url );
+    my $req = HTTP::Request->new(
+        'POST',
+        'https://api-ssl.bitly.com/v4/shorten',
+        [
+            'Content-Type' => 'application/json',
+            'Authorization' => "Bearer " .  $CJ::config->val( 'bitlyapi', 'APIkey')
+        ],
+        encode_json({"long_url" => $short})
+    );
+    
     my $res = $CJ::ua->request($req);
 
     if ( $res->is_success ) {
-        if ( $res->content =~ /"url":"([^"]+)",/ ) {
-            my $ans = $1 . " [$original_host]";
-            $ans =~ s/^http:/https:/;
-            &$callback($ans) if $ans;
-        } else {
-            CJ::debug("url not found:" . $res->content);
-        }
+        my $data = decode_json($res->content);
+        my $short = $data->{link};
+        $short =~ s/^http:/https:/;
+        &$callback( $short . " [$original_host]" );
     }
     else {
         CJ::debug( "shorten failed: " . $res->status_line );
