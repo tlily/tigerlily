@@ -153,21 +153,24 @@ sub CJ::shorten {
 
     my $req = HTTP::Request->new(
         'POST',
-        'https://api-ssl.bitly.com/v4/shorten',
+        'https://n9.cl/api/short',
         [
             'Content-Type' => 'application/json',
-            'Authorization' => "Bearer " .  $CJ::config->val( 'bitlyapi', 'APIkey')
         ],
-        encode_json({"long_url" => $short})
+        encode_json({"url" => $short})
     );
     
     my $res = $CJ::ua->request($req);
 
     if ( $res->is_success ) {
         my $data = decode_json($res->content);
-        my $short = $data->{link};
-        $short =~ s/^http:/https:/;
-        &$callback( $short . " [$original_host]" );
+	if ($data->{status} eq "OK") {
+            my $short = $data->{short};
+	    $short =~ s/^http:/https:/;
+	    &$callback( $short . " [$original_host]" );
+	} else {
+            CJ::debug( "shorten failed: $data->{status}" );
+        }
     }
     else {
         CJ::debug( "shorten failed: " . $res->status_line );
