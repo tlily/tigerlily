@@ -72,6 +72,10 @@ $CJ::name = TLily::Server->active()->user_name();
 $CJ::ua = LWP::UserAgent->new;
 $CJ::ua->agent("CJ-bot/1.0");
 
+# disable SSL verification
+$CJ::ua->ssl_opts(verify_hostname => 0,
+                  SSL_verify_mode => 0x00);
+
 =head1 Methods
 
 =head2 CJ::debug( @complaints)
