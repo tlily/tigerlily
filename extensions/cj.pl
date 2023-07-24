@@ -72,10 +72,6 @@ $CJ::name = TLily::Server->active()->user_name();
 $CJ::ua = LWP::UserAgent->new;
 $CJ::ua->agent("CJ-bot/1.0");
 
-# disable SSL verification
-$CJ::ua->ssl_opts(verify_hostname => 0,
-                  SSL_verify_mode => 0x00);
-
 =head1 Methods
 
 =head2 CJ::debug( @complaints)
@@ -157,7 +153,7 @@ sub CJ::shorten {
 
     my $req = HTTP::Request->new(
         'POST',
-        'https://n9.cl/api/short',
+        'http://s.u13.net/shorten_url',
         [
             'Content-Type' => 'application/json',
         ],
@@ -168,8 +164,8 @@ sub CJ::shorten {
 
     if ( $res->is_success ) {
         my $data = decode_json($res->content);
-	if ($data->{status} eq "OK") {
-            my $short = $data->{short};
+	if (exists $data->{shortened_url}) {
+            my $short = "http://s.u13.net/$data->{shortened_url}";
 	    $short =~ s/^http:/https:/;
 	    &$callback( $short . " [$original_host]" );
 	} else {
