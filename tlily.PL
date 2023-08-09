@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 #    TigerLily:  A client for the lily CMC, written in Perl.
 #    Copyright (C) 1999-2011  The TigerLily Team, <tigerlily@tlily.org>
 #                                http://www.tlily.org/tigerlily/
