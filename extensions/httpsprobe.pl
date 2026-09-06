@@ -61,6 +61,14 @@ Try a plain http:// URL too. That path is untouched by the fix and works
 either way, which is what separates "TLS is broken" from "the network is
 broken".
 
+=head1 CAVEAT
+
+Loading this into an already-running client is not enough to test the fix.
+TLily::Server is loaded at startup and stays in %INC, so a client started
+before the fix keeps the old one, and an https request goes out in the clear
+however new the files on disk are. The probe checks for this and says so
+rather than reporting it as a TLS failure, but the answer is to restart.
+
 =cut
 
 # Something small, stable, and unlikely to be blocked, that answers 200 rather
@@ -76,6 +84,19 @@ my $timeout = 20;
 
 my %pending;
 
+# TLily::Server::HTTP is only pulled in by whatever extension wants it, but
+# TLily::Server is loaded at startup. Load this extension into a client that
+# was started before the fix and you get today's HTTP.pm compiled fresh off
+# disk on top of the old TLily::Server still sitting in %INC -- so the URL
+# parses, {tls} is passed, and a new() that has never heard of {tls} quietly
+# falls through to a cleartext connection. That looks exactly like the bug
+# this extension is meant to detect, which would be a miserable thing to
+# debug. Check for the method rather than trusting the file on disk.
+sub _stale_server {
+    return TLily::Server->can('contact_tls') ? undef : (
+        $INC{'TLily/Server.pm'} || 'TLily/Server.pm' );
+}
+
 sub httpsprobe_cmd {
     my ( $ui, $args ) = @_;
 
@@ -85,6 +106,18 @@ sub httpsprobe_cmd {
 
     if ( $url !~ m{^https?://} ) {
         $ui->print("usage: %httpsprobe [http(s)://...]\n");
+        return;
+    }
+
+    my $stale = _stale_server();
+    if ( $stale && $url =~ m{^https://} ) {
+        $ui->print( "The TLily::Server in memory has no TLS support, so this "
+                . "would connect in\n"
+                . "the clear no matter what the fix says. It was loaded at "
+                . "startup from\n"
+                . "  $stale\n"
+                . "Restart tigerlily (or try an http:// URL, which does not "
+                . "need the fix).\n" );
         return;
     }
 
@@ -187,6 +220,10 @@ argument it fetches https://www.rpi.edu/robots.txt.
 Useful for telling apart "TLS is broken" and "the network is broken": try it
 with an https:// URL and then an http:// one. If the plain one works and the
 secure one does not, TLily::Server::HTTP cannot speak TLS.
+
+Loading this extension into a client that was started before the fix is not
+enough to test it: TLily::Server is loaded at startup and stays loaded. The
+probe will tell you to restart rather than reporting a false failure.
 
 A URL with no path at all, such as https://www.rpi.edu/, exercises a second
 bug: older versions will not parse it and report a missing "host" parameter.
