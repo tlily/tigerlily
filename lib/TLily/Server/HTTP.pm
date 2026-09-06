@@ -28,9 +28,15 @@ sub new {
       unless (defined $args{url});
 
     # WJC: "fixed" re so that urls with path info are preserved.
-    if ($args{url} =~ m|^(https?)://([^/:]+)(?::(\d+))?(/[/\S]+)$|) {  # A full url
+    #
+    # The path is optional, and may be just "/". It used to be (/[/\S]+), which
+    # needs a slash and then at least one more character -- so "http://host/"
+    # and "http://host" did not match at all, {host} was never set, and
+    # TLily::Server::new croaked "required parameter host missing". Fetching
+    # the front page of anything was impossible.
+    if ($args{url} =~ m|^(https?)://([^/:]+)(?::(\d+))?(/\S*)?$|) {  # A full url
         $args{port} = $3 if defined $3;
-        $args{url} = $4;
+        $args{url} = (defined $4 && length $4) ? $4 : "/";
         $args{host} = $2;
         $args{protocol} = $1;
         $args{port} = 443 if ($args{protocol} eq "https" && !defined $args{port});
@@ -51,7 +57,9 @@ sub new {
 
     unless (defined $args{filename}) {
         my @t = split m|/|, $args{url};
-        $args{filename} = pop @t;
+        # A bare "/" has no last component to name; keep this defined rather
+        # than handing callers an undef they never used to get.
+        $args{filename} = @t ? pop @t : "index.html";
     }
 
     my $self = $class->SUPER::new(%args);
