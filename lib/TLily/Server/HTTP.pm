@@ -38,6 +38,17 @@ sub new {
     $args{protocol} = "http" unless defined $args{protocol};
     $args{port}   ||= 80;
 
+    # An https URL needs TLS on the port as given. {secure} is the wrong switch
+    # for that: it means lily's pinned SSL on the port above this one, which
+    # for 443 would dial 444 and pin every host we ever fetched from.
+    #
+    # Setting both explicitly also stops a fetch inheriting whatever the user's
+    # lily connection uses. TLily::Server defaults {secure} to the global
+    # config, so anyone connected to lily over SSL has been having plain http
+    # fetches attempted over SSL, against the wrong port, all along.
+    $args{tls}    = ($args{protocol} eq "https") ? 1 : 0;
+    $args{secure} = 0;
+
     unless (defined $args{filename}) {
         my @t = split m|/|, $args{url};
         $args{filename} = pop @t;
