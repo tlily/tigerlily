@@ -700,8 +700,13 @@ sub reader {
         my $ui;
         $ui = TLily::UI::name($self->{"ui_name"})
           if ($self->{"ui_name"} && !$self->{"expect_eof"});
+        # {name} is only filled in when the caller passed one, but {names}
+        # always holds the generated one, so connecting without an explicit
+        # name made this report losing the connection to "".
         $ui->print("*** Lost connection to \"" .
-                   $self->{"name"} . "\" ***\n") if $ui;
+                   (defined($self->{"name"})
+                        ? $self->{"name"}
+                        : $self->{"names"}->[0]) . "\" ***\n") if $ui;
         $self->terminate();
     }
 
