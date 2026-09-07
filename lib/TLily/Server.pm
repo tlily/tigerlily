@@ -699,7 +699,7 @@ sub reader {
     if ($eof) {
         my $ui;
         $ui = TLily::UI::name($self->{"ui_name"})
-          if ($self->{"ui_name"});
+          if ($self->{"ui_name"} && !$self->{"expect_eof"});
         $ui->print("*** Lost connection to \"" .
                    $self->{"name"} . "\" ***\n") if $ui;
         $self->terminate();

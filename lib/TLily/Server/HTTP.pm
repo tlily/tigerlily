@@ -73,6 +73,13 @@ sub new {
 
     my $self = $class->SUPER::new(%args);
 
+    # We send HTTP/1.0 and no Content-Length is guaranteed, so the end of the
+    # response *is* the server closing the connection. Reaching EOF here is
+    # success, and reader() should not report it as a lost connection: any
+    # caller that passes a ui_name -- ctc.pl, CJ's commands -- otherwise gets
+    # "*** Lost connection ***" printed at it after every successful fetch.
+    $self->{expect_eof} = 1;
+
     $self->{handler} = TLily::Event::event_r (type => 'server_connected',
                                               call => \&send_url);
 
