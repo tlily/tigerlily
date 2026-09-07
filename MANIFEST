@@ -61,6 +61,7 @@ extensions/fumble.pl
 extensions/gag.pl
 extensions/group.pl
 extensions/http_parse.pl
+extensions/httpsprobe.pl
 extensions/html_chars.pl
 extensions/ignore.pl
 extensions/info.pl
