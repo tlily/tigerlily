@@ -116,6 +116,11 @@ sub new {
     $self->{ui_name}   = $args{ui_name};
     $self->{secure}    =
         defined($args{secure})?$args{secure}:$TLily::Config::config{secure};
+    # Ordinary TLS on the given port, verified against the CA store, as opposed
+    # to {secure}, which means lily's pinned SSL on the port above this one.
+    # It never falls back to the global config: a caller that has not asked for
+    # TLS should not get it because the user's lily connection uses it.
+    $self->{tls}       = $args{tls} ? 1 : 0;
     $self->{proto}     = defined($args{protocol}) ? $args{protocol}:"server";
     $self->{bytes_in}  = 0;
     $self->{bytes_out} = 0;
@@ -125,12 +130,14 @@ sub new {
 #                      PeerPort => $self->{port},
 #                      Proto    => 'tcp');
     eval {
-        if ($self->{secure} && $SSL_avail) {
-            $self->{sock} = $self->contact_ssl();
-        } elsif ($self->{secure}) {
+        if (($self->{tls} || $self->{secure}) && !$SSL_avail) {
             $ui->print("\n\nWARNING: Secure connection requested, but IO::Socket::SSL not installed!\n");
             $ui->print("Terminating connection attempt.\n\n");
             die "No SSL support available.\n";
+        } elsif ($self->{tls}) {
+            $self->{sock} = $self->contact_tls();
+        } elsif ($self->{secure}) {
+            $self->{sock} = $self->contact_ssl();
         } else {
             $self->{sock} = $self->contact();
         }
@@ -307,6 +314,50 @@ sub contact_ssl {
      }
 
      return $sock;
+}
+
+# Ordinary TLS, for talking to something that is not a lily server.
+#
+# contact_ssl() above is built around lily's conventions: the encrypted port is
+# the plaintext one plus one, peer verification is off, and the certificate is
+# pinned under ~/.lily/certs so a change can be brought to the user's
+# attention. That is the right shape for the one server you connect to for
+# years, and the wrong shape for fetching a web page -- it would dial the wrong
+# port, pin every host contacted, and interrupt the user with certificates they
+# never asked about.
+#
+# So this is the other kind: the port as given, verified against the system's
+# CA store, no pinning and no prompting. Used by TLily::Server::HTTP.
+sub contact_tls {
+    my $self = shift;
+
+    my $serv = $self->{host};
+    my $port = $self->{port};
+
+    my $ui;
+    $ui = TLily::UI::name($self->{ui_name}) if ($self->{ui_name});
+    $ui->print("Connecting via TLS to $serv, port $port...") if $ui;
+
+    my $sock = IO::Socket::SSL->new(
+        PeerAddr        => $serv,
+        PeerPort        => $port,
+        SSL_verify_mode => IO::Socket::SSL::SSL_VERIFY_PEER(),
+        # Check the name in the certificate against the host we asked for, and
+        # send SNI, without which a shared host serves the wrong site.
+        SSL_hostname        => $serv,
+        SSL_verifycn_name   => $serv,
+        SSL_verifycn_scheme => 'http',
+    );
+
+    # Deliberately no fall back to an unencrypted socket. contact_ssl() does
+    # that because a lily session is worth having either way; here the whole
+    # point of the request was that it be https, and quietly downgrading it
+    # would be worse than failing.
+    die "TLS connection to $serv:$port failed: "
+        . ($IO::Socket::SSL::SSL_ERROR || $!) . "\n"
+        unless $sock;
+
+    return $sock;
 }
 
 sub write_cert {
@@ -574,6 +625,19 @@ sub reader {
     my ($buf, $rc);
     my $bufsize = 16384;
 
+    # Everything read in one pass is delivered as a single event, and the end
+    # of the connection is never announced in the same pass as data. Both
+    # matter because of the drain loop below: TLily::Event::send queues, and
+    # the events a handler sends itself go on the end of that queue. Draining
+    # several chunks and then terminating would queue every chunk plus the
+    # disconnect before the first chunk had been looked at, so a parser whose
+    # state carries across chunks would be told the connection closed before
+    # it had made sense of any of it. http_parse.pl is exactly that: it only
+    # starts filling in the body once it has seen the blank line ending the
+    # headers, and it fires the caller's callback on server_disconnected.
+    my $data = '';
+    my $eof  = 0;
+
     # We need a loop here, because, for IO::Socket::SSL handles, if we
     # don't completely drain the underlying buffer, a subsequent select()
     # will not get notice the handle is ready for reading unless more
@@ -582,11 +646,11 @@ sub reader {
         $rc = sysread($self->{sock}, $buf,  $bufsize);
 
         # Interrupted by a signal or would block
-        return if (!defined($rc) && $! == $::EAGAIN && !length($buf));
+        last if (!defined($rc) && $! == $::EAGAIN && !length($buf));
 
         # Would block.  (win32)
-        return if (($^O eq "MSWin32") &&
-                   (!defined($rc) && $! == &EWOULDBLOCK && !length($buf)));
+        last if (($^O eq "MSWin32") &&
+                 (!defined($rc) && $! == &EWOULDBLOCK && !length($buf)));
 
         # For IO::Socket:SSL connections, returning under from a read does
         # not always indicate connection closed.  It may also indicate
@@ -600,32 +664,51 @@ sub reader {
             if ($self->{sock}->errstr eq
                   "SSL read error\nSSL wants a read first!") {
                 $self->{sock}->error("");
-                return if !defined($rc);
+                last if !defined($rc);
             }
         }
 
         # Connection lost/closed
         if (!defined($rc) || $rc == 0) {
-            my $ui;
-            $ui = TLily::UI::name($self->{"ui_name"})
-              if ($self->{"ui_name"});
-            $ui->print("*** Lost connection to \"" .
-                       $self->{"name"} . "\" ***\n") if $ui;
-            $self->terminate();
+            $eof = 1;
         }
 
         # Data as usual.
         else {
-            $self->{bytes_in} += length($buf);
-
-            TLily::Event::send(type   => "$self->{proto}_data",
-                               server => $self,
-                               data   => $buf);
+            $data .= $buf;
             $buf = '';
         }
 
     # See above comment about this loop at its start (the 'do').
     } while (ref($self->{'sock'}) eq 'IO::Socket::SSL' && $rc);
+
+    if (length($data)) {
+        $self->{bytes_in} += length($data);
+
+        TLily::Event::send(type   => "$self->{proto}_data",
+                           server => $self,
+                           data   => $data);
+
+        # Hand back the data and stop here even at end of connection: the
+        # queued event has to be parsed before anything hears the close. The
+        # socket stays at EOF, so the next select() reports it and we come
+        # straight back here with nothing to read and announce it then.
+        return;
+    }
+
+    if ($eof) {
+        my $ui;
+        $ui = TLily::UI::name($self->{"ui_name"})
+          if ($self->{"ui_name"} && !$self->{"expect_eof"});
+        # {name} is only filled in when the caller passed one, but {names}
+        # always holds the generated one, so connecting without an explicit
+        # name made this report losing the connection to "".
+        $ui->print("*** Lost connection to \"" .
+                   (defined($self->{"name"})
+                        ? $self->{"name"}
+                        : $self->{"names"}->[0]) . "\" ***\n") if $ui;
+        $self->terminate();
+    }
 
     return;
 }

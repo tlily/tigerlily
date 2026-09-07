@@ -28,9 +28,15 @@ sub new {
       unless (defined $args{url});
 
     # WJC: "fixed" re so that urls with path info are preserved.
-    if ($args{url} =~ m|^(https?)://([^/:]+)(?::(\d+))?(/[/\S]+)$|) {  # A full url
+    #
+    # The path is optional, and may be just "/". It used to be (/[/\S]+), which
+    # needs a slash and then at least one more character -- so "http://host/"
+    # and "http://host" did not match at all, {host} was never set, and
+    # TLily::Server::new croaked "required parameter host missing". Fetching
+    # the front page of anything was impossible.
+    if ($args{url} =~ m|^(https?)://([^/:]+)(?::(\d+))?(/\S*)?$|) {  # A full url
         $args{port} = $3 if defined $3;
-        $args{url} = $4;
+        $args{url} = (defined $4 && length $4) ? $4 : "/";
         $args{host} = $2;
         $args{protocol} = $1;
         $args{port} = 443 if ($args{protocol} eq "https" && !defined $args{port});
@@ -38,12 +44,41 @@ sub new {
     $args{protocol} = "http" unless defined $args{protocol};
     $args{port}   ||= 80;
 
+    # An https URL needs TLS on the port as given. {secure} is the wrong switch
+    # for that: it means lily's pinned SSL on the port above this one, which
+    # for 443 would dial 444 and pin every host we ever fetched from.
+    #
+    # Setting both explicitly also stops a fetch inheriting whatever the user's
+    # lily connection uses. TLily::Server defaults {secure} to the global
+    # config, so anyone connected to lily over SSL has been having plain http
+    # fetches attempted over SSL, against the wrong port, all along.
+    $args{tls}    = ($args{protocol} eq "https") ? 1 : 0;
+    $args{secure} = 0;
+
+    # {proto} is only ever used to name the event stream: TLily::Server::reader
+    # sends "$self->{proto}_data", and http_parse.pl -- the extension that turns
+    # that data into a body and calls our callback -- listens for "http_data".
+    # Leaving this as "https" sends https_data, which nothing listens for, so
+    # the response is read off the socket and discarded and the callback gets
+    # an empty body. TLS is the transport; the protocol being spoken is http
+    # either way, which is why TLily::Daemon::HTTP hardcodes this too.
+    $args{protocol} = "http";
+
     unless (defined $args{filename}) {
         my @t = split m|/|, $args{url};
-        $args{filename} = pop @t;
+        # A bare "/" has no last component to name; keep this defined rather
+        # than handing callers an undef they never used to get.
+        $args{filename} = @t ? pop @t : "index.html";
     }
 
     my $self = $class->SUPER::new(%args);
+
+    # We send HTTP/1.0 and no Content-Length is guaranteed, so the end of the
+    # response *is* the server closing the connection. Reaching EOF here is
+    # success, and reader() should not report it as a lost connection: any
+    # caller that passes a ui_name -- ctc.pl, CJ's commands -- otherwise gets
+    # "*** Lost connection ***" printed at it after every successful fetch.
+    $self->{expect_eof} = 1;
 
     $self->{handler} = TLily::Event::event_r (type => 'server_connected',
                                               call => \&send_url);
