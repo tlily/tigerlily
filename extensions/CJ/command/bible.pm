@@ -29,19 +29,32 @@ sub response {
 
     my $url = "https://www.biblegateway.com/passage/?search=$term&version=$id";
 
-    CJ::add_throttled_HTTP(
-        url      => $url,
-        ui_name  => ' main ',
-        callback => sub {
-            my ($response) = @_;
- CJ::debug(keys %$response);
-            my $passage = _scrape_bible( $response->{_content} );
-            if ($passage) {
-                CJ::dispatch( $event, $passage );
-            }
-            return;
-        }
-    );
+    # Bible Gateway is HTTPS only. CJ::add_throttled_HTTP goes through
+    # TLily::Server::HTTP, which issues a hardcoded "GET ... HTTP/1.0" and does
+    # not follow redirects or decode the response charset. $CJ::ua does all
+    # three, as CJ::shorten and the stock command already do.
+    my $res = $CJ::ua->get($url);
+    if ( !$res->is_success ) {
+        CJ::dispatch( $event,
+            'Bible Gateway answered ' . $res->status_line . '.' );
+        return;
+    }
+
+    # decoded_content, not content: CJ::cleanHTML finishes with unidecode(),
+    # which wants characters. Handed raw UTF-8 bytes it reads each one as
+    # Latin-1, so the "\xC2\xA0" of a non-breaking space becomes "\x{C2}\x{A0}"
+    # -- and unidecode turns U+00C2 into a literal "A". That is where the
+    # stray "A" in "16A For God so loved the world" came from.
+    my $html = $res->decoded_content;
+    $html = $res->content unless defined $html;
+
+    my $passage = _scrape_bible($html);
+    if ($passage) {
+        CJ::dispatch( $event, $passage );
+    }
+    elsif ( $event->{type} eq 'private' ) {
+        CJ::dispatch( $event, "I can't find that passage." );
+    }
     return;
 }
 
@@ -60,8 +73,12 @@ END_HELP
 sub _scrape_bible {
     my ($content) = @_;
 
-CJ::debug($content);
-    $content =~ m{<sup class="versenum".*?>(.*?)</p}sm;
+    # The first verse of a chapter is marked "chapternum" rather than
+    # "versenum", so matching only the latter missed every <book> <chapter>:1
+    # lookup -- Genesis 1:1, Psalm 23:1, John 1:1.
+    return undef
+        unless (
+        $content =~ m{<(?:sup|span) class="(?:versenum|chapternum)".*?>(.*?)</p}sm );
     return CJ::cleanHTML($1);
 }
 
