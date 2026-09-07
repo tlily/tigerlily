@@ -14,9 +14,10 @@ our $RE       = qr/\bweather\s+(.*)\??\s*$/i;
 # registration, and a documented JSON interface instead of a scrape.
 #
 # Requests go through $CJ::ua rather than CJ::add_throttled_HTTP because
-# TLily::Server::HTTP issues a hardcoded "GET ... HTTP/1.0" and never sets
-# {secure}, so it cannot speak TLS -- and these endpoints are HTTPS only.
-# CJ::shorten and the stock command already use $CJ::ua for the same reason.
+# These endpoints are HTTPS only. CJ::add_throttled_HTTP goes through
+# TLily::Server::HTTP, which issues a hardcoded "GET ... HTTP/1.0" and does not
+# follow redirects or decode the response charset. CJ::shorten and the stock
+# command already use $CJ::ua for the same reason.
 
 our $geocode_url  = "https://geocoding-api.open-meteo.com/v1/search";
 our $forecast_url = "https://api.open-meteo.com/v1/forecast";

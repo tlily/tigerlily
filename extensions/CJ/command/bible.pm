@@ -29,17 +29,25 @@ sub response {
 
     my $url = "https://www.biblegateway.com/passage/?search=$term&version=$id";
 
-    # Bible Gateway is HTTPS only, and CJ::add_throttled_HTTP cannot speak TLS:
-    # TLily::Server::HTTP issues a hardcoded "GET ... HTTP/1.0" and never sets
-    # {secure}, so an https URL connects to port 443 in the clear. $CJ::ua
-    # handles it, as CJ::shorten and the stock command already do.
+    # Bible Gateway is HTTPS only. CJ::add_throttled_HTTP goes through
+    # TLily::Server::HTTP, which issues a hardcoded "GET ... HTTP/1.0" and does
+    # not follow redirects or decode the response charset. $CJ::ua does all
+    # three, as CJ::shorten and the stock command already do.
     my $res = $CJ::ua->get($url);
     if ( !$res->is_success ) {
         CJ::dispatch( $event, 'Bible Gateway is not answering.' );
         return;
     }
 
-    my $passage = _scrape_bible( $res->content );
+    # decoded_content, not content: CJ::cleanHTML finishes with unidecode(),
+    # which wants characters. Handed raw UTF-8 bytes it reads each one as
+    # Latin-1, so the "\xC2\xA0" of a non-breaking space becomes "\x{C2}\x{A0}"
+    # -- and unidecode turns U+00C2 into a literal "A". That is where the
+    # stray "A" in "16A For God so loved the world" came from.
+    my $html = $res->decoded_content;
+    $html = $res->content unless defined $html;
+
+    my $passage = _scrape_bible($html);
     if ($passage) {
         CJ::dispatch( $event, $passage );
     }
