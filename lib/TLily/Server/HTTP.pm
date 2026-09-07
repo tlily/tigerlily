@@ -55,6 +55,15 @@ sub new {
     $args{tls}    = ($args{protocol} eq "https") ? 1 : 0;
     $args{secure} = 0;
 
+    # {proto} is only ever used to name the event stream: TLily::Server::reader
+    # sends "$self->{proto}_data", and http_parse.pl -- the extension that turns
+    # that data into a body and calls our callback -- listens for "http_data".
+    # Leaving this as "https" sends https_data, which nothing listens for, so
+    # the response is read off the socket and discarded and the callback gets
+    # an empty body. TLS is the transport; the protocol being spoken is http
+    # either way, which is why TLily::Daemon::HTTP hardcodes this too.
+    $args{protocol} = "http";
+
     unless (defined $args{filename}) {
         my @t = split m|/|, $args{url};
         # A bare "/" has no last component to name; keep this defined rather
