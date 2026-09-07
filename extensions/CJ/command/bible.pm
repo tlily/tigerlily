@@ -35,7 +35,8 @@ sub response {
     # three, as CJ::shorten and the stock command already do.
     my $res = $CJ::ua->get($url);
     if ( !$res->is_success ) {
-        CJ::dispatch( $event, 'Bible Gateway is not answering.' );
+        CJ::dispatch( $event,
+            'Bible Gateway answered ' . $res->status_line . '.' );
         return;
     }
 

@@ -42,8 +42,11 @@ our %conditions = (
 
 =head2 geocode($place)
 
-Turn a place name into a hashref of location data, or undef if the name is not
-recognised. Shared with the forecast command.
+Turn a place name into a hashref of location data. Returns ($location, $error):
+at most one is set. A place we simply do not recognise gives (undef, undef) --
+that is an answer, not a failure. Anything else gives an error to report, so
+that a service that is down or blocked does not masquerade as a typo. Shared
+with the forecast command.
 
 =cut
 
@@ -52,11 +55,13 @@ sub geocode {
 
     my $url = $geocode_url . '?name=' . uri_escape($place) . '&count=1';
     my $res = $CJ::ua->get($url);
-    return undef unless $res->is_success;
+    return ( undef, 'the geocoder answered ' . $res->status_line )
+        unless $res->is_success;
 
     my $data = eval { decode_json( $res->content ) };
-    return undef if ( $@ || !$data->{results} || !@{ $data->{results} } );
-    return $data->{results}[0];
+    return ( undef, 'I could not parse what the geocoder sent' ) if $@;
+    return ( undef, undef ) unless ( $data->{results} && @{ $data->{results} } );
+    return ( $data->{results}[0], undef );
 }
 
 =head2 place_name($location)
@@ -107,7 +112,11 @@ sub response {
     $event->{VALUE} =~ $RE;
     my $term = $1;
 
-    my $loc = geocode($term);
+    my ( $loc, $err ) = geocode($term);
+    if ($err) {
+        CJ::dispatch( $event, "Looking up '$term' failed: $err." );
+        return;
+    }
     if ( !$loc ) {
         not_found( $event, 'weather', $term );
         return;
@@ -124,7 +133,8 @@ sub response {
 
     my $res = $CJ::ua->get($url);
     if ( !$res->is_success ) {
-        CJ::dispatch( $event, 'The weather service is not answering.' );
+        CJ::dispatch( $event,
+            'The weather service answered ' . $res->status_line . '.' );
         return;
     }
 

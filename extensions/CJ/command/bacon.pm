@@ -69,7 +69,8 @@ sub response {
     );
 
     if ( !$res->is_success ) {
-        CJ::dispatch( $event, 'The Oracle is not answering.' );
+        CJ::dispatch( $event,
+            'The Oracle answered ' . $res->status_line . '.' );
         return;
     }
 

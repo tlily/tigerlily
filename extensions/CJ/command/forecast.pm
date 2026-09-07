@@ -25,7 +25,11 @@ sub response {
     $event->{VALUE} =~ $RE;
     my $term = $1;
 
-    my $loc = CJ::command::weather::geocode($term);
+    my ( $loc, $err ) = CJ::command::weather::geocode($term);
+    if ($err) {
+        CJ::dispatch( $event, "Looking up '$term' failed: $err." );
+        return;
+    }
     if ( !$loc ) {
         CJ::command::weather::not_found( $event, 'forecast', $term );
         return;
@@ -44,7 +48,8 @@ sub response {
 
     my $res = $CJ::ua->get($url);
     if ( !$res->is_success ) {
-        CJ::dispatch( $event, 'The weather service is not answering.' );
+        CJ::dispatch( $event,
+            'The weather service answered ' . $res->status_line . '.' );
         return;
     }
 

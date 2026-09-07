@@ -49,12 +49,17 @@ END_HELP
 
 =head2 _quote($symbol)
 
-Fetch one symbol, returning a formatted line or undef if it is not found.
+Fetch one symbol. Returns ($line, $error): a symbol Nasdaq does not list gives
+(undef, undef), which is an answer. A request that failed gives an error, so
+that a service which is down, rate limiting us, or unreachable does not get
+reported as an unknown ticker.
 
 =cut
 
 sub _quote {
     my ($symbol) = @_;
+
+    my $error;
 
     foreach my $asset_class (@asset_classes) {
         my $url
@@ -66,10 +71,16 @@ sub _quote {
         my $req = HTTP::Request->new( GET => $url );
         $req->header( 'User-Agent' => $browser_agent );
         my $res = $CJ::ua->request($req);
-        next unless $res->is_success;
+        if ( !$res->is_success ) {
+            $error = 'Nasdaq answered ' . $res->status_line;
+            next;
+        }
 
         my $content = eval { decode_json( $res->content ) };
-        next if $@;
+        if ($@) {
+            $error = 'I could not parse what Nasdaq sent';
+            next;
+        }
 
         my $data = $content->{data};
         next unless ( $data && $data->{primaryData} );
@@ -77,17 +88,18 @@ sub _quote {
         my $p = $data->{primaryData};
         ( my $price = $p->{lastSalePrice} || q{} ) =~ s/^\$//;
 
-        return sprintf(
+        return ( sprintf(
             '%-6s %8s, Chg: %s (%s) [%s]',
             uc($symbol),
             $price,
             $p->{netChange}        || '?',
             $p->{percentageChange} || '?',
             $data->{companyName}   || uc($symbol)
-        );
+        ), undef );
     }
 
-    return undef;
+    # Every asset class either said "no such symbol" or failed outright.
+    return ( undef, $error );
 }
 
 sub _get_stock {
@@ -101,10 +113,18 @@ sub _get_stock {
     @symbols = @symbols[ 0 .. $max_symbols - 1 ]
         if ( @symbols > $max_symbols );
 
-    my @results = grep { defined } map { _quote($_) } @symbols;
+    my ( @results, @errors );
+    foreach my $symbol (@symbols) {
+        my ( $line, $error ) = _quote($symbol);
+        push @results, $line  if defined $line;
+        push @errors,  $error if defined $error;
+    }
 
     if ( !@results ) {
-        CJ::dispatch( $event, 'Symbol(s) not found' );
+        # Say which it was. Reporting a lookup that never happened as a missing
+        # symbol is what made this impossible to diagnose from the discussion.
+        CJ::dispatch( $event,
+            @errors ? "Stock lookup failed: $errors[0]." : 'Symbol(s) not found' );
         return;
     }
 
